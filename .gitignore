@@ -1,0 +1,26 @@
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/next-env.d.ts
+
+# Supabase local CLI state
+supabase/.temp/
+supabase/.branches/
+
+# Local logs and editor state
+*.log
+.DS_Store
+.vscode/
