@@ -84,14 +84,54 @@ class SupabaseStore:
             raise HTTPException(status_code=502, detail={"code": "SUPABASE_RESPONSE_INVALID", "message": "Supabase trả về dữ liệu hội thoại không hợp lệ."}) from error
         return saved_conversation_id, saved_message_id
 
-    async def list_conversations(self, token: str) -> dict:
+    def _require_service_role(self) -> str:
+        if not self.service_role_key:
+            raise HTTPException(status_code=503, detail={"code": "ACCOUNT_STORAGE_NOT_CONFIGURED", "message": "ChÆ°a cáº¥u hÃ¬nh lÆ°u trá»¯ tÃ i khoáº£n an toÃ n."})
+        return self.service_role_key
+
+    async def get_user_ai_key(self, user_id: str) -> str | None:
+        service_key = self._require_service_role()
+        response = await self._call(
+            "POST", "rpc/get_user_ai_key", service_key, api_key=service_key,
+            json={"p_user_id": user_id},
+        )
+        value = response.json()
+        return value if isinstance(value, str) and value else None
+
+    async def get_user_ai_key_status(self, user_id: str) -> dict:
+        service_key = self._require_service_role()
+        response = await self._call(
+            "POST", "rpc/get_user_ai_key_status", service_key, api_key=service_key,
+            json={"p_user_id": user_id},
+        )
+        rows = response.json()
+        row = rows[0] if isinstance(rows, list) and rows else None
+        return {"configured": bool(row and row.get("configured")), "updated_at": row.get("updated_at") if row else None}
+
+    async def set_user_ai_key(self, user_id: str, api_key: str) -> dict:
+        service_key = self._require_service_role()
+        response = await self._call(
+            "POST", "rpc/set_user_ai_key", service_key, api_key=service_key,
+            json={"p_user_id": user_id, "p_api_key": api_key},
+        )
+        return {"configured": True, "updated_at": response.json()}
+
+    async def delete_user_ai_key(self, user_id: str) -> None:
+        service_key = self._require_service_role()
+        await self._call(
+            "POST", "rpc/delete_user_ai_key", service_key, api_key=service_key,
+            json={"p_user_id": user_id},
+        )
+
+    async def list_conversations(self, token: str, limit: int = 20, offset: int = 0) -> dict:
         response = await self._call(
             "GET",
             "conversations",
             token,
-            params={"select": "id,title,module,updated_at", "order": "updated_at.desc", "limit": "20"},
+            params={"select": "id,title,module,updated_at", "order": "updated_at.desc", "limit": str(limit), "offset": str(offset)},
         )
-        return {"items": response.json()}
+        items = response.json()
+        return {"items": items, "has_more": len(items) == limit, "next_offset": offset + len(items)}
 
     async def get_conversation(self, token: str, conversation_id: str) -> dict:
         try:

@@ -9,12 +9,13 @@ export async function POST(request: NextRequest) {
   if (!isJsonRequest(request)) return jsonError("INVALID_CONTENT_TYPE", "Yêu cầu phải ở định dạng JSON.", 415);
   let body: { email?: unknown; password?: unknown; name?: unknown };
   try { body = await request.json(); } catch { return jsonError("INVALID_REQUEST", "Thông tin đăng ký không hợp lệ.", 400); }
-  if (typeof body.email !== "string" || typeof body.password !== "string" || body.password.length < 8 || body.password.length > 256) {
-    return jsonError("INVALID_REQUEST", "Email không hợp lệ hoặc mật khẩu chưa đủ 8 ký tự.", 400);
+  if (typeof body.email !== "string" || typeof body.password !== "string" || body.password.length < 6 || body.password.length > 256 || typeof body.name !== "string" || !body.name.trim() || body.name.length > 100) {
+    return jsonError("INVALID_REQUEST", "Vui lòng nhập họ tên và mật khẩu có ít nhất 6 ký tự.", 400);
   }
   try {
     const { url, anonKey } = getSupabaseConfig();
-    const upstream = await fetch(`${url}/auth/v1/signup`, {
+    const redirectTo = new URL("/auth/callback", request.nextUrl.origin).toString();
+    const upstream = await fetch(`${url}/auth/v1/signup?redirect_to=${encodeURIComponent(redirectTo)}`, {
       method: "POST", headers: { apikey: anonKey, "Content-Type": "application/json" },
       body: JSON.stringify({ email: body.email, password: body.password, data: { full_name: typeof body.name === "string" ? body.name.slice(0, 100) : "" } }),
       cache: "no-store", signal: AbortSignal.timeout(10000),

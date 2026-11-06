@@ -49,8 +49,7 @@ def _safe_next_action(raw: object) -> NextAction:
     return NextAction(type="none")
 
 
-async def process_chat(request: ChatRequest, user: AuthenticatedUser, settings: Settings) -> ChatResponse:
-    del user  # Identity is derived from the verified Supabase access token.
+async def process_chat(request: ChatRequest, user: AuthenticatedUser, settings: Settings, user_api_key: str | None = None) -> ChatResponse:
     effective_mode = request.mode
     if settings.force_assessment_mode:
         effective_mode = type(request.mode).ASSESSMENT
@@ -63,7 +62,7 @@ async def process_chat(request: ChatRequest, user: AuthenticatedUser, settings: 
     intent = detect_intent(request)
     validation = _simulation_validation(request)
     effective_request = request.model_copy(update={"hint_level": effective_hint, "mode": effective_mode})
-    raw = await generate_response(effective_request, intent, validation.model_dump() if validation else None, settings)
+    raw = await generate_response(effective_request, intent, validation.model_dump() if validation else None, settings, user_api_key)
     mascot_raw = raw.get("mascot") if isinstance(raw.get("mascot"), dict) else {}
     action = _safe_next_action(raw.get("next_action"))
     emotion = mascot_raw.get("emotion") if mascot_raw.get("emotion") in SUPPORTED_EMOTIONS else "encouraging"

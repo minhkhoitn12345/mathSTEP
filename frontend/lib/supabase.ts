@@ -15,6 +15,7 @@ export function getSupabaseConfig() {
 
 export function setAuthCookies(response: NextResponse, tokens: SupabaseTokens) {
   const secure = process.env.NODE_ENV === "production";
+  response.headers.set("Cache-Control", "private, no-store");
   response.cookies.set("mathstep_access_token", tokens.access_token, {
     httpOnly: true, secure, sameSite: "lax", path: "/", maxAge: tokens.expires_in ?? 3600,
   });
@@ -70,6 +71,7 @@ export async function getAccessToken(request: NextRequest): Promise<{ token: str
 
 export function responseWithSessionCookies(response: Response, tokens: SupabaseTokens | null) {
   const result = new NextResponse(response.body, { status: response.status, statusText: response.statusText, headers: response.headers });
+  result.headers.set("Cache-Control", "private, no-store");
   if (tokens) setAuthCookies(result, tokens);
   return result;
 }

@@ -16,5 +16,5 @@ export function isJsonRequest(request: NextRequest): boolean {
 }
 
 export function jsonError(code: string, message: string, status: number): Response {
-  return Response.json({ detail: { code, message } }, { status });
+  return Response.json({ detail: { code, message } }, { status, headers: { "Cache-Control": "private, no-store" } });
 }

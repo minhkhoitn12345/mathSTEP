@@ -19,8 +19,11 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({ email: body.email, password: body.password }),
       cache: "no-store", signal: AbortSignal.timeout(10000),
     });
-    const data = await upstream.json().catch(() => null) as { access_token?: unknown; refresh_token?: unknown; expires_in?: unknown } | null;
+    const data = await upstream.json().catch(() => null) as { access_token?: unknown; refresh_token?: unknown; expires_in?: unknown; error_code?: unknown; code?: unknown; msg?: unknown } | null;
     if (!upstream.ok || typeof data?.access_token !== "string" || typeof data.refresh_token !== "string") {
+      if (data?.error_code === "email_not_confirmed" || data?.code === "email_not_confirmed") {
+        return jsonError("EMAIL_NOT_CONFIRMED", "Email chưa được xác nhận. Hãy kiểm tra hộp thư hoặc gửi lại email xác nhận.", 401);
+      }
       return jsonError("LOGIN_FAILED", "Email hoặc mật khẩu chưa chính xác.", upstream.status === 429 ? 429 : 401);
     }
     const response = NextResponse.json({ ok: true });

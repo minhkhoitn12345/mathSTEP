@@ -62,8 +62,8 @@ declare
   v_conversation_id uuid;
   v_message_id uuid;
 begin
-  if coalesce(auth.role(), '') <> 'service_role' or p_user_id is null then
-    raise exception using errcode = '42501', message = 'Trusted server role required';
+  if p_user_id is null then
+    raise exception using errcode = '22004', message = 'User ID is required';
   end if;
 
   if p_conversation_id is null then

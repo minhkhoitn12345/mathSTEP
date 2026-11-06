@@ -20,6 +20,9 @@ frontend/next-env.d.ts
 supabase/.temp/
 supabase/.branches/
 
+# Vercel project metadata
+.vercel/
+
 # Local logs and editor state
 *.log
 .DS_Store

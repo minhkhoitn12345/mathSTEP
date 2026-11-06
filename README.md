@@ -54,6 +54,20 @@ Review the dry-run before applying it. The migration creates only `conversations
 
 The model key belongs in `server/.env` for local development and in the FastAPI host's secret environment settings after deployment. Supabase Free currently has two free projects and can pause a project after a week of inactivity; use it for development and demos, and account for that behavior before relying on it for student production data. See [Supabase billing limits](https://supabase.com/docs/guides/platform/billing-on-supabase).
 
+## Vercel deployment
+
+Deploy this repository as two Vercel projects so the frontend and FastAPI backend can each use their own runtime:
+
+- Frontend project root: `frontend` (Next.js).
+- Backend project root: `server` (FastAPI; `server/index.py` exports the `app` entrypoint).
+
+Set these variables in both Preview and Production environments:
+
+- Frontend: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `FASTAPI_BASE_URL` set to the deployed backend's HTTPS URL.
+- Backend: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `AI_BASE_URL`, `AI_API_KEY`, and `AI_MODEL`.
+
+Keep `SUPABASE_SERVICE_ROLE_KEY` and `AI_API_KEY` only in the backend project's encrypted environment variables. Do not copy them into the frontend project. The two projects can be created from the same Git repository with different Root Directory settings. Deploy a Preview first, verify `/health`, sign-in, and chat, then deploy Production.
+
 ## Current implementation scope
 
 - Three approved MathSTEP modules and eight learning stages.
@@ -62,4 +76,5 @@ The model key belongs in `server/.env` for local development and in the FastAPI 
 - Durable conversations/messages using a transactional database function and per-user RLS policies.
 - OpenAI-compatible provider configuration kept on the Python server.
 - No approved MathSTEP knowledge corpus is connected; RAG, citations, document ingestion, and embeddings are not simulated.
-- Local Supabase has not been started because Docker is unavailable. A hosted Supabase project has not been created or linked, so its migration has not been applied yet.
+- The hosted Supabase development project is configured in ignored local environment files, and the initial conversation/message migration has been applied through Supabase MCP. Both tables have RLS enabled. Local Supabase containers have not been started because Docker is unavailable.
+- The local FastAPI environment has Supabase service-role and Gemini settings. They are excluded from Git. Copy backend values into Vercel's encrypted environment settings before deploying the backend; never add server keys to the frontend project.

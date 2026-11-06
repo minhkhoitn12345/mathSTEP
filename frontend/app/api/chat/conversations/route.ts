@@ -13,7 +13,12 @@ export async function GET(request: NextRequest) {
   const baseUrl = process.env.FASTAPI_BASE_URL?.replace(/\/$/, "");
   if (!baseUrl) return responseWithSessionCookies(jsonError("FASTAPI_NOT_CONFIGURED", "Chưa cấu hình địa chỉ FastAPI.", 503), refreshed);
   try {
-    const upstream = await fetch(`${baseUrl}/assistant/conversations`, {
+    const limit = Number(request.nextUrl.searchParams.get("limit") ?? 20);
+    const offset = Number(request.nextUrl.searchParams.get("offset") ?? 0);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 50 || !Number.isInteger(offset) || offset < 0 || offset > 10000) {
+      return responseWithSessionCookies(jsonError("INVALID_PAGINATION", "Tham số lịch sử không hợp lệ.", 400), refreshed);
+    }
+    const upstream = await fetch(`${baseUrl}/assistant/conversations?limit=${limit}&offset=${offset}`, {
       headers: { Authorization: `Bearer ${token}` }, cache: "no-store", signal: AbortSignal.timeout(12000),
     });
     const body = await upstream.json().catch(() => ({}));
