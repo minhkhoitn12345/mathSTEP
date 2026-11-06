@@ -41,6 +41,18 @@ function MathMessage({ content }: { content: string }) {
   );
 }
 
+const INTENT_LABELS: Record<string, string> = {
+  student_response: "phản hồi học sinh",
+  clarification_needed: "cần làm rõ",
+  hint: "gợi ý",
+  diagnose: "kiểm tra bài",
+  explain: "giải thích",
+  practice: "luyện tập",
+  reflect: "tổng kết",
+  simulation_help: "mô hình trực quan",
+  general: "hỏi đáp",
+};
+
 const modules: { id: ModuleId; title: string; short: string }[] = [
   { id: "linear_programming", title: "Quy hoạch tuyến tính", short: "Miền nghiệm & tối ưu" },
   { id: "spatial_geometry", title: "Hình học không gian", short: "Quan sát & suy luận" },
@@ -555,7 +567,7 @@ export default function Home() {
           )
           : sessionLoading ? <div className="loading-stage"><div className="loader"/><span>Đang kiểm tra phiên học…</span></div>
           : messages.length === 0 ? <div className="welcome-stage"><div className={mascotClass()}><span className="mascot-ear left"/><span className="mascot-ear right"/><span className="mascot-face"><i className="eye left"/><i className="eye right"/><i className="smile"/><b className="cheek left"/><b className="cheek right"/></span><SparkleIcon/></div><div className="welcome-copy"><span className="welcome-kicker">MÌNH BẮT ĐẦU TỪ ĐÂU NHỈ?</span><h2>Chào {session?.name?.split(" ").slice(-1)[0] ?? "em"},<br /><em>mình cùng khám phá nhé.</em></h2><p>Em đang học <strong>{currentModule.title.toLowerCase()}</strong>. Hãy kể điều em đang nghĩ — mình sẽ gợi mở từng bước, không vội đưa đáp án đâu.</p></div><div className="starter-grid">{starters[moduleId].map((prompt, index) => <button key={prompt} className="starter-card" onClick={() => void sendMessage(prompt)}><span>{index === 0 ? "✳" : "↗"}</span>{prompt}</button>)}</div><div className="welcome-foot"><span className="foot-line"/><span>Em có thể hỏi theo cách của mình</span><span className="foot-line"/></div></div>
-          : <div className="conversation" aria-live="polite">{messages.map((item) => <article key={item.id} className={`message-row ${item.role}`}><div className={item.role === "assistant" ? "message-avatar" : "message-avatar student"}>{item.role === "assistant" ? "m" : (session?.name ?? "E").slice(0, 1).toUpperCase()}</div><div className="message-content"><div className="message-meta">{item.role === "assistant" ? "MATHSTEP" : "EM"}{item.intent && <span className="intent-pill">{item.intent}</span>}</div><div className="message-bubble"><MathMessage content={item.content} /></div>{item.validation && <div className={`validation-card ${item.validation.status}`}><span>{item.validation.status === "verified" ? "✓" : "i"}</span><div><strong>{item.validation.status === "verified" ? "Mình đã kiểm tra phép tính" : "Chưa thể kiểm tra tự động"}</strong><small>{item.validation.explanation}</small></div></div>}{item.nextQuestion && <button className="next-question" onClick={() => setInput(item.nextQuestion!)}><span>↳</span>{item.nextQuestion}</button>}</div></article>)}{busy && <div className="message-row assistant"><div className="message-avatar thinking-avatar">m</div><div className="thinking-bubble"><span/><span/><span/></div></div>}<div ref={endRef}/></div>}
+          : <div className="conversation" aria-live="polite">{messages.map((item) => <article key={item.id} className={`message-row ${item.role}`}><div className={item.role === "assistant" ? "message-avatar" : "message-avatar student"}>{item.role === "assistant" ? "m" : (session?.name ?? "E").slice(0, 1).toUpperCase()}</div><div className="message-content"><div className="message-meta">{item.role === "assistant" ? "MATHSTEP" : "EM"}{item.intent && <span className="intent-pill">{INTENT_LABELS[item.intent] || item.intent.replace(/_/g, " ")}</span>}</div><div className="message-bubble"><MathMessage content={item.content} /></div>{item.validation && <div className={`validation-card ${item.validation.status}`}><span>{item.validation.status === "verified" ? "✓" : "i"}</span><div><strong>{item.validation.status === "verified" ? "Mình đã kiểm tra phép tính" : "Chưa thể kiểm tra tự động"}</strong><small>{item.validation.explanation}</small></div></div>}{item.nextQuestion && <button className="next-question" onClick={() => setInput(item.nextQuestion!)}><span>↳</span>{item.nextQuestion}</button>}</div></article>)}{busy && <div className="message-row assistant"><div className="message-avatar thinking-avatar">m</div><div className="thinking-bubble"><span/><span/><span/></div></div>}<div ref={endRef}/></div>}
 
           {(session?.authenticated || demoMode) && (
             <div className="composer-wrap">

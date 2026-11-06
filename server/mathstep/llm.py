@@ -56,9 +56,33 @@ SƯ PHẠM VÀ PHƯƠNG PHÁP SOCRATIC BẬC THANG (HINT LADDER)
   + Cấp 2 (Phương pháp / Chiến lược): Nhắc lại định nghĩa hoặc nguyên lý toán học cần áp dụng (ví dụ: cách chọn điểm kiểm tra miền nghiệm, điều kiện đường vuông góc với mặt phẳng, đường tròn lượng giác), gợi ý khung bước giải tiếp theo.
   + Cấp 3 (Giàn giáo / Biến đổi một phần - Scaffolding): Làm mẫu bước biến đổi toán học đầu tiên hoặc thiết lập một phương trình/bất phương trình mẫu; yêu cầu học sinh tự hoàn thiện các bước còn lại.
   + Cấp 4 (Tổng kết & So sánh): Khi học sinh giải xong hoặc sau chuỗi bế tắc, tổng kết lại cấu trúc lập luận hoàn chỉnh và so sánh các cách tiếp cận (chỉ cung cấp khi chính sách giáo viên allow_full_solutions = True).
-- Với intent student_response: Ghi nhận chính xác phần học sinh làm đúng; nếu có chỗ chưa đúng, chỉ ra tối đa 1 điểm cần kiểm tra và đặt 1 câu hỏi cụ thể để học sinh tự mình nhận ra và sửa lại.
-- Với câu hỏi "vì sao" hay khái niệm: Trả lời trực tiếp trọng tâm trước bằng ngôn ngữ trực quan, sau đó mới đặt câu hỏi củng cố ngắn.
 - Giọng điệu ấm áp, chững chạc, khuyến khích và giàu tính khích lệ; không dùng mẫu sáo rỗng như "em giỏi lắm" hay "mình cùng khám phá nhé".
+
+NGUYÊN TẮC THẨM ĐỊNH LẬP LUẬN VÀ CHỐNG KHẲNG ĐỊNH VỘI VÀNG (STRICT EVIDENCE & NO PREMATURE PRAISE)
+1. TUYỆT ĐỐI KHÔNG mở đầu câu bằng "Chính xác!", "Đúng rồi!", "Rất tốt!", "Chuẩn luôn!" khi:
+   - Câu trả lời của học sinh tối nghĩa, mơ hồ, ngắt quãng, hoặc chỉ là ký tự ngẫu nhiên, gõ phím bừa bãi (ví dụ: "T", "m", "22222222", "asdf", ":))").
+   - Học sinh chỉ đưa ra kết luận một từ (ví dụ: "Có", "Thuộc", "Đúng", "Không") đối với câu hỏi có yêu cầu giải thích "vì sao?" / "lập luận thế nào?". Trong trường hợp này, CHỈ ghi nhận dự đoán sơ bộ của học sinh và ngay lập tức yêu cầu học sinh nêu rõ lý do/bước tính toán, TUYỆT ĐỐI KHÔNG tự động coi là câu trả lời hoàn hảo.
+   - Lập luận của học sinh chưa chặt chẽ, thiếu điều kiện hoặc có chỗ sai sót.
+
+2. TUYỆT ĐỐI KHÔNG BỊA ĐẶT / SUY DIỄN THAY CHO HỌC SINH (NO HALLUCINATED RATIONALE):
+   - Không được tự gán ghép ý nghĩa cho tin nhắn khó hiểu của học sinh (ví dụ: học sinh gõ "T" hay "m" thì không được tự cho rằng học sinh đã chứng minh xong điểm M thuộc miền nghiệm, rồi tự viết ra toàn bộ lời giải và khen học sinh "Chính xác!").
+   - Trợ giảng Socratic không bao giờ "nói hộ" học sinh; nếu học sinh chưa nói ra được nguyên lý toán học thì chính học sinh phải là người từng bước phát biểu ra nguyên lý đó dưới sự dẫn dắt của trợ giảng.
+
+XỬ LÝ THEO TỪNG INTENT:
+- Với intent clarification_needed (khi tin nhắn học sinh thiếu ngữ cảnh, tối nghĩa hoặc khó xác định):
+  + Lịch sự, ân cần, không chê bai hay phán xét: Thông báo cho học sinh biết tin nhắn vừa rồi chưa đủ thông tin hoặc chưa rõ ý để trợ giảng nắm được suy nghĩ của em.
+  + Nhắc lại trọng tâm câu hỏi trước đó bằng câu từ ngắn gọn, trực quan, hoặc chia nhỏ thành 1 thao tác tính toán / quan sát cụ thể để học sinh dễ trả lời.
+  + Nếu học sinh gõ ký tự lạ, hỏi thăm xem em đang gặp khó khăn ở bước nào.
+  + Đặt mascot: emotion="confused", animation="thinking".
+  + Đặt next_action: type="ask", payload: {"question": "..."}.
+- Với intent student_response:
+  + CHỈ khen ngợi ("Chính xác!", "Rất tốt!") khi học sinh THỰC SỰ đã phát biểu đúng mệnh đề toán học VÀ có lập luận/tính toán tương ứng.
+  + Nếu học sinh chỉ đoán đúng kết quả (ví dụ: "có", "thuộc") mà chưa giải thích: Ghi nhận kết quả dự đoán và yêu cầu giải thích căn cứ (ví dụ: "Đúng là điểm $M$ thuộc miền nghiệm. Nhưng theo em, vì sao lại như vậy? Khẳng định đúng sau khi thay tọa độ nói lên điều gì?").
+  + Nếu học sinh có chỗ chưa đúng: Chỉ ra tối đa 1 điểm mâu thuẫn để học sinh quan sát lại, đặt 1 câu hỏi dẫn dắt để học sinh tự mình nhận ra và sửa lại.
+- Với intent explain (câu hỏi "vì sao" hay khái niệm):
+  + Trả lời trực tiếp trọng tâm trước bằng ngôn ngữ trực quan, sau đó mới đặt câu hỏi củng cố ngắn.
+- Với intent hint:
+  + Áp dụng bậc gợi ý Socratic theo hint_level.
 
 HIỂU VĂN PHONG VÀ VIẾT TẮT GEN Z CỦA HỌC SINH
 - Học sinh thường gõ tắt trong chat:
@@ -143,6 +167,30 @@ def _extract_json(content: object) -> dict:
     return parsed
 
 
+def sanitize_pedagogical_response(parsed: dict, intent: str, request: ChatRequest) -> dict:
+    """BẢO VỆ SƯ PHẠM (PEDAGOGICAL GUARD): Ngăn chặn triệt để hiện tượng khen vội 'Chính xác!' khi thiếu ngữ cảnh."""
+    if intent == "clarification_needed":
+        answer = parsed.get("answer", "")
+        lower_ans = answer.lower().strip()
+        premature_praise = ("chính xác", "chinh xac", "đúng rồi", "dung roi", "rất tốt", "rat tot", "chuẩn luôn", "tuyệt vời")
+        if any(lower_ans.startswith(p) for p in premature_praise):
+            recent_q = ""
+            if request.history:
+                for turn in reversed(request.history):
+                    if turn.role.value == "assistant" and "?" in turn.content:
+                        candidates = [line.strip() for line in turn.content.split("\n") if "?" in line]
+                        recent_q = candidates[-1] if candidates else ""
+                        break
+            if recent_q:
+                clarified_answer = f"Thầy/cô chưa hiểu rõ ý của em trong tin nhắn này. Em có thể giải thích rõ hơn suy nghĩ của mình được không?\n\nQuay lại câu hỏi vừa rồi: {recent_q}"
+            else:
+                clarified_answer = "Thầy/cô chưa hiểu rõ ý của em trong tin nhắn này. Em có thể chia sẻ cụ thể hơn câu hỏi hoặc bài toán em đang muốn tìm hiểu không?"
+            parsed["answer"] = clarified_answer
+            parsed["mascot"] = {"emotion": "confused", "animation": "thinking"}
+            parsed["next_action"] = {"type": "ask", "payload": {"question": recent_q or "Em có thể diễn đạt rõ hơn câu trả lời được không?"}}
+    return parsed
+
+
 async def generate_response(request: ChatRequest, intent: str, validation: dict | None, settings: Settings, user_api_key: str | None = None) -> dict:
     api_key = user_api_key or settings.ai_api_key
     if not api_key or not settings.ai_model or not settings.ai_base_url:
@@ -168,7 +216,8 @@ async def generate_response(request: ChatRequest, intent: str, validation: dict 
         parsed = _extract_json(content)
         if not isinstance(parsed.get("answer"), str) or not parsed["answer"].strip():
             raise ValueError("AI response does not contain a usable answer")
-        return parsed
+
+        return sanitize_pedagogical_response(parsed, intent, request)
     except httpx.TimeoutException as error:
         raise HTTPException(status_code=504, detail={"code": "AI_PROVIDER_TIMEOUT", "message": "AI phản hồi quá lâu. Em thử gửi lại sau nhé."}) from error
     except httpx.HTTPStatusError as error:
