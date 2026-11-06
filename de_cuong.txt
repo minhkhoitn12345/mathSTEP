@@ -1,0 +1,311 @@
+SỞ GIÁO DỤC VÀ ĐÀO TẠO TÂY NINH
+TRƯỜNG THPT CHUYÊN HOÀNG LÊ KHA
+ĐỀ CƯƠNG 
+DỰ ÁN KHOA HỌC KỸ THUẬT
+ĐỀ TÀI
+MATHSTEP
+Hệ thống mô hình toán học tương tác hỗ trợ dạy học, rèn luyện và khắc phục sai lầm thường gặp trong môn Toán THPT
+Ứng dụng mô phỏng 2D/3D, trí tuệ nhân tạo AI và thực tế tăng cường AR
+THẤY để hiểu – CHẠM để khám phá – LUYỆN để vững
+Lĩnh vực nghiên cứu: Toán học 
+Học sinh thực hiện: Nguyễn Minh Khôi
+Giáo viên hướng dẫn: Ths Trần Đình Chiến
+Năm 2026
+MỤC LỤC
+I. LÝ DO CHỌN ĐỀ TÀI
+1.1. Tính thực tiễn
+1.2. Tính mới dự kiến
+1.3. Tính hiệu quả và khả năng ứng dụng
+II. MỤC TIÊU NGHIÊN CỨU
+2.1. Mục tiêu tổng quát
+2.2. Mục tiêu cụ thể
+2.3. Câu hỏi nghiên cứu và tiêu chí đánh giá
+III. ĐỐI TƯỢNG VÀ PHẠM VI NGHIÊN CỨU
+3.1. Đối tượng nghiên cứu
+3.2. Người sử dụng
+3.3. Phạm vi thực hiện
+IV. PHƯƠNG PHÁP NGHIÊN CỨU
+4.1. Nghiên cứu tài liệu và xác định yêu cầu
+4.2. Cơ sở khoa học trực tiếp của giải pháp
+4.3. So sánh phương án và lựa chọn giải pháp
+4.4. Thiết kế trục chung của MathSTEP
+4.5. Thiết kế chức năng chính
+4.6. Xây dựng và tích hợp các module
+4.7. Kiểm thử và đánh giá
+V. TIẾN ĐỘ THỰC HIỆN
+VI. DỰ KIẾN KẾT QUẢ ĐẠT ĐƯỢC
+6.1. Sản phẩm
+6.2. Minh chứng nghiên cứu
+6.3. Khả năng ứng dụng, giới hạn và hướng phát triển
+VII. TÀI LIỆU THAM KHẢO
+I. LÝ DO CHỌN ĐỀ TÀI
+1.1. Tính thực tiễn: Vấn đề cần giải quyết
+Trong quá trình học tập tại lớp 10 chuyên Toán T01, Trường THPT chuyên Hoàng Lê Kha, tỉnh Tây Ninh, em nhận thấy việc nghe giảng và ghi nhớ công thức chưa đủ để hiểu và tự giải được bài toán. Khi học cùng các bạn ở lớp chuyên và trao đổi với các bạn lớp không chuyên, em thấy có những bạn nhớ cách làm của bài mẫu nhưng lúng túng khi thay đổi dữ kiện hoặc hình vẽ. Có bạn đã được chữa bài nhưng vẫn lặp lại lỗi, vì chưa hiểu rõ mình sai ở đâu và vì sao phải làm như vậy.
+Qua trao đổi với giáo viên, em nhận ra một khó khăn cần được quan tâm là học sinh chưa liên kết được lời văn trong đề, hình ảnh biểu diễn và biểu thức toán học. Những trở ngại xuất hiện ngay từ các bước nền tảng: đọc dữ kiện, xác định đối tượng, vẽ hình, chọn công thức và kiểm tra điều kiện. Khi chưa thực hiện vững các bước này, học sinh dễ làm theo trí nhớ, đoán kết quả từ hình hoặc phụ thuộc vào lời giải có sẵn. Các bạn còn khó khăn về kiến thức có thể nhanh nản khi chưa biết bắt đầu từ đâu.
+Ở chủ đề bất phương trình và hệ bất phương trình bậc nhất hai ẩn, khó khăn có thể bắt đầu từ việc tìm hai điểm để dựng đường biên và đặt đúng tọa độ. Sau đó, học sinh còn dễ nhầm miền cần chọn, điều kiện lấy biên và phần giao của các miền nghiệm. Khi giải bài toán quy hoạch tuyến tính, việc chuyển thông tin thực tế thành biến, ràng buộc và hàm mục tiêu lại tạo thêm một trở ngại. Nếu chỉ xem hình và lời giải hoàn chỉnh, học sinh có thể chưa nhận ra mối liên hệ giữa từng dữ kiện với từng bước thực hiện.
+Với hình học không gian, qua trao đổi với các thầy và các bạn đã học nội dung này, em nhận thấy việc chuyển mô tả của đề thành hình là một khó khăn đáng chú ý. Hình biểu diễn trên mặt phẳng khó cho thấy đầy đủ vị trí các đối tượng; học sinh có thể nhầm cạnh thấy, cạnh khuất hoặc suy đoán quan hệ chỉ từ góc nhìn. Em muốn có một môi trường để các bạn từng bước dựng hình theo dữ kiện, xoay và quan sát nhiều hướng, trải phẳng và gấp lại những hình phù hợp. Những thao tác ấy cần gắn với câu hỏi để học sinh hiểu điều đang quan sát.
+Ở lượng giác, nhiều công thức khiến việc ghi nhớ trở nên khó khăn nếu học sinh chưa thấy các mối liên hệ. Đường tròn lượng giác và các mô phỏng phù hợp có thể tạo điều kiện để học sinh quan sát góc quay, vị trí điểm, giá trị lượng giác và tìm hiểu căn cứ của các quan hệ. Em hướng tới việc giúp người học có điểm tựa để tìm lại kiến thức khi quên, bên cạnh các mẹo ghi nhớ được giải thích rõ điều kiện sử dụng.
+Về phía giáo viên, việc tạo hình, chuẩn bị mô phỏng và thiết kế hoạt động tương tác phù hợp với từng bài cần thời gian và công cụ hỗ trợ. Trên lớp, giáo viên cũng khó dành đủ lượt thao tác, thử sai và sửa sai cho từng học sinh. Sau tiết học, các bạn cần tiếp tục thực hành theo hướng dẫn, nhưng bài ghi và hình tĩnh chưa phải lúc nào cũng giúp tái hiện quá trình đã được giảng giải.
+Từ những khó khăn đó, em đề xuất xây dựng MathSTEP để nối tiếp hoạt động giảng dạy trên lớp với quá trình tự luyện ở nhà. Giáo viên có thể dùng mô hình để giải thích và giao nhiệm vụ; học sinh được đọc hiểu, dự đoán, trực tiếp thao tác, kiểm chứng và giải thích kết quả. Khi gặp khó khăn, các bạn nhận gợi ý vừa sức hoặc quay lại kiến thức nền, đồng thời lưu lại lỗi và cách sửa để xem lại, hỏi giáo viên. Đây là nhu cầu thực tế mà em mong muốn giải quyết, trước hết cho học sinh còn khó khăn, sau đó tiếp tục mở rộng trên cùng bộ khung của hệ thống.
+1.2. Tính mới dự kiến
+Các công cụ như GeoGebra đã hỗ trợ dựng hình động, vẽ đồ thị, khám phá hình học không gian, tạo học liệu tương tác và theo dõi tiến trình học sinh. Vì vậy, em xác định việc sử dụng mô hình 2D/3D, AI hay AR chưa đủ để tạo nên tính mới của MathSTEP. Điểm khác biệt em hướng tới là kết nối mô hình toán học, hoạt động khám phá, linh vật AI gợi mở và giáo viên thật thành một quá trình hỗ trợ học sinh hiểu kiến thức, rèn luyện và tự sửa sai.
+Thứ nhất, thiết kế mô hình tương tác gắn với những khó khăn và sai lầm cụ thể của học sinh. Mỗi hoạt động dự kiến được xây dựng từ việc xác định học sinh đang vướng ở kiến thức nền, cách đọc đề, biểu diễn hay bước suy luận nào. Học sinh được trực tiếp tạo và thay đổi biểu diễn: tìm điểm, dựng đường biên, chọn miền, dựng hình theo dữ kiện hoặc thay đổi góc quay trên đường tròn lượng giác. Các thao tác gắn với câu hỏi và yêu cầu giải thích, giúp bộc lộ cách hiểu của người học. Mô hình 2D/3D và AR được lựa chọn theo nhiệm vụ, bảo đảm các quan hệ toán học khi thay đổi cách quan sát.
+Thứ hai, liên kết dữ kiện, hình ảnh và biểu thức theo một quy trình học thống nhất. MathSTEP dự kiến tổ chức hoạt động theo các bước: nhìn thấy → dự đoán → chạm, thao tác → khám phá và phát hiện dấu hiệu lỗi → kiểm chứng → giải thích → bài chuyển giao → vận dụng, rèn luyện. Khi học sinh chọn dữ kiện hoặc thay đổi mô hình, các biểu diễn liên quan được làm nổi bật hoặc cập nhật tương ứng. Qua đó, em mong muốn giúp học sinh hiểu ý nghĩa của điều mình quan sát, biết dùng phép tính hoặc lập luận để kiểm chứng và có thể tự tìm lại kiến thức khi quên.
+Thứ ba, tích hợp linh vật AI gợi mở trực tiếp trong hoạt động học. Linh vật được thiết kế và cấu hình để sử dụng ngữ cảnh nhiệm vụ, bước đang thực hiện và bằng chứng từ bài làm nhằm lựa chọn câu hỏi dẫn dắt phù hợp. Khi học sinh hỏi, linh vật không cung cấp ngay đáp án hoặc lời giải hoàn chỉnh của bài đang học mà khuyến khích các bạn suy nghĩ, thử và tự kiểm tra. Chẳng hạn, khi học sinh chọn sai miền nghiệm, linh vật có thể hỏi: “Em thử chọn một điểm trong miền vừa tô và thay tọa độ vào bất phương trình xem điều gì xảy ra?”. Học sinh có cơ hội tự phát hiện mâu thuẫn và sửa lựa chọn.
+Nếu học sinh vẫn gặp khó khăn, hệ thống có thể đề nghị một nhiệm vụ kiến thức nền đơn giản hơn rồi đưa các bạn trở lại bài ban đầu. Linh vật còn hỗ trợ bằng mẹo ghi nhớ có giải thích, biểu cảm và lời động viên phù hợp. Mức trợ giúp được giảm dần, sau đó học sinh làm nhiệm vụ độc lập để kiểm tra khả năng tự thực hiện. Em kỳ vọng cách tổ chức này tạo thêm cơ hội rèn luyện tư duy, thay vì hình thành thói quen chờ đáp án.
+Thứ tư, kết hợp sự đồng hành của AI với vai trò kiểm chứng và hỗ trợ của giáo viên thật. AI hỗ trợ gợi mở; bộ kiểm toán học xác minh các phép tính và quan hệ trong phạm vi được xây dựng. Những trường hợp chưa đủ căn cứ, đặc biệt là lời giải thích và lập luận của học sinh, được chuyển cho giáo viên xem xét. Học sinh có thể gửi câu hỏi kèm bài làm để được giáo viên giải đáp, đặt câu hỏi phản biện và góp ý khi trực tuyến. Cách phân vai này giúp người học có thêm hỗ trợ khi tự luyện, đồng thời duy trì vai trò chuyên môn của giáo viên.
+Thứ năm, nối tiếp hoạt động giảng dạy, tự luyện và sửa sai trên cùng học liệu. Giáo viên có thể sử dụng mô hình để giảng giải, gắn nhiệm vụ và giao cho học sinh tiếp tục thực hành ở nhà. Sổ học tập lưu dự đoán ban đầu, quan sát, gợi ý đã dùng, bài làm và bản sửa. Những thông tin này giúp học sinh nhìn lại quá trình học, đồng thời cung cấp căn cứ để giáo viên góp ý và duyệt bài luyện phù hợp với từng nhóm lỗi.
+Các thành phần trên dự kiến được xây dựng theo cấu trúc chung để mở rộng sang nhiều chủ đề Toán THPT. Tính mới được đặt ở cách kết hợp và cụ thể hóa giải pháp cho khó khăn của học sinh, không phải khẳng định từng chức năng riêng lẻ chưa từng xuất hiện. Em sẽ tiếp tục đối chiếu các giải pháp liên quan và kiểm chứng bằng nguyên mẫu, quá trình sử dụng cùng kết quả thử nghiệm để xác định đóng góp thực tế của MathSTEP.
+1.3. Tính hiệu quả và khả năng ứng dụng
+MathSTEP được định hướng sử dụng trong cả giờ học trên lớp và quá trình tự luyện ở nhà. Em mong muốn sản phẩm giúp giáo viên thuận tiện hơn khi giảng giải, đồng thời tạo thêm cơ hội để học sinh trực tiếp thao tác, hiểu kiến thức và tự sửa lỗi. Hiệu quả dự kiến được xem xét qua những nhiệm vụ người học tự thực hiện được, khả năng giải thích và vận dụng kiến thức.
+Đối với học sinh, MathSTEP ưu tiên hỗ trợ các bạn còn khó khăn về kiến thức và kỹ năng. Nhiệm vụ được chia thành những bước vừa sức, giúp học sinh đọc hiểu dữ kiện, tạo biểu diễn, dự đoán, thao tác và kiểm chứng. Khi chưa làm được, các bạn có thể nhận câu hỏi gợi mở từ linh vật AI, củng cố kiến thức nền hoặc gửi câu hỏi cho giáo viên. Sự hỗ trợ được giảm dần để học sinh thử lại độc lập. Em kỳ vọng việc liên kết hình ảnh, thao tác và lập luận sẽ giúp các bạn hiểu bản chất, có điểm tựa tìm lại kiến thức khi quên và nhận ra cách sửa lỗi. Những tiến bộ trong quá trình tự làm cũng có thể giúp học sinh tự tin, kiên trì hơn và từng bước giảm tâm lý sợ học Toán.
+Đối với giáo viên, kho mô hình đã được kiểm tra về toán học có thể hỗ trợ chuẩn bị bài giảng và thể hiện những nội dung khó diễn đạt bằng hình tĩnh. Giáo viên được lựa chọn, điều chỉnh dữ kiện, thay đổi góc nhìn và gắn nhiệm vụ phù hợp với lớp. Học sinh tiếp tục thực hành ở nhà trên cùng học liệu đã sử dụng trong tiết học. Sổ học tập lưu dự đoán, bài làm, gợi ý đã dùng và bản sửa, giúp giáo viên có thêm căn cứ góp ý, giải đáp và duyệt bài luyện theo nhóm lỗi. Khả năng tiết kiệm thời gian chuẩn bị và hỗ trợ học sinh sẽ được ghi nhận trong quá trình sử dụng.
+Về điều kiện ứng dụng, em dự kiến xây dựng MathSTEP dưới dạng webapp, ưu tiên điện thoại và hỗ trợ máy tính bảng, máy tính. Học sinh thiếu thiết bị có thể học theo cặp, luân phiên thao tác trên lớp. Những mô hình, nhiệm vụ và gợi ý đã tải có phương án sử dụng khi mất mạng; các chức năng cần kết nối như AI trực tuyến, gửi bài và nhận phản hồi mới được thông báo rõ. AR là lựa chọn bổ sung tùy thiết bị, đồng thời có phương án quan sát và thao tác 2D/3D phù hợp. Cách tổ chức này hướng tới khả năng sử dụng trong những điều kiện dạy học khác nhau.
+Về khả năng mở rộng, ba chủ đề quy hoạch tuyến tính, hình học không gian và lượng giác là phạm vi triển khai ban đầu. Em dự kiến tiếp tục bổ sung các chủ đề Toán THPT trên cùng bộ khung, dùng chung tài khoản, sổ học tập, công cụ tương tác và cơ chế hỗ trợ. Mỗi chủ đề được kiểm tra nội dung và khả năng hoạt động trước khi tích hợp, bảo đảm hệ thống mở rộng nhưng vẫn nhất quán.
+Về lâu dài, em mong muốn phát triển từ MathSTEP thành hệ sinh thái mô phỏng 3D toàn diện hỗ trợ dạy và học trực quan, từng bước mở rộng sang Vật lí, Hóa học, Sinh học, Địa lí và các nội dung thiên văn. Hệ sinh thái hướng tới kết nối kho mô hình, công cụ thiết kế hoạt động của giáo viên, môi trường thực hành của học sinh và sự hỗ trợ của linh vật AI cùng giáo viên thật. Người học có thể quan sát nhiều góc nhìn, thay đổi điều kiện và khám phá những cấu trúc, quá trình khó hình dung qua hình ảnh tĩnh. Mỗi lĩnh vực cần được xây dựng và thẩm định bởi người có chuyên môn; mô phỏng phải thể hiện rõ điều kiện, giới hạn và không mặc nhiên thay thế thí nghiệm thật.
+Để kiểm chứng hiệu quả dự kiến, em sẽ đánh giá tính đúng toán học, khả năng sử dụng và kết quả học sinh thực hiện nhiệm vụ, đặc biệt là khả năng đọc hiểu, biểu diễn, giải thích, tự làm và sửa lỗi ở bài tương tự, bài mới. Phản hồi của giáo viên và học sinh cũng được thu thập để điều chỉnh sản phẩm. Toán học là nền tảng khởi đầu và phạm vi kiểm chứng của dự án hiện tại; việc mở rộng thành hệ sinh thái được thực hiện từng bước, dựa trên kết quả nghiên cứu, nhu cầu sử dụng và nguồn lực thực tế.
+II. MỤC TIÊU NGHIÊN CỨU
+2.1. Mục tiêu tổng quát
+Nghiên cứu, xây dựng và bước đầu kiểm chứng MathSTEP — hệ thống mô hình toán học tương tác hỗ trợ dạy học, rèn luyện và khắc phục sai lầm thường gặp trong môn Toán THPT, ưu tiên học sinh còn khó khăn về kiến thức và kỹ năng.
+Thông qua việc liên kết dữ kiện, hình ảnh và biểu thức toán học trong chuỗi hoạt động quan sát, dự đoán, thao tác, khám phá, kiểm chứng, giải thích và vận dụng, em hướng tới giúp học sinh hiểu bản chất, tự thực hiện các bước giải, từng bước tái lập kiến thức khi quên, nhận ra và tự sửa lỗi ở bài tương tự và bài mới. Mô phỏng 2D/3D, AR tùy thiết bị, linh vật AI gợi mở và sự hỗ trợ của giáo viên được kết hợp để nối tiếp việc học trên lớp với tự luyện ở nhà.
+Hệ thống được thiết kế theo bộ khung thống nhất, trước hết triển khai ở ba chủ đề quy hoạch tuyến tính, hình học không gian và lượng giác, làm cơ sở mở rộng sang các chủ đề Toán THPT khác.
+2.2. Mục tiêu cụ thể
+Để thực hiện mục tiêu tổng quát, em xác định bốn mục tiêu cụ thể sau:
+Thứ nhất, xây dựng bộ khung và cấu trúc học liệu dùng chung. Đối chiếu chương trình, yêu cầu cần đạt, SGK và tài liệu liên quan; kết hợp tìm hiểu khó khăn của học sinh, nhu cầu của giáo viên để xác định yêu cầu của MathSTEP. Thiết kế mỗi hoạt động học gồm mục tiêu, kiến thức nền, mô hình, nhiệm vụ, cách kiểm chứng, gợi ý sửa sai và bài luyện. Các module tuân thủ quy trình học thống nhất, liên kết dữ kiện, hình ảnh, biểu thức và lập luận toán học; dùng chung cơ chế hỗ trợ, lưu tiến trình và đánh giá để có thể tích hợp, mở rộng.
+Thứ hai, xây dựng mô hình tương tác cho ba chủ đề ưu tiên. Lựa chọn mô phỏng 2D/3D và AR phù hợp với mục tiêu học tập, điều kiện thiết bị; tổ chức hoạt động có hướng dẫn hoặc khám phá tự do trong phạm vi nhiệm vụ:
+Quy hoạch tuyến tính: hỗ trợ từ nhận dạng bất phương trình, kiểm tra nghiệm, tìm hai điểm và dựng đường biên, chọn miền đến xác định miền nghiệm hệ, các đỉnh, lập mô hình từ dữ kiện thực tế và tìm phương án tối ưu.
+Hình học không gian: ưu tiên đọc hiểu đề, dựng hình theo dữ kiện, phân biệt cạnh thấy và cạnh khuất, nhận biết đối tượng và quan hệ; cho phép xoay, quan sát đa góc nhìn, trải phẳng và gấp lại với cấu hình phù hợp.
+Lượng giác: hỗ trợ khám phá mối liên hệ giữa góc quay, vị trí điểm trên đường tròn, giá trị lượng giác và các công thức được lựa chọn; giúp học sinh có căn cứ ghi nhớ, tìm lại kiến thức khi quên và vận dụng vào nhiệm vụ phù hợp.
+Thứ ba, tích hợp chức năng hỗ trợ giáo viên, linh vật AI gợi mở và sổ học tập. Hỗ trợ giáo viên lựa chọn, tùy chỉnh mô hình, trình diễn, gắn nhiệm vụ, giao bài và góp ý. Chức năng tạo mô hình từ đề bài được phát triển trong phạm vi hỗ trợ, có giáo viên kiểm tra trước khi sử dụng.
+Linh vật AI sử dụng ngữ cảnh nhiệm vụ và bằng chứng từ bài làm để đặt câu hỏi dẫn dắt, đề xuất thao tác kiểm tra hoặc hoạt động kiến thức nền, không cung cấp ngay đáp án và lời giải hoàn chỉnh. Sự trợ giúp được giảm dần, có nhiệm vụ độc lập để học sinh thử lại; những trường hợp chưa đủ căn cứ được chuyển cho giáo viên. Sổ học tập lưu dự đoán, quan sát, gợi ý đã dùng, bài làm và bản sửa, giúp nối tiếp việc học trên lớp với tự luyện ở nhà. Giao diện ưu tiên điện thoại, có phương án sử dụng học liệu đã tải khi mất mạng.
+Thứ tư, Kiểm tra tính đúng toán học, khả năng sử dụng và kết quả ứng dụng. Xây dựng các trường hợp kiểm thử để kiểm tra mô hình, phép tính, quan hệ toán học, phản hồi và giới hạn hỗ trợ. Kiểm tra khả năng thao tác trên thiết bị, lưu tiến trình, đồng bộ và sử dụng ngoại tuyến. Thông qua thử nghiệm được thiết kế trước, bước đầu đánh giá khả năng học sinh đọc hiểu, biểu diễn, giải thích, tự thực hiện và sửa lỗi ở bài tương tự, bài mới. Kết hợp dữ liệu bài làm với phản hồi của giáo viên, học sinh để điều chỉnh sản phẩm và xác định phạm vi kết luận.
+2.3. Câu hỏi nghiên cứu và tiêu chí đánh giá
+Em đặt ra câu hỏi nghiên cứu chính: Có thể xây dựng MathSTEP như thế nào để mô hình tương tác, nhiệm vụ học tập và sự hỗ trợ gợi mở giúp học sinh hiểu kiến thức, tự thực hiện và sửa lỗi trong môn Toán THPT?
+Để trả lời, em xác định các câu hỏi cụ thể và tiêu chí đánh giá tương ứng:
+Câu hỏi nghiên cứu
+Tiêu chí đánh giá
+Minh chứng dự kiến
+1. Các mô hình và học liệu có thể hiện đúng nội dung toán học, phù hợp với mục tiêu đã lựa chọn không?
+Đúng đối tượng, quan hệ, điều kiện và phép tính; thao tác không làm sai quan hệ toán học; phản hồi có căn cứ và thông báo rõ trường hợp ngoài phạm vi hỗ trợ.
+Phiếu thẩm định chuyên môn; bộ trường hợp kiểm thử và kết quả kiểm tra.
+2. Giáo viên và học sinh có sử dụng được MathSTEP trong điều kiện triển khai thực tế không?
+Hoàn thành được nhiệm vụ chính; thao tác và hướng dẫn dễ hiểu; tiến trình được lưu đúng; các chức năng ngoại tuyến hoạt động trong phạm vi công bố.
+Quan sát sử dụng; nhật ký sự cố; phản hồi của giáo viên và học sinh.
+3. Cơ chế gợi mở có hỗ trợ học sinh tiếp tục suy nghĩ và tự sửa bài không?
+Gợi ý phù hợp với bước học và bằng chứng lỗi; không tiết lộ ngay đáp án; có đường củng cố kiến thức nền và chuyển giáo viên khi cần; phân biệt kết quả có trợ giúp với tự làm.
+Tình huống kiểm thử phản hồi; lịch sử gợi ý, bài làm và bản sửa; nhiệm vụ độc lập sau hỗ trợ.
+4. Trong phạm vi thử nghiệm, kết quả học tập của học sinh sử dụng MathSTEP thay đổi như thế nào so với cách học hiện hành?
+Khả năng đọc hiểu, biểu diễn, thực hiện quy trình và giải thích; tỷ lệ sửa được lỗi đã xuất hiện ở đầu vào; kết quả bài tương tự và bài mới khi không có hỗ trợ.
+Bài đánh giá trước và sau; bài làm chấm theo tiêu chí thống nhất; dữ liệu của nhóm sử dụng MathSTEP và nhóm so sánh.
+Em sẽ đánh giá riêng chất lượng sản phẩm và kết quả học tập. Việc học sinh thích linh vật, thao tác nhiều hoặc hoàn thành bài có gợi ý chưa đủ chứng minh các bạn đã hiểu và tự làm được. Vì vậy, đánh giá kết quả học tập cần có nhiệm vụ độc lập, tắt gợi ý và phản hồi đúng/sai trong lúc làm.
+Các tiêu chí, cách chấm và quy tắc xác định lỗi sẽ được thống nhất trước khi thu thập dữ liệu. Kết quả được trình bày theo từng nội dung thực sự triển khai và thử nghiệm; không suy rộng hiệu quả của một chủ đề cho toàn bộ MathSTEP. Những nhận định về ghi nhớ lâu dài, giảm tâm lý sợ Toán hoặc khả năng ứng dụng rộng rãi cần thêm dữ liệu để kết luận.
+III. ĐỐI TƯỢNG VÀ PHẠM VI NGHIÊN CỨU
+3.1. Đối tượng nghiên cứu
+Đối tượng nghiên cứu của đề tài là hệ thống mô hình toán học tương tác và cách tổ chức hoạt động học tập trên MathSTEP, nhằm hỗ trợ học sinh THPT hiểu kiến thức, rèn luyện và khắc phục sai lầm thường gặp.
+Em tập trung nghiên cứu ba thành phần có mối liên hệ với nhau:
+Mô hình và các biểu diễn toán học: cách liên kết dữ kiện, hình ảnh, bảng và biểu thức; các thao tác cho phép khám phá nhưng vẫn bảo đảm đúng đối tượng, quan hệ và điều kiện toán học.
+Hoạt động học tập trên mô hình: cách tổ chức nhiệm vụ để học sinh đọc hiểu, dự đoán, thao tác, khám phá, kiểm chứng, giải thích và vận dụng; gắn với những khó khăn, lỗi cần hỗ trợ.
+Cơ chế hỗ trợ và theo dõi quá trình học: sự kết hợp giữa linh vật AI gợi mở, bộ kiểm toán học, giáo viên và sổ học tập; giúp học sinh nhận hỗ trợ phù hợp, tự sửa lỗi và từng bước thực hiện độc lập.
+Ba thành phần này được xây dựng theo cấu trúc chung, làm cơ sở phát triển và tích hợp các chủ đề vào MathSTEP.
+3.2. Người sử dụng
+MathSTEP hướng tới hai nhóm người sử dụng chính là học sinh và giáo viên môn Toán THPT, với chức năng phù hợp cho từng vai trò.
+Đối với học sinh, giai đoạn đầu ưu tiên các bạn còn khó khăn trong đọc hiểu đề, hình dung đối tượng, liên kết các biểu diễn, thực hiện quy trình và tự sửa lỗi. Học sinh sử dụng MathSTEP để học có hướng dẫn trên lớp, tiếp tục khám phá và tự luyện ở nhà. Các bạn được thao tác với mô hình, nhận gợi ý từ linh vật, gửi câu hỏi cho giáo viên và xem lại quá trình học trong sổ học tập. Về sau, hệ thống hướng tới nhiều mức năng lực hơn thông qua nhiệm vụ được phân hóa.
+Đối với giáo viên, MathSTEP hỗ trợ lựa chọn, tùy chỉnh và trình diễn mô hình; thiết kế hoạt động, giao bài, theo dõi bài làm và góp ý. Giáo viên giữ vai trò định hướng, kiểm tra học liệu trước khi sử dụng, duyệt đề xuất bài luyện và xác nhận những nội dung hệ thống chưa đủ căn cứ đánh giá.
+Trong triển khai trên lớp, cả lớp có thể tham gia; mức hỗ trợ được điều chỉnh theo khó khăn thực tế của từng học sinh. Việc xác định nhóm cần hỗ trợ dựa vào bài làm và lỗi quan sát được, không chỉ dựa vào điểm môn Toán.
+3.3. Phạm vi thực hiện
+Về nội dung, đề tài bám sát Chương trình GDPT 2018 môn Toán và yêu cầu cần đạt cấp THPT, sử dụng bộ sách giáo khoa được Bộ Giáo dục và Đào tạo lựa chọn sử dụng thống nhất trên toàn quốc từ năm học 2026–2027 làm nguồn đối chiếu. Trong giai đoạn đầu, em tập trung xây dựng bộ khung MathSTEP và các hoạt động thuộc ba chủ đề:
+Quy hoạch tuyến tính: từ bất phương trình, hệ bất phương trình bậc nhất hai ẩn đến lập mô hình và tìm phương án tối ưu.
+Hình học không gian: ưu tiên đọc hiểu đề, dựng hình theo dữ kiện, quan sát đa góc nhìn và nhận biết các quan hệ cơ bản; trải phẳng, gấp lại với cấu hình phù hợp.
+Lượng giác: tập trung vào cung, góc, đường tròn lượng giác, giá trị và các quan hệ, công thức được lựa chọn.
+Nội dung được lựa chọn theo khó khăn của học sinh và khả năng thực hiện; chưa đặt mục tiêu bao quát toàn bộ kiến thức, dạng toán của ba chủ đề.
+Về sản phẩm, em dự kiến xây dựng webapp hỗ trợ giáo viên tổ chức hoạt động và học sinh thực hành trên lớp, tự luyện ở nhà. Mô phỏng 2D/3D được sử dụng theo mục tiêu từng nhiệm vụ; AR là lựa chọn bổ sung tùy thiết bị. Linh vật AI hỗ trợ gợi mở, bộ kiểm toán học xác minh trong phạm vi được xây dựng và giáo viên xem xét những trường hợp chưa đủ căn cứ. Chức năng tạo mô hình từ đề bài được giới hạn ở những dạng đầu vào hệ thống hỗ trợ.
+Về thử nghiệm, đề tài dự kiến triển khai tại Trường THPT chuyên Hoàng Lê Kha và Trường THPT Lê Quý Đôn – Tân Ninh, tỉnh Tây Ninh. Mỗi trường bố trí hai lớp 10, gồm một lớp sử dụng MathSTEP và một lớp học theo cách hiện hành. Nội dung đánh giá kết quả học tập trước mắt tập trung vào bất phương trình, hệ bất phương trình bậc nhất hai ẩn và quy hoạch tuyến tính, được tổ chức ôn tập sau khi học sinh đã học kiến thức liên quan. Thời gian can thiệp dự kiến một tuần, gồm ba tiết trên lớp và ba buổi tự luyện ở nhà, mỗi buổi 45 phút. Cả lớp tham gia, đồng thời phân tích riêng nhóm có lỗi ở đầu vào theo tiêu chí xác định trước.
+Các hoạt động hình học không gian và lượng giác được kiểm tra tính đúng toán học và khả năng sử dụng; chưa dùng kết quả thử nghiệm quy hoạch tuyến tính để kết luận hiệu quả học tập của hai chủ đề này. Việc mở rộng đánh giá cần có kế hoạch riêng phù hợp với nội dung và người học.
+Về hướng phát triển, các chủ đề Toán THPT khác và hệ sinh thái mô phỏng 3D cho các môn học khác được xác định là định hướng lâu dài, chưa thuộc phạm vi kiểm chứng của đề tài ở giai đoạn hiện tại.
+IV. PHƯƠNG PHÁP NGHIÊN CỨU
+4.1. Nghiên cứu tài liệu và xác định yêu cầu
+Em kết hợp nghiên cứu tài liệu với tìm hiểu thực tế dạy và học để xác định MathSTEP cần hỗ trợ nội dung nào, bằng cách nào và dựa vào đâu để đánh giá.
+Nghiên cứu tài liệu. Em đối chiếu Chương trình GDPT 2018 môn Toán, yêu cầu cần đạt cấp THPT, bộ sách giáo khoa được Bộ Giáo dục và Đào tạo lựa chọn sử dụng thống nhất trên toàn quốc từ năm học 2026–2027 cùng sách giáo viên, sách bài tập và tài liệu chuyên môn liên quan. Với mỗi nội dung được lựa chọn, em xác định kiến thức nền, đối tượng và quan hệ toán học, những cách biểu diễn, thao tác phù hợp và kết quả học sinh cần đạt.
+Bên cạnh đó, em tìm hiểu các nghiên cứu về học qua nhiều biểu diễn, khám phá có hướng dẫn, phản hồi và sửa sai; tham khảo những công cụ, học liệu tương tác hiện có. Việc đối chiếu tập trung vào khả năng hỗ trợ học sinh đọc hiểu, tự thao tác, giải thích và tiếp tục luyện tập, làm căn cứ lựa chọn giải pháp và xác định đóng góp dự kiến của MathSTEP.
+Tìm hiểu yêu cầu thực tế. Từ trải nghiệm học tập của bản thân, em trao đổi với giáo viên và học sinh, kết hợp xem xét bài làm, lời giải thích và cách thực hiện những nhiệm vụ ngắn để nhận diện khó khăn. Em chú ý phân biệt học sinh chưa hiểu khái niệm, chưa liên kết được dữ kiện, chưa biết thực hiện quy trình hay chỉ gặp trở ngại khi thao tác trên thiết bị. Một câu trả lời sai được ghi nhận là dấu hiệu cần tìm hiểu thêm, chưa đủ để kết luận học sinh có một ngộ nhận bền vững.
+Các ghi nhận được sắp xếp theo nội dung toán, bước gặp khó khăn, biểu hiện lỗi và nhu cầu hỗ trợ. Em ưu tiên những khó khăn nền tảng có thể giải quyết bằng biểu diễn và thao tác tương tác, đồng thời phù hợp với khả năng xây dựng sản phẩm.
+Chuyển kết quả tìm hiểu thành yêu cầu thiết kế. Mỗi yêu cầu được gắn với nhiệm vụ và cách kiểm tra cụ thể. Ví dụ:
+Khó khăn hoặc nhu cầu
+Yêu cầu đối với MathSTEP
+Khó chuyển dữ kiện thành hình hoặc biểu thức
+Liên kết từng dữ kiện với đối tượng, hình và biểu thức tương ứng; cho học sinh tự tạo biểu diễn theo bước
+Khó hình dung từ một hình vẽ tĩnh
+Cho phép thay đổi góc nhìn, thao tác và đối chiếu các biểu diễn, bảo đảm đúng quan hệ toán học
+Làm theo bài mẫu nhưng chưa hiểu, dễ lặp lỗi
+Có dự đoán, kiểm chứng, giải thích, gợi ý sửa sai và nhiệm vụ độc lập
+Giáo viên cần mô hình để giảng giải và giao thực hành
+Có mẫu được duyệt, khả năng tùy chỉnh, gắn nhiệm vụ và lưu tiến trình học sinh
+Kết quả của bước này là bảng yêu cầu làm căn cứ xây dựng bộ khung MathSTEP, gồm mục tiêu, nguồn đối chiếu, chức năng cần có, mức ưu tiên và tiêu chí kiểm tra. Nội dung toán học và học liệu được giáo viên có chuyên môn rà soát trước khi đưa vào sử dụng; yêu cầu thay đổi trong quá trình phát triển được ghi lại để bảo đảm các module bám cùng định hướng.
+4.2. Cơ sở khoa học trực tiếp của giải pháp
+Em lựa chọn ba căn cứ trực tiếp để thiết kế MathSTEP, gắn với những khó khăn đã xác định trong quá trình dạy và học Toán.
+Liên kết lời văn, hình ảnh và biểu thức toán học. Một nội dung toán học có thể được biểu diễn bằng nhiều cách, nhưng học sinh cần hiểu sự tương ứng giữa chúng. Khung nghiên cứu DeFT của Ainsworth (2006) là căn cứ tham khảo cho việc lựa chọn và kết nối các biểu diễn theo nhiệm vụ học tập. Vì vậy, MathSTEP được thiết kế để học sinh từng bước chuyển dữ kiện thành hình, bảng hoặc biểu thức. Khi một dữ kiện hay tham số thay đổi, các biểu diễn liên quan được cập nhật tương ứng, giúp học sinh nhận ra mối liên hệ giữa chúng.
+Khám phá có hướng dẫn, tự giải thích và giảm dần trợ giúp. Nghiên cứu tổng hợp của Alfieri và cộng sự (2011) cung cấp căn cứ cho việc kết hợp khám phá với phản hồi, gợi ý và yêu cầu giải thích. Nghiên cứu của Chi và cộng sự (1989) cũng gợi ý vai trò của tự giải thích trong việc hiểu nguyên lý và giảm phụ thuộc vào bài mẫu. Từ đó, em thiết kế hoạt động có dự đoán, thao tác và câu hỏi định hướng; linh vật gợi mở theo bước đang làm. Nếu học sinh còn vướng, hệ thống đề nghị nhiệm vụ nền đơn giản hơn rồi trở lại bài ban đầu. Hỗ trợ được giảm dần, sau đó có bài độc lập để kiểm tra khả năng tự thực hiện.
+Kiểm chứng toán học, nhận diện và sửa sai. Quan sát mô hình giúp đưa ra dự đoán, nhưng kết luận cần dựa vào định nghĩa, điều kiện, phép tính hoặc lập luận phù hợp. Vì vậy, mỗi mô hình MathSTEP phải xác định rõ đối tượng, quan hệ và giới hạn thao tác; phản hồi đúng/sai phải có căn cứ kiểm tra. Học sinh được đối chiếu dự đoán với kết quả, giải thích nguyên nhân và thử sửa bài. Dấu hiệu lỗi, gợi ý và bản sửa được lưu trong sổ học tập; trường hợp hệ thống chưa đủ căn cứ được chuyển giáo viên xem xét.
+Ba căn cứ này dẫn đến cách tổ chức chung của MathSTEP: liên kết để hiểu → khám phá có hỗ trợ → kiểm chứng và tự sửa → thực hiện độc lập. Hiệu quả của cách thiết kế sẽ được đánh giá trong quá trình thử nghiệm.
+4.3. So sánh phương án và lựa chọn giải pháp
+Em so sánh ba phương án theo mục tiêu toán học, điều kiện thiết bị và khả năng thực hiện của dự án:
+Phương án
+Khả năng hỗ trợ
+Giới hạn cần cân nhắc
+Học liệu tĩnh: văn bản, hình vẽ, bảng và lời giải mẫu
+Thuận tiện để đọc, trình bày kiến thức, xem lại và sử dụng khi không có mạng.
+Khó thể hiện liên tục sự biến đổi; học sinh ít cơ hội thay đổi dữ kiện và kiểm tra dự đoán trực tiếp.
+Mô hình tương tác 2D/3D
+Cho phép dựng, kéo, xoay, đổi tham số và liên kết hình với biểu thức; phù hợp với nhiệm vụ quan sát, thử trường hợp và khám phá quan hệ.
+Cần hướng dẫn và câu hỏi đi kèm; thao tác đúng hoặc thấy kết quả chưa đủ chứng minh học sinh đã hiểu.
+Mô hình tương tác có hỗ trợ AI/AR
+AI hỗ trợ gợi mở theo bước học; AR bổ sung khả năng quan sát mô hình trong không gian thực trên thiết bị phù hợp.
+AI có thể phản hồi sai hoặc lộ đáp án; AR phụ thuộc thiết bị và điều kiện sử dụng. Việc tích hợp làm tăng yêu cầu kiểm thử, vận hành và chi phí.
+Giải pháp được lựa chọn là kết hợp học liệu ngắn gọn với mô hình tương tác 2D/3D, bổ sung AI và AR theo nhu cầu của từng nhiệm vụ. Em không sử dụng tất cả công nghệ cho mọi nội dung. Chẳng hạn, biểu diễn miền nghiệm ưu tiên hệ trục 2D; hình học không gian cần mô hình 3D và có thể bổ sung AR; lượng giác cần liên kết đường tròn, góc quay và biểu thức. Mỗi lựa chọn phải giúp học sinh thực hiện một mục tiêu toán học cụ thể.
+Về tính khả thi, MathSTEP được thiết kế ưu tiên điện thoại, có cách nhập hoặc chọn thay thế thao tác kéo khi cần. Học liệu, mô hình và gợi ý đã tải được sử dụng ngoại tuyến trong phạm vi công bố. AI trực tuyến và AR là các lớp hỗ trợ bổ sung; khi không sử dụng được, học sinh vẫn có đường tiếp tục học bằng mô hình, câu hỏi và gợi ý đã duyệt. Các chức năng được phát triển, kiểm thử và tích hợp từng bước trên cùng bộ khung.
+Giới hạn của giải pháp là chỉ kiểm chứng được những nội dung và dạng đầu vào đã được xây dựng, thẩm định. Mô hình hỗ trợ hình dung và dự đoán, không thay thế lập luận hoặc chứng minh toán học. AI không được xem là nguồn xác nhận đúng sai cuối cùng; trường hợp chưa đủ căn cứ cần giáo viên xem xét. Khả năng tạo hình từ đề bài cũng được giới hạn theo phạm vi hỗ trợ. Hiệu quả học tập phải được đánh giá bằng bài làm và khả năng thực hiện độc lập, không suy ra chỉ từ mức độ tương tác hay sự hứng thú.
+4.4. Thiết kế trục chung của MathSTEP
+Em thiết kế trục chung làm xương sống của sản phẩm, để các module được phát triển riêng nhưng khi tích hợp vẫn thống nhất về nội dung toán học, cách học và dữ liệu. Trục này gồm bốn thành phần:
+Thành phần
+Nội dung cốt lõi
+Mô hình toán học
+Đối tượng, quan hệ, điều kiện và quy tắc kiểm chứng.
+Hoạt động học
+Quy trình tám bước đã thống nhất; có hướng dẫn hoặc khám phá tự do trong phạm vi nhiệm vụ.
+Hỗ trợ học tập
+Gợi ý, kiến thức nền, linh vật AI và giáo viên.
+Quản lý tiến trình
+Giao bài, sổ học tập, nộp bài, góp ý và lưu bản sửa.
+Mô hình toán học là nền tảng của mỗi hoạt động. Em xác định dữ kiện, đối tượng, quan hệ và điều kiện cần bảo đảm trước khi thiết kế hình ảnh, biểu thức và thao tác. Học sinh có thể thay đổi góc nhìn hoặc tham số trong phạm vi cho phép; kết quả được kiểm tra bằng quy tắc toán học phù hợp. Mô phỏng 2D/3D và AR được lựa chọn theo mục tiêu, không làm thay đổi bản chất của mô hình.
+Hoạt động học được tổ chức theo tám bước: nhìn thấy → dự đoán → chạm, thao tác → khám phá kiến thức và phát hiện dấu hiệu lỗi → kiểm chứng → giải thích → bài chuyển giao → vận dụng, rèn luyện. Giáo viên có thể chọn hoạt động có hướng dẫn hoặc khám phá tự do. Học sinh được quay lại bước còn vướng; việc hoàn thành hoạt động cần có bằng chứng từ bài làm và giải thích, không chỉ từ số lượt thao tác.
+Hỗ trợ học tập được gắn với nhiệm vụ và khó khăn quan sát được. Gợi ý đã duyệt và linh vật AI giúp học sinh tìm bước tiếp theo, không cung cấp ngay lời giải hoàn chỉnh. Khi cần, học sinh được củng cố kiến thức nền rồi trở lại bài ban đầu. Giáo viên kiểm tra học liệu, giải đáp, góp ý và xem xét những trường hợp hệ thống chưa đủ căn cứ. Trợ giúp được giảm dần để học sinh có cơ hội tự làm.
+Quản lý tiến trình nối tiếp việc học trên lớp với tự luyện ở nhà. Giáo viên dùng mô hình để giảng giải, gắn nhiệm vụ và giao bài; mỗi học sinh có bản thực hành riêng. Sổ học tập lưu dự đoán, quan sát, bài làm, mức hỗ trợ, góp ý và bản sửa, đồng thời phân biệt kết quả có trợ giúp với kết quả độc lập.
+Mỗi module khi tích hợp phải kết nối đủ bốn thành phần trên và sử dụng các chức năng chung của MathSTEP. Đây là căn cứ để em xây dựng từng chủ đề mà vẫn giữ sự nhất quán của toàn hệ thống.
+4.5. Thiết kế chức năng chính
+Dựa trên trục chung, em dự kiến xây dựng các chức năng theo hai vai trò sử dụng là giáo viên và học sinh, kết hợp linh vật AI và các công cụ dùng chung.
+Nhóm chức năng
+Nội dung thiết kế
+Dành cho giáo viên
+Chọn mô hình đã duyệt, tùy chỉnh dữ kiện và trình diễn; gắn câu hỏi, giới hạn thao tác và sản phẩm cần nộp; giao bài, xem tiến trình, chấm và góp ý.
+Dành cho học sinh
+Đọc hiểu nhiệm vụ, dự đoán, dựng hoặc thay đổi biểu diễn; kiểm chứng, giải thích, luyện tập và tự sửa lỗi; nộp bài, xem góp ý và hỏi giáo viên.
+Linh vật AI gợi mở
+Đặt câu hỏi theo bước học và bằng chứng từ bài làm; đề xuất thao tác kiểm tra, mẹo ghi nhớ hoặc nhiệm vụ kiến thức nền; động viên và đề nghị hỗ trợ khi cần.
+Công cụ dùng chung
+Bộ kiểm toán học, sổ học tập, lưu tiến trình, nộp bài và bản sửa; giao diện điện thoại, học liệu ngoại tuyến và AR tùy thiết bị.
+Đối với giáo viên, hệ thống ưu tiên kho mô hình chuẩn có thể điều chỉnh theo bài dạy. Chức năng tạo mô hình từ đề bài được phát triển trong phạm vi đầu vào hỗ trợ; mô hình đề xuất phải được giáo viên kiểm tra, chỉnh sửa trước khi sử dụng. Giáo viên có thể lưu học liệu của lớp, dùng trên lớp rồi giao chính học liệu đó để học sinh tiếp tục thực hành ở nhà. Hệ thống đề xuất nhóm lỗi và bài luyện kèm căn cứ để giáo viên duyệt trước khi giao. Bài do giáo viên bổ sung trước mắt chỉ sử dụng trong lớp của mình.
+Đối với học sinh, các công cụ cho phép chọn đối tượng, nhập dữ liệu, kéo, xoay, thay đổi tham số và đối chiếu những biểu diễn liên quan. Khi gặp khó khăn, học sinh có thể nhận gợi ý, thử nhiệm vụ nền đơn giản hơn hoặc gửi câu hỏi kèm bài làm cho giáo viên. Bài nộp được thực hiện trực tiếp hoặc bằng ảnh bài viết; sau khi nhận góp ý, học sinh sửa và nộp lại nhưng vẫn giữ bản trước để đối chiếu.
+Đối với linh vật, phản hồi tập trung vào việc giúp học sinh tự tìm hướng giải. Sai lặp hoặc thời gian chưa có thao tác phù hợp chỉ là dấu hiệu để đề nghị hỗ trợ, chưa phải căn cứ kết luận học sinh không hiểu. Người học được lựa chọn nhận gợi ý, tự thử tiếp hoặc tạm nghỉ. AI không tự xác nhận mọi lập luận; những trường hợp chưa đủ căn cứ được chuyển giáo viên.
+Các chức năng dùng chung bảo đảm mỗi học sinh có tiến trình riêng, được lưu xuyên suốt giữa trên lớp và ở nhà. Phần học liệu đã tải có thể sử dụng ngoại tuyến trong phạm vi công bố; bài nộp chờ đồng bộ phải được phân biệt với bài đã gửi thành công. AR có phương án 2D/3D thay thế. Trong chế độ đánh giá độc lập, hệ thống tắt gợi ý và phản hồi đúng/sai trong lúc làm để kết quả phản ánh khả năng tự thực hiện của học sinh.
+4.6. Xây dựng và tích hợp các module
+Sau khi xác lập bộ khung chung, em dự kiến xây dựng từng module theo cấu trúc:
+Mục tiêu → mô hình → nhiệm vụ → thao tác → kiểm chứng → gợi ý sửa sai → bài luyện và đánh giá.
+Thành phần
+Yêu cầu xây dựng
+Mục tiêu
+Xác định yêu cầu cần đạt, kiến thức nền và khó khăn cần hỗ trợ.
+Mô hình
+Xác định đối tượng, quan hệ, điều kiện; lựa chọn biểu diễn 2D/3D và AR phù hợp.
+Nhiệm vụ
+Thiết kế tình huống, câu hỏi, dự đoán và sản phẩm học sinh cần hoàn thành.
+Thao tác
+Quy định những yếu tố được chọn, dựng hoặc thay đổi; liên kết các biểu diễn và giữ đúng quan hệ toán học.
+Kiểm chứng
+Xác định cách kiểm tra bằng điều kiện, phép tính hoặc lập luận; thông báo rõ trường hợp ngoài phạm vi hỗ trợ.
+Gợi ý sửa sai
+Gắn dấu hiệu lỗi với câu hỏi dẫn dắt, kiến thức nền và cách chuyển giáo viên khi cần.
+Bài luyện và đánh giá
+Có bài tương tự để củng cố, bài mới để kiểm tra vận dụng; phân biệt kết quả có hỗ trợ và làm độc lập.
+Cấu trúc này là chuẩn thiết kế của module; khi sử dụng, các hoạt động được tổ chức theo quy trình học tám bước đã thống nhất. Gợi ý xuất hiện theo nhu cầu, không bắt buộc học sinh phải nhận trợ giúp mới được tiếp tục.
+Giai đoạn đầu, Em dự kiến xây dựng ba module ban đầu trên bộ khung chung của MathSTEP. 
+a) Module Quy hoạch tuyến tính
+Module hỗ trợ học sinh hình thành các kỹ năng nền về bất phương trình, hệ bất phương trình bậc nhất hai ẩn, sau đó vận dụng vào lập mô hình và tìm phương án tối ưu.
+Mô hình và nhiệm vụ: hệ trục tọa độ tương tác, đường biên, các miền nghiệm, bảng liên kết dữ kiện và đường biểu diễn hàm mục tiêu. Nhiệm vụ đi từ kiểm tra một điểm đến biểu diễn miền nghiệm, xác định các đỉnh và giải quyết tình huống thực tế.
+Thao tác và kiểm chứng: học sinh tự tìm, đặt hai điểm, dựng biên, chọn nét liền hoặc đứt, chọn điểm thử và tô miền; kiểm tra từng điều kiện của hệ. Học sinh dự đoán giao điểm trên hình, dùng máy tính cầm tay kiểm tra rồi đối chiếu các ràng buộc. Khi tối ưu, học sinh lập bảng giá trị tại các đỉnh và dùng đường mục tiêu để kiểm chứng trong phạm vi bài toán được hỗ trợ.
+Sửa sai và luyện tập: tập trung vào lỗi tọa độ, chọn phía, lấy biên, nhầm giao với hợp, chọn đỉnh và chuyển dữ kiện thành ràng buộc. Bài luyện bắt đầu bằng cùng bối cảnh thay số, sau đó đổi bối cảnh nhưng giữ cấu trúc toán học.
+b) Module Hình học không gian
+Module ưu tiên giúp học sinh đọc hiểu đề và chuyển dữ kiện thành hình, tạo nền tảng trước khi phát triển các dạng toán chuyên sâu.
+Mô hình và nhiệm vụ: các hình không gian phù hợp với nội dung được lựa chọn, liên kết lời mô tả với điểm, đường thẳng, mặt phẳng và quan hệ tương ứng. Học sinh đọc từng dữ kiện rồi chọn hoặc dựng đối tượng; hình hoàn chỉnh được mở sau để đối chiếu.
+Thao tác và kiểm chứng: xoay, phóng to, đổi góc nhìn, chọn và làm nổi bật đối tượng; phân biệt cạnh thấy, cạnh khuất; trải phẳng và gấp lại với cấu hình phù hợp. AR bổ sung trải nghiệm quan sát trên thiết bị hỗ trợ. Khi đổi góc nhìn, các quan hệ toán học đã cho phải được giữ nguyên.
+Sửa sai và luyện tập: hỗ trợ nhận diện dữ kiện còn thiếu, đối tượng dựng chưa đúng và suy đoán từ vẻ ngoài của hình. Bài luyện yêu cầu học sinh tạo lại hình từ mô tả, nhận biết cùng một cấu hình ở góc nhìn khác và giải thích sự tương ứng với đề.
+c) Module Lượng giác
+Module hỗ trợ học sinh hiểu mối liên hệ giữa góc quay, vị trí điểm trên đường tròn và giá trị lượng giác, làm điểm tựa để ghi nhớ và tìm lại kiến thức khi quên.
+Mô hình và nhiệm vụ: đường tròn lượng giác liên kết với góc quay, tọa độ, giá trị và biểu thức tương ứng. Các hoạt động được lựa chọn để khám phá cung, góc, dấu của giá trị lượng giác và một số quan hệ, công thức.
+Thao tác và kiểm chứng: học sinh quay điểm, đổi góc, dự đoán rồi so sánh các vị trí và giá trị. Nhận xét từ hình được đối chiếu với định nghĩa, tọa độ hoặc biến đổi đại số phù hợp; quan sát không thay thế chứng minh công thức.
+Sửa sai và luyện tập: tập trung vào chiều quay, đơn vị góc, dấu, nhầm tọa độ với giá trị lượng giác và điều kiện sử dụng công thức. Linh vật gợi mở, cung cấp mẹo ghi nhớ có giải thích; bài độc lập kiểm tra khả năng tự xác định và vận dụng.
+Mỗi module được rà soát nội dung toán học, kiểm thử các thao tác và phản hồi, thử sử dụng rồi điều chỉnh trước khi chốt phiên bản để tích hợp.
+d) Đặc tả và tích hợp
+Trước khi lập trình, mỗi module có bản đặc tả gồm: mục tiêu và nguồn kiến thức; điều kiện toán học; dữ liệu mô hình; chuỗi nhiệm vụ và thao tác; quy tắc kiểm chứng; dấu hiệu lỗi và gợi ý; bài luyện, tiêu chí đánh giá và trường hợp kiểm thử. Đặc tả xác định rõ nội dung được hỗ trợ và giới hạn của module.
+Từng module được rà soát chuyên môn, kiểm thử và điều chỉnh trước khi chốt phiên bản để tích hợp. Các module sử dụng chung tài khoản, lớp học, linh vật, sổ học tập và chức năng giao, nộp bài. Sau tích hợp, em kiểm tra tính nhất quán về toán học, giao diện, dữ liệu và phương án ngoại tuyến. Thay đổi ảnh hưởng đến bộ khung phải được ghi nhận, xem xét tác động và kiểm tra lại các phần liên quan.
+Khi tích hợp, module sử dụng chung tài khoản, lớp học, linh vật, bộ kiểm theo phạm vi, sổ học tập và chức năng giao, nộp bài. Tiến trình được gắn với đúng học sinh, nhiệm vụ và phiên bản học liệu. Em tiếp tục kiểm tra sự nhất quán của giao diện, dữ liệu, phản hồi và phương án ngoại tuyến, đồng thời kiểm tra ảnh hưởng đến các module đã có.
+Nếu một module phát sinh yêu cầu thay đổi bộ khung, em sẽ ghi rõ lý do, xem xét tác động chung và cập nhật phiên bản trước khi áp dụng. Cách thực hiện này giúp phát triển từng phần có thể kiểm tra, đồng thời giữ được tính đồng bộ của MathSTEP.
+4.7. Kiểm thử và đánh giá
+Em kiểm thử hai mặt: chất lượng sản phẩm ở cả ba module; kết quả học tập ở nội dung và nhóm lớp thuộc phạm vi 3.3. Đề xuất điều kiện phát hành là mọi ca toán cốt lõi đã khóa đều đạt, không còn lỗi nghiêm trọng làm sai toán, mất dữ liệu, lộ đáp án đánh giá hoặc truy cập sai quyền. Đây là tiêu chí thiết kế, chưa phải kết quả đạt.
+Kiểm thử sản phẩm. Kết quả chuẩn được tính độc lập và người có chuyên môn đối chiếu, không dùng cùng hàm để tự sinh đáp án rồi tự kiểm. Ca thử gồm điểm trên biên, một hệ số bằng 0, vô nghiệm, giao trùng/song song, nhiều nghiệm tối ưu; hình xoay vẫn giữ quan hệ; góc đặc biệt và giá trị không xác định. Ngoài phạm vi thì phải báo rõ. Chức năng được thử khi đổi dữ kiện, chờ phản hồi, mất mạng, mở lại, gửi lại bài, đổi tài khoản và xoay màn hình; ghi thiết bị thật, phiên bản, bước tái hiện, kết quả đạt/chưa đạt/chưa thử. AR chưa thử trên thiết bị không được ghi là đạt.
+Kiểm phản hồi. Giáo viên duyệt học liệu, gợi ý và hướng dẫn chấm; ca đánh giá AI gồm đủ/thiếu dữ kiện, đúng/sai, xin đáp án, đứng lâu và từ chối hỗ trợ. Người duyệt xem tính đúng, phù hợp bước và lộ lời giải. Ca sai chuyển gợi ý đã duyệt hoặc giáo viên. Lưu phiên bản dịch vụ, chỉ dẫn, phản hồi và kết luận; không gọi cấu hình là đã huấn luyện.
+Thiết kế so sánh. Mỗi trường hai lớp do cùng giáo viên phụ trách; phân lớp không ngẫu nhiên. Hai nhóm có nội dung, độ khó, ba tiết và ba buổi nhà tương đương về kế hoạch; ghi thời gian thực học, trợ giúp thêm, vắng, thiết bị dùng cặp và sự cố. Hai nhóm cùng làm quen giao diện bằng nội dung không dạy kỹ năng đang đo; đánh giá đầu/cuối không gợi ý, phản hồi hoặc đáp án có sẵn. Lượt đánh giá là cá nhân, tách thời gian khỏi can thiệp hoặc phân bổ đều; dùng cùng quy tắc máy tính cầm tay. Phê duyệt và đồng thuận phù hợp được hoàn tất trước thu dữ liệu [8], [9].
+Công cụ đo dự kiến. Khóa hai đề A/B tương đương sau thử nhỏ, không lặp nguyên bài đầu. Thang 20 điểm dự kiến gồm nhận dạng 2; nghiệm/tọa độ 3; biên/miền 4; hệ/đỉnh 4; mô hình hóa 4; tối ưu/diễn giải 3. Mỗi câu hỏi có đáp án, lỗi mục tiêu và điểm từng bước. Lời giải thích dùng mức 0 (sai/thiếu), 1 (đúng một phần hoặc thiếu căn cứ), 2 (đúng, có căn cứ theo yêu cầu), nằm trong điểm câu hỏi, không cộng trùng. Hai giáo viên chấm độc lập khoảng 20% bài giải thích chọn trước ở cả nhóm và đợt, ẩn tên/nhóm; giữ hai điểm và ghi mức thống nhất trước xử lý bất đồng. Thời lượng đề được điều chỉnh qua thử nhỏ rồi khóa trước đánh giá đầu vào.
+Chỉ số. Chỉ số chính dự kiến là thay đổi điểm đầu/cuối theo học sinh, trên thang 20. Chỉ số phụ là tỷ lệ sửa từng lỗi, kết quả bài đổi bối cảnh, mức trợ giúp và khả năng sử dụng. Tỷ lệ sửa lỗi k được tính bằng số em mắc lỗi k ở đầu vào nhưng làm đúng nhiệm vụ tương ứng ở cuối chia số em mắc lỗi k đầu vào có đủ dữ liệu cặp. Nhóm có lỗi đầu vào được xác định trước hậu kiểm bằng hướng dẫn chấm và bằng chứng, không dùng điểm Toán để chọn sau khi thấy kết quả.
+Phân tích. Lập bảng số hợp lệ, điểm đầu/cuối, trung bình, độ phân tán và mức thay đổi của từng lớp; so chênh lệch thay đổi hai lớp trong từng trường. Ghi biến nhóm, đợt đo, phiên bản đề và yếu tố ảnh hưởng như đầu vào, giáo viên, thiết bị, thời gian thực học. Chỉ bốn lớp, không coi 140–160 học sinh là các đơn vị phân nhóm ngẫu nhiên độc lập; không dùng kiểm định đơn giản để khẳng định nhân quả. Báo tỷ lệ thiếu dữ liệu và lý do, phân tích cặp hợp lệ, không tự điền điểm thiếu hoặc loại bài vì kết quả bất lợi. Đối chiếu thêm lời giải thích và bản sửa, không chỉ điểm tổng.
+Lưu và diễn giải. Dữ liệu dùng mã nghiên cứu; bảng nối tên được giữ riêng có quyền truy cập. Không gửi thông tin nhận diện không cần thiết cho AI. Lưu dữ liệu gốc, nhật ký liên tục, mức trợ giúp, bản mã và nguồn thư viện; ghi việc Khôi tự làm và phần cố vấn/AI hỗ trợ theo quy định [8], [9]. Kết quả không suy rộng sang nội dung chưa thử, hiệu quả riêng AI, ghi nhớ lâu dài hoặc giảm sợ Toán nếu chưa đo. Không bổ sung đo trễ vào thiết kế hiện tại.
+V. TIẾN ĐỘ THỰC HIỆN
+Em dự kiến thực hiện theo năm giai đoạn dưới đây. Thời gian được tính từ khi bắt đầu triển khai; ngày cụ thể sẽ được điều chỉnh theo lịch học, tiến độ sản phẩm và kế hoạch của nhà trường.
+Thời gian dự kiến
+Công việc
+Sản phẩm
+Minh chứng
+Tuần 1–2
+Khảo sát, xác định yêu cầu: nghiên cứu tài liệu; trao đổi với giáo viên, học sinh; xem xét bài làm và khó khăn tại ba chủ đề ưu tiên.
+Bảng khó khăn, yêu cầu và tiêu chí đánh giá; danh mục nội dung lựa chọn.
+Phiếu ghi nhận, bài làm đã che thông tin nhận diện, bảng đối chiếu tài liệu và nhật ký.
+Tuần 3
+Khóa bộ khung tổng thể: hoàn thiện trục toán học, quy trình học, cấu trúc học liệu, chức năng và quy tắc tích hợp.
+Đề cương và bản thiết kế chung phiên bản đầu.
+Bản góp ý của giáo viên; danh mục quyết định và phiên bản được thống nhất.
+Tuần 4–9
+Xây dựng và kiểm thử từng module: lần lượt phát triển quy hoạch tuyến tính, hình học không gian và lượng giác; rà soát nội dung, thao tác và phản hồi.
+Ba module trong phạm vi lựa chọn; học liệu được duyệt và kết quả kiểm thử từng phần.
+Mã nguồn, lịch sử thay đổi, phiếu duyệt, bảng kiểm thử và nhật ký sửa lỗi.
+Tuần 10–11
+Tích hợp, thử sử dụng và điều chỉnh: kết nối các module với tài khoản, linh vật, sổ học tập và giao, nộp bài; kiểm tra điện thoại, ngoại tuyến; thử với nhóm nhỏ phù hợp.
+Phiên bản tích hợp đủ điều kiện triển khai; hướng dẫn sử dụng; công cụ đánh giá được rà soát.
+Biên bản thử sử dụng, phản hồi, nhật ký sự cố và bảng kiểm tra lại sau sửa.
+Tuần 12–14
+Thử nghiệm, phân tích và hoàn thiện hồ sơ: tổ chức đánh giá đầu vào, can thiệp một tuần và đánh giá cuối; phân tích dữ liệu, điều chỉnh sản phẩm và hoàn thiện báo cáo, poster, kịch bản demo.
+Bộ dữ liệu, báo cáo kết quả và giới hạn; sản phẩm cùng hồ sơ dự thi.
+Bài làm, điểm chấm, dữ liệu gốc, nhật ký triển khai, bảng phân tích và hồ sơ hoàn thiện.
+Các giai đoạn chỉ chuyển tiếp khi đáp ứng yêu cầu kiểm tra tương ứng. Thử nghiệm với học sinh được thực hiện sau khi có sự chấp thuận cần thiết, học liệu được duyệt và sản phẩm đạt điều kiện sử dụng. Nếu tiến độ thay đổi, em sẽ cập nhật kế hoạch và ghi lại thời gian thực hiện thực tế.
+VI. DỰ KIẾN KẾT QUẢ ĐẠT ĐƯỢC
+6.1. Sản phẩm MathSTEP
+Em dự kiến xây dựng được webapp MathSTEP với bộ khung thống nhất, hỗ trợ giáo viên giảng dạy và học sinh thực hành, tự luyện. Sản phẩm gồm:
+Ba module ban đầu: quy hoạch tuyến tính, hình học không gian và lượng giác, với mô hình tương tác, nhiệm vụ, gợi ý sửa sai và bài luyện trong phạm vi đã lựa chọn.
+Không gian giáo viên: lựa chọn, tùy chỉnh mô hình, trình diễn mô hình; gắn nhiệm vụ, giao bài, xem bài làm và góp ý.
+Không gian học sinh: dự đoán, thao tác, kiểm chứng, giải thích, luyện tập, nộp bài và sửa bài.
+Linh vật AI gợi mở kết hợp giáo viên thật: hỗ trợ tìm hướng giải bằng câu hỏi gợi mở, kết hợp gợi ý đã duyệt và sự hỗ trợ của giáo viên thật, củng cố kiến thức nền và chuyển câu hỏi cho giáo viên khi cần.
+Sổ học tập: lưu dự đoán, quan sát, mức trợ giúp, bài làm và bản sửa để theo dõi tiến trình đảm sự bảo nối tiếp việc học trên lớp với tự luyện ở nhà.
+Phương án sử dụng trên điện thoại và ngoại tuyến: học liệu đã tải hoạt động trong phạm vi công bố; AR được bổ sung trên thiết bị phù hợp.
+Mỗi chủ đề có nhiệm vụ tương tác, cách kiểm chứng, gợi ý sửa sai và bài luyện được rà soát chuyên môn. Mô phỏng 2D/3D và AR được lựa chọn theo mục tiêu hoạt động, điều kiện thiết bị.
+Các mô hình và học liệu được rà soát chuyên môn, kiểm thử trước khi sử dụng; những nội dung chưa hỗ trợ được thông báo rõ.
+Sản phẩm ưu tiên sử dụng trên điện thoại, có hướng dẫn và phương án ngoại tuyến cho học liệu đã tải trong phạm vi công bố.
+6.2. Kết quả nghiên cứu và minh chứng
+Em dự kiến thu thập và lưu các minh chứng để đối chiếu tính đúng toán học, quá trình xây dựng và kết quả ứng dụng của MathSTEP, gồm:
+Hồ sơ duyệt toán học và kết quả kiểm thử: nguồn học liệu, góp ý và xác nhận của giáo viên; các trường hợp kiểm tra mô hình, phép tính, quan hệ, phản hồi và giới hạn hỗ trợ; kết quả kiểm thử chức năng, lỗi phát hiện và cách khắc phục.
+Dữ liệu thử nghiệm và bài làm: bài đánh giá trước, sau hoạt động; dự đoán, lời giải thích, mức trợ giúp, bài làm và bản sửa; phản hồi của giáo viên, học sinh cùng những sự cố ảnh hưởng đến quá trình sử dụng. Thông tin nhận diện học sinh được bảo vệ, dữ liệu minh họa được tách khỏi dữ liệu thử nghiệm.
+Nhật ký nghiên cứu: ghi lại công việc thực tế, quyết định thiết kế, phiên bản sản phẩm, điều chỉnh và phần hỗ trợ của giáo viên, công cụ AI hoặc người khác, làm rõ phần công việc em tự thực hiện.
+Từ các minh chứng này, em dự kiến lập bảng đánh giá tính đúng toán học, khả năng sử dụng và kết quả học tập trong phạm vi nội dung, đối tượng và thời gian thực sự triển khai. Phân tích trình bày cả kết quả đạt, chưa đạt, dữ liệu thiếu và giới hạn; không dự đoán trước mức tăng điểm hoặc chỉ lựa chọn những trường hợp có tiến bộ.
+6.3. Khả năng ứng dụng, giới hạn và hướng phát triển
+MathSTEP dự kiến có thể dùng để giảng giải trên lớp, tổ chức thực hành có hướng dẫn và giao tự luyện ở nhà. Bộ khung chung tạo điều kiện bổ sung các chủ đề Toán THPT mà vẫn giữ sự nhất quán về hoạt động, hỗ trợ và dữ liệu.
+Kết luận ban đầu được giới hạn ở nội dung, người học và thời gian thực sự thử nghiệm; chưa suy rộng kết quả quy hoạch tuyến tính sang hình học không gian, lượng giác hoặc khẳng định hiệu quả lâu dài.
+Về sau, em mong muốn phát triển MathSTEP thành hệ sinh thái mô phỏng 3D toàn diện hỗ trợ dạy và học trực quan, mở rộng từng bước sang các môn học khác khi có nhu cầu, nguồn lực và sự thẩm định chuyên môn phù hợp. Kết quả nghiên cứu hiện tại sẽ là căn cứ để lựa chọn hướng hoàn thiện tiếp theo.
+VII. TÀI LIỆU THAM KHẢO
+[1] Bộ Giáo dục và Đào tạo (2018). Chương trình giáo dục phổ thông môn Toán, ban hành kèm Thông tư 32/2018/TT-BGDĐT ngày 26/12/2018. Bản chương trình do nhóm cung cấp; đối chiếu văn bản cập nhật áp dụng trước khóa học liệu.
+[2] Sách giáo khoa Toán 10, Toán 11, Toán 12, tập một và tập hai. Nhà xuất bản Giáo dục Việt Nam. Các bản điện tử nhóm cung cấp; một số bản có dấu bản mẫu hoặc thông tin xuất bản chưa đầy đủ. Không gán năm 2026 cho các bản này; hồ sơ nguồn học liệu phải ghi đúng bản được sử dụng.
+[3] Toán 11, sách giáo viên. Nhà xuất bản Giáo dục Việt Nam. Bản điện tử nhóm cung cấp, trang thông tin xuất bản có năm 2023; dùng tham khảo tổ chức hoạt động và đối chiếu bản hiện hành khi triển khai.
+[4] Ainsworth, S. (2006). DeFT: A conceptual framework for considering learning with multiple representations. Learning and Instruction, 16(3), 183–198. DOI: 10.1016/j.learninstruc.2006.03.001.
+[5] Alfieri, L., Brooks, P. J., Aldrich, N. J., & Tenenbaum, H. R. (2011). Does discovery-based instruction enhance learning? Journal of Educational Psychology, 103(1), 1–18. DOI: 10.1037/a0021017.
+[6] Chi, M. T. H., Bassok, M., Lewis, M. W., Reimann, P., & Glaser, R. (1989). Self-explanations: How students study and use examples in learning to solve problems. Cognitive Science, 13(2), 145–182. DOI: 10.1016/0364-0213(89)90002-5.
+[7] GeoGebra. Công cụ toán học và học liệu tương tác. https://www.geogebra.org/ . Truy cập 05/11/2026. Đối chiếu tính năng, chưa dùng làm bằng chứng hiệu quả của MathSTEP.
+[8] Bộ Giáo dục và Đào tạo (2026). Thông tư 84/2026/TT-BGDĐT ngày 30/9/2026 ban hành Quy chế Cuộc thi nghiên cứu khoa học, kỹ thuật cấp quốc gia dành cho học sinh THCS và THPT; Phụ lục 2 về tiêu chí đánh giá.
+[9] Sở Giáo dục và Đào tạo Tây Ninh (2026). Kế hoạch 7489/KH-SGDĐT ngày 26/10/2026 về tổ chức Cuộc thi nghiên cứu khoa học, kỹ thuật dành cho học sinh trung học tỉnh Tây Ninh năm học 2026–2027.
+[10] Bộ Giáo dục và Đào tạo (2025). Quyết định 3588/QĐ-BGDĐT ngày 26/12/2025 về lựa chọn bộ sách giáo khoa giáo dục phổ thông sử dụng thống nhất toàn quốc. Thông tin đối chiếu qua Cổng Thông tin điện tử Chính phủ: https://baochinhphu.vn/ket-noi-tri-thuc-voi-cuoc-song-la-sach-giao-khoa-thong-nhat-toan-quoc-tu-nam-hoc-20262027-10225122622052997.htm . Truy cập 05/11/2026.
+[11] CASIO. fx-580VN X, hướng dẫn sử dụng, mục Tính toán phương trình. https://support.casio.com/global/vi/fx/manual/fx-580VNX_VI/using_calculation_modes/equation_calculations/ . Truy cập 05/11/2026.

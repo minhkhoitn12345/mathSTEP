@@ -141,6 +141,131 @@ CURRICULUM_KNOWLEDGE: dict[str, dict[str, Any]] = {
             "Nhầm lẫn giữa các cạnh khuất (nét đứt) và cạnh nhìn thấy (nét liền) khi khối chóp thay đổi hướng nhìn.",
         ],
     },
+    "functions": {
+        "title": "Khảo sát sự biến thiên và vẽ đồ thị của hàm số (Toán 12)",
+        "textbook_sources": [
+            "SGK Toán 12 (Tập 1) - Chương I: Ứng dụng đạo hàm để khảo sát và vẽ đồ thị của hàm số",
+            "SBT Toán 12 (Tập 1) - Khảo sát hàm đa thức bậc 3, hàm phân thức hữu tỉ, bài toán tương giao",
+        ],
+        "core_definitions": [
+            {
+                "term": "Tính đơn điệu của hàm số",
+                "definition": "Hàm số y = f(x) đồng biến trên khoảng K nếu f'(x) ≥ 0 với mọi x ∈ K (dấu bằng chỉ xảy ra tại hữu hạn điểm); nghịch biến nếu f'(x) ≤ 0 với mọi x ∈ K.",
+            },
+            {
+                "term": "Cực trị của hàm số",
+                "definition": "Điểm x0 là điểm cực đại nếu f'(x) đổi dấu từ dương sang âm khi qua x0; là điểm cực tiểu nếu f'(x) đổi dấu từ âm sang dương khi qua x0.",
+            },
+            {
+                "term": "Đường tiệm cận của đồ thị hàm số",
+                "definition": "Đường thẳng x = x0 là tiệm cận đứng nếu lim(x -> x0) f(x) = ±∞. Đường thẳng y = y0 là tiệm cận ngang nếu lim(x -> ±∞) f(x) = y0.",
+            },
+            {
+                "term": "Phương trình tiếp tuyến của đồ thị hàm số",
+                "formula": "Phương trình tiếp tuyến tại điểm M(x0; f(x0)) là: y = f'(x0)(x - x0) + f(x0), với k = f'(x0) là hệ số góc của tiếp tuyến.",
+            },
+        ],
+        "common_student_errors": [
+            "Nhầm lẫn giữa điểm cực trị của hàm số (x_ct), điểm cực trị của đồ thị (M(x_ct; y_ct)) và giá trị cực trị (y_ct).",
+            "Viết kết luận khoảng đồng biến, nghịch biến bằng kí hiệu hợp (∪) thay vì viết tách từng khoảng hoặc dùng từ 'và'.",
+            "Nhầm dấu của đạo hàm f'(x) với dấu của giá trị hàm số f(x).",
+        ],
+    },
+    "calculus": {
+        "title": "Nguyên hàm, tích phân và ứng dụng hình học, vật lý (Toán 12)",
+        "textbook_sources": [
+            "SGK Toán 12 (Tập 2) - Chương IV: Nguyên hàm và tích phân",
+            "SBT Toán 12 (Tập 2) - Tính diện tích hình phẳng và thể tích khối tròn xoay",
+        ],
+        "core_definitions": [
+            {
+                "term": "Khái niệm tích phân và ý nghĩa diện tích",
+                "definition": "Cho hàm số f(x) liên tục trên đoạn [a; b]. Diện tích hình phẳng giới hạn bởi đồ thị y = f(x), trục hoành Ox và hai đường thẳng x = a, x = b là: S = ∫[a->b] |f(x)| dx.",
+            },
+            {
+                "term": "Thể tích khối tròn xoay sinh bởi quay quanh trục Ox",
+                "formula": "Thể tích khối tròn xoay tạo thành khi quay hình phẳng giới hạn bởi y = f(x), y = 0, x = a, x = b quanh Ox là: V = π ∫[a->b] [f(x)]² dx.",
+            },
+            {
+                "term": "Ý nghĩa vật lý của đạo hàm và tích phân",
+                "definition": "Vận tốc tức thời v(t) = s'(t) (đạo hàm của quãng đường). Quãng đường di chuyển s = ∫[t1->t2] |v(t)| dt. Độ dời x(t2) - x(t1) = ∫[t1->t2] v(t) dt.",
+            },
+        ],
+        "common_student_errors": [
+            "Quên dấu giá trị tuyệt đối khi tính diện tích dẫn đến kết quả diện tích mang giá trị âm.",
+            "Quên nhân số π trong công thức tính thể tích khối tròn xoay V = π ∫ [f(x)]² dx.",
+            "Nhầm lẫn giữa quãng đường đi được (tích phân của tốc độ |v(t)|) và độ dịch chuyển (tích phân của vận tốc v(t)).",
+        ],
+    },
+    "probability": {
+        "title": "Xác suất có điều kiện, quy tắc nhân, công thức Bayes & Sơ đồ cây (Toán 11 & 12)",
+        "textbook_sources": [
+            "SGK Toán 11 (Tập 2) - Chương IX: Các quy tắc tính xác suất",
+            "SGK Toán 12 (Tập 2) - Chương VI: Xác suất có điều kiện và công thức Bayes",
+        ],
+        "core_definitions": [
+            {
+                "term": "Xác suất có điều kiện",
+                "formula": "Xác suất của biến cố A khi biết biến cố B đã xảy ra là: P(A|B) = P(A ∩ B) / P(B), với P(B) > 0.",
+            },
+            {
+                "term": "Công thức nhân xác suất và Biến cố độc lập",
+                "formula": "P(A ∩ B) = P(B) · P(A|B). Hai biến cố A, B độc lập khi và chỉ khi P(A ∩ B) = P(A) · P(B).",
+            },
+            {
+                "term": "Công thức xác suất toàn phần và công thức Bayes",
+                "formula": "P(B) = P(A)P(B|A) + P(Ā)P(B|Ā). Công thức Bayes: P(A|B) = [P(A) · P(B|A)] / P(B).",
+            },
+            {
+                "term": "Quy tắc dựng và tính xác suất trên sơ đồ cây",
+                "rule": "Xác suất trên một đường đi từ gốc đến lá bằng TÍCH các xác suất trên các nhánh của đường đi đó. Xác suất của một biến cố bằng TỔNG các xác suất của các đường đi tương ứng.",
+            },
+        ],
+        "common_student_errors": [
+            "Nhầm lẫn giữa chọn có hoàn lại (xác suất giữ nguyên) và không hoàn lại (xác suất thay đổi sau mỗi bước rút).",
+            "Nhầm lẫn giữa xác suất có điều kiện P(A|B) và xác suất giao P(A ∩ B).",
+            "Đồng nhất khái niệm độc lập (P(AB) = P(A)P(B)) với khái niệm xung khắc (A ∩ B = ∅).",
+        ],
+    },
+    "conics_and_solids": {
+        "title": "Hình khối không gian và Các đường Conic (Toán 10, 11 & 12)",
+        "textbook_sources": [
+            "SGK Toán 10 (Tập 2) - Chương VII: Ba đường conic trong mặt phẳng toạ độ (Elip, Hypebol, Parabol)",
+            "SGK Toán 11 & 12 - Khối chóp, khối lăng trụ, khối tròn xoay (nón, trụ, cầu)",
+        ],
+        "core_definitions": [
+            {
+                "term": "Nguyên lý mặt phẳng cắt mặt nón tròn xoay (Conic Sections)",
+                "rules": [
+                    "Nếu mặt phẳng cắt qua trục: tiết diện là hai đường sinh cắt nhau.",
+                    "Nếu góc nghiêng mặt phẳng lớn hơn góc nghiêng đường sinh: tiết diện là Elip (e < 1); khi vuông góc trục là đường tròn.",
+                    "Nếu mặt phẳng song song với một đường sinh: tiết diện là Parabol (e = 1).",
+                    "Nếu góc nghiêng mặt phẳng nhỏ hơn góc nghiêng đường sinh: cắt cả hai phần của mặt nón tạo thành Hypebol (e > 1).",
+                ],
+            },
+            {
+                "term": "Phương trình chính tắc các đường Conic",
+                "equations": [
+                    "Elip: x²/a² + y²/b² = 1 (với a² = b² + c², c là tiêu cự, tâm sai e = c/a < 1). Định nghĩa: MF1 + MF2 = 2a.",
+                    "Hypebol: x²/a² - y²/b² = 1 (với c² = a² + b², tâm sai e = c/a > 1). Định nghĩa: |MF1 - MF2| = 2a.",
+                    "Parabol: y² = 2px (p > 0, tiêu điểm F(p/2; 0), đường chuẩn x = -p/2, tâm sai e = 1).",
+                ],
+            },
+            {
+                "term": "Thể tích và diện tích các khối tròn xoay",
+                "formulas": [
+                    "Khối nón: V = (1/3)π r² h; Diện tích xung quanh: Sxq = π r l (với l² = r² + h²).",
+                    "Khối trụ: V = π r² h; Sxq = 2π r h.",
+                    "Khối cầu: V = (4/3)π R³; Diện tích mặt cầu: S = 4π R².",
+                ],
+            },
+        ],
+        "common_student_errors": [
+            "Nhầm lẫn hệ thức liên hệ a, b, c giữa Elip (a² = b² + c²) và Hypebol (c² = a² + b²).",
+            "Nhầm lẫn giữa chiều cao h, bán kính đáy r và đường sinh l của hình nón tròn xoay.",
+            "Nhầm lẫn giữa tiêu cự 2c và bán tiêu cự c trong các bài toán conic.",
+        ],
+    },
 }
 
 

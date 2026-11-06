@@ -6,8 +6,16 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import MathGraphVisualizer from "./components/MathGraphVisualizer";
+import MathStepWorkbench from "./components/MathStepWorkbench";
 
-type ModuleId = "linear_programming" | "spatial_geometry" | "trigonometry";
+type ModuleId =
+  | "linear_programming"
+  | "spatial_geometry"
+  | "trigonometry"
+  | "functions"
+  | "calculus"
+  | "probability"
+  | "conics_and_solids";
 type StageId = "observe" | "predict" | "manipulate" | "explore" | "verify" | "explain" | "transfer" | "apply";
 type ChatMessage = { id: string; role: "user" | "assistant"; content: string; intent?: string; nextQuestion?: string; hintLevel?: number; validation?: { status: string; result: boolean | number | null; explanation: string } | null };
 type Session = { authenticated: boolean; name: string | null; email: string | null };
@@ -55,9 +63,23 @@ const INTENT_LABELS: Record<string, string> = {
 
 const modules: { id: ModuleId; title: string; short: string }[] = [
   { id: "linear_programming", title: "Quy hoạch tuyến tính", short: "Miền nghiệm & tối ưu" },
-  { id: "spatial_geometry", title: "Hình học không gian", short: "Quan sát & suy luận" },
-  { id: "trigonometry", title: "Lượng giác", short: "Góc & đường tròn" },
+  { id: "spatial_geometry", title: "Hình học không gian", short: "Quan sát & dựng hình SG-M2" },
+  { id: "trigonometry", title: "Lượng giác", short: "Góc & đường tròn đơn vị" },
+  { id: "functions", title: "Hàm số & Khảo sát", short: "Đồ thị & BBT 2 chiều" },
+  { id: "calculus", title: "Giải tích & Ứng dụng", short: "Đạo hàm, Tích phân & Khối xoay 3D" },
+  { id: "probability", title: "Xác suất & Bayes", short: "Thực nghiệm 3D & Sơ đồ cây" },
+  { id: "conics_and_solids", title: "Hình khối & Conic", short: "Cắt mặt nón, Elip, Parabol, Hypebol" },
 ];
+
+const DEFAULT_STATION_MAP: Record<ModuleId, string> = {
+  linear_programming: "10.03",
+  spatial_geometry: "11.06",
+  trigonometry: "11.01",
+  functions: "10.06",
+  calculus: "12.08",
+  probability: "11.14",
+  conics_and_solids: "10.12",
+};
 const stages: { id: StageId; label: string }[] = [
   { id: "observe", label: "Quan sát" }, { id: "predict", label: "Dự đoán" }, { id: "manipulate", label: "Thao tác" }, { id: "explore", label: "Khám phá" },
   { id: "verify", label: "Kiểm chứng" }, { id: "explain", label: "Giải thích" }, { id: "transfer", label: "Chuyển giao" }, { id: "apply", label: "Vận dụng" },
@@ -66,11 +88,19 @@ const starters: Record<ModuleId, string[]> = {
   linear_programming: ["Miền nghiệm của hệ bất phương trình là gì?", "Làm sao kiểm tra điểm (2, 3) có thuộc miền nghiệm?"],
   spatial_geometry: ["Làm sao phân biệt đường thẳng song song với mặt phẳng?", "Em nên bắt đầu chứng minh quan hệ vuông góc thế nào?"],
   trigonometry: ["Vì sao sin và cos gắn với đường tròn lượng giác?", "Em hay nhầm dấu lượng giác ở các góc phần tư."],
+  functions: ["Làm sao lập bảng biến thiên từ đạo hàm?", "Điểm cực trị khác gì với giá trị cực trị của hàm số?"],
+  calculus: ["Ý nghĩa hình học của tích phân tính diện tích là gì?", "Làm sao tính thể tích khối tròn xoay khi quay quanh Ox?"],
+  probability: ["Khi nào dùng công thức Bayes và xác suất có điều kiện?", "Cách dựng sơ đồ cây xác suất cho bài toán hai hộp bi?"],
+  conics_and_solids: ["Mặt phẳng cắt mặt nón tròn xoay khi nào tạo thành Elip?", "Làm sao phân biệt tâm sai e của 3 đường conic?"],
 };
 const demoQuestions: Record<ModuleId, string> = {
   linear_programming: "Với x ≥ 0, y ≥ 0 và x + y ≤ 6, em thử kiểm tra xem điểm (2, 3) có thuộc miền nghiệm không nhé.",
-  spatial_geometry: "Cho hình chóp S.ABC có SA vuông góc với mặt phẳng (ABC). Em thử xác định đường thẳng nào trong đáy vuông góc với SA nhé.",
+  spatial_geometry: "Cho hình chóp S.ABCD đáy hình bình hành. Em hãy thử xác định giao tuyến của (SAC) và (SBD) nhé.",
   trigonometry: "Trên đường tròn lượng giác, điểm ứng với góc 60° có tọa độ liên quan thế nào đến cos 60° và sin 60°? Em thử dự đoán nhé.",
+  functions: "Cho hàm số y = x³ - 3x. Em thử tính đạo hàm y' và dự đoán xem hàm số đạt cực đại, cực tiểu tại điểm nào nhé.",
+  calculus: "Xét diện tích hình phẳng giới hạn bởi y = 4 - x² và trục Ox trên đoạn [0; 2]. Em thử dự đoán kết quả tích phân nhé.",
+  probability: "Có 2 hộp: Hộp 1 có 3 bi đỏ 2 xanh; Hộp 2 có 4 bi đỏ 1 xanh. Rút ngẫu nhiên một hộp rồi rút một viên bi được bi đỏ. Xác suất viên bi đó thuộc Hộp 1 là bao nhiêu?",
+  conics_and_solids: "Khi mặt phẳng cắt qua mặt nón tròn xoay với góc nghiêng lớn hơn góc nghiêng đường sinh thì đường conic thu được là đường gì?",
 };
 const stageGuides: Record<ModuleId, string[]> = {
   linear_programming: [
@@ -103,30 +133,69 @@ const stageGuides: Record<ModuleId, string[]> = {
     "Thử so sánh tọa độ tại góc 120° với góc 60°.",
     "Tự xác định dấu và giá trị lượng giác của một góc em chọn.",
   ],
+  functions: [
+    "Quan sát biểu thức hàm số và tập xác định.",
+    "Dự đoán dấu của đạo hàm f'(x) và các điểm làm f'(x) = 0.",
+    "Lập dòng xét dấu của f'(x) trên bảng biến thiên.",
+    "Vẽ chiều mũi tên biến thiên (đi lên khi f'>0, đi xuống khi f'<0).",
+    "Kiểm tra giá trị cực đại, cực tiểu và các giới hạn vô cực/tiệm cận.",
+    "Giải thích mối liên hệ giữa bảng biến thiên và hình dáng đồ thị.",
+    "Xác định phương trình tiếp tuyến tại một điểm trên đồ thị.",
+    "Vận dụng để biện luận số nghiệm phương trình hoặc tìm GTLN/GTNN.",
+  ],
+  calculus: [
+    "Quan sát đồ thị chuyển động s(t) hoặc hàm số y = f(x).",
+    "Dự đoán tốc độ biến thiên tức thời (hệ số góc tiếp tuyến) khi cát tuyến co lại.",
+    "Chia đoạn tích phân thành các hình chữ nhật Riemann nhỏ.",
+    "Xấp xỉ diện tích tổng các hình chữ nhật với số dải n tăng dần.",
+    "Kiểm chứng kết quả xấp xỉ bằng công thức Newton-Leibniz.",
+    "Giải thích vì sao tích phân xác định bằng diện tích hình phẳng có dấu.",
+    "Mở rộng quay hình phẳng quanh trục Ox để sinh khối tròn xoay 3D.",
+    "Tính và diễn giải thể tích khối tròn xoay theo công thức lát cắt tròn.",
+  ],
+  probability: [
+    "Quan sát mô hình thí nghiệm ngẫu nhiên (gieo xúc xắc / rút bi từ 2 hộp).",
+    "Dự đoán không gian mẫu và phân loại các biến cố thành phần.",
+    "Dựng sơ đồ cây hai giai đoạn và gắn xác suất trên từng nhánh.",
+    "Nhân xác suất trên nhánh để tính xác suất hợp thành (giao biến cố).",
+    "Cộng xác suất các nhánh để tính xác suất toàn phần theo công thức chuẩn.",
+    "Kiểm chứng kết quả bằng công thức Bayes khi biết thông tin biến cố điều kiện.",
+    "Giải thích sự khác biệt giữa rút có hoàn lại và rút không hoàn lại.",
+    "Vận dụng vào bài toán chẩn đoán thực tế hoặc sàng lọc mẫu.",
+  ],
+  conics_and_solids: [
+    "Quan sát mặt nón tròn xoay hai tầng và vị trí mặt phẳng cắt.",
+    "Dự đoán tiết diện thu được khi thay đổi góc nghiêng β của mặt phẳng.",
+    "Xoay và điều chỉnh góc cắt để nhận diện Elip, Parabol và Hypebol.",
+    "Xác định hai tiêu điểm F1, F2 và kiểm chứng tính chất khoảng cách.",
+    "Kiểm tra tâm sai e = c/a: e < 1 (Elip), e = 1 (Parabol), e > 1 (Hypebol).",
+    "Giải thích mối liên hệ giữa phương trình chính tắc và hình học 3D.",
+    "Mở rộng tính toán thể tích và diện tích xung quanh khối nón/trụ/cầu.",
+    "Vận dụng vào mô hình quỹ đạo hành tinh hoặc thiết kế kiến trúc vòm.",
+  ],
 };
 
 function ArrowUpRight() {
   return <svg className="arrow-up-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>;
 }
 
-function SparkleIcon() {
-  return <svg className="sparkle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 1.7 6.3L20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7L12 2Z"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 15Z"/></svg>;
-}
 
 function ModuleIcon({ id }: { id: ModuleId }) {
   if (id === "linear_programming") return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M5 18V5m1 12 4-4 3 2 6-7"/><circle cx="10" cy="13" r="1"/><circle cx="13" cy="15" r="1"/></svg>;
   if (id === "spatial_geometry") return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.7 8-4.7M12 12.2V21"/></svg>;
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 19h14M5 19V5"/><path d="M9 19a4 4 0 0 1 0-5.7"/><path d="M13 19a8 8 0 0 1 0-11.3"/></svg>;
+  if (id === "trigonometry") return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 19h14M5 19V5"/><path d="M9 19a4 4 0 0 1 0-5.7"/><path d="M13 19a8 8 0 0 1 0-11.3"/></svg>;
+  if (id === "functions") return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h3c2 0 3-8 5-8s3 16 5 16 3-8 5-8h3"/></svg>;
+  if (id === "calculus") return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4c-2 0-3 1.5-3 3.5v9c0 2-1 3.5-3 3.5"/><path d="M8 12h8"/></svg>;
+  if (id === "probability") return <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="8.5" r="1.5"/><circle cx="8.5" cy="15.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/><circle cx="12" cy="12" r="1.5"/></svg>;
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c-4.97 0-9 1.79-9 4s4.03 4 9 4 9-1.79 9-4-4.03-4-9-4Z"/><path d="m3 7 9 14 9-14"/></svg>;
 }
 
-function mascotClass(emotion?: string) {
-  return `mascot ${emotion ?? "encouraging"}`;
-}
 
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [moduleId, setModuleId] = useState<ModuleId>("linear_programming");
+  const [stationId, setStationId] = useState<string>("10.03");
   const [stage, setStage] = useState<StageId>("explore");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -144,9 +213,11 @@ export default function Home() {
   const [resendBusy, setResendBusy] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [loginNotice, setLoginNotice] = useState("");
-  const [demoMode, setDemoMode] = useState(false);
+  const [demoMode] = useState(true);
+  const [tutorOpen, setTutorOpen] = useState(true);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [visualizerOpen, setVisualizerOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [accountKey, setAccountKey] = useState("");
@@ -345,11 +416,6 @@ export default function Home() {
     finally { setResendBusy(false); }
   }
 
-  function startDemo() {
-    setDemoMode(true);
-    setMessages([{ id: "demo-welcome", role: "assistant", content: `Mình cùng thử một bài nhé: ${demoQuestions[moduleId]} ${stageGuides[moduleId][0]}` }]);
-    setError("");
-  }
 
 
 
@@ -453,8 +519,8 @@ export default function Home() {
     <main className="app-shell">
       <header className="topbar">
         <Link className="brand" href="/" aria-label="MathSTEP trang chủ"><span className="brand-mark">m</span><span>math<span className="brand-accent">step</span></span></Link>
-        <div className="topbar-center"><span className="status-dot" /> HỌC THEO CÁCH CỦA EM</div>
-        {session?.authenticated ? <div className="user-menu"><span className="user-avatar">{(session.name ?? session.email ?? "M").slice(0, 1).toUpperCase()}</span><span className="user-name">{session.name ?? session.email}</span><button className="quiet-button" onClick={() => void logout()}>Thoát</button></div> : demoMode ? <div className="guest-session-tools"><span className="demo-badge">Bản dùng thử</span><button className="quiet-button" onClick={() => { setDemoMode(false); setMessages([]); }}>Đăng nhập</button></div> : <div className="topbar-note">Bạn đồng hành Toán THPT</div>}
+        <div className="topbar-center"><span className="status-dot" /> {sessionLoading ? "Đang đồng bộ..." : "HỌC THEO CÁCH CỦA EM"}</div>
+        {session?.authenticated ? <div className="user-menu"><span className="user-avatar">{(session.name ?? session.email ?? "M").slice(0, 1).toUpperCase()}</span><span className="user-name">{session.name ?? session.email}</span><button className="quiet-button" onClick={() => void logout()}>Thoát</button></div> : demoMode ? <div className="guest-session-tools"><span className="demo-badge">Mô phỏng 2D/3D & AR</span><button className="quiet-button" onClick={() => setAuthModalOpen(true)}>Đăng nhập</button></div> : <div className="topbar-note">Bạn đồng hành Toán THPT</div>}
         {session?.authenticated && <button className="quiet-button account-open-button" type="button" onClick={() => void openAccount()}>Tài khoản của tôi</button>}
       </header>
 
@@ -484,7 +550,7 @@ export default function Home() {
           </div>
 
           <div className="sidebar-section">
-            <div className="sidebar-section-heading">CHUYÊN ĐỀ TOÁN HỌC</div>
+            <div className="sidebar-section-heading flex justify-between items-center"><span>CHUYÊN ĐỀ TOÁN HỌC</span><button type="button" onClick={() => setSidebarOpen(s => !s)} className="text-[10px] text-gray-400 hover:text-gray-600">⇄</button></div>
             <div className="module-list" role="tablist" aria-label="Chọn chủ đề Toán">
               {modules.map((item) => (
                 <button
@@ -492,7 +558,13 @@ export default function Home() {
                   role="tab"
                   aria-selected={moduleId === item.id}
                   className={`module-card ${moduleId === item.id ? "selected" : ""}`}
-                  onClick={() => { setMobileDrawerOpen(false); if (moduleId !== item.id) beginNewConversation(item.id); }}
+                  onClick={() => {
+                    setMobileDrawerOpen(false);
+                    if (moduleId !== item.id) {
+                      setStationId(DEFAULT_STATION_MAP[item.id] || "10.03");
+                      beginNewConversation(item.id);
+                    }
+                  }}
                 >
                   <span className="module-icon"><ModuleIcon id={item.id}/></span>
                   <span className="module-text">
@@ -524,91 +596,165 @@ export default function Home() {
           )}
         </aside>
 
-        <section className="chat-panel" aria-label="Trò chuyện cùng MathSTEP">
-          <div className="chat-header">
-            <button type="button" className="sidebar-toggle-btn" onClick={() => setSidebarOpen((prev) => !prev)} title={sidebarOpen ? "Thu gọn thanh bên" : "Mở rộng thanh bên"} aria-label="Thu gọn/Mở thanh bên"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="9" y1="3" x2="9" y2="21" /></svg></button>
-            <button className="mobile-sidebar-toggle" type="button" onClick={() => setMobileDrawerOpen(true)} aria-label="Mở chủ đề và hành trình học"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>Học</span></button><div className="chat-title"><div className="mini-mascot"><span /></div><div><strong>MathSTEP Mascot</strong><small><span className="online-dot" /> Sẵn sàng đồng hành</small></div></div><button
-              type="button"
-              className="visualizer-toggle-btn"
-              onClick={() => setVisualizerOpen(true)}
-              title="Mở mô hình trực quan: đồ thị Oxy, đường tròn lượng giác, hình 3D"
-            >
-              <span className="visualizer-toggle-icon">📐</span>
-              <span className="visualizer-toggle-text">Mô hình trực quan</span>
-            </button>
-            <div className="chat-topic"><span className="topic-kicker">CHỦ ĐỀ</span><strong>{currentModule.title}</strong></div><button className="new-chat-button" onClick={() => beginNewConversation()} disabled={!session?.authenticated && !demoMode} title={!session?.authenticated && !demoMode ? "Vui lòng đăng nhập để bắt đầu phiên học mới" : "Bắt đầu bài học mới"}>＋ Mới</button></div>
-          {!sessionLoading && !session?.authenticated && !demoMode ? (
-            <div className="login-stage">
-              <div className="auth-card">
-              <div className={mascotClass()}>
-                <span className="mascot-ear left"/><span className="mascot-ear right"/>
-                <span className="mascot-face"><i className="eye left"/><i className="eye right"/><i className="smile"/><b className="cheek left"/><b className="cheek right"/></span>
-                <svg className="mascot-spark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 1.7 6.3L20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7L12 2Z"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z"/></svg>
-              </div>
-              <span className="login-kicker">{recoverMode ? "KHÔI PHỤC TÀI KHOẢN" : "BẮT ĐẦU HÀNH TRÌNH"}</span>
-              <h2>{recoverMode ? <>Lấy lại quyền<br/><em>tiếp tục khám phá.</em></> : <>Chào em, mình cùng<br/><em>nghĩ Toán nhé.</em></>}</h2>
-              <p>{recoverMode ? "Nhập email đã đăng ký. MathSTEP sẽ gửi hướng dẫn đặt lại mật khẩu đến hộp thư của em." : authMode === "login" ? "Đăng nhập tài khoản MathSTEP để trò chuyện và tiếp tục việc học của em." : "Tạo tài khoản học tập để lưu lại hành trình Toán của em."}</p>
-              <form className="login-form" onSubmit={login} noValidate>
-                {authMode === "signup" && !recoverMode && <label>{"H\u1ecd v\u00e0 t\u00ean"}<input type="text" autoComplete="name" value={displayName} onChange={(event) => setDisplayName(event.target.value)} maxLength={100} required disabled={loginBusy}/></label>}
-                <label>Email<input type="email" autoComplete="username" value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} required disabled={loginBusy} aria-label="Email"/></label>
-                {!recoverMode && <label>{"M\u1eadt kh\u1ea9u"}<span className="password-field"><input type={showPassword ? "text" : "password"} autoComplete={authMode === "login" ? "current-password" : "new-password"} value={loginPassword} onChange={(event) => setLoginPassword(event.target.value)} minLength={authMode === "signup" ? 6 : undefined} required disabled={loginBusy}/><button className="password-toggle" type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "\u1ea8n m\u1eadt kh\u1ea9u" : "Hi\u1ec7n m\u1eadt kh\u1ea9u"} title={showPassword ? "\u1ea8n m\u1eadt kh\u1ea9u" : "Hi\u1ec7n m\u1eadt kh\u1ea9u"}>{showPassword ? <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c5 0 8.5 4.2 9.5 7-.4 1.1-1.1 2.1-2 3M6.2 6.2C3.9 7.6 2.8 9.4 2.5 12c.5 1.4 1.5 2.7 3 3.8A10.5 10.5 0 0 0 12 18c1 0 2-.2 2.9-.5"/></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.3-7 9.5-7 9.5 7 9.5 7-3.3 7-9.5 7-9.5-7-9.5-7Z"/><circle cx="12" cy="12" r="3"/></svg>}</button></span></label>}
-                {authMode === "signup" && !recoverMode && <label>{"X\u00e1c nh\u1eadn m\u1eadt kh\u1ea9u"}<input type={showPassword ? "text" : "password"} autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} minLength={6} required disabled={loginBusy}/></label>}
-                {authMode === "login" && !recoverMode && <button type="button" className="forgot-link" onClick={() => { setRecoverMode(true); setLoginError(""); setLoginNotice(""); }}>{"Qu\u00ean m\u1eadt kh\u1ea9u?"}</button>}
-                {loginError && <p className="inline-error" role="alert">{loginError}</p>}
-                {loginNotice && <div className="auth-notice" role="status"><span aria-hidden="true">{"\u2713"}</span><p>{loginNotice}</p></div>}
-                {confirmationPending && authMode === "login" && !recoverMode && <button type="button" className="resend-link" onClick={() => void resendConfirmation()} disabled={resendBusy || loginBusy}>{resendBusy ? "\u0110ang g\u1eedi l\u1ea1i\u2026" : "Ch\u01b0a nh\u1eadn \u0111\u01b0\u1ee3c email? G\u1eedi l\u1ea1i x\u00e1c nh\u1eadn"}</button>}
-                <button className="primary-button login-button" disabled={loginBusy}>{loginBusy ? <><span className="button-spinner"/>{recoverMode ? "\u0110ang g\u1eedi email\u2026" : authMode === "login" ? "\u0110ang \u0111\u0103ng nh\u1eadp\u2026" : "\u0110ang t\u1ea1o t\u00e0i kho\u1ea3n\u2026"}</> : recoverMode ? "G\u1eedi h\u01b0\u1edbng d\u1eabn \u0111\u1eb7t l\u1ea1i" : authMode === "login" ? "\u0110\u0103ng nh\u1eadp v\u00e0 b\u1eaft \u0111\u1ea7u" : "T\u1ea1o t\u00e0i kho\u1ea3n"}<ArrowUpRight/></button>
-              </form>
-              {!recoverMode && <><div className="auth-divider"><span/>{"ho\u1eb7c"}<span/></div><a className="google-button" href="/api/auth/google" aria-label="Ti\u1ebfp t\u1ee5c v\u1edbi Google"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.3l7.8 6.1C12.3 13.6 17.6 9.5 24 9.5Z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.6 3-2.3 5.6-4.9 7.3l7.6 5.9c4.5-4.2 7-10.4 7-17.7Z"/><path fill="#FBBC05" d="M10.4 28.6a14.5 14.5 0 0 1 0-9.2l-7.8-6.1a24 24 0 0 0 0 21.4l7.8-6.1Z"/><path fill="#34A853" d="M24 48c6.5 0 12-2.1 16-5.8l-7.6-5.9c-2.1 1.4-4.8 2.2-8.4 2.2-6.4 0-11.7-4.1-13.6-9.9l-7.8 6.1C6.5 42.6 14.6 48 24 48Z"/></svg>{"Ti\u1ebfp t\u1ee5c v\u1edbi Google"}</a><button className="guest-link" type="button" onClick={startDemo}>{"D\u00f9ng th\u1eed kh\u00f4ng c\u1ea7n t\u00e0i kho\u1ea3n"} <span><ArrowUpRight/></span></button></>}
-              {recoverMode ? <button className="auth-mode-toggle" type="button" onClick={() => { setRecoverMode(false); setLoginError(""); setLoginNotice(""); }}>{"Quay l\u1ea1i \u0111\u0103ng nh\u1eadp"}</button> : <button className="auth-mode-toggle" type="button" onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setLoginPassword(""); setConfirmPassword(""); setShowPassword(false); setConfirmationPending(false); setLoginError(""); setLoginNotice(""); }}>{authMode === "login" ? "Ch\u01b0a c\u00f3 t\u00e0i kho\u1ea3n? \u0110\u0103ng k\u00fd" : "\u0110\u00e3 c\u00f3 t\u00e0i kho\u1ea3n? \u0110\u0103ng nh\u1eadp"}</button>}
-              <div className="privacy-note">{"Phi\u00ean \u0111\u0103ng nh\u1eadp \u0111\u01b0\u1ee3c gi\u1eef trong cookie b\u1ea3o m\u1eadt."}</div>
-              </div>
-            </div>
-          )
-          : sessionLoading ? <div className="loading-stage"><div className="loader"/><span>Đang kiểm tra phiên học…</span></div>
-          : messages.length === 0 ? <div className="welcome-stage"><div className={mascotClass()}><span className="mascot-ear left"/><span className="mascot-ear right"/><span className="mascot-face"><i className="eye left"/><i className="eye right"/><i className="smile"/><b className="cheek left"/><b className="cheek right"/></span><SparkleIcon/></div><div className="welcome-copy"><span className="welcome-kicker">MÌNH BẮT ĐẦU TỪ ĐÂU NHỈ?</span><h2>Chào {session?.name?.split(" ").slice(-1)[0] ?? "em"},<br /><em>mình cùng khám phá nhé.</em></h2><p>Em đang học <strong>{currentModule.title.toLowerCase()}</strong>. Hãy kể điều em đang nghĩ — mình sẽ gợi mở từng bước, không vội đưa đáp án đâu.</p></div><div className="starter-grid">{starters[moduleId].map((prompt, index) => <button key={prompt} className="starter-card" onClick={() => void sendMessage(prompt)}><span>{index === 0 ? "✳" : "↗"}</span>{prompt}</button>)}</div><div className="welcome-foot"><span className="foot-line"/><span>Em có thể hỏi theo cách của mình</span><span className="foot-line"/></div></div>
-          : <div className="conversation" aria-live="polite">{messages.map((item) => <article key={item.id} className={`message-row ${item.role}`}><div className={item.role === "assistant" ? "message-avatar" : "message-avatar student"}>{item.role === "assistant" ? "m" : (session?.name ?? "E").slice(0, 1).toUpperCase()}</div><div className="message-content"><div className="message-meta">{item.role === "assistant" ? "MATHSTEP" : "EM"}{item.intent && <span className="intent-pill">{INTENT_LABELS[item.intent] || item.intent.replace(/_/g, " ")}</span>}</div><div className="message-bubble"><MathMessage content={item.content} /></div>{item.validation && <div className={`validation-card ${item.validation.status}`}><span>{item.validation.status === "verified" ? "✓" : "i"}</span><div><strong>{item.validation.status === "verified" ? "Mình đã kiểm tra phép tính" : "Chưa thể kiểm tra tự động"}</strong><small>{item.validation.explanation}</small></div></div>}{item.nextQuestion && <button className="next-question" onClick={() => setInput(item.nextQuestion!)}><span>↳</span>{item.nextQuestion}</button>}</div></article>)}{busy && <div className="message-row assistant"><div className="message-avatar thinking-avatar">m</div><div className="thinking-bubble"><span/><span/><span/></div></div>}<div ref={endRef}/></div>}
+        <div className="main-lab-layout flex-1 flex gap-4 min-w-0 h-full">
+          {/* 1. KHÔNG GIAN LÀM VIỆC MÔ PHỎNG & BƯỚC HỌC CHÍNH (HERO) */}
+          <div className="flex-1 min-w-0 flex flex-col h-full">
+            <MathStepWorkbench
+              moduleId={moduleId}
+              stationId={stationId}
+              onSelectStation={(st) => {
+                setStationId(st.id);
+                setModuleId(st.moduleId);
+              }}
+              onAskTutor={(prompt) => {
+                setTutorOpen(true);
+                void sendMessage(prompt);
+              }}
+              onStepChange={(stepNum) => {
+                const activeStepIdx = stepNum - 1;
+                if (activeStepIdx >= 0 && activeStepIdx < stages.length) {
+                  setStage(stages[activeStepIdx].id);
+                }
+              }}
+            />
+          </div>
 
-          {(session?.authenticated || demoMode) && (
-            <div className="composer-wrap">
-              {error && <div className="composer-error" role="alert">{error}</div>}
-              <form className="composer" onSubmit={(event) => { event.preventDefault(); void sendMessage(); }}>
-                <textarea
-                  value={input}
-                  onChange={(event) => setInput(event.target.value)}
-                  onKeyDown={onInputKeyDown}
-                  placeholder="Nhập bài toán, câu hỏi hoặc ý tưởng của em (ví dụ: bpt x + y ≤ 6, nghiệm, cos 60°)..."
-                  rows={2}
-                  maxLength={4000}
-                  disabled={busy}
-                  aria-label="Tin nhắn của em"
-                />
-                <div className="composer-bottom">
-                  <div className="composer-left-tools">
-                    <button
-                      type="button"
-                      className="composer-visualizer-btn"
-                      onClick={() => setVisualizerOpen(true)}
-                      title="Mở mô hình trực quan"
-                    >
-                      <span>📐</span>
-                      <span>Mô hình</span>
-                    </button>
-                    <span className="composer-shortcut-hint">Enter để gửi · Shift + Enter xuống dòng</span>
+          {/* 2. LINH VẬT & TRỢ LÝ SOCRATIC (COMPANION DỌC BÊN PHẢI - CÓ THỂ THU GỌN) */}
+          {tutorOpen ? (
+            <aside className="w-[340px] shrink-0 h-full flex flex-col bg-white border border-[#e5ebe4] rounded-2xl overflow-hidden shadow-sm">
+              <div className="px-3.5 py-2.5 border-b border-[#e5ebe4] bg-[#fbfcf8] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-[#eaf4ee] text-[#146e52] flex items-center justify-center font-bold text-xs">
+                    m
                   </div>
-                  <button className="send-button" disabled={busy || !input.trim()} aria-label="Gửi tin nhắn">
-                    {busy ? <span className="send-spinner"/> : "↑"}
-                  </button>
+                  <div>
+                    <div className="font-bold text-xs text-gray-800">Linh vật TES (Trợ lý)</div>
+                    <div className="text-[10px] text-gray-400">Gợi mở Socratic · Không giải hộ</div>
+                  </div>
                 </div>
-              </form>
-              <div className="composer-disclaimer">
-                {demoMode && !session?.authenticated
-                  ? "Bản dùng thử minh họa phản hồi gợi mở theo từng bước."
-                  : "MathSTEP trợ giảng Socratic · Hãy đối chiếu và kiểm chứng phép tính nhé."}
+                <button
+                  type="button"
+                  onClick={() => setTutorOpen(false)}
+                  className="px-2 py-1 text-[11px] text-gray-500 hover:text-gray-800 rounded bg-gray-100 hover:bg-gray-200 font-medium"
+                  title="Thu gọn Trợ lý để mở rộng mô phỏng"
+                >
+                  Thu gọn ❯
+                </button>
               </div>
-            </div>
+
+              {/* Chat conversation area */}
+              <div className="flex-1 overflow-y-auto p-3 space-y-3 text-xs" aria-live="polite">
+                {messages.length === 0 ? (
+                  <div className="text-center py-4 text-gray-500 space-y-2">
+                    <div className="w-10 h-10 mx-auto rounded-full bg-[#eaf4ee] text-[#146e52] flex items-center justify-center text-lg font-bold">
+                      m
+                    </div>
+                    <p className="font-semibold text-gray-800 text-xs">
+                      Trợ lý Socratic · {currentModule.title}
+                    </p>
+                    <p className="text-[11px] text-gray-500">
+                      Em cứ thao tác trên mô phỏng. Chọn câu hỏi nhanh bên dưới nếu cần gợi mở:
+                    </p>
+                    <div className="flex flex-col gap-1.5 text-left pt-1">
+                      {starters[moduleId].map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => void sendMessage(p)}
+                          className="p-2 rounded-lg bg-[#fbfcf8] border border-gray-200 hover:border-[#146e52] hover:bg-[#f0fdf4] text-gray-700 text-[11px] transition-all text-left"
+                        >
+                          💬 {p}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  messages.map((item) => (
+                    <article key={item.id} className={`message-row ${item.role}`}>
+                      <div className={item.role === "assistant" ? "message-avatar" : "message-avatar student"}>
+                        {item.role === "assistant" ? "m" : (session?.name ?? "E").slice(0, 1).toUpperCase()}
+                      </div>
+                      <div className="message-content">
+                        <div className="message-meta">
+                          {item.role === "assistant" ? "MATHSTEP" : "EM"}
+                          {item.intent && (
+                            <span className="intent-pill">
+                              {INTENT_LABELS[item.intent] || item.intent.replace(/_/g, " ")}
+                            </span>
+                          )}
+                        </div>
+                        <div className="message-bubble">
+                          <MathMessage content={item.content} />
+                        </div>
+                        {item.validation && (
+                          <div className={`validation-card ${item.validation.status}`}>
+                            <span>{item.validation.status === "verified" ? "✓" : "i"}</span>
+                            <div>
+                              <strong>{item.validation.status === "verified" ? "Đã kiểm tra phép tính" : "Chưa thể kiểm tra"}</strong>
+                              <small>{item.validation.explanation}</small>
+                            </div>
+                          </div>
+                        )}
+                        {item.nextQuestion && (
+                          <button className="next-question" onClick={() => setInput(item.nextQuestion!)}>
+                            <span>↳</span>
+                            {item.nextQuestion}
+                          </button>
+                        )}
+                      </div>
+                    </article>
+                  ))
+                )}
+                {busy && (
+                  <div className="message-row assistant">
+                    <div className="message-avatar thinking-avatar">m</div>
+                    <div className="thinking-bubble"><span /><span /><span /></div>
+                  </div>
+                )}
+                <div ref={endRef} />
+              </div>
+
+              {/* Composer */}
+              <div className="p-2.5 border-t border-[#e5ebe4] bg-[#fbfcf8]">
+                {error && <div className="text-[10px] text-red-600 mb-1">{error}</div>}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void sendMessage();
+                  }}
+                  className="flex gap-1.5"
+                >
+                  <textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={onInputKeyDown}
+                    placeholder="Hỏi trợ lý (Enter để gửi)..."
+                    rows={1}
+                    className="flex-1 border border-gray-200 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#146e52] resize-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={busy || !input.trim()}
+                    className="px-3 py-1.5 bg-[#146e52] text-white rounded-xl font-bold text-xs hover:bg-[#0f573f] disabled:opacity-40 transition-colors"
+                  >
+                    ↑
+                  </button>
+                </form>
+              </div>
+            </aside>
+          ) : (
+            /* Minimized Pill to re-open companion */
+            <button
+              type="button"
+              onClick={() => setTutorOpen(true)}
+              className="self-start mt-2 px-3 py-2 bg-white hover:bg-[#f0fdf4] text-[#146e52] border border-[#c1d7c6] rounded-xl shadow-md font-bold text-xs flex items-center gap-1.5 transition-all"
+              title="Mở Trợ lý Socratic gợi mở"
+            >
+              <span>🤖</span>
+              <span>Trợ lý AI</span>
+            </button>
           )}
-        </section>
+        </div>
       </section>
       <footer className="page-footer"><span>© MathSTEP</span><span>Học bằng cách khám phá <i>✳</i></span><span>Toán THPT · Việt Nam</span></footer>
       {visualizerOpen && (
@@ -616,6 +762,44 @@ export default function Home() {
           moduleId={moduleId}
           onClose={() => setVisualizerOpen(false)}
         />
+      )}
+            {authModalOpen && (
+        <div className="account-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setAuthModalOpen(false); }}>
+          <div className="login-stage" style={{ background: "transparent", minHeight: "auto" }}>
+            <div className="auth-card" style={{ position: "relative" }}>
+              <button
+                type="button"
+                onClick={() => setAuthModalOpen(false)}
+                className="account-close"
+                style={{ position: "absolute", top: 12, right: 12 }}
+                aria-label="Đóng"
+              >
+                ×
+              </button>
+              <span className="login-kicker">{recoverMode ? "KHÔI PHỤC TÀI KHOẢN" : "MATHSTEP ACCOUNT"}</span>
+              <h2>{recoverMode ? <>Lấy lại quyền<br/><em>tiếp tục khám phá.</em></> : <>Đăng nhập tài khoản<br/><em>học tập của em.</em></>}</h2>
+              <form className="login-form" onSubmit={login} noValidate>
+                {authMode === "signup" && !recoverMode && <label>Họ và tên<input type="text" autoComplete="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={100} required disabled={loginBusy}/></label>}
+                <label>Email<input type="email" autoComplete="username" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required disabled={loginBusy}/></label>
+                {!recoverMode && <label>Mật khẩu<span className="password-field"><input type={showPassword ? "text" : "password"} autoComplete={authMode === "login" ? "current-password" : "new-password"} value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} minLength={authMode === "signup" ? 6 : undefined} required disabled={loginBusy}/><button className="password-toggle" type="button" onClick={() => setShowPassword((v) => !v)}>{showPassword ? "✕" : "👁"}</button></span></label>}
+                {authMode === "signup" && !recoverMode && <label>Xác nhận mật khẩu<input type={showPassword ? "text" : "password"} autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} minLength={6} required disabled={loginBusy}/></label>}
+                {authMode === "login" && !recoverMode && <button type="button" className="forgot-link" onClick={() => { setRecoverMode(true); setLoginError(""); }}>Quên mật khẩu?</button>}
+                {loginError && <p className="inline-error" role="alert">{loginError}</p>}
+                {loginNotice && <div className="auth-notice" role="status"><span>✓</span><p>{loginNotice}</p></div>}
+                {confirmationPending && authMode === "login" && !recoverMode && <button type="button" className="resend-link" onClick={() => void resendConfirmation()} disabled={resendBusy || loginBusy}>Chưa nhận được email? Gửi lại xác nhận</button>}
+                <button className="primary-button login-button" disabled={loginBusy}>{loginBusy ? "Đang xử lý..." : recoverMode ? "Gửi hướng dẫn" : authMode === "login" ? "Đăng nhập" : "Tạo tài khoản"}</button>
+              </form>
+              {!recoverMode && (
+                <>
+                  <div className="auth-divider"><span></span>hoặc<span></span></div>
+                  <a className="google-button" href="/api/auth/google">Tiếp tục với Google</a>
+                  <button className="guest-link" type="button" onClick={() => setAuthModalOpen(false)}>Tiếp tục trải nghiệm không cần tài khoản</button>
+                </>
+              )}
+              {recoverMode ? <button className="auth-mode-toggle" type="button" onClick={() => setRecoverMode(false)}>Quay lại đăng nhập</button> : <button className="auth-mode-toggle" type="button" onClick={() => setAuthMode(authMode === "login" ? "signup" : "login")}>{authMode === "login" ? "Chưa có tài khoản? Đăng ký" : "Đã có tài khoản? Đăng nhập"}</button>}
+            </div>
+          </div>
+        </div>
       )}
       {accountOpen && <div className="account-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeAccount(); }}>
         <section className="account-dialog" role="dialog" aria-modal="true" aria-labelledby="account-title">

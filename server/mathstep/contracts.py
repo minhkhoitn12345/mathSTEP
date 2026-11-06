@@ -10,6 +10,10 @@ class Module(StrEnum):
     LINEAR_PROGRAMMING = "linear_programming"
     SPATIAL_GEOMETRY = "spatial_geometry"
     TRIGONOMETRY = "trigonometry"
+    FUNCTIONS = "functions"
+    CALCULUS = "calculus"
+    PROBABILITY = "probability"
+    CONICS_AND_SOLIDS = "conics_and_solids"
 
 
 class LearningStage(StrEnum):
