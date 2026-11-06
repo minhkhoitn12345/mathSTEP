@@ -136,6 +136,7 @@ export default function Home() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [visualizerOpen, setVisualizerOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [accountKey, setAccountKey] = useState("");
   const [accountKeyConfigured, setAccountKeyConfigured] = useState(false);
   const [accountKeyBusy, setAccountKeyBusy] = useState(false);
@@ -338,13 +339,7 @@ export default function Home() {
     setError("");
   }
 
-  function onSelectStep(stepNumber: number) {
-    const selected = stages[stepNumber - 1];
-    if (selected) {
-      setStage(selected.id);
-      setInput(stageGuides[moduleId][stepNumber - 1]);
-    }
-  }
+
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -453,38 +448,74 @@ export default function Home() {
 
       <section className="workspace" id="home">
         {mobileDrawerOpen && <button className="mobile-drawer-backdrop" type="button" aria-label="Đóng danh mục học" onClick={() => setMobileDrawerOpen(false)}/>}
-        <aside className={`left-rail ${mobileDrawerOpen ? "mobile-open" : ""}`}>
-          <div className="rail-eyebrow">KHÔNG GIAN HỌC</div>
-          <h1>Hôm nay mình<br /><em>khám phá gì?</em></h1>
-          <p className="rail-copy">Chọn một chủ đề, rồi cùng linh vật đi từng bước. Em vẫn là người tìm ra lời giải.</p>
-          <div className="module-list" role="tablist" aria-label="Chọn chủ đề Toán">
-            {modules.map((item) => <button key={item.id} role="tab" aria-selected={moduleId === item.id} className={`module-card ${moduleId === item.id ? "selected" : ""}`} onClick={() => { setMobileDrawerOpen(false); if (moduleId !== item.id) beginNewConversation(item.id); }}>
-              <span className="module-icon"><ModuleIcon id={item.id}/></span><span className="module-text"><strong>{item.title}</strong><small>{item.short}</small></span><span className="module-chevron"><ArrowUpRight/></span>
-            </button>)}
-          </div>
-          {recentConversations.length > 0 && <div className="recent-conversations"><div className="recent-heading">LỊCH SỬ GẦN ĐÂY</div>{recentConversations.slice(0, 5).map((item) => <button key={item.id} className={`recent-thread ${conversationId === String(item.id) ? "active" : ""}`} onClick={() => void openConversation(item.id)}><span className="recent-thread-icon">◷</span><span>{item.title || modules.find((entry) => entry.id === item.module)?.title || "Cuộc trò chuyện"}</span></button>)}</div>}
-          <div className="visualizer-rail-cta">
+        <aside className={`left-rail ${sidebarOpen ? "open" : "collapsed"} ${mobileDrawerOpen ? "mobile-open" : ""}`}>
+          <div className="sidebar-actions">
             <button
               type="button"
-              className="visualizer-rail-btn"
-              onClick={() => { setMobileDrawerOpen(false); setVisualizerOpen(true); }}
+              className="sidebar-new-chat-btn"
+              onClick={() => { setMobileDrawerOpen(false); beginNewConversation(); }}
+              disabled={!session?.authenticated && !demoMode}
+              title={!session?.authenticated && !demoMode ? "Vui lòng đăng nhập để bắt đầu đoạn chat mới" : "Bắt đầu đoạn chat mới"}
             >
-              <span className="visualizer-rail-badge">MÔ HÌNH TOÁN</span>
-              <div className="visualizer-rail-body">
-                <span>📐 Đồ thị & Mô hình tương tác</span>
-                <small>Thử nghiệm miền nghiệm & đường tròn</small>
-              </div>
+              <span className="sidebar-btn-icon">＋</span>
+              <span>Đoạn chat mới</span>
+            </button>
+            <button
+              type="button"
+              className="sidebar-visualizer-btn"
+              onClick={() => { setMobileDrawerOpen(false); setVisualizerOpen(true); }}
+              title="Mở mô hình trực quan: đồ thị Oxy, đường tròn lượng giác, hình 3D"
+            >
+              <span className="sidebar-btn-icon">📐</span>
+              <span>Mô hình & Đồ thị</span>
             </button>
           </div>
-          <div className="learning-flow">
-            <div className="flow-heading"><span>HÀNH TRÌNH HỌC</span><span className="flow-count">{stages.findIndex((item) => item.id === stage) + 1}<i>/8</i></span></div>
-            <div className="stage-track">{stages.map((item, index) => <button key={item.id} aria-label={`Bước ${String(index + 1).padStart(2, "0")}: ${item.label}`} className={`stage-item ${item.id === stage ? "active" : ""} ${index < stages.findIndex((s) => s.id === stage) ? "passed" : ""}`} onClick={() => { onSelectStep(index + 1); setMobileDrawerOpen(false); }}><span className="stage-dot">{index < stages.findIndex((s) => s.id === stage) ? "✓" : String(index + 1).padStart(2, "0")}</span><span>{item.label}</span></button>)}</div>
+
+          <div className="sidebar-section">
+            <div className="sidebar-section-heading">CHUYÊN ĐỀ TOÁN HỌC</div>
+            <div className="module-list" role="tablist" aria-label="Chọn chủ đề Toán">
+              {modules.map((item) => (
+                <button
+                  key={item.id}
+                  role="tab"
+                  aria-selected={moduleId === item.id}
+                  className={`module-card ${moduleId === item.id ? "selected" : ""}`}
+                  onClick={() => { setMobileDrawerOpen(false); if (moduleId !== item.id) beginNewConversation(item.id); }}
+                >
+                  <span className="module-icon"><ModuleIcon id={item.id}/></span>
+                  <span className="module-text">
+                    <strong>{item.title}</strong>
+                    <small>{item.short}</small>
+                  </span>
+                  <span className="module-chevron"><ArrowUpRight/></span>
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="rail-note"><span className="note-spark">✳</span><p><strong>Gợi mở trước, đáp án sau.</strong><br />Sai một bước là cơ hội để hiểu sâu hơn.</p></div>
+
+          {recentConversations.length > 0 && (
+            <div className="sidebar-section sidebar-history">
+              <div className="sidebar-section-heading">LỊCH SỬ TRÒ CHUYỆN</div>
+              <div className="recent-conversations-list">
+                {recentConversations.slice(0, 10).map((item) => (
+                  <button
+                    key={item.id}
+                    className={`recent-thread ${conversationId === String(item.id) ? "active" : ""}`}
+                    onClick={() => { setMobileDrawerOpen(false); void openConversation(item.id); }}
+                  >
+                    <span className="recent-thread-icon">◷</span>
+                    <span>{item.title || modules.find((entry) => entry.id === item.module)?.title || "Cuộc trò chuyện"}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </aside>
 
         <section className="chat-panel" aria-label="Trò chuyện cùng MathSTEP">
-          <div className="chat-header"><button className="mobile-sidebar-toggle" type="button" onClick={() => setMobileDrawerOpen(true)} aria-label="Mở chủ đề và hành trình học"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>Học</span></button><div className="chat-title"><div className="mini-mascot"><span /></div><div><strong>MathSTEP Mascot</strong><small><span className="online-dot" /> Sẵn sàng đồng hành</small></div></div><button
+          <div className="chat-header">
+            <button type="button" className="sidebar-toggle-btn" onClick={() => setSidebarOpen((prev) => !prev)} title={sidebarOpen ? "Thu gọn thanh bên" : "Mở rộng thanh bên"} aria-label="Thu gọn/Mở thanh bên"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="9" y1="3" x2="9" y2="21" /></svg></button>
+            <button className="mobile-sidebar-toggle" type="button" onClick={() => setMobileDrawerOpen(true)} aria-label="Mở chủ đề và hành trình học"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>Học</span></button><div className="chat-title"><div className="mini-mascot"><span /></div><div><strong>MathSTEP Mascot</strong><small><span className="online-dot" /> Sẵn sàng đồng hành</small></div></div><button
               type="button"
               className="visualizer-toggle-btn"
               onClick={() => setVisualizerOpen(true)}
@@ -526,7 +557,45 @@ export default function Home() {
           : messages.length === 0 ? <div className="welcome-stage"><div className={mascotClass()}><span className="mascot-ear left"/><span className="mascot-ear right"/><span className="mascot-face"><i className="eye left"/><i className="eye right"/><i className="smile"/><b className="cheek left"/><b className="cheek right"/></span><SparkleIcon/></div><div className="welcome-copy"><span className="welcome-kicker">MÌNH BẮT ĐẦU TỪ ĐÂU NHỈ?</span><h2>Chào {session?.name?.split(" ").slice(-1)[0] ?? "em"},<br /><em>mình cùng khám phá nhé.</em></h2><p>Em đang học <strong>{currentModule.title.toLowerCase()}</strong>. Hãy kể điều em đang nghĩ — mình sẽ gợi mở từng bước, không vội đưa đáp án đâu.</p></div><div className="starter-grid">{starters[moduleId].map((prompt, index) => <button key={prompt} className="starter-card" onClick={() => void sendMessage(prompt)}><span>{index === 0 ? "✳" : "↗"}</span>{prompt}</button>)}</div><div className="welcome-foot"><span className="foot-line"/><span>Em có thể hỏi theo cách của mình</span><span className="foot-line"/></div></div>
           : <div className="conversation" aria-live="polite">{messages.map((item) => <article key={item.id} className={`message-row ${item.role}`}><div className={item.role === "assistant" ? "message-avatar" : "message-avatar student"}>{item.role === "assistant" ? "m" : (session?.name ?? "E").slice(0, 1).toUpperCase()}</div><div className="message-content"><div className="message-meta">{item.role === "assistant" ? "MATHSTEP" : "EM"}{item.intent && <span className="intent-pill">{item.intent}</span>}</div><div className="message-bubble"><MathMessage content={item.content} /></div>{item.validation && <div className={`validation-card ${item.validation.status}`}><span>{item.validation.status === "verified" ? "✓" : "i"}</span><div><strong>{item.validation.status === "verified" ? "Mình đã kiểm tra phép tính" : "Chưa thể kiểm tra tự động"}</strong><small>{item.validation.explanation}</small></div></div>}{item.nextQuestion && <button className="next-question" onClick={() => setInput(item.nextQuestion!)}><span>↳</span>{item.nextQuestion}</button>}</div></article>)}{busy && <div className="message-row assistant"><div className="message-avatar thinking-avatar">m</div><div className="thinking-bubble"><span/><span/><span/></div></div>}<div ref={endRef}/></div>}
 
-          {(session?.authenticated || demoMode) && <div className="composer-wrap"><div className="composer-hint"><span>✦</span> Mình đang ở bước <strong>{stages.find((item) => item.id === stage)?.label.toLowerCase()}</strong></div>{error && <div className="composer-error" role="alert">{error}</div>}<form className="composer" onSubmit={(event) => { event.preventDefault(); void sendMessage(); }}><textarea value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={onInputKeyDown} placeholder="Viết điều em đang nghĩ…" rows={1} maxLength={4000} disabled={busy} aria-label="Tin nhắn của em"/><div className="composer-bottom"><span>Enter để gửi · Shift + Enter xuống dòng</span><button className="send-button" disabled={busy || !input.trim()} aria-label="Gửi tin nhắn">{busy ? <span className="send-spinner"/> : "↑"}</button></div></form><div className="composer-disclaimer">{demoMode && !session?.authenticated ? "B\u1ea3n d\u00f9ng th\u1eed n\u00e0y minh h\u1ecda ph\u1ea3n h\u1ed3i g\u1ee3i m\u1edf v\u00e0 kh\u00f4ng l\u01b0u n\u1ed9i dung." : "AI c\u00f3 th\u1ec3 nh\u1ea7m. H\u00e3y c\u00f9ng ki\u1ec3m ch\u1ee9ng c\u00e1c b\u01b0\u1edbc To\u00e1n nh\u00e9."}</div></div>}
+          {(session?.authenticated || demoMode) && (
+            <div className="composer-wrap">
+              {error && <div className="composer-error" role="alert">{error}</div>}
+              <form className="composer" onSubmit={(event) => { event.preventDefault(); void sendMessage(); }}>
+                <textarea
+                  value={input}
+                  onChange={(event) => setInput(event.target.value)}
+                  onKeyDown={onInputKeyDown}
+                  placeholder="Nhập bài toán, câu hỏi hoặc ý tưởng của em (ví dụ: bpt x + y ≤ 6, nghiệm, cos 60°)..."
+                  rows={2}
+                  maxLength={4000}
+                  disabled={busy}
+                  aria-label="Tin nhắn của em"
+                />
+                <div className="composer-bottom">
+                  <div className="composer-left-tools">
+                    <button
+                      type="button"
+                      className="composer-visualizer-btn"
+                      onClick={() => setVisualizerOpen(true)}
+                      title="Mở mô hình trực quan"
+                    >
+                      <span>📐</span>
+                      <span>Mô hình</span>
+                    </button>
+                    <span className="composer-shortcut-hint">Enter để gửi · Shift + Enter xuống dòng</span>
+                  </div>
+                  <button className="send-button" disabled={busy || !input.trim()} aria-label="Gửi tin nhắn">
+                    {busy ? <span className="send-spinner"/> : "↑"}
+                  </button>
+                </div>
+              </form>
+              <div className="composer-disclaimer">
+                {demoMode && !session?.authenticated
+                  ? "Bản dùng thử minh họa phản hồi gợi mở theo từng bước."
+                  : "MathSTEP trợ giảng Socratic · Hãy đối chiếu và kiểm chứng phép tính nhé."}
+              </div>
+            </div>
+          )}
         </section>
       </section>
       <footer className="page-footer"><span>© MathSTEP</span><span>Học bằng cách khám phá <i>✳</i></span><span>Toán THPT · Việt Nam</span></footer>
