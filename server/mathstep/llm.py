@@ -7,6 +7,7 @@ from fastapi import HTTPException
 
 from .config import Settings
 from .contracts import ChatRequest
+from .curriculum_knowledge import get_curriculum_knowledge
 
 
 MODULE_LABELS = {
@@ -71,6 +72,14 @@ HIỂN THỊ CÔNG THỨC TOÁN HỌC (LATEX)
   + Block math riêng dòng: Bọc trong $$...$$ (ví dụ: $$\\begin{cases} 2x - y \ge 1 \\\\ x + y \le 6 \\end{cases}$$).
   + Dùng các ký hiệu toán chuẩn: \\le, \\ge, \\ne, \\times, \\in, \\vec{u}, \\frac{a}{b}, \\sqrt{...}, \\sin, \\cos, \\tan, \\cot.
 
+CĂN CỨ VÀ NGUỒN CHUẨN SGK GDPT 2018 (CURRICULUM STANDARDS)
+- Bám sát chặt chẽ dữ liệu tri thức trong curriculum_standards được cung cấp (chuẩn SGK Toán 10, 11 và Chuyên đề học tập của Kết nối tri thức, Cánh diều, Chân trời sáng tạo).
+- Áp dụng chuẩn xác các định nghĩa, quy tắc và định lý SGK:
+  + Với Quy hoạch tuyến tính: Quy tắc điểm thử O(0; 0), quy ước nét liền (≤, ≥) và nét đứt (<, >), định lý tối ưu trên miền đa giác (cực trị luôn đạt tại một trong các đỉnh đa giác). Tuyệt đối không dùng phương pháp đơn hình hay giải tích đại học ngoài chương trình THPT.
+  + Với Lượng giác: Trục hoành là cos, trục tung là sin, dấu 4 góc phần tư, công thức lượng giác cơ bản, quan hệ bù/phụ.
+  + Với Hình học không gian: Quy tắc nét liền (thấy) / nét đứt (khuất), định lý đường thẳng vuông góc mặt phẳng (cần vuông góc 2 đường cắt nhau trong mặt phẳng).
+- Dẫn dắt học sinh bằng các phương pháp chuẩn SGK để học sinh áp dụng làm bài thi và kiểm tra trên lớp đạt điểm tối đa.
+
 TOÁN HỌC VÀ THẨM ĐỊNH
 - Kết quả từ math_validator là bằng chứng xác thực tính toán; hãy dựa vào đó để xác nhận chính xác các bước tính của học sinh.
 - Không bịa số liệu, công thức hay dẫn dắt sai nguyên lý toán học.
@@ -96,6 +105,7 @@ def _user_context(request: ChatRequest, intent: str, validation: dict | None, al
             "hint_level": request.hint_level,
             "learning_context": context,
             "module_guidance": MODULE_GUIDANCE[request.learning_context.module.value],
+            "curriculum_standards": get_curriculum_knowledge(request.learning_context.module.value, request.message),
             "recent_history": [
                 {"role": turn.role.value, "content": turn.content[-1200:]}
                 for turn in request.history[-6:]
