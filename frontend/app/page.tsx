@@ -7,6 +7,7 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import MathGraphVisualizer from "./components/MathGraphVisualizer";
 import MathStepWorkbench from "./components/MathStepWorkbench";
+import { generateSmartSocraticResponse } from "./lib/smartSocratic";
 
 type ModuleId =
   | "linear_programming"
@@ -464,9 +465,18 @@ export default function Home() {
     if (!message || busy) return;
     if (demoMode && !session?.authenticated) {
       const studentMessage: ChatMessage = { id: crypto.randomUUID(), role: "user", content: message };
-      const activeStep = stages.findIndex((item) => item.id === stage);
-      const demoReply: ChatMessage = { id: crypto.randomUUID(), role: "assistant", content: `Gợi ý ở bước ${String(activeStep + 1).padStart(2, "0")} · ${stages[activeStep].label}: ${stageGuides[moduleId][activeStep]}` };
-      setMessages((items) => [...items, studentMessage, demoReply]); setInput("");
+      const socratic = generateSmartSocraticResponse(message, moduleId, stage);
+      const demoReply: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: socratic.answer,
+        intent: socratic.intent,
+        nextQuestion: socratic.nextQuestion,
+        hintLevel: socratic.hintLevel,
+        validation: socratic.mathValidation,
+      };
+      setMessages((items) => [...items, studentMessage, demoReply]);
+      setInput("");
       return;
     }
     if (!session?.authenticated) return;
@@ -504,11 +514,21 @@ export default function Home() {
           return next.slice(0, 20);
         });
       }
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Đã có lỗi kết nối.");
-      setMessages((items) => items.filter((item) => item.id !== userMessage.id));
-      setInput(message);
-    } finally { setBusy(false); }
+    } catch {
+      // Fallback to Smart Socratic Engine if backend is unreachable
+      const fallback = generateSmartSocraticResponse(message, moduleId, stage, hintLevel);
+      const fallbackReply: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: fallback.answer,
+        intent: fallback.intent,
+        nextQuestion: fallback.nextQuestion,
+        hintLevel: fallback.hintLevel,
+      };
+      setMessages((items) => [...items, fallbackReply]);
+    } finally {
+      setBusy(false);
+    }
   }
 
   function onInputKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {

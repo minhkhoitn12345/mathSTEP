@@ -455,6 +455,29 @@ function getDefaultParams(mod: ModuleId): Record<string, number> {
   }
 }
 
+// Helper phân tích chất lượng câu trả lời tự luận Socratic (Dự đoán / Đúc kết)
+function checkSemanticQuality(str: string): { type: "short" | "good" | "neutral"; message: string } | null {
+  const clean = str.trim();
+  if (clean.length === 0) return null;
+  const hasReason = /vì|do|bởi|khi|nếu|suy ra|tại|theo|điều kiện|lớn hơn|nhỏ hơn/.test(clean.toLowerCase());
+  if (clean.length < 15 && !hasReason) {
+    return {
+      type: "short",
+      message: "💡 Câu trả lời còn ngắn. Hãy thêm từ 'vì...' để câu trả lời có tính chứng minh toán học nhé!",
+    };
+  }
+  if (hasReason) {
+    return {
+      type: "good",
+      message: "✓ Rất tốt! Lập luận của em có căn cứ toán học rõ ràng.",
+    };
+  }
+  return {
+    type: "neutral",
+    message: "ℹ️ Em có thể đối chiếu với đồ thị mô phỏng để giải thích sâu sắc hơn.",
+  };
+}
+
 export default function MathStepWorkbench({
   moduleId,
   stationId,
@@ -494,6 +517,8 @@ export default function MathStepWorkbench({
 
   const [evidenceModalOpen, setEvidenceModalOpen] = useState<boolean>(false);
   const [isTeacherMode, setIsTeacherMode] = useState<boolean>(false);
+  const [activeMobileTab, setActiveMobileTab] = useState<"task" | "scene" | "controls">("scene");
+  const [isFullscreenScene, setIsFullscreenScene] = useState<boolean>(false);
   const [worksheetModalOpen, setWorksheetModalOpen] = useState<boolean>(false);
   const [catalogModalOpen, setCatalogModalOpen] = useState<boolean>(false);
   const [canvasSnapshotUrl, setCanvasSnapshotUrl] = useState<string | null>(null);
@@ -922,7 +947,116 @@ export default function MathStepWorkbench({
         ctx.fillText("y", O[0] + 6, 15);
         ctx.fillText("O", O[0] - 14, O[1] + 14);
 
-        if (moduleId === "linear_programming") {
+        if (stationId === "10.01" || stationId === "10.02") {
+          // Preset Trạm 10.01 / 10.02: Tập hợp & Biểu đồ Venn 2D
+          const rVenn = scale * 2.2;
+          const centerA = w2s(-1.6, 0);
+          const centerB = w2s(1.6, 0);
+
+          // Circle A (Teal)
+          ctx.beginPath();
+          ctx.arc(centerA[0], centerA[1], rVenn, 0, Math.PI * 2);
+          ctx.fillStyle = "#14b8a622";
+          ctx.fill();
+          ctx.strokeStyle = "#087e7c";
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+
+          // Circle B (Orange-brown)
+          ctx.beginPath();
+          ctx.arc(centerB[0], centerB[1], rVenn, 0, Math.PI * 2);
+          ctx.fillStyle = "#b8743922";
+          ctx.fill();
+          ctx.strokeStyle = "#b87439";
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+
+          // Intersection Highlight A ∩ B
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(centerA[0], centerA[1], rVenn, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.beginPath();
+          ctx.arc(centerB[0], centerB[1], rVenn, 0, Math.PI * 2);
+          ctx.fillStyle = "#05966955";
+          ctx.fill();
+          ctx.restore();
+
+          // Labels
+          ctx.font = "bold 15px sans-serif";
+          ctx.fillStyle = "#087e7c";
+          ctx.fillText("Tập A", centerA[0] - rVenn + 20, centerA[1] - rVenn + 25);
+          ctx.fillStyle = "#b87439";
+          ctx.fillText("Tập B", centerB[0] + rVenn - 55, centerB[1] - rVenn + 25);
+
+          // Elements
+          ctx.font = "bold 13px sans-serif";
+          ctx.fillStyle = "#0f766e";
+          ctx.fillText("1", centerA[0] - 35, centerA[1] - 20);
+          ctx.fillText("3", centerA[0] - 55, centerA[1] + 15);
+          ctx.fillText("5", centerA[0] - 25, centerA[1] + 40);
+
+          // Intersection elements
+          ctx.fillStyle = "#065f46";
+          ctx.fillText("2", O[0] - 5, O[1] - 15);
+          ctx.fillText("4", O[0] - 5, O[1] + 25);
+          ctx.font = "bold 10px sans-serif";
+          ctx.fillText("A ∩ B = {2; 4}", O[0] - 35, O[1] + rVenn + 25);
+
+          // B \ A elements
+          ctx.font = "bold 13px sans-serif";
+          ctx.fillStyle = "#9a3412";
+          ctx.fillText("6", centerB[0] + 30, centerB[1] - 15);
+          ctx.fillText("8", centerB[0] + 45, centerB[1] + 30);
+        } else if (stationId === "10.10") {
+          // Preset Trạm 10.10: Parabol bậc hai y = ax² + bx + c
+          const a = 0.5;
+          const b = -1;
+          const c = -2;
+          const h = -b / (2 * a); // Đỉnh x = 1
+          const kVal = a * h * h + b * h + c; // Đỉnh y = -2.5
+
+          // Axis of symmetry x = h (Red dashed line)
+          const symTop = w2s(h, 6);
+          const symBot = w2s(h, -5);
+          ctx.beginPath();
+          ctx.setLineDash([5, 4]);
+          ctx.strokeStyle = "#dc2626";
+          ctx.lineWidth = 1.5;
+          ctx.moveTo(symTop[0], symTop[1]);
+          ctx.lineTo(symBot[0], symBot[1]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = "#dc2626";
+          ctx.font = "10px sans-serif";
+          ctx.fillText(`Trục đ/x: x = ${h}`, symTop[0] + 5, symTop[1] + 20);
+
+          // Parabola curve
+          ctx.beginPath();
+          ctx.strokeStyle = "#087e7c";
+          ctx.lineWidth = 2.5;
+          for (let px = 0; px <= W; px += 2) {
+            const mx = (px - O[0]) / scale;
+            const my = a * mx * mx + b * mx + c;
+            const sy = O[1] - my * scale;
+            if (px === 0) ctx.moveTo(px, sy);
+            else ctx.lineTo(px, sy);
+          }
+          ctx.stroke();
+
+          // Vertex I
+          const sI = w2s(h, kVal);
+          ctx.beginPath();
+          ctx.arc(sI[0], sI[1], 6, 0, Math.PI * 2);
+          ctx.fillStyle = "#ea580c";
+          ctx.fill();
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.fillStyle = "#ea580c";
+          ctx.font = "bold 11px sans-serif";
+          ctx.fillText(`Đỉnh I(${h}; ${kVal})`, sI[0] + 8, sI[1] + 16);
+        } else if (moduleId === "linear_programming") {
           // Shaded Feasible Polygon
           const lp = solveLP(constraints, params.u || 3, params.v || 2);
           if (lp.feasible && lp.poly.length > 2) {
@@ -1103,7 +1237,7 @@ export default function MathStepWorkbench({
 
     render();
     return () => cancelAnimationFrame(animId);
-  }, [moduleId, meta.is3D, camera, params, constraints, showIntegerPoints]);
+  }, [moduleId, stationId, meta.is3D, camera, params, constraints, showIntegerPoints]);
 
   // Pointer Dragging Interaction
   const pointerRef = useRef<{ x: number; y: number; dragging: boolean }>({
@@ -1481,10 +1615,49 @@ export default function MathStepWorkbench({
         })}
       </div>
 
+      {/* Mobile Tab Switcher (Chỉ hiển thị trên màn hình nhỏ/tablet) */}
+      <div className="lg:hidden bg-white border-b border-[#d9e4e2] px-3 py-1.5 flex items-center justify-between gap-1 shrink-0 text-xs">
+        <button
+          type="button"
+          onClick={() => setActiveMobileTab("scene")}
+          className={`flex-1 py-1.5 px-2 rounded-lg font-bold text-center border transition-all ${
+            activeMobileTab === "scene"
+              ? "bg-[#087e7c] text-white border-[#087e7c] shadow-sm"
+              : "bg-[#f3f6f5] text-gray-700 border-[#d9e4e2]"
+          }`}
+        >
+          📐 Mô phỏng
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveMobileTab("task")}
+          className={`flex-1 py-1.5 px-2 rounded-lg font-bold text-center border transition-all ${
+            activeMobileTab === "task"
+              ? "bg-[#087e7c] text-white border-[#087e7c] shadow-sm"
+              : "bg-[#f3f6f5] text-gray-700 border-[#d9e4e2]"
+          }`}
+        >
+          📝 Nhiệm vụ (B{currentStep + 1})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveMobileTab("controls")}
+          className={`flex-1 py-1.5 px-2 rounded-lg font-bold text-center border transition-all ${
+            activeMobileTab === "controls"
+              ? "bg-[#087e7c] text-white border-[#087e7c] shadow-sm"
+              : "bg-[#f3f6f5] text-gray-700 border-[#d9e4e2]"
+          }`}
+        >
+          🎛️ Điều khiển
+        </button>
+      </div>
+
       {/* 3. KHÔNG GIAN 3 CỘT: NHIỆM VỤ (TRÁI) | MÔ PHỎNG & CANVAS (GIỮA) | ĐIỀU KHIỂN DỰNG HÌNH (PHẢI) */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[280px_minmax(320px,1fr)_290px] gap-3 p-3 overflow-y-auto">
         {/* CỘT 1: NHIỆM VỤ SƯ PHẠM (TASK-SIDE) */}
-        <aside className="bg-white border border-[#d9e4e2] rounded-xl p-3.5 flex flex-col gap-3 max-h-[calc(100vh-250px)] overflow-y-auto text-xs text-[#152f35]">
+        <aside className={`bg-white border border-[#d9e4e2] rounded-xl p-3.5 flex-col gap-3 max-h-[calc(100vh-250px)] overflow-y-auto text-xs text-[#152f35] ${
+          activeMobileTab === "task" ? "flex" : "hidden lg:flex"
+        }`}>
           <div className="border-b border-[#d9e4e2] pb-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#087e7c]">
               BƯỚC {currentStep + 1} · {STEP_NAMES[currentStep]}
@@ -1518,12 +1691,49 @@ export default function MathStepWorkbench({
                 rows={4}
                 className="w-full p-2 border border-[#bed0cd] rounded-lg text-xs focus:outline-none focus:border-[#087e7c] resize-none"
               />
-              <button
-                onClick={handleSavePrediction}
-                className="w-full py-1.5 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563] transition-colors"
-              >
-                Lưu dự đoán
-              </button>
+
+              {/* Socratic Semantic Quality Feedback */}
+              {(() => {
+                const feedback = checkSemanticQuality(prediction);
+                if (!feedback) return null;
+                return (
+                  <div
+                    className={`p-2 rounded-lg text-[10px] leading-relaxed border ${
+                      feedback.type === "good"
+                        ? "bg-[#edf6f3] border-[#a3e2cf] text-[#087e7c] font-medium"
+                        : feedback.type === "short"
+                        ? "bg-[#fefce8] border-[#fef08a] text-[#854d0e]"
+                        : "bg-[#f8faf9] border-[#d9e4e2] text-gray-600"
+                    }`}
+                  >
+                    {feedback.message}
+                  </div>
+                );
+              })()}
+
+              <div className="flex gap-1.5 pt-1">
+                <button
+                  type="button"
+                  onClick={handleSavePrediction}
+                  className="flex-1 py-1.5 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563] transition-colors"
+                >
+                  Lưu dự đoán
+                </button>
+                {onAskTutor && prediction.trim().length > 3 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onAskTutor(
+                        `Nhờ linh vật TES nhận xét câu dự đoán của em ở bài ${meta.title}: "${prediction.trim()}"`
+                      )
+                    }
+                    className="px-2.5 py-1.5 bg-[#eef7f3] text-[#087e7c] border border-[#d9e4e2] rounded-lg font-bold text-[10px] hover:bg-[#e2f1ec] shrink-0"
+                    title="Hỏi trợ lý nhận xét câu dự đoán"
+                  >
+                    🦉 Nhờ TES nhận xét
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
@@ -1587,12 +1797,49 @@ export default function MathStepWorkbench({
                 rows={4}
                 className="w-full p-2 border border-[#bed0cd] rounded-lg text-xs focus:outline-none focus:border-[#087e7c] resize-none"
               />
-              <button
-                onClick={handleSaveReason}
-                className="w-full py-1.5 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563] transition-colors"
-              >
-                Lưu giải thích
-              </button>
+
+              {/* Socratic Semantic Quality Feedback */}
+              {(() => {
+                const feedback = checkSemanticQuality(reason);
+                if (!feedback) return null;
+                return (
+                  <div
+                    className={`p-2 rounded-lg text-[10px] leading-relaxed border ${
+                      feedback.type === "good"
+                        ? "bg-[#edf6f3] border-[#a3e2cf] text-[#087e7c] font-medium"
+                        : feedback.type === "short"
+                        ? "bg-[#fefce8] border-[#fef08a] text-[#854d0e]"
+                        : "bg-[#f8faf9] border-[#d9e4e2] text-gray-600"
+                    }`}
+                  >
+                    {feedback.message}
+                  </div>
+                );
+              })()}
+
+              <div className="flex gap-1.5 pt-1">
+                <button
+                  type="button"
+                  onClick={handleSaveReason}
+                  className="flex-1 py-1.5 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563] transition-colors"
+                >
+                  Lưu giải thích
+                </button>
+                {onAskTutor && reason.trim().length > 3 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onAskTutor(
+                        `Nhờ linh vật TES nhận xét câu đúc kết quy luật của em ở bài ${meta.title}: "${reason.trim()}"`
+                      )
+                    }
+                    className="px-2.5 py-1.5 bg-[#eef7f3] text-[#087e7c] border border-[#d9e4e2] rounded-lg font-bold text-[10px] hover:bg-[#e2f1ec] shrink-0"
+                    title="Hỏi trợ lý nhận xét câu đúc kết"
+                  >
+                    🦉 Nhờ TES nhận xét
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
@@ -1754,7 +2001,9 @@ export default function MathStepWorkbench({
         </aside>
 
         {/* CỘT 2: KHUNG MÔ PHỎNG & VẼ GEOGEBRA (SCENE-SIDE) */}
-        <section className="bg-white border border-[#d9e4e2] rounded-xl overflow-hidden flex flex-col shadow-sm">
+        <section className={`bg-white border border-[#d9e4e2] rounded-xl overflow-hidden flex-col shadow-sm ${
+          isFullscreenScene ? "fixed inset-2 z-50 flex shadow-2xl" : activeMobileTab === "scene" ? "flex" : "hidden lg:flex"
+        }`}>
           {/* Thanh công cụ vẽ Geogebra & 3D (Scene Toolbar) */}
           <div className="bg-white border-b border-[#d9e4e2] p-2 flex flex-wrap items-center justify-between gap-1.5 text-xs">
             <div className="flex items-center gap-1">
@@ -1816,6 +2065,15 @@ export default function MathStepWorkbench({
                 title="Lưu ảnh mô hình dạng PNG"
               >
                 <span>📷</span> Chụp hình
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsFullscreenScene((v) => !v)}
+                className="px-2.5 py-1 bg-white border border-[#d9e4e2] rounded-lg text-[11px] font-semibold text-[#152f35] hover:bg-gray-100 flex items-center gap-1"
+                title={isFullscreenScene ? "Thu nhỏ mô phỏng" : "Phóng to toàn màn hình"}
+              >
+                <span>{isFullscreenScene ? "✕" : "⛶"}</span>
+                <span>{isFullscreenScene ? "Thu nhỏ" : "Toàn màn hình"}</span>
               </button>
               <button
                 onClick={() => setToolMode(toolMode === "ar" ? "move" : "ar")}
