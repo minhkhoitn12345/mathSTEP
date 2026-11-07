@@ -20,7 +20,8 @@
     "react-markdown": "^10.1.0",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
-    "three": "^0.187.0"
+    "three": "^0.187.0",
+    "zustand": "^5.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.13.0",

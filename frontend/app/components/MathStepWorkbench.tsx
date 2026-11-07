@@ -18,6 +18,11 @@ import {
 } from "../lib/geometrySolver";
 import { ParsedGeometrySolid } from "../lib/geometryParserPrompt";
 import TrigonometricCircleCanvas, { SPECIAL_ANGLES } from "./TrigonometricCircleCanvas";
+import DynamicFunctionsLab from "./dynamic-math/DynamicFunctionsLab";
+import DynamicCalculusLab from "./dynamic-math/DynamicCalculusLab";
+import DynamicProbabilityLab from "./dynamic-math/DynamicProbabilityLab";
+import DynamicConicsLab from "./dynamic-math/DynamicConicsLab";
+import DynamicParameterDock from "./dynamic-math/DynamicParameterDock";
 import KatexMath, { formatVNFloat } from "./KatexMath";
 import {
   MoreVertical,
@@ -3171,6 +3176,22 @@ export default function MathStepWorkbench({
                 angleDeg={typeof params.t === "number" ? params.t : 60}
                 onAngleChange={(deg) => updateParam("t", deg)}
               />
+            ) : moduleId === "functions" ? (
+              <div className="w-full h-full overflow-y-auto p-4 flex items-center justify-center">
+                <DynamicFunctionsLab />
+              </div>
+            ) : moduleId === "calculus" ? (
+              <div className="w-full h-full overflow-y-auto p-4 flex items-center justify-center">
+                <DynamicCalculusLab />
+              </div>
+            ) : moduleId === "probability" ? (
+              <div className="w-full h-full overflow-y-auto p-4 flex items-center justify-center">
+                <DynamicProbabilityLab />
+              </div>
+            ) : moduleId === "conics_and_solids" ? (
+              <div className="w-full h-full overflow-y-auto p-4 flex items-center justify-center">
+                <DynamicConicsLab />
+              </div>
             ) : (
               /* High-Performance Canvas Fallback */
               <canvas
@@ -3868,6 +3889,18 @@ export default function MathStepWorkbench({
                       </div>
                     </div>
                   </div>
+                )}
+                {/* Hộp công cụ quản lý Tham số Động (GeoGebra Parameter Dock) */}
+                {(moduleId === "functions" ||
+                  moduleId === "calculus" ||
+                  moduleId === "probability" ||
+                  moduleId === "conics_and_solids") && (
+                  <DynamicParameterDock
+                    moduleId={moduleId}
+                    onRecordObservation={(summary) =>
+                      recordActivity({ type: "param_change", details: summary })
+                    }
+                  />
                 )}
               </div>
             )}
