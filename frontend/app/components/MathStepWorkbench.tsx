@@ -8,6 +8,7 @@ import { StationItem, getStationById } from "../lib/stationCatalogData";
 import { generateIsomorphicIntegerProblem, IntegerProblem } from "../lib/integerVertexGenerator";
 import Interactive2DMathCanvas, { BoundaryLine, PolygonVertex } from "./Interactive2DMathCanvas";
 import Stereometry3DCanvas from "./Stereometry3DCanvas";
+import { MoreVertical } from "lucide-react";
 
 export type ModuleId =
   | "linear_programming"
@@ -616,6 +617,7 @@ export default function MathStepWorkbench({
   const [isFullscreenScene, setIsFullscreenScene] = useState<boolean>(false);
   const [worksheetModalOpen, setWorksheetModalOpen] = useState<boolean>(false);
   const [catalogModalOpen, setCatalogModalOpen] = useState<boolean>(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState<boolean>(false);
   const [canvasSnapshotUrl, setCanvasSnapshotUrl] = useState<string | null>(null);
 
 
@@ -626,9 +628,9 @@ export default function MathStepWorkbench({
 
   // --- Interactive Canvas & Camera State ---
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [toolMode, setToolMode] = useState<GeoToolMode>("move");
+  const [toolMode] = useState<GeoToolMode>("move");
   const [camera, setCamera] = useState({ yaw: -0.65, pitch: 0.45, zoom: 1, panX: 0, panY: 0 });
-  const [selectedAxis, setSelectedAxis] = useState<"x" | "y" | "z">("x");
+  // const [selectedAxis] = useState<"x" | "y" | "z">("x");
 
   // --- Math Simulation Parameters (Synchronized Sliders & Number inputs) ---
   const [params, setParams] = useState<Record<string, number>>(() => getDefaultParams(moduleId));
@@ -668,7 +670,7 @@ export default function MathStepWorkbench({
     }));
   }, [constraints, params.u, params.v]);
   const [showIntegerPoints] = useState<boolean>(true);
-  const [solidType, setSolidType] = useState<"pyramid" | "prism" | "frustum">("pyramid");
+  // const [solidType] = useState<"pyramid" | "prism" | "frustum">("pyramid");
 
   // SGK KNTT & KHKT Strategy Features
   const [invertFilling, setInvertFilling] = useState<boolean>(false); // false = Chuẩn SGK KNTT (gạch sọc miền sai, giữ trắng miền đúng); true = Chuẩn GeoGebra quốc tế
@@ -687,8 +689,8 @@ export default function MathStepWorkbench({
   const [activeIntegerProblem, setActiveIntegerProblem] = useState<IntegerProblem | null>(null);
 
   // AR Settings
-  const [arTilt, setArTilt] = useState<number>(35);
-  const [arScale, setArScale] = useState<number>(1.0);
+  // const [arTilt] = useState<number>(35);
+  // const [arScale] = useState<number>(1.0);
 
   // Reset parameters when moduleId or stationId changes, and load cached data
   useEffect(() => {
@@ -1852,66 +1854,111 @@ export default function MathStepWorkbench({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Teacher Mode Toggle */}
-          <button
-            onClick={() => {
-              setIsTeacherMode((v) => !v);
-              showToast(!isTeacherMode ? "👨‍🏫 Đã bật Chế độ Giáo viên: Tự do chọn bước trình chiếu." : "Đã chuyển về Chế độ Học sinh.");
-            }}
-            className={`text-xs font-bold px-2.5 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 ${
-              isTeacherMode
-                ? "bg-[#fef3c7] text-[#92400e] border-[#f59e0b] ring-1 ring-[#f59e0b]"
-                : "bg-white text-gray-700 border-[#d9e4e2] hover:bg-gray-50"
-            }`}
-            title="Bật/Tắt chế độ dạy học tự do chọn bước"
-          >
-            <span>👨‍🏫</span>
-            <span className="hidden sm:inline">{isTeacherMode ? "Chế độ dạy: BẬT" : "Chế độ dạy"}</span>
-          </button>
+        <div className="flex items-center gap-2 relative">
+          {/* Quick Indicator if Teacher Mode is on */}
+          {isTeacherMode && (
+            <span className="px-2 py-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold flex items-center gap-1">
+              <span>👨‍🏫</span>
+              <span className="hidden sm:inline">Chế độ dạy: BẬT</span>
+            </span>
+          )}
 
-          {/* Worksheet Print Button */}
-          <button
-            onClick={handleOpenWorksheet}
-            className="text-xs font-semibold text-[#152f35] hover:bg-gray-100 border border-[#d9e4e2] px-2.5 py-1.5 rounded-lg bg-white flex items-center gap-1.5 transition-all"
-            title="Xem trước và in phiếu học tập A4"
-          >
-            <span>🖨️</span>
-            <span className="hidden md:inline">In phiếu A4</span>
-          </button>
+          {/* 3-Dots More Options Menu */}
+          <div className="relative">
+            <button
+              onClick={() => setMoreMenuOpen((v) => !v)}
+              className="p-1.5 rounded-xl border border-[#d9e4e2] bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-1 shadow-sm transition-all"
+              title="Tùy chọn bổ trợ & Công cụ giáo viên"
+            >
+              <MoreVertical className="w-4 h-4 text-slate-600" />
+            </button>
 
-          {/* Share Scene Link Button */}
-          <button
-            onClick={handleShareScene}
-            className="text-xs font-semibold text-[#152f35] hover:bg-gray-100 border border-[#d9e4e2] px-2.5 py-1.5 rounded-lg bg-white flex items-center gap-1.5 transition-all"
-            title="Sao chép liên kết chia sẻ cảnh mô phỏng"
-          >
-            <span>🔗</span>
-            <span className="hidden md:inline">Chia sẻ</span>
-          </button>
+            {moreMenuOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-2xl border border-slate-200 p-1.5 z-50 flex flex-col gap-1 text-xs animate-in fade-in slide-in-from-top-2">
+                <button
+                  onClick={() => {
+                    setIsTeacherMode((v) => !v);
+                    setMoreMenuOpen(false);
+                    showToast(!isTeacherMode ? "👨‍🏫 Đã bật Chế độ Giáo viên: Tự do chọn bước trình chiếu." : "Đã chuyển về Chế độ Học sinh.");
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center justify-between text-[#152f35]"
+                >
+                  <span className="flex items-center gap-2">
+                    <span>👨‍🏫</span>
+                    <span className="font-medium">Chế độ dạy học</span>
+                  </span>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                    isTeacherMode ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-500"
+                  }`}>
+                    {isTeacherMode ? "BẬT" : "TẮT"}
+                  </span>
+                </button>
 
-          {/* Evidence Notebook Modal Button */}
-          <button
-            onClick={() => setEvidenceModalOpen(true)}
-            className="text-xs font-semibold text-[#087e7c] hover:bg-[#eaf7f2] border border-[#d9e4e2] px-2.5 py-1.5 rounded-lg bg-white flex items-center gap-1.5 transition-all"
-            title="Xem toàn bộ bằng chứng và lịch sử khám phá"
-          >
-            <span>📜</span>
-            <span className="hidden sm:inline">Sổ khám phá</span>
-            <span className="font-bold text-[10px]">({evidenceHistory.length})</span>
-          </button>
+                <button
+                  onClick={() => {
+                    handleSnapshot();
+                    setMoreMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 text-[#152f35]"
+                >
+                  <span>📷</span>
+                  <span>Chụp ảnh khung làm việc</span>
+                </button>
 
-          {/* Reset Camera Button */}
-          <button
-            onClick={() => {
-              setCamera({ yaw: -0.65, pitch: 0.45, zoom: 1, panX: 0, panY: 0 });
-              showToast("Đã đưa góc nhìn về cấu hình chuẩn ban đầu.");
-            }}
-            className="text-xs text-[#63777c] hover:text-[#152f35] border border-[#d9e4e2] px-2 py-1.5 rounded-lg bg-white"
-            title="Khôi phục góc nhìn chuẩn"
-          >
-            ⟲
-          </button>
+                <button
+                  onClick={() => {
+                    handleOpenWorksheet();
+                    setMoreMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 text-[#152f35]"
+                >
+                  <span>🖨️</span>
+                  <span>In phiếu học tập A4</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    handleShareScene();
+                    setMoreMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 text-[#152f35]"
+                >
+                  <span>🔗</span>
+                  <span>Sao chép liên kết chia sẻ</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setEvidenceModalOpen(true);
+                    setMoreMenuOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center justify-between text-[#152f35]"
+                >
+                  <span className="flex items-center gap-2">
+                    <span>📜</span>
+                    <span>Sổ khám phá (bằng chứng)</span>
+                  </span>
+                  <span className="font-bold text-[10px] text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded">
+                    {evidenceHistory.length}
+                  </span>
+                </button>
+
+                <div className="h-[1px] bg-slate-100 my-0.5" />
+
+                <button
+                  onClick={() => {
+                    setCamera({ yaw: -0.65, pitch: 0.45, zoom: 1, panX: 0, panY: 0 });
+                    setMoreMenuOpen(false);
+                    showToast("Đã khôi phục góc nhìn chuẩn ban đầu.");
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 text-slate-600"
+                >
+                  <span>⟲</span>
+                  <span>Khôi phục góc nhìn chuẩn</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -2615,256 +2662,28 @@ export default function MathStepWorkbench({
           )}
         </aside>
 
-        {/* CỘT 2: KHUNG MÔ PHỎNG & VẼ GEOGEBRA (SCENE-SIDE) */}
+        {/* CỘT 2: KHUNG MÔ PHỎNG & CANVAS (SCENE-SIDE) - CHIẾM 100% CHIỀU CAO, THOÁNG ĐÃNG NHƯ DESMOS */}
         <section className={`bg-white border border-[#d9e4e2] rounded-xl overflow-hidden flex-col shadow-sm ${
           isFullscreenScene ? "fixed inset-2 z-50 flex shadow-2xl" : activeMobileTab === "scene" ? "flex" : "hidden lg:flex"
         }`}>
-          {/* Thanh công cụ vẽ Geogebra & 3D (Scene Toolbar) */}
-          <div className="bg-white border-b border-[#d9e4e2] p-2 flex flex-wrap items-center justify-between gap-1.5 text-xs">
-            <div className="flex items-center gap-1">
-              {moduleId === "linear_programming" && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setInvertFilling((v) => !v);
-                      showToast(!invertFilling ? "Chế độ GeoGebra: Đã tô màu miền nghiệm." : "Chuẩn SGK KNTT: Gạch sọc phần sai, giữ trắng miền đúng.");
-                    }}
-                    className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all border ${
-                      !invertFilling
-                        ? "bg-[#087e7c] text-white border-[#087e7c]"
-                        : "bg-white text-[#087e7c] border-[#bed0cd] hover:bg-gray-50"
-                    }`}
-                    title="Chuyển đổi chuẩn SGK KNTT (gạch sọc miền sai) và chuẩn GeoGebra (tô màu miền đúng)"
-                  >
-                    {!invertFilling ? "🌓 Quy ước: Gạch miền loại (SGK KNTT)" : "🌓 GeoGebra: Tô đúng"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCounterExampleActive((v) => !v);
-                      showToast(!counterExampleActive ? "Đã ghim điểm phản ví dụ đỏ P(1; 0)!" : "Đã ẩn điểm phản ví dụ.");
-                    }}
-                    className={`px-2 py-1 rounded-lg font-bold text-[11px] transition-all border ${
-                      counterExampleActive
-                        ? "bg-rose-600 text-white border-rose-600"
-                        : "bg-white text-rose-700 border-rose-300 hover:bg-rose-50"
-                    }`}
-                    title="Ghim chấm đỏ phản ví dụ P(1; 0) bộc lộ mâu thuẫn"
-                  >
-                    🎯 Phản ví dụ đỏ P
-                  </button>
-                </>
-              )}
-              {moduleId === "spatial_geometry" && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsUnfolded((v) => !v);
-                      showToast(!isUnfolded ? "📂 Đã khai triển phẳng 4 mặt bên trên Oxy." : "Đã gấp lại thành khối chóp 3D.");
-                    }}
-                    className={`px-2 py-1 rounded-lg font-bold text-[11px] transition-all border ${
-                      isUnfolded
-                        ? "bg-[#087e7c] text-white border-[#087e7c]"
-                        : "bg-white text-[#087e7c] border-[#bed0cd] hover:bg-gray-50"
-                    }`}
-                    title="Khai triển phẳng ↔ Gấp khối 3D"
-                  >
-                    📂 {isUnfolded ? "Gấp khối 3D" : "Khai triển phẳng"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCamera({ yaw: 0, pitch: 0, zoom: 1.15, panX: 0, panY: 0 });
-                      showToast("Đã xoay trực giao: Bộc lộ rõ 2 đường chéo nhau ở 2 độ cao khác nhau!");
-                    }}
-                    className="px-2 py-1 rounded-lg font-bold text-[11px] bg-white text-gray-700 border border-[#bed0cd] hover:bg-gray-50"
-                    title="Xoay trực giao để bộc lộ khoảng cách giữa hai đường chéo nhau"
-                  >
-                    📐 Xoay trực giao
-                  </button>
-                </>
-              )}
-              <button
-                onClick={() => setToolMode("move")}
-                className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all ${
-                  toolMode === "move"
-                    ? "bg-[#dbf3e9] text-[#087e7c] border border-[#087e7c]"
-                    : "bg-white text-[#63777c] border border-[#d9e4e2] hover:bg-gray-50"
-                }`}
-                title="Kéo điểm vàng hoặc kéo mặt phẳng"
-              >
-                📍 Kéo điểm
-              </button>
-              <button
-                onClick={() => setToolMode("rotate")}
-                className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all ${
-                  toolMode === "rotate"
-                    ? "bg-[#dbf3e9] text-[#087e7c] border border-[#087e7c]"
-                    : "bg-white text-[#63777c] border border-[#d9e4e2] hover:bg-gray-50"
-                }`}
-                title="Xoay góc nhìn 3D hoặc di chuyển hệ trục"
-              >
-                🔄 Xoay / dịch
-              </button>
-              <button
-                onClick={() =>
-                  setCamera((c) => ({ ...c, zoom: Math.min(3.5, c.zoom * 1.2) }))
-                }
-                className="px-2 py-1 bg-white border border-[#d9e4e2] rounded-lg font-bold text-[#63777c] hover:bg-gray-50"
-                title="Phóng to"
-              >
-                ＋
-              </button>
-              <button
-                onClick={() =>
-                  setCamera((c) => ({ ...c, zoom: Math.max(0.4, c.zoom / 1.2) }))
-                }
-                className="px-2 py-1 bg-white border border-[#d9e4e2] rounded-lg font-bold text-[#63777c] hover:bg-gray-50"
-                title="Thu nhỏ"
-              >
-                −
-              </button>
-              <button
-                onClick={() =>
-                  setCamera({ yaw: -0.65, pitch: 0.45, zoom: 1, panX: 0, panY: 0 })
-                }
-                className="px-2 py-1 bg-white border border-[#d9e4e2] rounded-lg text-[11px] text-[#63777c] hover:bg-gray-50"
-                title="Về góc nhìn chuẩn"
-              >
-                Góc chuẩn
-              </button>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={handleSnapshot}
-                className="px-2.5 py-1 bg-white border border-[#d9e4e2] rounded-lg text-[11px] font-semibold text-[#152f35] hover:bg-gray-50 flex items-center gap-1"
-                title="Lưu ảnh mô hình dạng PNG"
-              >
-                <span>📷</span> Chụp hình
-              </button>
+          {/* Header phụ chỉ hiển thị khi ở chế độ 3D để bật/tắt toàn màn hình */}
+          {meta.is3D && (
+            <div className="bg-white border-b border-[#d9e4e2] px-3 py-1.5 flex items-center justify-between text-xs">
+              <span className="font-bold text-[#087e7c] text-xs">📐 Mô phỏng không gian 3D</span>
               <button
                 type="button"
                 onClick={() => setIsFullscreenScene((v) => !v)}
-                className="px-2.5 py-1 bg-white border border-[#d9e4e2] rounded-lg text-[11px] font-semibold text-[#152f35] hover:bg-gray-100 flex items-center gap-1"
-                title={isFullscreenScene ? "Thu nhỏ mô phỏng" : "Phóng to toàn màn hình"}
+                className="px-2 py-1 bg-white border border-[#d9e4e2] rounded-lg text-[11px] font-semibold text-[#152f35] hover:bg-gray-100 flex items-center gap-1"
               >
                 <span>{isFullscreenScene ? "✕" : "⛶"}</span>
                 <span>{isFullscreenScene ? "Thu nhỏ" : "Toàn màn hình"}</span>
               </button>
-              <button
-                onClick={() => setToolMode(toolMode === "ar" ? "move" : "ar")}
-                className={`px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all ${
-                  toolMode === "ar"
-                    ? "bg-[#dc2626] text-white animate-pulse"
-                    : "bg-[#087e7c] text-white hover:bg-[#066563]"
-                }`}
-                title="Xem mô hình 3D trên mặt bàn học thực tế"
-              >
-                <span>📱</span> {toolMode === "ar" ? "Thoát AR" : "AR trên bàn"}
-              </button>
             </div>
-          </div>
+          )}
 
-          {/* Khung Canvas hoặc Màn hình AR */}
-          <div className="flex-1 relative flex items-center justify-center bg-[#edf3f2] overflow-hidden min-h-[360px]">
-            {toolMode === "ar" ? (
-              /* AR Classroom Simulation on Desk */
-              <div className="w-full h-full p-4 flex flex-col items-center justify-between bg-gradient-to-b from-[#292524] to-[#1c1917] text-white">
-                <div className="w-full flex justify-between items-center text-[11px]">
-                  <span className="text-[#adf0d6] font-bold uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                    AR Classroom Mode · Không gian thực tế tăng cường
-                  </span>
-                  <span className="text-gray-400 font-mono text-[10px]">Mặt bàn: Đã cố định</span>
-                </div>
-
-                <div className="relative w-full max-w-md h-56 rounded-2xl bg-gradient-to-t from-[#451a03] via-[#78350f] to-[#1c1917] flex items-center justify-center border border-amber-900/60 shadow-inner overflow-hidden">
-                  {/* Perspective Desk Grid */}
-                  <div
-                    className="absolute inset-0 opacity-20 pointer-events-none"
-                    style={{
-                      backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
-                      backgroundSize: "20px 20px",
-                      transform: `perspective(350px) rotateX(${arTilt}deg)`,
-                    }}
-                  />
-                  {/* AR Reticle */}
-                  <div className="absolute w-40 h-20 rounded-[50%] border border-teal-400/60 border-dashed animate-spin pointer-events-none" />
-
-                  {/* 3D Model Scaled */}
-                  <div
-                    className="relative z-10 flex flex-col items-center transition-transform"
-                    style={{ transform: `scale(${arScale})` }}
-                  >
-                    <svg viewBox="0 0 160 140" className="w-36 h-32 drop-shadow-2xl">
-                      <polygon
-                        points="80,15 30,110 130,110"
-                        fill="#14b8a6"
-                        fillOpacity="0.65"
-                        stroke="#5eead4"
-                        strokeWidth="2"
-                      />
-                      <line
-                        x1="80"
-                        y1="15"
-                        x2="80"
-                        y2="110"
-                        stroke="#f87171"
-                        strokeWidth="2"
-                        strokeDasharray="3 3"
-                      />
-                      <ellipse
-                        cx="80"
-                        cy="110"
-                        rx="50"
-                        ry="12"
-                        fill="#0d9488"
-                        fillOpacity="0.75"
-                        stroke="#2dd4bf"
-                        strokeWidth="1.5"
-                      />
-                    </svg>
-                    <span className="text-[10px] font-bold text-amber-200 bg-black/60 px-2 py-0.5 rounded backdrop-blur-sm">
-                      {meta.title} trên mặt bàn
-                    </span>
-                  </div>
-                </div>
-
-                {/* AR Adjusters */}
-                <div className="w-full max-w-md flex items-center justify-between text-xs gap-4 px-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-gray-300">Nghiêng bàn:</span>
-                    <input
-                      type="range"
-                      min="15"
-                      max="60"
-                      value={arTilt}
-                      onChange={(e) => setArTilt(parseInt(e.target.value))}
-                      className="w-20 accent-teal-400"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-gray-300">Thu phóng:</span>
-                    <button
-                      onClick={() => setArScale((s) => Math.max(0.6, s - 0.1))}
-                      className="px-2 bg-gray-800 rounded font-bold"
-                    >
-                      -
-                    </button>
-                    <span className="font-mono text-teal-300">{(arScale * 100).toFixed(0)}%</span>
-                    <button
-                      onClick={() => setArScale((s) => Math.min(1.8, s + 0.1))}
-                      className="px-2 bg-gray-800 rounded font-bold"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : meta.is3D ? (
+          {/* Khung Canvas giải phóng toàn bộ chiều cao từ trên xuống dưới */}
+          <div className="flex-1 relative flex items-center justify-center bg-[#edf3f2] overflow-hidden min-h-[480px] h-full">
+            {meta.is3D ? (
               <Stereometry3DCanvas
                 foldPercent={foldPercent}
                 onFoldPercentChange={(val) => {
@@ -2881,23 +2700,24 @@ export default function MathStepWorkbench({
                 lines={boundaryLines}
                 vertices={polygonVertices}
                 objectiveCoeffs={{ a: params.u || 3, b: params.v || 2 }}
-                objectiveValue={typeof params.F === "number" ? params.F : 24}
-                onObjectiveValueChange={(val) => updateParam("F", val)}
-                testPoint={{ x: params.x ?? 2, y: params.y ?? 3 }}
+                objectiveValue={typeof params.F === "number" ? params.F : 48}
+                testPoint={{ x: params.x ?? 8, y: params.y ?? 12 }}
                 onTestPointChange={(pt) => {
                   updateParam("x", pt.x);
                   updateParam("y", pt.y);
                 }}
                 isSgkMode={!invertFilling}
                 onToggleSgkMode={() => setInvertFilling((v) => !v)}
+                hideTestPoint={currentStep < 2}
+                hideObjectiveLine={currentStep < 4}
                 visualCounterExample={
-                  counterExampleActive || currentStep === 3 || currentStep === 4
-                    ? { x: 1, y: 0, text: "-1 + 2(0) = -1 > 4 (Sai!)" }
+                  counterExampleActive && currentStep >= 3
+                    ? { x: 14, y: 10, text: "3(14) + 2(10) = 62 > 48h (Vi phạm lắp ráp!)" }
                     : null
                 }
               />
             ) : (
-              /* High-Performance Canvas Fallback for Venn / Parabola / Calculus */
+              /* High-Performance Canvas Fallback */
               <canvas
                 ref={canvasRef}
                 width={700}
@@ -2911,270 +2731,306 @@ export default function MathStepWorkbench({
               />
             )}
           </div>
-
-          {/* Thanh chỉ số toán học thời gian thực (Live Metrics Bar) */}
-          <div className="bg-white border-t border-[#d9e4e2] p-2.5 flex flex-wrap items-center gap-1.5 text-xs">
-            {metricsBadges.map((badge, idx) => (
-              <span
-                key={idx}
-                className="bg-[#edf5f2] text-[#152f35] font-semibold px-2.5 py-1 rounded-lg border border-[#d9e4e2] text-[11px]"
-              >
-                {badge}
-              </span>
-            ))}
-          </div>
         </section>
 
-        {/* CỘT 3: BẢNG THAM SỐ & DỰNG HÌNH (CONTROLS-SIDE) */}
-        <aside className="bg-white border border-[#d9e4e2] rounded-xl p-3.5 flex flex-col gap-3 max-h-[calc(100vh-250px)] overflow-y-auto text-xs text-[#152f35]">
-          <div className="border-b border-[#d9e4e2] pb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#087e7c]">
-              BẢNG ĐIỀU KHIỂN & DỰNG HÌNH
-            </span>
-            <h3 className="text-xs font-bold mt-1 text-[#152f35]">Tham số mô hình</h3>
-          </div>
+        {/* CỘT 3: KẾT QUẢ & ĐIỀU KHIỂN (CONTROLS & RESULTS) - CHIA ĐÚNG 2 PHẦN NỬA TRÊN / NỬA DƯỚI */}
+        <aside className={`bg-white border border-[#d9e4e2] rounded-xl p-3.5 flex flex-col gap-3.5 max-h-[calc(100vh-220px)] overflow-y-auto text-xs text-[#152f35] ${
+          activeMobileTab === "controls" ? "flex" : "hidden lg:flex"
+        }`}>
+          {/* PHẦN 1: NỬA TRÊN - THẺ KẾT QUẢ TRỰC TIẾP (LIVE RESULTS) */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between pb-1.5 border-b border-[#d9e4e2]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#087e7c] flex items-center gap-1">
+                <span>📊</span> THẺ KẾT QUẢ TRỰC TIẾP
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium">Bước {currentStep + 1}/8</span>
+            </div>
 
-          {/* Parameter Sliders with exact Number inputs */}
-          <div className="space-y-3">
-            {moduleId === "linear_programming" && (
-              <div className="space-y-3.5">
-                {/* 1. Thanh trượt Số lượng bàn x */}
-                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                  <div className="flex justify-between items-center text-xs font-bold text-slate-800">
-                    <span className="flex items-center gap-1">🪑 Số lượng bàn (x):</span>
-                    <span className="font-mono text-teal-800 text-sm font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
-                      {params.x ?? 8} chiếc
-                    </span>
+            {moduleId === "linear_programming" ? (
+              // Progressive Disclosure cho Bài toán xưởng mộc
+              currentStep < 2 ? (
+                // Bước 1 & 2: Chưa lộ đáp án, tập trung quan sát & dự đoán
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                    <span>🔍</span>
+                    <span>Nhiệm vụ {STEP_NAMES[currentStep]}</span>
                   </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="16"
-                    step="1"
-                    value={params.x ?? 8}
-                    onChange={(e) => updateParam("x", parseInt(e.target.value, 10))}
-                    className="w-full accent-teal-600"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                    <span>0 chiếc</span>
-                    <span className="font-bold text-teal-700">8 chiếc (tối ưu)</span>
-                    <span>16 chiếc (tối đa)</span>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Em hãy đọc kỹ đề bài xưởng mộc ở Cột trái, quan sát miền đa giác trên đồ thị Oxy và điền dự đoán của em vào câu hỏi trước khi sang bước Thao tác.
+                  </p>
+                  <div className="p-2 bg-white rounded-lg border border-slate-200 text-[10px] space-y-1 font-mono text-slate-700">
+                    <div>• Giới hạn lắp ráp: 3x + 2y ≤ 48 giờ</div>
+                    <div>• Giới hạn hoàn thiện: x + 2y ≤ 32 giờ</div>
+                    <div>• Mục tiêu lợi nhuận: F = 600x + 450y</div>
                   </div>
                 </div>
-
-                {/* 2. Thanh trượt Số lượng ghế y */}
-                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                  <div className="flex justify-between items-center text-xs font-bold text-slate-800">
-                    <span className="flex items-center gap-1">💺 Số lượng ghế (y):</span>
-                    <span className="font-mono text-teal-800 text-sm font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
-                      {params.y ?? 12} chiếc
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="16"
-                    step="1"
-                    value={params.y ?? 12}
-                    onChange={(e) => updateParam("y", parseInt(e.target.value, 10))}
-                    className="w-full accent-teal-600"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                    <span>0 chiếc</span>
-                    <span className="font-bold text-teal-700">12 chiếc (tối ưu)</span>
-                    <span>16 chiếc (tối đa)</span>
-                  </div>
-                </div>
-
-                {/* 3. Đồng hồ Kiểm soát 2 Khâu sản xuất */}
-                <div className="space-y-2 p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
-                  <span className="text-[11px] font-bold text-slate-800 block">Kiểm soát quỹ thời gian 2 khâu:</span>
-                  
-                  {/* Khâu Lắp ráp: 3x + 2y <= 48 */}
-                  {(() => {
-                    const xVal = params.x ?? 8;
-                    const yVal = params.y ?? 12;
-                    const usedLapRap = 3 * xVal + 2 * yVal;
-                    const okLapRap = usedLapRap <= 48;
-                    const pct = Math.min(100, Math.round((usedLapRap / 48) * 100));
-                    return (
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[11px]">
-                          <span className="font-medium text-slate-600">Khâu Lắp ráp (3x + 2y ≤ 48):</span>
-                          <span className={`font-mono font-bold ${okLapRap ? "text-emerald-700" : "text-rose-600"}`}>
-                            {usedLapRap} / 48 giờ {okLapRap ? "✓" : "✗ VƯỢT"}
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border">
-                          <div
-                            className={`h-full transition-all duration-300 ${okLapRap ? "bg-emerald-500" : "bg-rose-500"}`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  {/* Khâu Hoàn thiện: x + 2y <= 32 */}
-                  {(() => {
-                    const xVal = params.x ?? 8;
-                    const yVal = params.y ?? 12;
-                    const usedHoanThien = 1 * xVal + 2 * yVal;
-                    const okHoanThien = usedHoanThien <= 32;
-                    const pct = Math.min(100, Math.round((usedHoanThien / 32) * 100));
-                    return (
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[11px]">
-                          <span className="font-medium text-slate-600">Khâu Hoàn thiện (x + 2y ≤ 32):</span>
-                          <span className={`font-mono font-bold ${okHoanThien ? "text-emerald-700" : "text-rose-600"}`}>
-                            {usedHoanThien} / 32 giờ {okHoanThien ? "✓" : "✗ VƯỢT"}
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border">
-                          <div
-                            className={`h-full transition-all duration-300 ${okHoanThien ? "bg-emerald-500" : "bg-rose-500"}`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                {/* 4. Thẻ KPI Tổng Tiền Lãi Thời Gian Thực */}
-                {(() => {
+              ) : (
+                // Bước 3 trở đi: Hiển thị kết quả điểm thử, công suất xưởng và thẻ lợi nhuận
+                (() => {
                   const xVal = params.x ?? 8;
                   const yVal = params.y ?? 12;
-                  const totalProfitThousand = 600 * xVal + 450 * yVal;
-                  const isFeasible = 3 * xVal + 2 * yVal <= 48 && xVal + 2 * yVal <= 32 && xVal >= 0 && yVal >= 0;
+                  const usedLapRap = 3 * xVal + 2 * yVal;
+                  const okLapRap = usedLapRap <= 48;
+                  const usedHoanThien = 1 * xVal + 2 * yVal;
+                  const okHoanThien = usedHoanThien <= 32;
+                  const isFeasible = okLapRap && okHoanThien && xVal >= 0 && yVal >= 0;
                   const isOptimal = xVal === 8 && yVal === 12;
+                  const totalProfitThousand = 600 * xVal + 450 * yVal;
+
                   return (
-                    <div className={`p-3 rounded-xl border space-y-1.5 ${
-                      isOptimal
-                        ? "bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-400 shadow-md"
-                        : isFeasible
-                        ? "bg-emerald-50 border-emerald-300"
-                        : "bg-rose-50 border-rose-300"
-                    }`}>
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-slate-700">Tổng tiền lãi F(x; y):</span>
+                    <div className="space-y-2.5">
+                      {/* Trạng thái điểm thử M(x; y) */}
+                      <div className={`p-2.5 rounded-xl border flex items-center justify-between ${
+                        isFeasible ? "bg-emerald-50 border-emerald-300 text-emerald-900" : "bg-rose-50 border-rose-300 text-rose-900"
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">{isFeasible ? "✓" : "⚠️"}</span>
+                          <div>
+                            <div className="font-bold text-xs">Phương án M({xVal}; {yVal})</div>
+                            <div className="text-[10px] font-medium opacity-80">
+                              {isFeasible ? "Thuộc miền nghiệm khả thi" : "Vi phạm giờ công của công nhân!"}
+                            </div>
+                          </div>
+                        </div>
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          isOptimal ? "bg-amber-500 text-white animate-pulse" : isFeasible ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
+                          isFeasible ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
                         }`}>
-                          {isOptimal ? "★ TỐI ƯU GTLN" : isFeasible ? "✓ KHẢ THI" : "✗ VI PHẠM"}
+                          {isFeasible ? "HỢP LỆ" : "BỊ LOẠI"}
                         </span>
                       </div>
-                      <div className="text-xl font-extrabold font-mono text-slate-900 tracking-tight">
-                        {(totalProfitThousand * 1000).toLocaleString("vi-VN")} đ
+
+                      {/* Đồng hồ công suất 2 khâu sản xuất */}
+                      <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-[11px]">
+                        <span className="font-bold text-slate-800 block text-[10px] uppercase tracking-wide">
+                          Quỹ giờ công 2 khâu xưởng:
+                        </span>
+                        {/* Khâu Lắp ráp */}
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-[10px]">
+                            <span className="text-slate-600">Lắp ráp (3x+2y ≤ 48h):</span>
+                            <span className={`font-mono font-bold ${okLapRap ? "text-emerald-700" : "text-rose-600"}`}>
+                              {usedLapRap} / 48 giờ {okLapRap ? "✓" : "✗ QUÁ TẢI"}
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className={`h-full transition-all duration-300 ${okLapRap ? "bg-emerald-500" : "bg-rose-500"}`}
+                              style={{ width: `${Math.min(100, Math.round((usedLapRap / 48) * 100))}%` }}
+                            />
+                          </div>
+                        </div>
+                        {/* Khâu Hoàn thiện */}
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-[10px]">
+                            <span className="text-slate-600">Hoàn thiện (x+2y ≤ 32h):</span>
+                            <span className={`font-mono font-bold ${okHoanThien ? "text-emerald-700" : "text-rose-600"}`}>
+                              {usedHoanThien} / 32 giờ {okHoanThien ? "✓" : "✗ QUÁ TẢI"}
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className={`h-full transition-all duration-300 ${okHoanThien ? "bg-emerald-500" : "bg-rose-500"}`}
+                              style={{ width: `${Math.min(100, Math.round((usedHoanThien / 32) * 100))}%` }}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-[10px] text-slate-600 leading-tight">
-                        {isOptimal
-                          ? "🏆 Đạt lợi nhuận cực đại tại đỉnh B(8; 12): Sản xuất 8 bàn và 12 ghế, tận dụng trọn vẹn 100% công suất của cả hai khâu!"
+
+                      {/* Thẻ KPI Lợi nhuận thời gian thực */}
+                      <div className={`p-3 rounded-xl border space-y-1 ${
+                        isOptimal
+                          ? "bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-400 shadow-md ring-1 ring-amber-400"
                           : isFeasible
-                          ? `Phương án khả thi với ${xVal} bàn và ${yVal} ghế. Hãy thử điều chỉnh để đạt mức lãi tối đa 10.200.000 đ.`
-                          : "Phương án này vượt quá quỹ thời gian cho phép của công nhân. Học sinh cần điều chỉnh giảm x hoặc y."}
-                      </p>
+                          ? "bg-emerald-50/70 border-emerald-300"
+                          : "bg-rose-50/70 border-rose-300"
+                      }`}>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-bold text-slate-700">Tiền lãi F(x; y):</span>
+                          {currentStep >= 4 && (
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              isOptimal ? "bg-amber-500 text-white animate-pulse" : isFeasible ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
+                            }`}>
+                              {isOptimal ? "★ TỐI ƯU GTLN" : isFeasible ? "✓ KHẢ THI" : "✗ VI PHẠM"}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-lg font-extrabold font-mono text-slate-900">
+                          {(totalProfitThousand * 1000).toLocaleString("vi-VN")} đ
+                        </div>
+                        <p className="text-[10px] text-slate-600 leading-tight">
+                          {isOptimal && currentStep >= 4
+                            ? "🏆 Đạt cực đại tại B(8; 12): 8 bàn & 12 ghế khai thác 100% công suất 48h và 32h!"
+                            : isFeasible
+                            ? `Phương án khả thi (${xVal} bàn, ${yVal} ghế). Kéo thanh trượt để khảo sát tiền lãi.`
+                            : "Phương án này vượt quá thời gian làm việc của công nhân xưởng."}
+                        </p>
+                      </div>
+
+                      {/* Ở Bước 6: Bảng so sánh 4 đỉnh đa giác */}
+                      {currentStep >= 5 && (
+                        <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                          <span className="text-[10px] font-bold text-slate-700 block">
+                            So sánh 4 đỉnh đa giác miền nghiệm:
+                          </span>
+                          <div className="grid grid-cols-2 gap-1 text-[10px] font-mono">
+                            <div className="p-1 bg-white rounded border border-slate-200">O(0; 0) → 0 đ</div>
+                            <div className="p-1 bg-white rounded border border-slate-200">A(0; 16) → 7,2 tr</div>
+                            <div className="p-1 bg-amber-100/80 rounded border border-amber-300 font-bold text-amber-900">
+                              B(8; 12) → 10,2 tr ★
+                            </div>
+                            <div className="p-1 bg-white rounded border border-slate-200">C(16; 0) → 9,6 tr</div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
-                })()}
-
-                {/* 5. Đường mức lợi nhuận d_F */}
-                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
-                  <div className="flex justify-between items-center text-xs font-bold text-slate-800">
-                    <span>Đường mức lợi nhuận d_F:</span>
-                    <span className="font-mono text-amber-700 font-bold">
-                      {((params.F ?? 48) * 150 * 1000).toLocaleString("vi-VN")} đ
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="68"
-                    step="1"
-                    value={params.F ?? 48}
-                    onChange={(e) => updateParam("F", parseFloat(e.target.value))}
-                    className="w-full accent-amber-500"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-400 font-mono">
-                    <span>0 đ</span>
-                    <span className="font-bold text-amber-700">F_max = 10.200.000 đ</span>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-[#d9e4e2] flex items-center justify-between text-[11px]">
-                  <span className="font-bold text-[#152f35]">Hệ ràng buộc ({constraints.length}):</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setConstraints(DEFAULT_CONSTRAINTS);
-                      updateParam("x", 8);
-                      updateParam("y", 12);
-                      showToast("Đã khôi phục bài toán Xưởng mộc chuẩn SGK KNTT!");
-                    }}
-                    className="text-[10px] text-[#087e7c] hover:underline font-bold"
-                  >
-                    Khôi phục hệ mẫu
-                  </button>
-                </div>
+                })()
+              )
+            ) : (
+              // Các module khác
+              <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                <span className="font-semibold text-xs text-slate-700">Trạng thái: Đang tương tác</span>
               </div>
             )}
+          </div>
 
-            {moduleId === "spatial_geometry" && (
-              <>
-                {/* Chọn loại khối đa diện 3D */}
-                <div>
-                  <span className="text-[10px] font-bold text-[#63777c] block mb-1">Kiểu khối 3D:</span>
-                  <div className="grid grid-cols-3 gap-1">
-                    {(
-                      [
-                        { id: "pyramid", label: "Chóp S" },
-                        { id: "prism", label: "Lăng trụ" },
-                        { id: "frustum", label: "Chóp cụt" },
-                      ] as const
-                    ).map((t) => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => setSolidType(t.id)}
-                        className={`py-1 text-[10px] rounded font-bold border transition-colors ${
-                          solidType === t.id
-                            ? "bg-[#087e7c] text-white border-[#087e7c]"
-                            : "bg-[#f3f6f5] text-gray-700 border-[#d9e4e2] hover:bg-[#e2f1ec]"
-                        }`}
-                      >
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
+          {/* PHẦN 2: NỬA DƯỚI - BẢNG ĐIỀU KHIỂN THANH TRƯỢT (INTERACTIVE CONTROLS) */}
+          <div className="space-y-3 pt-2 border-t border-[#d9e4e2] mt-auto">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#087e7c] flex items-center gap-1">
+                <span>🎛️</span> BẢNG ĐIỀU KHIỂN
+              </span>
+              {moduleId === "linear_programming" && currentStep >= 2 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateParam("x", 8);
+                    updateParam("y", 12);
+                    updateParam("F", 48);
+                    showToast("Đã khôi phục phương án tối ưu chuẩn SGK B(8; 12)!");
+                  }}
+                  className="text-[10px] text-[#087e7c] hover:underline font-bold"
+                >
+                  Về chuẩn B(8; 12)
+                </button>
+              )}
+            </div>
+
+            {moduleId === "linear_programming" ? (
+              currentStep < 2 ? (
+                // Bước 1 & 2: Ẩn thanh trượt
+                <div className="p-3 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-center space-y-1.5 text-slate-500">
+                  <span className="text-xl">🔒</span>
+                  <div className="font-bold text-xs text-slate-700">Thanh điều khiển đang tạm ẩn</div>
+                  <p className="text-[10px] leading-relaxed">
+                    Hoàn thành câu hỏi dự đoán ở Cột trái, sau đó bấm <strong>Bước 3: Thao tác</strong> để mở thanh trượt!
+                  </p>
                 </div>
-
-                {/* Chọn trục kéo đỉnh */}
-                <div>
-                  <span className="text-[10px] font-bold text-[#63777c] block mb-1">Trục kéo đỉnh:</span>
-                  <div className="grid grid-cols-3 gap-1">
-                    {(["x", "y", "z"] as const).map((ax) => (
-                      <button
-                        key={ax}
-                        type="button"
-                        onClick={() => setSelectedAxis(ax)}
-                        className={`py-0.5 text-[10px] rounded font-mono font-bold border uppercase transition-colors ${
-                          selectedAxis === ax
-                            ? "bg-[#152f35] text-white border-[#152f35]"
-                            : "bg-[#f3f6f5] text-gray-700 border-[#d9e4e2] hover:bg-gray-100"
-                        }`}
-                      >
-                        Trục {ax}
-                      </button>
-                    ))}
+              ) : (
+                // Bước 3 trở đi: Hiển thị thanh trượt x, y (và F ở bước 5)
+                <div className="space-y-2.5">
+                  {/* Thanh trượt Số lượng bàn x */}
+                  <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                    <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                      <span className="flex items-center gap-1">🪑 Số lượng bàn (x):</span>
+                      <span className="font-mono text-teal-800 text-xs font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
+                        {params.x ?? 8} chiếc
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="16"
+                      step="1"
+                      value={params.x ?? 8}
+                      onChange={(e) => updateParam("x", parseInt(e.target.value, 10))}
+                      className="w-full accent-teal-600"
+                    />
+                    <div className="flex justify-between text-[9px] text-slate-400 font-mono">
+                      <span>0</span>
+                      <span className="font-bold text-teal-700">8 (tối ưu)</span>
+                      <span>16 (tối đa)</span>
+                    </div>
                   </div>
+
+                  {/* Thanh trượt Số lượng ghế y */}
+                  <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                    <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                      <span className="flex items-center gap-1">💺 Số lượng ghế (y):</span>
+                      <span className="font-mono text-teal-800 text-xs font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
+                        {params.y ?? 12} chiếc
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="16"
+                      step="1"
+                      value={params.y ?? 12}
+                      onChange={(e) => updateParam("y", parseInt(e.target.value, 10))}
+                      className="w-full accent-teal-600"
+                    />
+                    <div className="flex justify-between text-[9px] text-slate-400 font-mono">
+                      <span>0</span>
+                      <span className="font-bold text-teal-700">12 (tối ưu)</span>
+                      <span>16 (tối đa)</span>
+                    </div>
+                  </div>
+
+                  {/* Bước 4: Nút kích hoạt phản ví dụ */}
+                  {currentStep === 3 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCounterExampleActive((v) => !v);
+                        showToast(!counterExampleActive ? "Đã ghim phản ví dụ vi phạm P(14; 10)!" : "Đã ẩn phản ví dụ.");
+                      }}
+                      className={`w-full py-1.5 rounded-lg font-bold text-[11px] transition-all border flex items-center justify-center gap-1 ${
+                        counterExampleActive
+                          ? "bg-rose-600 text-white border-rose-600 shadow-sm"
+                          : "bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100"
+                      }`}
+                    >
+                      <span>🎯</span>
+                      <span>{counterExampleActive ? "Ẩn phản ví dụ P" : "Thử điểm phản ví dụ P(14; 10)"}</span>
+                    </button>
+                  )}
+
+                  {/* Bước 5 trở đi: Thanh trượt đường mức lợi nhuận d_F */}
+                  {currentStep >= 4 && (
+                    <div className="p-2 bg-amber-50/60 border border-amber-300/80 rounded-xl space-y-1">
+                      <div className="flex justify-between items-center text-xs font-bold text-amber-900">
+                        <span>Đường mức d_F:</span>
+                        <span className="font-mono text-amber-800 font-bold">
+                          {((params.F ?? 48) * 150 * 1000).toLocaleString("vi-VN")} đ
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="68"
+                        step="1"
+                        value={params.F ?? 48}
+                        onChange={(e) => updateParam("F", parseFloat(e.target.value))}
+                        className="w-full accent-amber-500"
+                      />
+                      <div className="flex justify-between text-[9px] text-amber-700/70 font-mono">
+                        <span>0 đ</span>
+                        <span className="font-bold text-amber-900">F_max = 10.200.000 đ</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-
-                <div>
-                  <div className="flex justify-between text-[11px] font-bold mb-1">
-                    <span>Chiều cao chóp h (SA):</span>
-                    <span className="font-mono text-[#087e7c]">{params.h}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
+              )
+            ) : (
+              /* Các module 3D / lượng giác */
+              <div className="space-y-2">
+                {moduleId === "spatial_geometry" && (
+                  <>
+                    <div className="flex justify-between text-[11px] font-bold">
+                      <span>Chiều cao chóp h:</span>
+                      <span className="font-mono text-[#087e7c]">{params.h}</span>
+                    </div>
                     <input
                       type="range"
                       min="1"
@@ -3182,190 +3038,29 @@ export default function MathStepWorkbench({
                       step="0.2"
                       value={params.h || 3}
                       onChange={(e) => updateParam("h", parseFloat(e.target.value))}
-                      className="flex-1 accent-[#087e7c]"
+                      className="w-full accent-[#087e7c]"
                     />
+                  </>
+                )}
+                {moduleId === "trigonometry" && (
+                  <>
+                    <div className="flex justify-between text-[11px] font-bold">
+                      <span>Góc quay θ:</span>
+                      <span className="font-mono text-[#087e7c]">{params.t}°</span>
+                    </div>
                     <input
-                      type="number"
-                      step="0.2"
-                      value={params.h || 3}
-                      onChange={(e) => updateParam("h", parseFloat(e.target.value) || 0)}
-                      className="w-14 p-1 border border-[#bed0cd] rounded text-right font-mono text-xs"
+                      type="range"
+                      min="0"
+                      max="360"
+                      step="5"
+                      value={params.t || 60}
+                      onChange={(e) => updateParam("t", parseFloat(e.target.value))}
+                      className="w-full accent-[#087e7c]"
                     />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-[11px] font-bold mb-1">
-                    <span>Độ xiên đỉnh S (x):</span>
-                    <span className="font-mono text-[#087e7c]">{params.x}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="-2"
-                    max="2"
-                    step="0.1"
-                    value={params.x || 0}
-                    onChange={(e) => updateParam("x", parseFloat(e.target.value))}
-                    className="w-full accent-[#087e7c]"
-                  />
-                </div>
-
-                {/* 3D Camera Quick View Angles */}
-                <div className="pt-2 border-t border-[#d9e4e2]">
-                  <span className="text-[10px] font-bold text-[#63777c] block mb-1.5">
-                    Góc nhìn nhanh 3D:
-                  </span>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    <button
-                      onClick={() => setCamera({ yaw: 0, pitch: 0, zoom: 1, panX: 0, panY: 0 })}
-                      className="py-1 bg-[#f3f6f5] hover:bg-[#e2f1ec] rounded border border-[#d9e4e2] text-[10px] font-bold"
-                    >
-                      Trước
-                    </button>
-                    <button
-                      onClick={() =>
-                        setCamera({ yaw: 0, pitch: 1.55, zoom: 1, panX: 0, panY: 0 })
-                      }
-                      className="py-1 bg-[#f3f6f5] hover:bg-[#e2f1ec] rounded border border-[#d9e4e2] text-[10px] font-bold"
-                    >
-                      Trên
-                    </button>
-                    <button
-                      onClick={() =>
-                        setCamera({ yaw: Math.PI / 2, pitch: 0, zoom: 1, panX: 0, panY: 0 })
-                      }
-                      className="py-1 bg-[#f3f6f5] hover:bg-[#e2f1ec] rounded border border-[#d9e4e2] text-[10px] font-bold"
-                    >
-                      Bên
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {moduleId === "trigonometry" && (
-              <div>
-                <div className="flex justify-between text-[11px] font-bold mb-1">
-                  <span>Góc quay θ (°):</span>
-                  <span className="font-mono text-[#087e7c]">{params.t}°</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="range"
-                    min="0"
-                    max="360"
-                    step="5"
-                    value={params.t || 60}
-                    onChange={(e) => updateParam("t", parseFloat(e.target.value))}
-                    className="flex-1 accent-[#087e7c]"
-                  />
-                  <input
-                    type="number"
-                    step="5"
-                    value={params.t || 60}
-                    onChange={(e) => updateParam("t", parseFloat(e.target.value) || 0)}
-                    className="w-14 p-1 border border-[#bed0cd] rounded text-right font-mono text-xs"
-                  />
-                </div>
+                  </>
+                )}
               </div>
             )}
-
-            {moduleId === "functions" && (
-              <div>
-                <div className="flex justify-between text-[11px] font-bold mb-1">
-                  <span>Tiếp điểm x₀:</span>
-                  <span className="font-mono text-[#dc2626]">{params.x0}</span>
-                </div>
-                <input
-                  type="range"
-                  min="-2"
-                  max="2"
-                  step="0.1"
-                  value={params.x0 || 0.5}
-                  onChange={(e) => updateParam("x0", parseFloat(e.target.value))}
-                  className="w-full accent-[#dc2626]"
-                />
-              </div>
-            )}
-
-            {moduleId === "calculus" && (
-              <>
-                <div>
-                  <div className="flex justify-between text-[11px] font-bold mb-1">
-                    <span>Số dải Riemann N:</span>
-                    <span className="font-mono text-[#087e7c]">{params.n}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="2"
-                    max="24"
-                    step="2"
-                    value={params.n || 8}
-                    onChange={(e) => updateParam("n", parseFloat(e.target.value))}
-                    className="w-full accent-[#087e7c]"
-                  />
-                </div>
-                <div>
-                  <div className="flex justify-between text-[11px] font-bold mb-1">
-                    <span>Cận phải b:</span>
-                    <span className="font-mono text-[#087e7c]">{params.b}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="4"
-                    step="0.2"
-                    value={params.b || 3}
-                    onChange={(e) => updateParam("b", parseFloat(e.target.value))}
-                    className="w-full accent-[#087e7c]"
-                  />
-                </div>
-              </>
-            )}
-
-            {moduleId === "probability" && (
-              <div className="space-y-2">
-                <button
-                  onClick={() => {
-                    const next = Math.floor(Math.random() * 6) + 1;
-                    updateParam("lastDice", next);
-                    updateParam("rolls", (params.rolls || 30) + 1);
-                    showToast(`🎲 Đã gieo ra mặt ${next}!`);
-                  }}
-                  className="w-full py-2 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563]"
-                >
-                  🎲 Gieo xúc xắc thực nghiệm
-                </button>
-              </div>
-            )}
-
-            {moduleId === "conics_and_solids" && (
-              <div>
-                <div className="flex justify-between text-[11px] font-bold mb-1">
-                  <span>Góc cắt β (°):</span>
-                  <span className="font-mono text-[#087e7c]">{params.beta}°</span>
-                </div>
-                <input
-                  type="range"
-                  min="10"
-                  max="90"
-                  step="2"
-                  value={params.beta || 55}
-                  onChange={(e) => updateParam("beta", parseFloat(e.target.value))}
-                  className="w-full accent-[#087e7c]"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Action buttons */}
-          <div className="pt-2 border-t border-[#d9e4e2] space-y-1.5 mt-auto">
-            <button
-              onClick={handleRecordObservation}
-              className="w-full py-1.5 bg-[#f3f6f5] hover:bg-[#e2f1ec] text-[#087e7c] border border-[#d9e4e2] rounded-lg font-bold text-[11px] flex items-center justify-center gap-1"
-            >
-              <span>📌</span> Ghi cấu hình quan sát
-            </button>
           </div>
         </aside>
       </div>

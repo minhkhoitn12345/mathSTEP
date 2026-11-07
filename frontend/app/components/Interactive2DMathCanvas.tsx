@@ -9,7 +9,6 @@ import {
   Magnet,
   Camera,
   Layers,
-  Sliders,
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
@@ -36,14 +35,16 @@ export interface Interactive2DMathCanvasProps {
   vertices: PolygonVertex[];
   objectiveCoeffs?: { a: number; b: number }; // For F = ax + by
   objectiveValue?: number; // Current value of F
-  onObjectiveValueChange?: (val: number) => void;
-  objectiveRange?: { min: number; max: number; step: number };
+  _onObjectiveValueChange?: (val: number) => void;
+  _objectiveRange?: { min: number; max: number; step: number };
   testPoint?: { x: number; y: number };
   onTestPointChange?: (pt: { x: number; y: number }) => void;
   isSgkMode?: boolean; // true: SGK KNTT (hatching non-feasible, white feasible), false: GeoGebra (color feasible)
   onToggleSgkMode?: () => void;
   visualCounterExample?: { x: number; y: number; text: string } | null;
   className?: string;
+  hideTestPoint?: boolean;
+  hideObjectiveLine?: boolean;
 }
 
 export default function Interactive2DMathCanvas({
@@ -51,14 +52,14 @@ export default function Interactive2DMathCanvas({
   vertices,
   objectiveCoeffs = { a: 3, b: 2 },
   objectiveValue = 24,
-  onObjectiveValueChange,
-  objectiveRange = { min: 0, max: 60, step: 1 },
   testPoint = { x: 2, y: 3 },
   onTestPointChange,
   isSgkMode = true,
   onToggleSgkMode,
   visualCounterExample = null,
   className = "",
+  hideTestPoint = false,
+  hideObjectiveLine = false,
 }: Interactive2DMathCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -441,7 +442,7 @@ export default function Interactive2DMathCanvas({
     });
 
     // 6. Objective Function Level Line: F = ax + by
-    if (objectiveCoeffs && typeof objectiveValue === "number") {
+    if (!hideObjectiveLine && objectiveCoeffs && typeof objectiveValue === "number") {
       const objLine: BoundaryLine = {
         id: "obj_line",
         name: "d_F",
@@ -590,6 +591,7 @@ export default function Interactive2DMathCanvas({
     });
 
     // 8. Mobile Test Point M₀(x₀, y₀)
+    if (!hideTestPoint) {
     const [mSx, mSy] = worldToScreen(currentTestPt.x, currentTestPt.y);
     const isTestValid = testPointStatus.isValid;
 
@@ -631,6 +633,7 @@ export default function Interactive2DMathCanvas({
     ctx.fillStyle = isTestValid ? "#10B981" : "#EF4444";
     ctx.fillText(statusText, mSx + 18, mSy + 10);
     ctx.restore();
+    }
 
     // 9. Visual Counter-Example Red Pin P(1, 0)
     if (visualCounterExample) {
@@ -680,6 +683,8 @@ export default function Interactive2DMathCanvas({
     isSgkMode,
     visualCounterExample,
     showGrid,
+    hideTestPoint,
+    hideObjectiveLine,
     getTransform,
     getLineSegmentInViewport,
   ]);
@@ -696,7 +701,7 @@ export default function Interactive2DMathCanvas({
     const [mSx, mSy] = worldToScreen(currentTestPt.x, currentTestPt.y);
 
     // Hit test M₀ point (radius 20px for mobile touch)
-    if (Math.hypot(sx - mSx, sy - mSy) <= 22) {
+    if (!hideTestPoint && Math.hypot(sx - mSx, sy - mSy) <= 22) {
       setIsDraggingPoint(true);
       canvas.setPointerCapture(e.pointerId);
       return;
@@ -783,46 +788,105 @@ export default function Interactive2DMathCanvas({
       ref={containerRef}
       className={`relative w-full h-full flex flex-col bg-slate-900 select-none overflow-hidden rounded-xl border border-slate-700 shadow-2xl ${className}`}
     >
-      {/* Top Banner Toolbar: Thông tin & Chế độ SGK */}
+      {/* Top Banner Toolbar: Mini Toolbar tinh gọn duy nhất ở góc trên */}
       <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
+        {/* Left: Tỉ lệ chuẩn Oxy & Trạng thái điểm thử */}
         <div className="flex items-center gap-2 pointer-events-auto">
-          <div className="px-3 py-1.5 bg-slate-900/80 backdrop-blur-md rounded-lg border border-slate-700/80 text-xs font-semibold text-slate-200 flex items-center gap-2 shadow-lg">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Hệ trục Oxy tỷ lệ 1:1</span>
+          <div className="px-2.5 py-1 bg-slate-900/85 backdrop-blur-md rounded-lg border border-slate-700/80 text-[11px] font-semibold text-slate-200 flex items-center gap-1.5 shadow-md">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Oxy 1:1</span>
           </div>
 
-          <button
-            onClick={onToggleSgkMode}
-            className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
-              isSgkMode
-                ? "bg-emerald-950/70 border-emerald-500/80 text-emerald-300 hover:bg-emerald-900/80"
-                : "bg-cyan-950/70 border-cyan-500/80 text-cyan-300 hover:bg-cyan-900/80"
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>{isSgkMode ? "Quy ước: Gạch miền loại (SGK KNTT)" : "Chế độ: Tô màu miền nghiệm (GeoGebra)"}</span>
-          </button>
+          {!hideTestPoint && (
+            <div className="px-2.5 py-1 bg-slate-900/85 backdrop-blur-md rounded-lg border border-slate-700/80 text-[11px] font-mono flex items-center gap-1.5 text-slate-200 shadow-md">
+              {testPointStatus.isValid ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              ) : (
+                <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+              )}
+              <span>
+                M({currentTestPt.x}; {currentTestPt.y}):{" "}
+                <strong className={testPointStatus.isValid ? "text-emerald-400 font-bold" : "text-red-400 font-bold"}>
+                  {testPointStatus.isValid ? "Hợp lệ" : "Bị loại"}
+                </strong>
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Live Test Point Card */}
-        <div className="pointer-events-auto px-3 py-1.5 bg-slate-900/85 backdrop-blur-md rounded-lg border border-slate-700 text-xs font-mono flex items-center gap-2 text-slate-200 shadow-lg">
-          {testPointStatus.isValid ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          ) : (
-            <AlertCircle className="w-4 h-4 text-red-400" />
-          )}
-          <span>
-            M₀({currentTestPt.x}; {currentTestPt.y}):{" "}
-            {testPointStatus.isValid ? (
-              <strong className="text-emerald-400 font-bold">Thỏa mãn hệ</strong>
-            ) : (
-              <strong className="text-red-400 font-bold">Bị loại bỏ</strong>
-            )}
-          </span>
+        {/* Right: Toolbar mini gom tất cả thao tác đồ thị (Zoom, Reset, Grid, SGK/GeoGebra, Ảnh) */}
+        <div className="flex items-center gap-1 p-1 bg-slate-900/85 backdrop-blur-md rounded-lg border border-slate-700/80 shadow-md pointer-events-auto">
+          <button
+            onClick={onToggleSgkMode}
+            title={isSgkMode ? "Quy ước SGK KNTT: Gạch miền loại (giữ trắng miền nghiệm)" : "Chế độ GeoGebra: Tô màu miền nghiệm"}
+            className={`px-2 py-1 rounded text-[11px] font-medium transition-colors flex items-center gap-1 ${
+              isSgkMode
+                ? "bg-emerald-950/80 text-emerald-300 border border-emerald-500/50"
+                : "bg-cyan-950/80 text-cyan-300 border border-cyan-500/50"
+            }`}
+          >
+            <Layers className="w-3 h-3" />
+            <span className="hidden sm:inline">{isSgkMode ? "SGK KNTT" : "GeoGebra"}</span>
+          </button>
+
+          <div className="w-[1px] h-3.5 bg-slate-700 mx-0.5" />
+
+          <button
+            onClick={() => setZoom((z) => Math.min(4.0, z * 1.2))}
+            title="Phóng to (+)"
+            className="p-1 hover:bg-slate-800 rounded text-slate-300 hover:text-white transition-colors"
+          >
+            <ZoomIn className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => setZoom((z) => Math.max(0.4, z / 1.2))}
+            title="Thu nhỏ (-)"
+            className="p-1 hover:bg-slate-800 rounded text-slate-300 hover:text-white transition-colors"
+          >
+            <ZoomOut className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={handleResetView}
+            title="Khôi phục góc nhìn chuẩn tâm O"
+            className="p-1 hover:bg-slate-800 rounded text-slate-300 hover:text-white transition-colors"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+
+          <div className="w-[1px] h-3.5 bg-slate-700 mx-0.5" />
+
+          <button
+            onClick={() => setShowGrid((g) => !g)}
+            title="Bật/Tắt Lưới tọa độ"
+            className={`p-1 rounded transition-colors ${
+              showGrid ? "bg-slate-800 text-teal-400" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Grid className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => setSnapToGrid((s) => !s)}
+            title="Bật/Tắt Nam châm điểm nguyên"
+            className={`p-1 rounded transition-colors ${
+              snapToGrid ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Magnet className="w-3.5 h-3.5" />
+          </button>
+
+          <div className="w-[1px] h-3.5 bg-slate-700 mx-0.5" />
+
+          <button
+            onClick={handleExportPNG}
+            title="Chụp ảnh đồ thị PNG chất lượng cao"
+            className="p-1 hover:bg-emerald-900/60 rounded text-emerald-400 hover:text-emerald-200 transition-colors"
+          >
+            <Camera className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
 
-      {/* Main Interactive Canvas */}
+      {/* Main Interactive Canvas: Mặt phẳng sạch 100%, không bị che bởi thanh trượt */}
       <canvas
         ref={canvasRef}
         onPointerDown={handlePointerDown}
@@ -832,82 +896,6 @@ export default function Interactive2DMathCanvas({
         onWheel={handleWheel}
         className="w-full h-full cursor-crosshair touch-none"
       />
-
-      {/* Level Line Slider Bar: F = ax + by */}
-      {objectiveCoeffs && onObjectiveValueChange && (
-        <div className="absolute bottom-4 left-4 z-10 p-3 bg-slate-900/90 backdrop-blur-md rounded-xl border border-amber-500/40 shadow-xl flex items-center gap-3">
-          <Sliders className="w-4 h-4 text-amber-400" />
-          <div className="flex flex-col">
-            <div className="flex items-center justify-between gap-4 text-xs">
-              <span className="font-semibold text-amber-300">
-                Đường mức d_F: {objectiveCoeffs.a}x + {objectiveCoeffs.b}y = {objectiveValue}
-              </span>
-              <span className="font-mono text-amber-400 font-bold text-sm">{objectiveValue}</span>
-            </div>
-            <input
-              type="range"
-              min={objectiveRange.min}
-              max={objectiveRange.max}
-              step={objectiveRange.step}
-              value={objectiveValue}
-              onChange={(e) => onObjectiveValueChange(Number(e.target.value))}
-              className="w-48 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500 mt-1.5"
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Floating Glassmorphism Toolbar (Bottom Right) */}
-      <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1.5 p-1.5 bg-slate-900/85 backdrop-blur-md rounded-xl border border-slate-700/80 shadow-2xl">
-        <button
-          onClick={() => setZoom((z) => Math.min(4.0, z * 1.2))}
-          title="Phóng to (+)"
-          className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors"
-        >
-          <ZoomIn className="w-4 h-4" />
-        </button>
-        <button
-          onClick={() => setZoom((z) => Math.max(0.4, z / 1.2))}
-          title="Thu nhỏ (-)"
-          className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors"
-        >
-          <ZoomOut className="w-4 h-4" />
-        </button>
-        <button
-          onClick={handleResetView}
-          title="Reset góc nhìn về tâm O"
-          className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors"
-        >
-          <RotateCcw className="w-4 h-4" />
-        </button>
-        <div className="w-[1px] h-5 bg-slate-700 mx-0.5" />
-        <button
-          onClick={() => setShowGrid((g) => !g)}
-          title="Bật/Tắt Lưới tọa độ"
-          className={`p-2 rounded-lg transition-colors ${
-            showGrid ? "bg-slate-800 text-teal-400" : "text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <Grid className="w-4 h-4" />
-        </button>
-        <button
-          onClick={() => setSnapToGrid((s) => !s)}
-          title="Bật/Tắt Nam châm điểm nguyên (Snap Grid)"
-          className={`p-2 rounded-lg transition-colors ${
-            snapToGrid ? "bg-slate-800 text-emerald-400" : "text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <Magnet className="w-4 h-4" />
-        </button>
-        <div className="w-[1px] h-5 bg-slate-700 mx-0.5" />
-        <button
-          onClick={handleExportPNG}
-          title="Chụp ảnh đồ thị chất lượng cao (Export PNG)"
-          className="p-2 hover:bg-emerald-900/60 rounded-lg text-emerald-400 hover:text-emerald-200 transition-colors"
-        >
-          <Camera className="w-4 h-4" />
-        </button>
-      </div>
     </div>
   );
 }
