@@ -6,6 +6,8 @@ import StationCatalogModal from "./StationCatalogModal";
 import WorksheetPrintModal from "./WorksheetPrintModal";
 import { StationItem, getStationById } from "../lib/stationCatalogData";
 import { generateIsomorphicIntegerProblem, IntegerProblem } from "../lib/integerVertexGenerator";
+import Interactive2DMathCanvas, { BoundaryLine, PolygonVertex } from "./Interactive2DMathCanvas";
+import Stereometry3DCanvas from "./Stereometry3DCanvas";
 
 export type ModuleId =
   | "linear_programming"
@@ -527,6 +529,8 @@ export default function MathStepWorkbench({
   const [worksheetModalOpen, setWorksheetModalOpen] = useState<boolean>(false);
   const [catalogModalOpen, setCatalogModalOpen] = useState<boolean>(false);
   const [canvasSnapshotUrl, setCanvasSnapshotUrl] = useState<string | null>(null);
+
+
   const [hintLevel, setHintLevel] = useState<number>(0);
   const [dynamicProblem, setDynamicProblem] = useState<{ prompt: string; answer: number | string; hint: string } | null>(null);
   const [transferVerification, setTransferVerification] = useState<{ correct: boolean; enteredNum: number; expectedNum: number; message: string } | null>(null);
@@ -543,6 +547,38 @@ export default function MathStepWorkbench({
 
   // Linear Programming Constraints & Options
   const [constraints, setConstraints] = useState<Constraint[]>(DEFAULT_CONSTRAINTS);
+
+  // Memoized 2D Boundary Lines for Interactive2DMathCanvas
+  const boundaryLines: BoundaryLine[] = useMemo(() => {
+    return constraints.map((c, i) => {
+      const termA = c.a !== 0 ? (c.a === 1 ? "x" : c.a === -1 ? "-x" : `${c.a}x`) : "";
+      const termB = c.b > 0 ? (c.a !== 0 ? " + " : "") + (c.b === 1 ? "y" : `${c.b}y`) : c.b < 0 ? (c.b === -1 ? " - y" : ` - ${Math.abs(c.b)}y`) : "";
+      const eqStr = `${termA}${termB} = ${c.c}`;
+      const colors = ["#4f46e5", "#0284c7", "#d97706", "#059669", "#7c3aed"];
+      return {
+        id: `line-${i}`,
+        name: `d${i + 1}`,
+        equation: eqStr,
+        a: c.a,
+        b: c.b,
+        c: c.c,
+        operator: c.op,
+        color: colors[i % colors.length],
+      };
+    });
+  }, [constraints]);
+
+  // Memoized 2D Polygon Vertices for Interactive2DMathCanvas
+  const polygonVertices: PolygonVertex[] = useMemo(() => {
+    const lp = solveLP(constraints, params.u || 3, params.v || 2);
+    if (!lp.feasible || !lp.vertices) return [];
+    const vertexNames = ["O", "A", "B", "C", "D", "E", "F"];
+    return lp.vertices.map((v, i) => ({
+      label: vertexNames[i] || `P${i}`,
+      x: v[0],
+      y: v[1],
+    }));
+  }, [constraints, params.u, params.v]);
   const [showIntegerPoints, setShowIntegerPoints] = useState<boolean>(false);
   const [solidType, setSolidType] = useState<"pyramid" | "prism" | "frustum">("pyramid");
 
@@ -550,6 +586,8 @@ export default function MathStepWorkbench({
   const [invertFilling, setInvertFilling] = useState<boolean>(false); // false = Chuẩn SGK KNTT (gạch sọc miền sai, giữ trắng miền đúng); true = Chuẩn GeoGebra quốc tế
   const [counterExampleActive, setCounterExampleActive] = useState<boolean>(false); // Phản ví dụ trực quan ghim chấm đỏ P(1; 0)
   const [isUnfolded, setIsUnfolded] = useState<boolean>(false); // Khai triển phẳng ↔ Gấp khối 3D
+  const [foldPercent, setFoldPercent] = useState<number>(100); // 0: Khai triển phẳng, 100: Gấp khối 3D
+  const [orthogonalView, setOrthogonalView] = useState<boolean>(false); // Góc nhìn trực giao
   const [fadingAnswers, setFadingAnswers] = useState({
     step1: "",
     step2: "",
@@ -2689,8 +2727,40 @@ export default function MathStepWorkbench({
                   </div>
                 </div>
               </div>
+            ) : meta.is3D ? (
+              <Stereometry3DCanvas
+                foldPercent={foldPercent}
+                onFoldPercentChange={(val) => {
+                  setFoldPercent(val);
+                  setIsUnfolded(val < 50);
+                }}
+                apexHeight={params.h || 2.6}
+                onApexHeightChange={(h) => updateParam("h", h)}
+                orthogonalView={orthogonalView}
+                onToggleOrthogonalView={() => setOrthogonalView((v) => !v)}
+              />
+            ) : moduleId === "linear_programming" ? (
+              <Interactive2DMathCanvas
+                lines={boundaryLines}
+                vertices={polygonVertices}
+                objectiveCoeffs={{ a: params.u || 3, b: params.v || 2 }}
+                objectiveValue={typeof params.F === "number" ? params.F : 24}
+                onObjectiveValueChange={(val) => updateParam("F", val)}
+                testPoint={{ x: params.x ?? 2, y: params.y ?? 3 }}
+                onTestPointChange={(pt) => {
+                  updateParam("x", pt.x);
+                  updateParam("y", pt.y);
+                }}
+                isSgkMode={!invertFilling}
+                onToggleSgkMode={() => setInvertFilling((v) => !v)}
+                visualCounterExample={
+                  counterExampleActive || currentStep === 3 || currentStep === 4
+                    ? { x: 1, y: 0, text: "-1 + 2(0) = -1 > 4 (Sai!)" }
+                    : null
+                }
+              />
             ) : (
-              /* High-Performance Canvas */
+              /* High-Performance Canvas Fallback for Venn / Parabola / Calculus */
               <canvas
                 ref={canvasRef}
                 width={700}

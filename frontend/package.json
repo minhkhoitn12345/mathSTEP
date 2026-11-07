@@ -9,13 +9,18 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
+    "@types/three": "^0.187.0",
     "katex": "^0.19.1",
+    "lucide-react": "^1.70.0",
     "next": "^15.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
     "rehype-katex": "^7.0.1",
-    "remark-math": "^6.0.0"
+    "remark-math": "^6.0.0",
+    "three": "^0.187.0"
   },
   "devDependencies": {
     "@types/node": "^22.13.0",
