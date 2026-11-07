@@ -697,7 +697,7 @@ export default function TrigonometricCircleCanvas({
       <div className="absolute bottom-4 left-4 z-10 p-3 bg-slate-900/95 backdrop-blur-md rounded-xl border border-slate-700/80 shadow-2xl space-y-2 pointer-events-auto max-w-xs">
         <div className="flex items-center justify-between text-xs font-bold border-b border-slate-700 pb-1">
           <span className="text-amber-400 flex items-center gap-1">
-            <span>📐</span> Góc quay: <KatexMath math={`\\alpha = ${Math.round(currentAngle)}^\\circ`} />
+            <span>Góc quay:</span> <KatexMath math={`\\alpha = ${Math.round(currentAngle)}^\\circ`} />
           </span>
           {nearestSpecial && (
             <span className="text-[10px] text-teal-300 font-mono">

@@ -10,6 +10,7 @@ import {
   Sparkles,
   MapPin,
   Compass,
+  FileText,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -465,10 +466,21 @@ export default function Stereometry3DCanvas({
   const [showCoordinates, setShowCoordinates] = useState<boolean>(true);
   const [showNormalVector, setShowNormalVector] = useState<boolean>(true);
   const [showHudCard, setShowHudCard] = useState<boolean>(true);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // ResizeObserver tự động tính toán lại kích thước khung hình khi chuyển đổi bước học hoặc thay đổi layout, chống sập WebGL context
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver(() => {
+      window.dispatchEvent(new Event("resize"));
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [mounted]);
 
   const controlsRef = useRef<React.ComponentRef<typeof OrbitControls>>(null);
 
@@ -512,6 +524,7 @@ export default function Stereometry3DCanvas({
 
   return (
     <div
+      ref={containerRef}
       className={`relative w-full h-full flex flex-col bg-gradient-to-b from-[#0F172A] to-[#020617] select-none overflow-hidden rounded-xl border border-slate-700 shadow-2xl ${className}`}
     >
       {/* Top Banner Toolbar: Tiêu đề & Công cụ khảo sát chuẩn SGK */}
@@ -527,7 +540,7 @@ export default function Stereometry3DCanvas({
             onClick={onToggleOrthogonalView}
             className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
               orthogonalView
-                ? "bg-amber-950/80 border-amber-500/80 text-amber-300"
+                ? "bg-slate-800 border-amber-500/80 text-amber-300"
                 : "bg-slate-900/85 border-slate-700 text-slate-300 hover:text-white"
             }`}
           >
@@ -540,7 +553,7 @@ export default function Stereometry3DCanvas({
             title="Bật/Tắt hiển thị tọa độ điểm trong không gian Oxyz"
             className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
               showCoordinates
-                ? "bg-teal-950/80 border-teal-500/80 text-teal-300"
+                ? "bg-slate-800 border-teal-500/80 text-teal-300"
                 : "bg-slate-900/85 border-slate-700 text-slate-400 hover:text-slate-200"
             }`}
           >
@@ -553,7 +566,7 @@ export default function Stereometry3DCanvas({
             title="Bật/Tắt hiển thị vectơ pháp tuyến mặt đáy"
             className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
               showNormalVector
-                ? "bg-amber-950/80 border-amber-500/80 text-amber-300"
+                ? "bg-slate-800 border-amber-500/80 text-amber-300"
                 : "bg-slate-900/85 border-slate-700 text-slate-400 hover:text-slate-200"
             }`}
           >
@@ -572,7 +585,8 @@ export default function Stereometry3DCanvas({
                 : "bg-slate-900/85 border-slate-700 text-slate-300 hover:text-white"
             }`}
           >
-            <span>📊 Bảng SGK 11</span>
+            <FileText className="w-3.5 h-3.5" />
+            <span>Bảng SGK 11</span>
             {showHudCard ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
         </div>
@@ -583,7 +597,8 @@ export default function Stereometry3DCanvas({
         <div className="absolute top-14 right-3 z-20 w-72 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-700/80 p-3 shadow-2xl text-xs text-slate-200 space-y-2 animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center justify-between pb-1.5 border-b border-slate-700">
             <span className="font-bold text-teal-300 text-[11px] uppercase tracking-wide flex items-center gap-1.5">
-              <span>📐</span> ĐẠI LƯỢNG HÌNH HỌC (SGK 11)
+              <Compass className="w-3.5 h-3.5 text-teal-400" />
+              <span>ĐẠI LƯỢNG HÌNH HỌC (SGK 11)</span>
             </span>
             <span className="text-[10px] text-slate-400 font-medium">Chuẩn KNTT</span>
           </div>
@@ -591,30 +606,30 @@ export default function Stereometry3DCanvas({
           <div className="space-y-1.5 text-[11px]">
             <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
               <span className="text-slate-400">Chiều cao chóp:</span>
-              <KatexMath math={`h = SH = ${formatVNFloat(apexHeight)}`} className="text-emerald-300 font-semibold" />
+              <KatexMath math={`h = SH = ${formatVNFloat(apexHeight)}\\text{ m}`} className="text-emerald-300 font-semibold" />
             </div>
 
             <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
               <span className="text-slate-400">Cạnh đáy hình vuông:</span>
-              <KatexMath math={`a = AB = ${formatVNFloat(baseWidth)}`} className="text-cyan-300 font-semibold" />
+              <KatexMath math={`a = AB = ${formatVNFloat(baseWidth)}\\text{ m}`} className="text-cyan-300 font-semibold" />
             </div>
 
             <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
               <span className="text-slate-400">Diện tích đáy:</span>
-              <KatexMath math={`S_{ABCD} = a^2 = ${formatVNFloat(baseArea)}`} className="text-cyan-300 font-semibold" />
+              <KatexMath math={`S_{ABCD} = a^2 = ${formatVNFloat(baseArea)}\\text{ m}^2`} className="text-cyan-300 font-semibold" />
             </div>
 
             <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
               <span className="text-slate-400">Thể tích khối chóp:</span>
               <KatexMath
-                math={`V = \\frac{1}{3} S_{ABCD} \\cdot h = ${formatVNFloat(volume)}`}
+                math={`V = \\frac{1}{3} S_{ABCD} \\cdot h = ${formatVNFloat(volume)}\\text{ m}^3`}
                 className="text-amber-300 font-bold"
               />
             </div>
 
             <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
               <span className="text-slate-400">Độ dài cạnh bên:</span>
-              <KatexMath math={`SA = \\sqrt{h^2 + AH^2} \\approx ${formatVNFloat(edgeLength)}`} className="text-slate-200" />
+              <KatexMath math={`SA = \\sqrt{h^2 + AH^2} \\approx ${formatVNFloat(edgeLength)}\\text{ m}`} className="text-slate-200" />
             </div>
 
             <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
@@ -643,6 +658,7 @@ export default function Stereometry3DCanvas({
       {/* WebGL 3D Canvas */}
       <Canvas
         camera={{ position: [4.5, 3.5, 5.0], fov: 45 }}
+        gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}
         className="w-full h-full cursor-grab active:cursor-grabbing"
       >
         {/* Studio Three-Point Lighting */}

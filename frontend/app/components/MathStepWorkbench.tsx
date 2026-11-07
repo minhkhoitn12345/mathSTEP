@@ -10,7 +10,32 @@ import Interactive2DMathCanvas, { BoundaryLine, PolygonVertex } from "./Interact
 import Stereometry3DCanvas from "./Stereometry3DCanvas";
 import TrigonometricCircleCanvas, { SPECIAL_ANGLES } from "./TrigonometricCircleCanvas";
 import KatexMath, { formatVNFloat } from "./KatexMath";
-import { MoreVertical } from "lucide-react";
+import {
+  MoreVertical,
+  Activity,
+  SlidersHorizontal,
+  Calculator,
+  Layers,
+  Compass,
+  GraduationCap,
+  FileText,
+  Camera,
+  Printer,
+  Share2,
+  BookOpen,
+  Target,
+  Lightbulb,
+  BookmarkCheck,
+  AlertTriangle,
+  RefreshCw,
+  Building,
+  Bot,
+  Search,
+  Lock,
+  Download,
+  Upload,
+  Sparkles,
+} from "lucide-react";
 
 export type ModuleId =
   | "linear_programming"
@@ -172,7 +197,7 @@ const REAL_WORLD_PROBLEMS: Record<string, RealWorldProblem> = {
     matrixHeaders: ["Bộ phận", "Kích thước", "Quy ước biểu diễn"],
     matrixRows: [
       { label: "Đáy ABCD", col1: "3.0 m x 3.0 m", col2: "Hình vuông nằm ngang", limit: "Các cạnh nhìn thấy hoặc khuất" },
-      { label: "Chiều cao SH", col1: "1.5 - 4.0 m", col2: "SH ⊥ (ABCD)", limit: "Nét đứt màu đỏ hồng Rose-500" },
+      { label: "Chiều cao SH", col1: "1.5 - 4.0 m", col2: "SH ⊥ (ABCD)", limit: "Nét đứt màu đỏ hồng (cạnh khuất)" },
       { label: "Thể tích V", col1: "V = (1/3) a² h", col2: "Dung tích không gian mái", limit: "Tự động tính theo thời gian thực" },
     ],
     optimalSummary: "Thuật toán Back-face Culling tự động chuyển nét đứt cho các cạnh khuất khi xoay camera.",
@@ -560,7 +585,7 @@ function checkSemanticQuality(str: string): { type: "short" | "good" | "neutral"
   if (clean.length < 15 && !hasReason) {
     return {
       type: "short",
-      message: "💡 Câu trả lời còn ngắn. Hãy thêm từ 'vì...' để câu trả lời có tính chứng minh toán học nhé!",
+      message: "Câu trả lời còn ngắn. Hãy thêm từ 'vì...' để câu trả lời có tính chứng minh toán học nhé!",
     };
   }
   if (hasReason) {
@@ -752,7 +777,7 @@ export default function MathStepWorkbench({
         if (parsed.constraints) setConstraints(parsed.constraints);
         if (parsed.camera) setCamera(parsed.camera);
         if (typeof parsed.currentStep === "number") setCurrentStep(parsed.currentStep);
-        showToast("✨ Đã khôi phục cảnh mô phỏng từ liên kết chia sẻ!");
+        showToast("Đã khôi phục cảnh mô phỏng từ liên kết chia sẻ!");
       } catch {}
     }
   }, [showToast]);
@@ -998,7 +1023,7 @@ export default function MathStepWorkbench({
 
             ctx.fillStyle = "#0f766e";
             ctx.font = "bold 11px sans-serif";
-            ctx.fillText("📂 Bản khai triển phẳng 2D: 4 mặt bên mở xòe trên mặt phẳng đáy", 15, 25);
+            ctx.fillText("Bản khai triển phẳng 2D: 4 mặt bên mở xòe trên mặt phẳng đáy", 15, 25);
           } else {
             // Khối chóp 3D gập hoàn chỉnh
             ctx.beginPath();
@@ -1409,7 +1434,7 @@ export default function MathStepWorkbench({
 
             ctx.fillStyle = "#9f1239";
             ctx.font = "bold 10px sans-serif";
-            ctx.fillText("⚠️ Phản ví dụ trực quan:", bx + 8, by + 16);
+            ctx.fillText("Phản ví dụ trực quan:", bx + 8, by + 16);
             ctx.font = "bold 10px sans-serif";
             ctx.fillText("P(1; 0) ∉ Miền: -1 + 2(0) = -1 > 4 (Sai!)", bx + 8, by + 34);
           }
@@ -1695,7 +1720,7 @@ export default function MathStepWorkbench({
         data: { input: transferInput.trim(), expected: currentProblem.answer },
       };
       setEvidenceHistory((prev) => [record, ...prev]);
-      showToast("🎯 Tuyệt vời! MiniCAS đã kiểm chứng đáp số của em là chính xác!");
+      showToast("MiniCAS đã kiểm chứng đáp số của em là chính xác!");
     } else {
       showToast(result.message);
     }
@@ -1707,7 +1732,7 @@ export default function MathStepWorkbench({
     setTransferInput("");
     setTransferVerification(null);
     setHintLevel(0);
-    showToast("🎲 Đã sinh bài toán tham số mới! Hãy thử sức nào.");
+    showToast("Đã sinh bài toán tham số mới! Hãy thử sức nào.");
   };
 
   const handleShareScene = () => {
@@ -1717,14 +1742,14 @@ export default function MathStepWorkbench({
       const shareUrl = `${window.location.origin}${window.location.pathname}#scene=${hashStr}`;
       if (navigator.clipboard) {
         navigator.clipboard.writeText(shareUrl).then(() => {
-          showToast("🔗 Đã sao chép liên kết chia sẻ cảnh vào bộ nhớ tạm!");
+          showToast("Đã sao chép liên kết chia sẻ cảnh vào bộ nhớ tạm!");
         }).catch(() => {
           window.location.hash = `scene=${hashStr}`;
-          showToast("🔗 Đã cập nhật URL hash với cảnh hiện tại!");
+          showToast("Đã cập nhật liên kết chia sẻ với cảnh hiện tại!");
         });
       } else {
         window.location.hash = `scene=${hashStr}`;
-        showToast("🔗 Đã cập nhật URL hash với cảnh hiện tại!");
+        showToast("Đã cập nhật liên kết chia sẻ với cảnh hiện tại!");
       }
     } catch {
       showToast("Chưa thể tạo liên kết chia sẻ.");
@@ -1749,7 +1774,7 @@ export default function MathStepWorkbench({
     a.download = `mathstep-evidence-${moduleId}-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast("💾 Đã xuất file JSON dữ liệu học tập!");
+    showToast("Đã xuất file JSON dữ liệu học tập!");
   };
 
   const handleImportEvidenceJson = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1764,7 +1789,7 @@ export default function MathStepWorkbench({
         if (Array.isArray(json.observations)) setObservations(json.observations);
         if (Array.isArray(json.evidenceHistory)) setEvidenceHistory(json.evidenceHistory);
         if (json.params) setParams(json.params);
-        showToast("📂 Đã nạp thành công dữ liệu học tập từ file JSON!");
+        showToast("Đã nạp thành công dữ liệu học tập từ file JSON!");
       } catch {
         showToast("Lỗi: File JSON không đúng định dạng.");
       }
@@ -1787,7 +1812,7 @@ export default function MathStepWorkbench({
       setCurrentStep(next);
       if (onStepChange) onStepChange(next + 1, STEP_NAMES[next]);
     } else {
-      showToast("🎉 Chúc mừng em đã hoàn thành toàn bộ 8 bước chu trình nhận thức!");
+      showToast("Chúc mừng em đã hoàn thành toàn bộ 8 bước chu trình nhận thức!");
     }
   };
 
@@ -1808,7 +1833,7 @@ export default function MathStepWorkbench({
     a.href = url;
     a.download = `Mo_hinh_${moduleId}.png`;
     a.click();
-    showToast("📷 Đã chụp và tải ảnh mô hình về máy.");
+    showToast("Đã chụp và tải ảnh mô hình về máy.");
   };
 
   return (
@@ -1816,7 +1841,7 @@ export default function MathStepWorkbench({
       {/* Toast Notification */}
       {toastMessage && (
         <div className="bg-[#087e7c] text-white text-xs font-semibold px-4 py-2.5 text-center flex items-center justify-center gap-2 shadow-lg animate-fade-in z-50">
-          <span>✨</span>
+          <Sparkles className="w-3.5 h-3.5 text-teal-600" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -1839,7 +1864,7 @@ export default function MathStepWorkbench({
             className="px-3 py-1.5 rounded-xl bg-[#087e7c] text-white font-bold text-xs hover:bg-[#066563] flex items-center gap-1.5 shadow-sm transition-all"
             title="Mở danh mục 48 trạm học Toán THPT"
           >
-            <span>📚</span>
+            <Layers className="w-3.5 h-3.5" />
             <span>48 Trạm học</span>
           </button>
           <div>
@@ -1860,7 +1885,7 @@ export default function MathStepWorkbench({
           {/* Quick Indicator if Teacher Mode is on */}
           {isTeacherMode && (
             <span className="px-2 py-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold flex items-center gap-1">
-              <span>👨‍🏫</span>
+              <GraduationCap className="w-3.5 h-3.5 text-amber-800" />
               <span className="hidden sm:inline">Chế độ dạy: BẬT</span>
             </span>
           )}
@@ -1881,12 +1906,12 @@ export default function MathStepWorkbench({
                   onClick={() => {
                     setIsTeacherMode((v) => !v);
                     setMoreMenuOpen(false);
-                    showToast(!isTeacherMode ? "👨‍🏫 Đã bật Chế độ Giáo viên: Tự do chọn bước trình chiếu." : "Đã chuyển về Chế độ Học sinh.");
+                    showToast(!isTeacherMode ? "Đã bật Chế độ Giáo viên: Tự do chọn bước trình chiếu." : "Đã chuyển về Chế độ Học sinh.");
                   }}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center justify-between text-[#152f35]"
                 >
                   <span className="flex items-center gap-2">
-                    <span>👨‍🏫</span>
+                    <GraduationCap className="w-3.5 h-3.5 text-slate-500" />
                     <span className="font-medium">Chế độ dạy học</span>
                   </span>
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
@@ -1903,7 +1928,7 @@ export default function MathStepWorkbench({
                   }}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 text-[#152f35]"
                 >
-                  <span>📷</span>
+                  <Camera className="w-3.5 h-3.5" />
                   <span>Chụp ảnh khung làm việc</span>
                 </button>
 
@@ -1914,7 +1939,7 @@ export default function MathStepWorkbench({
                   }}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 text-[#152f35]"
                 >
-                  <span>🖨️</span>
+                  <Printer className="w-3.5 h-3.5" />
                   <span>In phiếu học tập A4</span>
                 </button>
 
@@ -1925,7 +1950,7 @@ export default function MathStepWorkbench({
                   }}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 text-[#152f35]"
                 >
-                  <span>🔗</span>
+                  <Share2 className="w-3.5 h-3.5" />
                   <span>Sao chép liên kết chia sẻ</span>
                 </button>
 
@@ -1937,7 +1962,7 @@ export default function MathStepWorkbench({
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center justify-between text-[#152f35]"
                 >
                   <span className="flex items-center gap-2">
-                    <span>📜</span>
+                    <BookOpen className="w-3.5 h-3.5" />
                     <span>Sổ khám phá (bằng chứng)</span>
                   </span>
                   <span className="font-bold text-[10px] text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded">
@@ -1968,7 +1993,7 @@ export default function MathStepWorkbench({
       <div className="bg-white border-b border-[#d9e4e2] px-3 py-2 flex items-center gap-1.5 overflow-x-auto">
         {isTeacherMode && (
           <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-1 rounded border border-amber-200 font-bold shrink-0">
-            👨‍🏫 Tự do chuyển bước
+            <GraduationCap className="w-3.5 h-3.5 inline mr-1" /> Tự do chuyển bước
           </span>
         )}
         {STEP_NAMES.map((name, idx) => {
@@ -2009,7 +2034,7 @@ export default function MathStepWorkbench({
               : "bg-[#f3f6f5] text-gray-700 border-[#d9e4e2]"
           }`}
         >
-          📐 Mô phỏng
+          <Compass className="w-3.5 h-3.5 inline mr-1" /> Mô phỏng
         </button>
         <button
           type="button"
@@ -2020,7 +2045,7 @@ export default function MathStepWorkbench({
               : "bg-[#f3f6f5] text-gray-700 border-[#d9e4e2]"
           }`}
         >
-          📝 Nhiệm vụ (B{currentStep + 1})
+          <FileText className="w-3.5 h-3.5 inline mr-1" /> Nhiệm vụ (B{currentStep + 1})
         </button>
         <button
           type="button"
@@ -2031,7 +2056,7 @@ export default function MathStepWorkbench({
               : "bg-[#f3f6f5] text-gray-700 border-[#d9e4e2]"
           }`}
         >
-          🎛️ Điều khiển
+          <SlidersHorizontal className="w-3.5 h-3.5 inline mr-1" /> Điều khiển
         </button>
       </div>
 
@@ -2048,7 +2073,7 @@ export default function MathStepWorkbench({
               <div className="p-3 bg-gradient-to-br from-[#0c2e35] to-[#071c20] text-white rounded-xl border border-teal-500/40 shadow-md space-y-2">
                 <div className="flex items-center justify-between gap-1">
                   <div className="flex items-center gap-1.5 text-teal-300 font-bold text-xs uppercase tracking-wide">
-                    <span>📖</span>
+                    <BookOpen className="w-3.5 h-3.5 text-slate-500" />
                     <span className="truncate">{prob.title}</span>
                   </div>
                   <span className="px-2 py-0.5 bg-teal-900/80 border border-teal-400/50 rounded-full text-[9px] text-teal-200 font-medium shrink-0">
@@ -2059,7 +2084,7 @@ export default function MathStepWorkbench({
                   {prob.context}
                 </p>
                 <div className="p-2 bg-slate-900/70 rounded-lg border border-teal-500/40 text-[11px] font-semibold text-amber-300 flex items-start gap-1.5">
-                  <span className="shrink-0">🎯</span>
+                  <Target className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                   <span>{prob.objectiveText}</span>
                 </div>
                 {/* Bảng tra cứu dữ liệu mini (Data Matrix) */}
@@ -2171,7 +2196,7 @@ export default function MathStepWorkbench({
                     className="px-2.5 py-1.5 bg-[#eef7f3] text-[#087e7c] border border-[#d9e4e2] rounded-lg font-bold text-[10px] hover:bg-[#e2f1ec] shrink-0"
                     title="Hỏi trợ lý nhận xét câu dự đoán"
                   >
-                    🦉 Nhờ TES nhận xét
+                    <Bot className="w-3.5 h-3.5 inline mr-1 text-[#087e7c]" /> Nhờ TES nhận xét
                   </button>
                 )}
               </div>
@@ -2192,7 +2217,7 @@ export default function MathStepWorkbench({
                 <span className="text-[10px] text-[#63777c]">lượt thao tác đã ghi nhận</span>
               </div>
               <p className="text-[10px] text-gray-500 italic">
-                💡 Lời khuyên: Hãy thử ít nhất 3 cấu hình khác nhau trước khi ghi nhận quan sát.
+                <span className="flex items-center gap-1.5"><Lightbulb className="w-3.5 h-3.5 text-slate-500" /><span>Lời khuyên: Hãy thử ít nhất 3 cấu hình khác nhau trước khi ghi nhận quan sát.</span></span>
               </p>
             </div>
           )}
@@ -2204,12 +2229,12 @@ export default function MathStepWorkbench({
                 onClick={handleRecordObservation}
                 className="w-full py-2 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563] transition-colors shadow-sm"
               >
-                📌 Ghi cấu hình đang thấy ({observations.length} đã lưu)
+                <BookmarkCheck className="w-3.5 h-3.5 inline mr-1" /> Ghi cấu hình đang thấy ({observations.length} đã lưu)
               </button>
 
               <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] space-y-1.5">
                 <div className="flex items-center gap-1.5 font-bold text-amber-900">
-                  <span>⚠️</span>
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-600 inline mr-1" />
                   <span>Cảnh báo mã lỗi tư duy thường gặp:</span>
                 </div>
                 <p className="text-amber-800 text-[10px] leading-relaxed">
@@ -2367,7 +2392,7 @@ export default function MathStepWorkbench({
                     className="px-2.5 py-1.5 bg-[#eef7f3] text-[#087e7c] border border-[#d9e4e2] rounded-lg font-bold text-[10px] hover:bg-[#e2f1ec] shrink-0"
                     title="Hỏi trợ lý nhận xét câu đúc kết"
                   >
-                    🦉 Nhờ TES nhận xét
+                    <Bot className="w-3.5 h-3.5 inline mr-1 text-[#087e7c]" /> Nhờ TES nhận xét
                   </button>
                 )}
               </div>
@@ -2387,12 +2412,12 @@ export default function MathStepWorkbench({
                       setActiveIntegerProblem(iso);
                       setTransferInput("");
                       setTransferVerification(null);
-                      showToast(`🎲 Đã tạo bài toán thực tế mới: ${iso.contextTitle}`);
+                      showToast(`Đã tạo bài toán thực tế mới: ${iso.contextTitle}`);
                     }}
                     className="px-2 py-1 rounded bg-[#eff8f4] hover:bg-[#d6f0e6] text-[#087e7c] border border-[#a3e2cf] font-bold text-[10px] flex items-center gap-1 transition-colors"
                     title="Sinh bài toán đồng cấu đỉnh nguyên ℤ²"
                   >
-                    <span>🎲</span> Đỉnh nguyên ℤ²
+                    <Calculator className="w-3.5 h-3.5 inline mr-1" /> Đỉnh nguyên ℤ²
                   </button>
                   <button
                     type="button"
@@ -2403,7 +2428,7 @@ export default function MathStepWorkbench({
                     className="px-2 py-1 rounded bg-[#f3f6f5] hover:bg-[#e2f1ec] text-[#087e7c] border border-[#d9e4e2] font-bold text-[10px] flex items-center gap-1 transition-colors"
                     title="Sinh tham số bài toán mới"
                   >
-                    <span>🔄</span> Đổi số
+                    <RefreshCw className="w-3 h-3 inline mr-1" /> Đổi số
                   </button>
                 </div>
               </div>
@@ -2411,7 +2436,7 @@ export default function MathStepWorkbench({
               {activeIntegerProblem ? (
                 <div className="p-2.5 rounded-lg bg-[#eff8f4] border border-[#a3e2cf] text-[11px] leading-relaxed text-[#152f35] space-y-1.5">
                   <div className="font-bold text-[#087e7c] flex items-center gap-1">
-                    <span>🌾</span> {activeIntegerProblem.contextTitle}
+                    <Building className="w-3.5 h-3.5 inline mr-1 text-slate-600" /> {activeIntegerProblem.contextTitle}
                   </div>
                   <p>{activeIntegerProblem.story}</p>
                   <div className="p-1.5 bg-white/80 rounded border border-[#a3e2cf] text-[10px] font-mono text-gray-700">
@@ -2488,7 +2513,7 @@ export default function MathStepWorkbench({
                       onClick={() => setHintLevel((l) => Math.min(3, l + 1))}
                       className="text-[#087e7c] font-bold hover:underline flex items-center gap-0.5"
                     >
-                      <span>💡</span> Mở gợi ý cấp {hintLevel + 1}
+                      <Lightbulb className="w-3 h-3 inline mr-1 text-amber-600" /> Mở gợi ý cấp {hintLevel + 1}
                     </button>
                   )}
                 </div>
@@ -2532,7 +2557,7 @@ export default function MathStepWorkbench({
             <div className="space-y-2.5">
               <div className="p-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 text-[11px] space-y-1.5">
                 <div className="flex items-center gap-1.5 font-bold text-amber-900">
-                  <span>🎯</span>
+                  <Target className="w-3.5 h-3.5 inline mr-1 text-[#087e7c]" />
                   <span>Chế độ Đánh giá độc lập (Fading)</span>
                 </div>
                 <p className="text-amber-800 text-[10px] leading-relaxed">
@@ -2623,7 +2648,7 @@ export default function MathStepWorkbench({
                       data: { ...fadingAnswers, score },
                     };
                     setEvidenceHistory((prev) => [...prev, newRecord]);
-                    showToast(`🎯 Đã chấm điểm tự luận: ${score}/10! Bằng chứng đã lưu vào sổ học tập.`);
+                    showToast(`Đã chấm điểm tự luận: ${score}/10! Bằng chứng đã lưu vào sổ học tập.`);
                   }}
                   className="w-full py-2 bg-[#087e7c] text-white rounded-lg font-bold text-xs hover:bg-[#066563] transition-colors"
                 >
@@ -2658,7 +2683,7 @@ export default function MathStepWorkbench({
                 }
                 className="w-full py-2 bg-[#f4f7f6] hover:bg-[#e2f1ec] text-[#087e7c] border border-[#d9e4e2] rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors"
               >
-                <span>🦉</span> Hỏi trợ lý Socratic TES
+                <Bot className="w-4 h-4 text-emerald-700" /> <span>Hỏi trợ lý Socratic TES</span>
               </button>
             </div>
           )}
@@ -2671,7 +2696,7 @@ export default function MathStepWorkbench({
           {/* Header phụ chỉ hiển thị khi ở chế độ 3D để bật/tắt toàn màn hình */}
           {meta.is3D && (
             <div className="bg-white border-b border-[#d9e4e2] px-3 py-1.5 flex items-center justify-between text-xs">
-              <span className="font-bold text-[#087e7c] text-xs">📐 Mô phỏng không gian 3D</span>
+              <span className="font-bold text-[#087e7c] text-xs">Mô phỏng không gian 3D</span>
               <button
                 type="button"
                 onClick={() => setIsFullscreenScene((v) => !v)}
@@ -2748,7 +2773,7 @@ export default function MathStepWorkbench({
           <div className="space-y-2">
             <div className="flex items-center justify-between pb-1.5 border-b border-[#d9e4e2]">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#087e7c] flex items-center gap-1">
-                <span>📊</span> THẺ KẾT QUẢ TRỰC TIẾP
+                <Activity className="w-4 h-4 text-[#087e7c]" /> <span>THẺ KẾT QUẢ TRỰC TIẾP</span>
               </span>
               <span className="text-[10px] text-slate-500 font-medium">Bước {currentStep + 1}/8</span>
             </div>
@@ -2759,7 +2784,7 @@ export default function MathStepWorkbench({
                 // Bước 1 & 2: Chưa lộ đáp án, tập trung quan sát & dự đoán
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                    <span>🔍</span>
+                    <Search className="w-3.5 h-3.5 text-slate-600" />
                     <span>Nhiệm vụ {STEP_NAMES[currentStep]}</span>
                   </div>
                   <p className="text-[11px] text-slate-600 leading-relaxed">
@@ -2791,7 +2816,7 @@ export default function MathStepWorkbench({
                         isFeasible ? "bg-emerald-50 border-emerald-300 text-emerald-900" : "bg-rose-50 border-rose-300 text-rose-900"
                       }`}>
                         <div className="flex items-center gap-2">
-                          <span className="text-base">{isFeasible ? "✓" : "⚠️"}</span>
+                          <span className="text-base font-bold">{isFeasible ? "✓" : "!"}</span>
                           <div>
                             <div className="font-bold text-xs">Phương án M({xVal}; {yVal})</div>
                             <div className="text-[10px] font-medium opacity-80">
@@ -2866,7 +2891,7 @@ export default function MathStepWorkbench({
                         </div>
                         <p className="text-[10px] text-slate-600 leading-tight">
                           {isOptimal && currentStep >= 4
-                            ? "🏆 Đạt cực đại tại B(8; 12): 8 bàn & 12 ghế khai thác 100% công suất 48h và 32h!"
+                            ? "★ Đạt cực đại tại B(8; 12): 8 bàn & 12 ghế khai thác 100% công suất 48h và 32h!"
                             : isFeasible
                             ? `Phương án khả thi (${xVal} bàn, ${yVal} ghế). Kéo thanh trượt để khảo sát tiền lãi.`
                             : "Phương án này vượt quá thời gian làm việc của công nhân xưởng."}
@@ -2929,27 +2954,27 @@ export default function MathStepWorkbench({
                       <div className="grid grid-cols-2 gap-1.5">
                         <div className="p-1.5 bg-white rounded border border-slate-200">
                           <div className="text-[10px] text-slate-500">Chiều cao:</div>
-                          <KatexMath math={`h = ${formatVNFloat(hVal)}`} className="font-bold text-teal-800" />
+                          <KatexMath math={`h = ${formatVNFloat(hVal)}\\text{ m}`} className="font-bold text-teal-800" />
                         </div>
                         <div className="p-1.5 bg-white rounded border border-slate-200">
                           <div className="text-[10px] text-slate-500">Cạnh đáy:</div>
-                          <KatexMath math={`a = ${formatVNFloat(aVal)}`} className="font-bold text-teal-800" />
+                          <KatexMath math={`a = ${formatVNFloat(aVal)}\\text{ m}`} className="font-bold text-teal-800" />
                         </div>
                         <div className="p-1.5 bg-white rounded border border-slate-200">
                           <div className="text-[10px] text-slate-500">Diện tích đáy:</div>
-                          <KatexMath math={`S_{đáy} = ${formatVNFloat(baseArea)}`} className="font-bold text-cyan-800" />
+                          <KatexMath math={`S_{đáy} = ${formatVNFloat(baseArea)}\\text{ m}^2`} className="font-bold text-cyan-800" />
                         </div>
                         <div className="p-1.5 bg-white rounded border border-slate-200">
                           <div className="text-[10px] text-slate-500">Thể tích:</div>
-                          <KatexMath math={`V = ${formatVNFloat(volume)}`} className="font-bold text-amber-800" />
+                          <KatexMath math={`V = ${formatVNFloat(volume)}\\text{ m}^3`} className="font-bold text-amber-800" />
                         </div>
                         <div className="p-1.5 bg-white rounded border border-slate-200">
                           <div className="text-[10px] text-slate-500">Cạnh bên:</div>
-                          <KatexMath math={`SA \approx ${formatVNFloat(edgeLength)}`} className="font-bold text-slate-800" />
+                          <KatexMath math={`SA \approx ${formatVNFloat(edgeLength)}\\text{ m}`} className="font-bold text-slate-800" />
                         </div>
                         <div className="p-1.5 bg-white rounded border border-slate-200">
                           <div className="text-[10px] text-slate-500">Góc cạnh bên:</div>
-                          <KatexMath math={`\varphi \approx ${formatVNFloat(slantAngle)}^\circ`} className="font-bold text-purple-800" />
+                          <KatexMath math={`\\varphi \approx ${formatVNFloat(slantAngle)}^\\circ`} className="font-bold text-purple-800" />
                         </div>
                       </div>
                     </div>
@@ -3092,7 +3117,7 @@ export default function MathStepWorkbench({
           <div className="space-y-3 pt-2 border-t border-[#d9e4e2] mt-auto">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#087e7c] flex items-center gap-1">
-                <span>🎛️</span> BẢNG ĐIỀU KHIỂN
+                <SlidersHorizontal className="w-4 h-4 text-[#087e7c]" /> <span>BẢNG ĐIỀU KHIỂN</span>
               </span>
               {moduleId === "linear_programming" && currentStep >= 2 && (
                 <button
@@ -3114,7 +3139,7 @@ export default function MathStepWorkbench({
               currentStep < 2 ? (
                 // Bước 1 & 2: Ẩn thanh trượt
                 <div className="p-3 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-center space-y-1.5 text-slate-500">
-                  <span className="text-xl">🔒</span>
+                  <Lock className="w-5 h-5 text-slate-400" />
                   <div className="font-bold text-xs text-slate-700">Thanh điều khiển đang tạm ẩn</div>
                   <p className="text-[10px] leading-relaxed">
                     Hoàn thành câu hỏi dự đoán ở Cột trái, sau đó bấm <strong>Bước 3: Thao tác</strong> để mở thanh trượt!
@@ -3126,7 +3151,7 @@ export default function MathStepWorkbench({
                   {/* Thanh trượt Số lượng bàn x */}
                   <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
                     <div className="flex justify-between items-center text-xs font-bold text-slate-800">
-                      <span className="flex items-center gap-1">🪑 Số lượng bàn (x):</span>
+                      <span>Số lượng bàn (x):</span>
                       <span className="font-mono text-teal-800 text-xs font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
                         {params.x ?? 8} chiếc
                       </span>
@@ -3150,7 +3175,7 @@ export default function MathStepWorkbench({
                   {/* Thanh trượt Số lượng ghế y */}
                   <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
                     <div className="flex justify-between items-center text-xs font-bold text-slate-800">
-                      <span className="flex items-center gap-1">💺 Số lượng ghế (y):</span>
+                      <span>Số lượng ghế (y):</span>
                       <span className="font-mono text-teal-800 text-xs font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
                         {params.y ?? 12} chiếc
                       </span>
@@ -3185,7 +3210,7 @@ export default function MathStepWorkbench({
                           : "bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100"
                       }`}
                     >
-                      <span>🎯</span>
+                      <Target className="w-3.5 h-3.5 inline mr-1 text-[#087e7c]" />
                       <span>{counterExampleActive ? "Ẩn phản ví dụ P" : "Thử điểm phản ví dụ P(14; 10)"}</span>
                     </button>
                   )}
@@ -3281,7 +3306,7 @@ export default function MathStepWorkbench({
                     <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                       <div className="flex justify-between items-center text-xs">
                         <span className="font-bold text-slate-800 flex items-center gap-1">
-                          <span>📐</span> Góc quay:
+                          <span>Góc quay:</span>
                         </span>
                         <div className="flex items-center gap-1.5">
                           <span className="font-mono text-teal-800 text-xs font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
@@ -3428,7 +3453,7 @@ export default function MathStepWorkbench({
           <div className="bg-white w-full max-w-lg rounded-2xl p-5 shadow-2xl border border-[#d9e4e2] flex flex-col max-h-[85vh] text-xs">
             <div className="flex justify-between items-center pb-3 border-b border-[#d9e4e2]">
               <div className="flex items-center gap-2">
-                <span className="text-lg">📜</span>
+                <BookOpen className="w-4 h-4 text-slate-600" />
                 <h3 className="font-bold text-sm text-[#152f35]">
                   Sổ khám phá & Dấu vết học tập ({evidenceHistory.length})
                 </h3>
@@ -3481,7 +3506,7 @@ export default function MathStepWorkbench({
                   className="px-3 py-1.5 rounded-lg border border-[#d9e4e2] bg-[#f8faf9] text-[#152f35] font-bold text-[11px] hover:bg-[#e2f1ec] flex items-center gap-1 transition-colors"
                   title="Tải toàn bộ bằng chứng về máy dưới dạng JSON"
                 >
-                  <span>💾</span> Xuất JSON
+                  <Download className="w-3.5 h-3.5 inline mr-1" /> Xuất JSON
                 </button>
                 <button
                   type="button"
@@ -3489,7 +3514,7 @@ export default function MathStepWorkbench({
                   className="px-3 py-1.5 rounded-lg border border-[#d9e4e2] bg-[#f8faf9] text-[#152f35] font-bold text-[11px] hover:bg-[#e2f1ec] flex items-center gap-1 transition-colors"
                   title="Nhập file JSON để khôi phục tiến trình"
                 >
-                  <span>📂</span> Nhập JSON
+                  <Upload className="w-3.5 h-3.5 inline mr-1" /> Nhập JSON
                 </button>
               </div>
 
@@ -3512,7 +3537,7 @@ export default function MathStepWorkbench({
           if (onSelectStation) {
             onSelectStation(st);
           }
-          showToast(`📚 Đã chuyển sang trạm ${st.id}: ${st.title}`);
+          showToast(`Đã chuyển sang trạm ${st.id}: ${st.title}`);
         }}
       />
 

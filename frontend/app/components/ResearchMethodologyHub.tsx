@@ -1,6 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
+import {
+  AlertTriangle,
+  FileText,
+  Bot,
+  Landmark,
+  TrendingUp,
+  MapPin,
+} from "lucide-react";
 
 export default function ResearchMethodologyHub() {
   const [activeTab, setActiveTab] = useState<"theories" | "error_codes" | "pedagogy" | "evidence">("theories");
@@ -60,7 +68,7 @@ export default function ResearchMethodologyHub() {
               : "bg-white text-gray-600 hover:bg-gray-100 border border-[#d9e4e2]"
           }`}
         >
-          📚 5 Khung Lý thuyết Nền tảng
+          5 Khung Lý thuyết Nền tảng
         </button>
         <button
           onClick={() => setActiveTab("error_codes")}
@@ -70,7 +78,7 @@ export default function ResearchMethodologyHub() {
               : "bg-white text-gray-600 hover:bg-gray-100 border border-[#d9e4e2]"
           }`}
         >
-          ⚠️ Phân loại Mã lỗi (M1-M3, G1-G3, T1-T3)
+          Phân loại Mã lỗi (M1-M3, G1-G3, T1-T3)
         </button>
         <button
           onClick={() => setActiveTab("pedagogy")}
@@ -80,7 +88,7 @@ export default function ResearchMethodologyHub() {
               : "bg-white text-gray-600 hover:bg-gray-100 border border-[#d9e4e2]"
           }`}
         >
-          🔄 Sơ đồ Vận hành Sư phạm Tất định
+          Sơ đồ Vận hành Sư phạm Tất định
         </button>
         <button
           onClick={() => setActiveTab("evidence")}
@@ -90,7 +98,7 @@ export default function ResearchMethodologyHub() {
               : "bg-white text-gray-600 hover:bg-gray-100 border border-[#d9e4e2]"
           }`}
         >
-          📊 Dữ liệu Thực nghiệm & Tải Hồ sơ KHKT
+          Dữ liệu Thực nghiệm & Tải Hồ sơ KHKT
         </button>
       </div>
 
@@ -171,7 +179,7 @@ export default function ResearchMethodologyHub() {
       {activeTab === "error_codes" && (
         <div className="space-y-4">
           <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 flex items-center gap-3">
-            <span className="text-2xl">⚠️</span>
+            <AlertTriangle className="w-6 h-6 text-amber-500" />
             <div>
               <strong>Hệ thống Phân loại Lỗi Tư duy Toán học THPT:</strong> Được lập trình trong Bộ Quy tắc Toán học Tất định để tự động phát hiện mã lỗi và kích hoạt Phản ví dụ trực quan.
             </div>
@@ -286,13 +294,13 @@ export default function ResearchMethodologyHub() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
               <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-xs space-y-1 text-center">
-                <span className="text-xl">📍</span>
+                <MapPin className="w-5 h-5 text-teal-600" />
                 <div className="font-bold text-red-700">PHẢN VÍ DỤ TRỰC QUAN</div>
                 <p className="text-[11px] text-gray-600">Ghim chấm đỏ $P(1; 0)$ mâu thuẫn trên Oxy hoặc xoay camera 3D bộc lộ lỗi sai hình học</p>
               </div>
 
               <div className="p-4 rounded-xl bg-teal-50 border border-teal-200 text-xs space-y-1 text-center">
-                <span className="text-xl">🦉</span>
+                <Bot className="w-5 h-5 text-[#087e7c]" />
                 <div className="font-bold text-[#087e7c]">TRỢ LÝ AI SOCRATIC</div>
                 <p className="text-[11px] text-gray-600">Đặt câu hỏi truy hồi 4 nhóm nhận thức (Paul & Elder), tuyệt đối không cho đáp số</p>
               </div>
@@ -334,7 +342,7 @@ export default function ResearchMethodologyHub() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-5 bg-white rounded-2xl border border-[#d9e4e2] shadow-sm flex flex-col justify-between space-y-3">
               <div>
-                <span className="text-2xl">📄</span>
+                <FileText className="w-6 h-6 text-blue-600" />
                 <h3 className="font-bold text-sm text-[#152f35] mt-1">Bản in Học liệu Chuẩn hóa</h3>
                 <p className="text-[11px] text-gray-500 mt-1">Bộ phiếu học tập khám phá 48 trạm định dạng LaTeX/PDF cho học sinh học trên lớp.</p>
               </div>
@@ -348,7 +356,7 @@ export default function ResearchMethodologyHub() {
 
             <div className="p-5 bg-white rounded-2xl border border-[#d9e4e2] shadow-sm flex flex-col justify-between space-y-3">
               <div>
-                <span className="text-2xl">🏛️</span>
+                <Landmark className="w-6 h-6 text-emerald-600" />
                 <h3 className="font-bold text-sm text-[#152f35] mt-1">Biên bản Thẩm định Chuyên môn</h3>
                 <p className="text-[11px] text-gray-500 mt-1">Biên bản đánh giá tính chính xác toán học và sư phạm của Tổ Toán THPT.</p>
               </div>
@@ -362,7 +370,7 @@ export default function ResearchMethodologyHub() {
 
             <div className="p-5 bg-white rounded-2xl border border-[#d9e4e2] shadow-sm flex flex-col justify-between space-y-3">
               <div>
-                <span className="text-2xl">📈</span>
+                <TrendingUp className="w-6 h-6 text-indigo-600" />
                 <h3 className="font-bold text-sm text-[#152f35] mt-1">Báo cáo Dữ liệu Thực nghiệm</h3>
                 <p className="text-[11px] text-gray-500 mt-1">Bảng tổng hợp điểm Pre-test, Post-test và phân tích hiệu quả thống kê.</p>
               </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { Layers, Search } from "lucide-react";
 import {
   STATION_CATALOG,
   StationItem,
@@ -49,7 +50,7 @@ export default function StationCatalogModal({
         <header className="px-5 py-4 border-b border-[#d9e4e2] bg-[#f8faf9] flex items-center justify-between shrink-0">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xl">📚</span>
+              <Layers className="w-5 h-5 text-emerald-600" />
               <h2 id="catalog-modal-title" className="font-bold text-base text-[#152f35]">
                 Danh mục 48 trạm học Toán THPT (GDPT 2018)
               </h2>
@@ -74,7 +75,7 @@ export default function StationCatalogModal({
         <div className="p-4 bg-white border-b border-[#e2e8e7] space-y-3 shrink-0">
           {/* Input Search */}
           <div className="relative">
-            <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+            <span className="absolute left-3 top-2.5 text-gray-400"><Search className="w-4 h-4" /></span>
             <input
               type="text"
               value={searchQuery}
@@ -177,7 +178,7 @@ export default function StationCatalogModal({
         <div className="flex-1 overflow-y-auto p-4 bg-[#f8faf9]">
           {filteredStations.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-8 text-gray-400">
-              <span className="text-4xl mb-2">🔍</span>
+              <Search className="w-8 h-8 mb-2 text-gray-300" />
               <p className="font-semibold text-gray-600 text-sm">
                 Không tìm thấy trạm học nào phù hợp với bộ lọc.
               </p>
@@ -241,7 +242,7 @@ export default function StationCatalogModal({
                             {station.priority === "A" ? "★ Ưu tiên A" : `Mức ${station.priority}`}
                           </span>
                           <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-gray-100 text-gray-600">
-                            {station.is3D ? "🎲 3D" : "📐 2D"}
+                            {station.is3D ? "3D" : "2D"}
                           </span>
                         </div>
                       </div>

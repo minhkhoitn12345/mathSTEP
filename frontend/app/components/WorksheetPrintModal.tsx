@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
+import { Printer, Target } from "lucide-react";
 
 interface WorksheetPrintModalProps {
   isOpen: boolean;
@@ -60,7 +61,7 @@ export default function WorksheetPrintModal({
         {/* Header - Hidden on Print */}
         <header className="px-5 py-3 border-b border-[#d9e4e2] bg-[#f8faf9] flex items-center justify-between shrink-0 print:hidden">
           <div className="flex items-center gap-2">
-            <span className="text-xl">🖨️</span>
+            <Printer className="w-5 h-5 text-slate-700" />
             <div>
               <h2 className="font-bold text-sm text-[#152f35]">
                 Xem trước Phiếu học tập A4 · Trạm {station.id}
@@ -75,7 +76,7 @@ export default function WorksheetPrintModal({
               onClick={handlePrint}
               className="px-4 py-1.5 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563] flex items-center gap-1.5 shadow-sm"
             >
-              <span>🖨️ In ra giấy / Lưu PDF</span>
+              <span className="flex items-center gap-1.5"><Printer className="w-4 h-4" /><span>In ra giấy / Lưu PDF</span></span>
             </button>
             <button
               onClick={onClose}
@@ -128,7 +129,7 @@ export default function WorksheetPrintModal({
                 Mã trạm: {station.id} · Nguồn: {station.source}
               </div>
               <div className="mt-2 p-2.5 bg-gray-100 rounded border border-gray-300 text-left text-[11px] leading-relaxed">
-                <strong>🎯 Yêu cầu cần đạt (GDPT 2018):</strong> {station.goal}
+                <strong className="flex items-center gap-1"><Target className="w-3.5 h-3.5 text-emerald-600 inline" /><span>Yêu cầu cần đạt (GDPT 2018):</span></strong> {station.goal}
               </div>
             </div>
 

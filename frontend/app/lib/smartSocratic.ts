@@ -115,7 +115,7 @@ export function generateSmartSocraticResponse(
   if (moduleId === "probability") {
     if (q.includes("xác suất") || q.includes("xúc xắc") || q.includes("bayes")) {
       return {
-        answer: `Theo **Quy luật số lớn (Law of Large Numbers)**: khi số lần thực nghiệm gieo xúc xắc lặp lại đủ lớn, tần suất xuất hiện của một mặt sẽ hội tụ dần về xác suất lý thuyết là $\\frac{1}{6} \\approx 16.7\\%$.\n\nEm hãy bấm nút *"🎲 Gieo xúc xắc"* nhiều lần trên bảng điều khiển để kiểm chứng quy luật này nhé!`,
+        answer: `Theo **Quy luật số lớn (Law of Large Numbers)**: khi số lần thực nghiệm gieo xúc xắc lặp lại đủ lớn, tần suất xuất hiện của một mặt sẽ hội tụ dần về xác suất lý thuyết là $\\frac{1}{6} \\approx 16{,}7\\%$.\n\nEm hãy bấm nút *"Gieo xúc xắc ngẫu nhiên"* nhiều lần trên bảng điều khiển để kiểm chứng quy luật này nhé!`,
         intent: "explain",
         nextQuestion: "Khi nào thì áp dụng công thức xác suất toàn phần?",
       };
@@ -143,7 +143,7 @@ export function generateSmartSocraticResponse(
       nextQuestion: "Quy luật nào chi phối hiện tượng này?",
     },
     {
-      answer: `Em hãy liên hệ với các định lý trong SGK: bài toán này liên quan trực tiếp đến định nghĩa và tính chất cơ bản. Em có muốn xem gợi ý từng bước (Cấp 1 $\\to$ Cấp 2 $\\to$ Cấp 3) không?`,
+      answer: `Em hãy liên hệ với các định lý trong SGK: bài toán này liên quan trực tiếp đến định nghĩa và tính chất cơ bản. Em có muốn xem gợi ý từng bước (Cấp 1 → Cấp 2 → Cấp 3) không?`,
       nextQuestion: "Xem gợi ý cấp 1 về định lý liên quan",
     },
   ];

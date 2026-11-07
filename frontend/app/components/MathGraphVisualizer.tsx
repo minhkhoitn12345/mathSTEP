@@ -186,7 +186,7 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#e5ebe4] bg-white/80">
           <div className="flex items-center gap-2.5">
             <span className="w-7 h-7 rounded-lg bg-[#eaf4ee] text-[#146e52] flex items-center justify-center font-bold text-sm">
-              📐
+              
             </span>
             <div>
               <h2 className="text-sm font-bold text-[#17211f] leading-none">Mô hình Toán học Tương tác MathSTEP</h2>
@@ -212,7 +212,7 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
                 : "border-transparent text-[#75807a] hover:text-[#17211f]"
             }`}
           >
-            <span>📊</span> Quy hoạch tuyến tính (Miền nghiệm & Đường mức)
+            Quy hoạch tuyến tính (Miền nghiệm & Đường mức)
           </button>
           <button
             onClick={() => setActiveTab("trigonometry")}
@@ -222,7 +222,7 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
                 : "border-transparent text-[#75807a] hover:text-[#17211f]"
             }`}
           >
-            <span>⚪</span> Đường tròn lượng giác
+            Đường tròn lượng giác
           </button>
           <button
             onClick={() => setActiveTab("spatial_geometry")}
@@ -232,7 +232,7 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
                 : "border-transparent text-[#75807a] hover:text-[#17211f]"
             }`}
           >
-            <span>🔺</span> M2: Hình học không gian
+            M2: Hình học không gian
           </button>
           <button
             onClick={() => setActiveTab("functions")}
@@ -242,7 +242,7 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
                 : "border-transparent text-[#75807a] hover:text-[#17211f]"
             }`}
           >
-            <span>📈</span> M4: Hàm số & BBT
+            M4: Hàm số & BBT
           </button>
           <button
             onClick={() => setActiveTab("calculus")}
@@ -252,7 +252,7 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
                 : "border-transparent text-[#75807a] hover:text-[#17211f]"
             }`}
           >
-            <span>🔄</span> M5: Giải tích & Khối xoay
+            M5: Giải tích & Khối xoay
           </button>
           <button
             onClick={() => setActiveTab("probability")}
@@ -262,7 +262,7 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
                 : "border-transparent text-[#75807a] hover:text-[#17211f]"
             }`}
           >
-            <span>🎲</span> M6: Xác suất & Bayes
+            M6: Xác suất & Bayes
           </button>
           <button
             onClick={() => setActiveTab("conics_and_solids")}
@@ -272,7 +272,7 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
                 : "border-transparent text-[#75807a] hover:text-[#17211f]"
             }`}
           >
-            <span>📐</span> M7: Hình khối & Conic
+            M7: Hình khối & Conic
           </button>
         </div>
 
@@ -466,7 +466,7 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
                     className="w-full accent-[#8b5cf6] cursor-pointer mt-1"
                   />
                   <p className="text-[10px] text-gray-500 mt-1 leading-relaxed">
-                    💡 <em>Kéo thanh trượt để quan sát đường thẳng trượt qua miền nghiệm. Đỉnh đầu tiên chạm là GTNN, đỉnh rời sau cùng là GTLN!</em>
+                    <em>Kéo thanh trượt để quan sát đường thẳng trượt qua miền nghiệm. Đỉnh đầu tiên chạm là GTNN, đỉnh rời sau cùng là GTLN!</em>
                   </p>
                 </div>
 
@@ -1536,7 +1536,7 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
                         disabled={isRolling}
                         className="px-5 py-2 bg-[#146e52] text-white rounded-lg font-bold hover:bg-[#0f573f] transition-all shadow-md active:scale-95"
                       >
-                        {isRolling ? "Đang gieo..." : "🎲 Gieo xúc xắc ngẫu nhiên"}
+                        {isRolling ? "Đang gieo..." : "Gieo xúc xắc ngẫu nhiên"}
                       </button>
                       <div className="text-xs text-gray-500 font-mono">
                         Lịch sử gieo gần nhất: {diceHistory.slice(0, 8).join(", ")}...

@@ -2,6 +2,19 @@
 
 import React, { useState } from "react";
 import { getAllStations } from "../lib/stationCatalogData";
+import {
+  Flame,
+  Users,
+  Presentation,
+  Download,
+  Compass,
+  Send,
+  Lightbulb,
+  SlidersHorizontal,
+  Target,
+  Play,
+  CheckCircle,
+} from "lucide-react";
 
 interface TeacherDashboardProps {
   onLaunchStation?: (stationId: string) => void;
@@ -185,7 +198,6 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
           </p>
         </div>
         <div className="absolute right-4 bottom-2 text-8xl text-white/5 font-serif select-none pointer-events-none">
-          👨‍🏫📐
         </div>
       </div>
 
@@ -194,33 +206,36 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setActiveTab("heatmap")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === "heatmap"
                 ? "bg-[#087e7c] text-white shadow-sm"
                 : "bg-[#f8faf9] text-gray-600 hover:bg-[#edf6f3] border border-[#d9e4e2]"
             }`}
           >
-            🔥 Ma trận lỗi sai (Heatmap)
+            <Flame className="w-4 h-4 text-amber-500" />
+            <span>Ma trận lỗi sai (Heatmap)</span>
           </button>
           <button
             onClick={() => setActiveTab("roster")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === "roster"
                 ? "bg-[#087e7c] text-white shadow-sm"
                 : "bg-[#f8faf9] text-gray-600 hover:bg-[#edf6f3] border border-[#d9e4e2]"
             }`}
           >
-            👥 Tiến độ học sinh ({students.length})
+            <Users className="w-4 h-4 text-blue-500" />
+            <span>Tiến độ học sinh ({students.length})</span>
           </button>
           <button
             onClick={() => setActiveTab("presentation")}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === "presentation"
                 ? "bg-[#087e7c] text-white shadow-sm"
                 : "bg-[#f8faf9] text-gray-600 hover:bg-[#edf6f3] border border-[#d9e4e2]"
             }`}
           >
-            📺 Trình chiếu bài giảng
+            <Presentation className="w-4 h-4 text-purple-500" />
+            <span>Trình chiếu bài giảng</span>
           </button>
         </div>
 
@@ -230,14 +245,16 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
             className="px-3 py-2 bg-white hover:bg-gray-50 border border-[#bed0cd] rounded-xl text-xs font-bold text-[#152f35] flex items-center gap-1.5 shadow-sm transition-all"
             title="Xuất bảng dữ liệu thực nghiệm Pre/Post-test của lớp"
           >
-            <span>📥</span> Xuất báo cáo CSV
+            <Download className="w-4 h-4 text-slate-600" />
+            <span>Xuất báo cáo CSV</span>
           </button>
           {onOpenWorkbench && (
             <button
               onClick={onOpenWorkbench}
               className="px-3.5 py-2 bg-[#146e52] hover:bg-[#0f573f] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
             >
-              <span>🔬</span> Vào phòng thực hành
+              <Compass className="w-4 h-4 text-white" />
+              <span>Vào phòng thực hành</span>
             </button>
           )}
         </div>
@@ -245,7 +262,7 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
 
       {assignedNotice && (
         <div className="p-3.5 bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-xl text-xs font-medium flex items-center gap-2 animate-in fade-in duration-200">
-          <span className="text-base">🚀</span>
+          <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{assignedNotice}</span>
         </div>
       )}
@@ -338,8 +355,9 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
                     </p>
 
                     <div className="p-2.5 rounded-xl bg-white/80 border border-gray-200/80 text-[10px] space-y-1">
-                      <span className="font-bold text-[#087e7c] block">
-                        🎯 Kế hoạch can thiệp gợi ý:
+                      <span className="font-bold text-[#087e7c] flex items-center gap-1">
+                        <Target className="w-3.5 h-3.5 text-[#087e7c]" />
+                        <span>Kế hoạch can thiệp gợi ý:</span>
                       </span>
                       <span className="text-gray-700">{m.intervention}</span>
                     </div>
@@ -348,9 +366,10 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
                   <div className="pt-3 mt-3 border-t border-gray-200/60 flex items-center justify-between gap-2">
                     <button
                       onClick={() => handleAssignIntervention(m.code)}
-                      className="flex-1 py-1.5 px-2 bg-[#087e7c] hover:bg-[#066563] text-white rounded-xl text-[11px] font-bold shadow-xs transition-colors flex items-center justify-center gap-1"
+                      className="flex-1 py-1.5 px-2 bg-[#087e7c] hover:bg-[#066563] text-white rounded-xl text-[11px] font-bold shadow-xs transition-colors flex items-center justify-center gap-1.5"
                     >
-                      <span>🚀</span> Giao bài can thiệp
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Giao bài can thiệp</span>
                     </button>
                   </div>
                 </div>
@@ -360,11 +379,11 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
 
           <div className="bg-[#f8faf9] p-4 rounded-2xl border border-[#d9e4e2] flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">💡</span>
+              <Lightbulb className="w-6 h-6 text-amber-600 shrink-0" />
               <div>
                 <strong>Quy trình can thiệp tuần hoàn:</strong>
                 <p className="text-gray-600 text-[11px]">
-                  1. Học sinh thao tác mô hình $\to$ 2. Phát hiện lỗi qua bộ quy tắc tất định $\to$ 3. Phản ví dụ trực quan $\to$ 4. Giáo viên ấn nút giao bài luyện đỉnh nguyên.
+                  1. Học sinh thao tác mô hình → 2. Phát hiện lỗi qua bộ quy tắc tất định → 3. Phản ví dụ trực quan → 4. Giáo viên ấn nút giao bài luyện đỉnh nguyên.
                 </p>
               </div>
             </div>
@@ -545,8 +564,9 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
 
                       <div className="grid grid-cols-2 gap-3 text-xs pt-1">
                         <div className="p-3 bg-teal-50/50 rounded-xl border border-teal-200">
-                          <span className="font-bold text-[#087e7c] block mb-1">
-                            📐 Tùy chọn hiển thị SGK KNTT:
+                          <span className="font-bold text-[#087e7c] flex items-center gap-1 mb-1">
+                            <SlidersHorizontal className="w-3.5 h-3.5 text-[#087e7c]" />
+                            <span>Tùy chọn hiển thị SGK KNTT:</span>
                           </span>
                           <ul className="list-disc list-inside text-gray-600 text-[11px] space-y-0.5">
                             <li>Gạch sọc phần sai, giữ trắng miền đúng</li>
@@ -555,8 +575,9 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
                           </ul>
                         </div>
                         <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-200">
-                          <span className="font-bold text-indigo-800 block mb-1">
-                            🎯 Tương tác lớp học:
+                          <span className="font-bold text-indigo-800 flex items-center gap-1 mb-1">
+                            <Users className="w-3.5 h-3.5 text-indigo-700" />
+                            <span>Tương tác lớp học:</span>
                           </span>
                           <ul className="list-disc list-inside text-gray-600 text-[11px] space-y-0.5">
                             <li>Kéo thả tham số mượt mà theo thời gian thực</li>
@@ -574,7 +595,8 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
                         }}
                         className="flex-1 py-3 bg-[#087e7c] hover:bg-[#066563] text-white rounded-xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2"
                       >
-                        <span>🚀</span> Bắt đầu trình chiếu Trạm {currentSt.id}
+                        <Play className="w-4 h-4" />
+                        <span>Bắt đầu trình chiếu Trạm {currentSt.id}</span>
                       </button>
                     </div>
                   </>

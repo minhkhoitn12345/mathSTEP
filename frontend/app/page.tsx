@@ -11,6 +11,17 @@ import TeacherDashboard from "./components/TeacherDashboard";
 import ResearchMethodologyHub from "./components/ResearchMethodologyHub";
 import { generateSmartSocraticResponse } from "./lib/smartSocratic";
 import { getAllStations, removeVietnameseAccents, StationItem } from "./lib/stationCatalogData";
+import {
+  Layers,
+  Compass,
+  GraduationCap,
+  FileText,
+  Search,
+  FlaskConical,
+  Lock,
+  Bot,
+  Sparkles,
+} from "lucide-react";
 
 export type SubsystemId = "student" | "teacher" | "research";
 export type ViewMode = "home" | "lab";
@@ -192,7 +203,7 @@ export default function Home() {
         {
           id: "intro-mascot",
           role: "assistant",
-          content: "Chào em! Thầy là **Trợ lý Socratic TES** 🦉. Thầy sẽ đồng hành cùng em qua các bước khám phá mô hình, đặt câu hỏi gợi mở và kiểm tra lập luận của em chứ tuyệt đối **không giải hộ đáp số**. Em hãy thao tác mô phỏng và hỏi thầy bất cứ khi nào cần định hướng nhé!",
+          content: "Chào em! Thầy là **Trợ lý Socratic TES**. Thầy sẽ đồng hành cùng em qua các bước khám phá mô hình, đặt câu hỏi gợi mở và kiểm tra lập luận của em chứ tuyệt đối **không giải hộ đáp số**. Em hãy thao tác mô phỏng và hỏi thầy bất cứ khi nào cần định hướng nhé!",
           intent: "general",
         },
       ]);
@@ -351,7 +362,7 @@ export default function Home() {
                 : "text-gray-300 hover:text-white hover:bg-white/10"
             }`}
           >
-            <span>📚</span>
+            <Layers className="w-4 h-4 text-emerald-500" />
             <span className="hidden md:inline">48 Trạm học</span>
           </button>
           <button
@@ -366,7 +377,7 @@ export default function Home() {
                 : "text-gray-300 hover:text-white hover:bg-white/10"
             }`}
           >
-            <span>🔬</span>
+            <Compass className="w-4 h-4 text-blue-500" />
             <span className="hidden md:inline">Phòng thực hành</span>
           </button>
           <button
@@ -378,7 +389,7 @@ export default function Home() {
                 : "text-gray-300 hover:text-white hover:bg-white/10"
             }`}
           >
-            <span>👨‍🏫</span>
+            <GraduationCap className="w-4 h-4 text-slate-400" />
             <span className="hidden md:inline">Giáo viên</span>
           </button>
           <button
@@ -390,7 +401,7 @@ export default function Home() {
                 : "text-gray-300 hover:text-white hover:bg-white/10"
             }`}
           >
-            <span>🔬</span>
+            <FileText className="w-4 h-4 text-slate-400" />
             <span className="hidden md:inline">Cơ sở KHKT</span>
           </button>
         </nav>
@@ -489,7 +500,7 @@ export default function Home() {
                       onClick={() => setVisualizerOpen(true)}
                       className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs md:text-sm border border-white/20 transition-all"
                     >
-                      Mô hình Oxy & 3D 📐
+                      Mô hình Oxy & 3D
                     </button>
                   </div>
 
@@ -505,7 +516,7 @@ export default function Home() {
                     </div>
                     <div>
                       <strong className="text-2xl font-black text-amber-300 block">TES</strong>
-                      <small className="text-xs text-gray-400">cú mèo Socratic</small>
+                      <small className="text-xs text-gray-400">trợ lý Socratic</small>
                     </div>
                   </div>
                 </div>
@@ -592,8 +603,8 @@ export default function Home() {
                       placeholder="Tìm bài (ví dụ: quy hoạch tuyến tính, hình chóp, conic...)"
                       className="w-full pl-8 pr-3 py-1.5 bg-[#f8faf9] border border-[#bed0cd] rounded-xl text-xs focus:outline-none focus:border-[#087e7c]"
                     />
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">
-                      🔍
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs flex items-center">
+                      <Search className="w-3.5 h-3.5" />
                     </span>
                   </div>
 
@@ -691,7 +702,7 @@ export default function Home() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-3 bg-amber-50/70 border-l-4 border-amber-500 rounded-r-xl">
                   <div>
                     <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wide flex items-center gap-1.5">
-                      <span>🧪</span>
+                      <FlaskConical className="w-4 h-4 text-amber-600 inline mr-1" />
                       <span>KHUNG KIẾN TRÚC MỞ RỘNG (LỘ TRÌNH ĐỀ CƯƠNG DÀI HẠN)</span>
                     </h3>
                     <p className="text-[11px] text-amber-800 mt-0.5">
@@ -751,7 +762,7 @@ export default function Home() {
                           }}
                           className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl font-bold text-xs border border-slate-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                         >
-                          <span>🔒 Đang hoàn thiện theo đề cương</span>
+                          <span className="flex items-center justify-center gap-1.5"><Lock className="w-3.5 h-3.5" /><span>Đang hoàn thiện theo đề cương</span></span>
                         </button>
                       </div>
                     </article>
@@ -815,7 +826,7 @@ export default function Home() {
           className="fixed bottom-6 right-6 z-40 px-4 py-3 bg-[#087e7c] hover:bg-[#066563] text-white rounded-2xl shadow-xl font-bold text-xs flex items-center gap-2.5 transition-all transform hover:scale-105 active:scale-95 border-2 border-white/40"
           title="Mở Trợ lý gợi mở Socratic TES"
         >
-          <span className="text-xl">🦉</span>
+          <Bot className="w-5 h-5 text-white" />
           <span className="font-extrabold tracking-wide">Trợ lý TES</span>
           <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
         </button>
@@ -836,7 +847,7 @@ export default function Home() {
             <div className="p-4 border-b border-[#e5ebe4] bg-[#f8faf9] flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-[#eff8f4] text-[#087e7c] border border-[#a3e2cf] flex items-center justify-center text-xl shadow-xs">
-                  🦉
+                  <Bot className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
@@ -872,7 +883,7 @@ export default function Home() {
                         : "bg-gray-200 text-gray-700"
                     }`}
                   >
-                    {item.role === "assistant" ? "🦉" : (session?.name || "E").slice(0, 1).toUpperCase()}
+                    {item.role === "assistant" ? <Bot className="w-3.5 h-3.5" /> : (session?.name || "E").slice(0, 1).toUpperCase()}
                   </div>
                   <div className="max-w-[85%] space-y-1 text-xs">
                     <div
@@ -898,7 +909,7 @@ export default function Home() {
               ))}
               {busy && (
                 <div className="flex items-center gap-2 text-xs text-gray-400">
-                  <span>🦉</span>
+                  <Bot className="w-3.5 h-3.5 text-[#087e7c]" />
                   <span className="italic">TES đang phân tích lập luận của em...</span>
                 </div>
               )}
@@ -916,7 +927,7 @@ export default function Home() {
                   }}
                   className="text-[#087e7c] hover:underline font-bold flex items-center gap-1"
                 >
-                  <span>🌱</span> Em muốn tự thử tiếp
+                  <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-[#087e7c]" /><span>Em muốn tự thử tiếp</span></span>
                 </button>
               </div>
 
