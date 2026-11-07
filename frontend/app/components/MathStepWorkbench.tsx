@@ -8,6 +8,7 @@ import { StationItem, getStationById } from "../lib/stationCatalogData";
 import { generateIsomorphicIntegerProblem, IntegerProblem } from "../lib/integerVertexGenerator";
 import Interactive2DMathCanvas, { BoundaryLine, PolygonVertex } from "./Interactive2DMathCanvas";
 import Stereometry3DCanvas from "./Stereometry3DCanvas";
+import TrigonometricCircleCanvas, { SPECIAL_ANGLES } from "./TrigonometricCircleCanvas";
 import KatexMath, { formatVNFloat } from "./KatexMath";
 import { MoreVertical } from "lucide-react";
 
@@ -2717,6 +2718,11 @@ export default function MathStepWorkbench({
                     : null
                 }
               />
+            ) : moduleId === "trigonometry" ? (
+              <TrigonometricCircleCanvas
+                angleDeg={typeof params.t === "number" ? params.t : 60}
+                onAngleChange={(deg) => updateParam("t", deg)}
+              />
             ) : (
               /* High-Performance Canvas Fallback */
               <canvas
@@ -2950,6 +2956,130 @@ export default function MathStepWorkbench({
                   </div>
                 );
               })()
+            ) : moduleId === "trigonometry" ? (
+              (() => {
+                const angle = ((((params.t ?? 60) % 360) + 360) % 360);
+                const roundedAngle = Math.round(angle);
+                const special = SPECIAL_ANGLES[roundedAngle];
+                const rad = (angle * Math.PI) / 180;
+                const cosVal = special ? special.cosVal : Math.cos(rad);
+                const sinVal = special ? special.sinVal : Math.sin(rad);
+                const cosLatex = special ? special.cosLatex : formatVNFloat(cosVal);
+                const sinLatex = special ? special.sinLatex : formatVNFloat(sinVal);
+                const tanLatex = special
+                  ? special.tanLatex
+                  : Math.abs(cosVal) < 1e-4
+                  ? "\\text{không xác định}"
+                  : formatVNFloat(sinVal / cosVal);
+                const cotLatex = special
+                  ? special.cotLatex
+                  : Math.abs(sinVal) < 1e-4
+                  ? "\\text{không xác định}"
+                  : formatVNFloat(cosVal / sinVal);
+
+                let quadName = "Góc phần tư I";
+                let quadRule = "\\cos \\alpha > 0,\\; \\sin \\alpha > 0";
+                if (angle > 90 && angle < 180) {
+                  quadName = "Góc phần tư II";
+                  quadRule = "\\cos \\alpha < 0,\\; \\sin \\alpha > 0";
+                } else if (angle > 180 && angle < 270) {
+                  quadName = "Góc phần tư III";
+                  quadRule = "\\cos \\alpha < 0,\\; \\sin \\alpha < 0";
+                } else if (angle > 270 && angle < 360) {
+                  quadName = "Góc phần tư IV";
+                  quadRule = "\\cos \\alpha > 0,\\; \\sin \\alpha < 0";
+                } else if (angle === 0 || angle === 360) {
+                  quadName = "Tia Ox (+)";
+                  quadRule = "\\cos 0^\\circ = 1,\\; \\sin 0^\\circ = 0";
+                } else if (angle === 90) {
+                  quadName = "Tia Oy (+)";
+                  quadRule = "\\cos 90^\\circ = 0,\\; \\sin 90^\\circ = 1";
+                } else if (angle === 180) {
+                  quadName = "Tia Ox (-)";
+                  quadRule = "\\cos 180^\\circ = -1,\\; \\sin 180^\\circ = 0";
+                } else if (angle === 270) {
+                  quadName = "Tia Oy (-)";
+                  quadRule = "\\cos 270^\\circ = 0,\\; \\sin 270^\\circ = -1";
+                }
+
+                return (
+                  <div className="space-y-2.5">
+                    {/* Thẻ định nghĩa chuẩn SGK Toán 11 KNTT */}
+                    <div className="p-2.5 bg-gradient-to-r from-sky-50 to-teal-50 border border-sky-300 rounded-xl space-y-1">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-bold text-sky-950">Đường tròn lượng giác Oxy:</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-600 text-white">
+                          SGK TOÁN 11 KNTT
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-sky-900 space-y-0.5 font-medium">
+                        <div>• Tâm <KatexMath math="O(0;\, 0)" />, Bán kính <KatexMath math="R = 1" />, Gốc <KatexMath math="A(1;\, 0)" /></div>
+                        <div>• <strong className="text-sky-700">Trục Ox (Trục Cosin):</strong> <KatexMath math="x_M = \overline{OH} = \cos \alpha" /></div>
+                        <div>• <strong className="text-rose-700">Trục Oy (Trục Sin):</strong> <KatexMath math="y_M = \overline{OK} = \sin \alpha" /></div>
+                      </div>
+                    </div>
+
+                    {/* Vị trí góc phần tư & quy tắc dấu */}
+                    <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+                      <div>
+                        <span className="text-[10px] text-slate-500 font-bold block uppercase">Vị trí góc:</span>
+                        <span className="font-bold text-slate-800">{quadName}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-500 font-bold block uppercase">Dấu lượng giác:</span>
+                        <KatexMath math={quadRule} className="font-bold text-teal-800 text-xs" />
+                      </div>
+                    </div>
+
+                    {/* 4 Giá trị lượng giác thời gian thực */}
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <div className="p-2 bg-sky-50/80 border border-sky-300 rounded-xl">
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-sky-700">
+                          <span className="w-2 h-2 rounded-full bg-sky-500 shadow-sm" />
+                          <span>cos α (Hoành độ):</span>
+                        </div>
+                        <div className="pt-0.5">
+                          <KatexMath math={`\\cos ${Math.round(angle)}^\\circ = ${cosLatex}`} className="font-bold text-sky-900 text-xs" />
+                        </div>
+                      </div>
+
+                      <div className="p-2 bg-rose-50/80 border border-rose-300 rounded-xl">
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-rose-700">
+                          <span className="w-2 h-2 rounded-full bg-rose-500 shadow-sm" />
+                          <span>sin α (Tung độ):</span>
+                        </div>
+                        <div className="pt-0.5">
+                          <KatexMath math={`\\sin ${Math.round(angle)}^\\circ = ${sinLatex}`} className="font-bold text-rose-900 text-xs" />
+                        </div>
+                      </div>
+
+                      <div className="p-2 bg-emerald-50/80 border border-emerald-300 rounded-xl">
+                        <div className="text-[10px] font-bold text-emerald-700">
+                          tan α (Tiếp tuyến x=1):
+                        </div>
+                        <div className="pt-0.5">
+                          <KatexMath math={`\\tan ${Math.round(angle)}^\\circ = ${tanLatex}`} className="font-bold text-emerald-900 text-xs" />
+                        </div>
+                      </div>
+
+                      <div className="p-2 bg-indigo-50/80 border border-indigo-300 rounded-xl">
+                        <div className="text-[10px] font-bold text-indigo-700">
+                          cot α (Tiếp tuyến y=1):
+                        </div>
+                        <div className="pt-0.5">
+                          <KatexMath math={`\\cot ${Math.round(angle)}^\\circ = ${cotLatex}`} className="font-bold text-indigo-900 text-xs" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Kiểm chứng Pythagoras sin² + cos² = 1 */}
+                    <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] flex items-center justify-between">
+                      <span className="text-slate-600 font-medium">Hệ thức cơ bản:</span>
+                      <KatexMath math="\\sin^2 \\alpha + \\cos^2 \\alpha = 1" className="font-bold text-slate-800" />
+                    </div>
+                  </div>
+                );
+              })()
             ) : (
               // Các module khác
               <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
@@ -3146,21 +3276,123 @@ export default function MathStepWorkbench({
                   </div>
                 )}
                 {moduleId === "trigonometry" && (
-                  <>
-                    <div className="flex justify-between text-[11px] font-bold">
-                      <span>Góc quay θ:</span>
-                      <span className="font-mono text-[#087e7c]">{params.t}°</span>
+                  <div className="space-y-3">
+                    {/* Header thông số góc và nút tinh chỉnh nhanh */}
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-bold text-slate-800 flex items-center gap-1">
+                          <span>📐</span> Góc quay:
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-teal-800 text-xs font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
+                            {Math.round(params.t || 60)}°
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateParam("t", 60)}
+                            className="text-[10px] text-teal-700 hover:underline font-bold"
+                          >
+                            Về 60°
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Thanh trượt góc quay α */}
+                      <input
+                        type="range"
+                        min="0"
+                        max="360"
+                        step="1"
+                        value={params.t ?? 60}
+                        onChange={(e) => updateParam("t", parseFloat(e.target.value))}
+                        className="w-full accent-teal-600 cursor-pointer"
+                      />
+
+                      <div className="flex justify-between text-[9px] text-slate-400 font-mono">
+                        <span>0° (Trục Ox)</span>
+                        <span>90° (Oy)</span>
+                        <span>180° (-Ox)</span>
+                        <span>270° (-Oy)</span>
+                        <span>360°</span>
+                      </div>
+
+                      {/* Nút bấm tinh chỉnh ±1° và ±15° */}
+                      <div className="grid grid-cols-4 gap-1 pt-1 border-t border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => updateParam("t", (((params.t ?? 60) - 15 + 360) % 360))}
+                          className="py-1 px-1.5 bg-white hover:bg-slate-100 rounded border border-slate-200 text-[10px] font-mono text-slate-700 font-bold transition-colors"
+                        >
+                          -15°
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateParam("t", (((params.t ?? 60) - 1 + 360) % 360))}
+                          className="py-1 px-1.5 bg-white hover:bg-slate-100 rounded border border-slate-200 text-[10px] font-mono text-slate-700 font-bold transition-colors"
+                        >
+                          -1°
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateParam("t", (((params.t ?? 60) + 1) % 360))}
+                          className="py-1 px-1.5 bg-white hover:bg-slate-100 rounded border border-slate-200 text-[10px] font-mono text-slate-700 font-bold transition-colors"
+                        >
+                          +1°
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateParam("t", (((params.t ?? 60) + 15) % 360))}
+                          className="py-1 px-1.5 bg-white hover:bg-slate-100 rounded border border-slate-200 text-[10px] font-mono text-slate-700 font-bold transition-colors"
+                        >
+                          +15°
+                        </button>
+                      </div>
                     </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="360"
-                      step="5"
-                      value={params.t || 60}
-                      onChange={(e) => updateParam("t", parseFloat(e.target.value))}
-                      className="w-full accent-[#087e7c]"
-                    />
-                  </>
+
+                    {/* Lưới chọn nhanh các góc đặc biệt SGK Toán 11 */}
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold text-slate-700 block uppercase tracking-wide">
+                        Góc đặc biệt SGK (Nam châm hút):
+                      </span>
+                      <div className="grid grid-cols-3 gap-1">
+                        {[
+                          { deg: 0, label: "0°" },
+                          { deg: 30, label: "30° (π/6)" },
+                          { deg: 45, label: "45° (π/4)" },
+                          { deg: 60, label: "60° (π/3)" },
+                          { deg: 90, label: "90° (π/2)" },
+                          { deg: 120, label: "120° (2π/3)" },
+                          { deg: 135, label: "135° (3π/4)" },
+                          { deg: 150, label: "150° (5π/6)" },
+                          { deg: 180, label: "180° (π)" },
+                          { deg: 210, label: "210° (7π/6)" },
+                          { deg: 225, label: "225° (5π/4)" },
+                          { deg: 240, label: "240° (4π/3)" },
+                          { deg: 270, label: "270° (3π/2)" },
+                          { deg: 300, label: "300° (5π/3)" },
+                          { deg: 315, label: "315° (7π/4)" },
+                          { deg: 330, label: "330° (11π/6)" },
+                          { deg: 360, label: "360° (2π)" },
+                        ].map((item) => {
+                          const isActive = Math.round(params.t ?? 60) === item.deg;
+                          return (
+                            <button
+                              key={item.deg}
+                              type="button"
+                              onClick={() => updateParam("t", item.deg)}
+                              className={`py-1 px-1.5 text-[9px] rounded font-mono font-medium transition-all ${
+                                isActive
+                                  ? "bg-teal-600 text-white font-bold shadow-sm ring-1 ring-teal-500"
+                                  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200"
+                              }`}
+                            >
+                              {item.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
