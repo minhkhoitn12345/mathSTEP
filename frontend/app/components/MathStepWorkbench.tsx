@@ -45,6 +45,7 @@ interface MathStepWorkbenchProps {
   onAskTutor?: (question: string) => void;
   onStepChange?: (stepNumber: number, stepTitle: string) => void;
   onSelectStation?: (station: StationItem) => void;
+  onBackToCatalog?: () => void;
 }
 
 // 7 Bước sư phạm chuẩn theo nghiên cứu giáo dục toán học & file index (2).html
@@ -487,6 +488,7 @@ export default function MathStepWorkbench({
   onAskTutor,
   onStepChange,
   onSelectStation,
+  onBackToCatalog,
 }: MathStepWorkbenchProps) {
   const currentStation = useMemo(() => (stationId ? getStationById(stationId) : undefined), [stationId]);
   const meta = useMemo(() => {
@@ -1692,6 +1694,16 @@ export default function MathStepWorkbench({
       {/* 1. THANH TIÊU ĐỀ TRẠM HỌC & CĂN CỨ SGK (LAB-BAR) */}
       <div className="bg-white border-b border-[#d9e4e2] px-4 py-2 flex flex-wrap items-center justify-between gap-2.5">
         <div className="flex items-center gap-3">
+          {onBackToCatalog && (
+            <button
+              onClick={onBackToCatalog}
+              className="px-3 py-1.5 rounded-xl bg-[#eef7f3] hover:bg-[#dbeee7] text-[#087e7c] font-bold text-xs border border-[#a3e2cf] flex items-center gap-1.5 shadow-sm transition-all"
+              title="Quay lại danh mục 48 trạm học"
+            >
+              <span>←</span>
+              <span>Danh mục trạm</span>
+            </button>
+          )}
           <button
             onClick={() => setCatalogModalOpen(true)}
             className="px-3 py-1.5 rounded-xl bg-[#087e7c] text-white font-bold text-xs hover:bg-[#066563] flex items-center gap-1.5 shadow-sm transition-all"
