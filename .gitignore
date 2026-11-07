@@ -27,3 +27,5 @@ supabase/.branches/
 *.log
 .DS_Store
 .vscode/
+
+.vercel
