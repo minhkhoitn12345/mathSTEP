@@ -8,6 +8,7 @@ import { StationItem, getStationById } from "../lib/stationCatalogData";
 import { generateIsomorphicIntegerProblem, IntegerProblem } from "../lib/integerVertexGenerator";
 import Interactive2DMathCanvas, { BoundaryLine, PolygonVertex } from "./Interactive2DMathCanvas";
 import Stereometry3DCanvas from "./Stereometry3DCanvas";
+import KatexMath, { formatVNFloat } from "./KatexMath";
 import { MoreVertical } from "lucide-react";
 
 export type ModuleId =
@@ -2886,6 +2887,69 @@ export default function MathStepWorkbench({
                   );
                 })()
               )
+            ) : moduleId === "spatial_geometry" ? (
+              (() => {
+                const hVal = params.h || 2.6;
+                const aVal = 3.0;
+                const baseArea = aVal * aVal;
+                const volume = (1 / 3) * baseArea * hVal;
+                const diagonal = aVal * Math.SQRT2;
+                const halfDiag = diagonal / 2;
+                const edgeLength = Math.sqrt(hVal * hVal + halfDiag * halfDiag);
+                const slantAngle = (Math.atan2(hVal, halfDiag) * 180) / Math.PI;
+
+                return (
+                  <div className="space-y-2.5">
+                    {/* Thẻ quan hệ hình học không gian 11 */}
+                    <div className="p-2.5 bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-300 rounded-xl space-y-1">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-bold text-teal-900">Hình chóp đều S.ABCD:</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-600 text-white">
+                          SGK TOÁN 11
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-teal-800 space-y-0.5 font-medium">
+                        <div>• Đường cao: <KatexMath math="SH \perp (ABCD)" /></div>
+                        <div>• Mặt phẳng đáy: <KatexMath math="(ABCD): y = 0" /></div>
+                        <div>• Vectơ pháp tuyến: <KatexMath math="\vec{n} = (0;\, 1;\, 0)" /></div>
+                      </div>
+                    </div>
+
+                    {/* Thẻ số liệu đo đạc chuẩn KaTeX làm tròn tối đa 2 chữ số thập phân */}
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 text-[11px]">
+                      <span className="font-bold text-slate-800 block text-[10px] uppercase tracking-wide">
+                        Số liệu hình học giải tích:
+                      </span>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <div className="p-1.5 bg-white rounded border border-slate-200">
+                          <div className="text-[10px] text-slate-500">Chiều cao:</div>
+                          <KatexMath math={`h = ${formatVNFloat(hVal)}`} className="font-bold text-teal-800" />
+                        </div>
+                        <div className="p-1.5 bg-white rounded border border-slate-200">
+                          <div className="text-[10px] text-slate-500">Cạnh đáy:</div>
+                          <KatexMath math={`a = ${formatVNFloat(aVal)}`} className="font-bold text-teal-800" />
+                        </div>
+                        <div className="p-1.5 bg-white rounded border border-slate-200">
+                          <div className="text-[10px] text-slate-500">Diện tích đáy:</div>
+                          <KatexMath math={`S_{đáy} = ${formatVNFloat(baseArea)}`} className="font-bold text-cyan-800" />
+                        </div>
+                        <div className="p-1.5 bg-white rounded border border-slate-200">
+                          <div className="text-[10px] text-slate-500">Thể tích:</div>
+                          <KatexMath math={`V = ${formatVNFloat(volume)}`} className="font-bold text-amber-800" />
+                        </div>
+                        <div className="p-1.5 bg-white rounded border border-slate-200">
+                          <div className="text-[10px] text-slate-500">Cạnh bên:</div>
+                          <KatexMath math={`SA \approx ${formatVNFloat(edgeLength)}`} className="font-bold text-slate-800" />
+                        </div>
+                        <div className="p-1.5 bg-white rounded border border-slate-200">
+                          <div className="text-[10px] text-slate-500">Góc cạnh bên:</div>
+                          <KatexMath math={`\varphi \approx ${formatVNFloat(slantAngle)}^\circ`} className="font-bold text-purple-800" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()
             ) : (
               // Các module khác
               <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
@@ -3026,21 +3090,60 @@ export default function MathStepWorkbench({
               /* Các module 3D / lượng giác */
               <div className="space-y-2">
                 {moduleId === "spatial_geometry" && (
-                  <>
-                    <div className="flex justify-between text-[11px] font-bold">
-                      <span>Chiều cao chóp h:</span>
-                      <span className="font-mono text-[#087e7c]">{params.h}</span>
+                  <div className="space-y-2.5">
+                    <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                      <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                        <span className="flex items-center gap-1">
+                          <span>Chiều cao:</span>
+                          <KatexMath math={`h = SH = ${formatVNFloat(params.h || 2.6)}`} />
+                        </span>
+                        <span className="font-mono text-teal-800 text-xs font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
+                          {formatVNFloat(params.h || 2.6)} m
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="1.2"
+                        max="4.5"
+                        step="0.1"
+                        value={params.h || 2.6}
+                        onChange={(e) => updateParam("h", parseFloat(e.target.value))}
+                        className="w-full accent-teal-600"
+                      />
+                      <div className="flex justify-between text-[9px] text-slate-400 font-mono">
+                        <span>1,2 m</span>
+                        <span className="font-bold text-teal-700">2,6 m (chuẩn)</span>
+                        <span>4,5 m</span>
+                      </div>
                     </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="6"
-                      step="0.2"
-                      value={params.h || 3}
-                      onChange={(e) => updateParam("h", parseFloat(e.target.value))}
-                      className="w-full accent-[#087e7c]"
-                    />
-                  </>
+
+                    <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                      <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                        <span className="flex items-center gap-1">
+                          <span>Gấp khối <KatexMath math="\leftrightarrow" /> Khai triển:</span>
+                        </span>
+                        <span className="font-mono text-cyan-800 text-xs font-extrabold bg-cyan-100/70 px-2 py-0.5 rounded border border-cyan-300">
+                          {foldPercent}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={foldPercent}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setFoldPercent(val);
+                          setIsUnfolded(val < 50);
+                        }}
+                        className="w-full accent-cyan-600"
+                      />
+                      <div className="flex justify-between text-[9px] text-slate-400 font-mono">
+                        <span>0% (Phẳng)</span>
+                        <span className="font-bold text-cyan-700">100% (Khối 3D)</span>
+                      </div>
+                    </div>
+                  </div>
                 )}
                 {moduleId === "trigonometry" && (
                   <>
