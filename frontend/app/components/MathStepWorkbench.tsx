@@ -40,8 +40,6 @@ import {
   PanelLeftOpen,
   PanelRightClose,
   PanelRightOpen,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 
 export type ModuleId =
@@ -631,6 +629,35 @@ export default function MathStepWorkbench({
     return MODULE_META[moduleId];
   }, [currentStation, moduleId]);
 
+  // Bài toán thực tế / Đề bài tương ứng với trạm học (đảm bảo luôn có đề đầy đủ cho tất cả 48 trạm)
+  const activeProblem = useMemo<RealWorldProblem>(() => {
+    if (stationId && REAL_WORLD_PROBLEMS[stationId]) {
+      return REAL_WORLD_PROBLEMS[stationId];
+    }
+    return {
+      title: currentStation?.title || meta.title || "BÀI TOÁN KHÁM PHÁ TOÁN HỌC",
+      source: currentStation?.source || meta.source || "SGK Toán THPT · Bộ Kết nối tri thức",
+      context:
+        currentStation?.simulation ||
+        meta.simulation ||
+        "Quan sát và thao tác trên mô hình tương tác để kiểm chứng tính chất hình học và đại số.",
+      objectiveText:
+        currentStation?.goal ||
+        meta.goal ||
+        "Xác định quy luật toán học và phương án tối ưu của bài toán.",
+      matrixHeaders: ["Thông số", "Thao tác", "Quy tắc"],
+      matrixRows: [
+        {
+          label: "Mục tiêu bài toán",
+          col1: "Quan sát mô hình",
+          col2: "Biến đổi tham số",
+          limit: currentStation?.source || meta.source || "SGK",
+        },
+      ],
+      optimalSummary: currentStation?.goal || meta.goal,
+    };
+  }, [stationId, currentStation, meta]);
+
   // --- Step Progression State ---
   const [currentStep, setCurrentStep] = useState<number>(typeof initialStep === "number" && initialStep >= 0 && initialStep <= 7 ? initialStep : 0);
   const [prediction, setPrediction] = useState<string>("");
@@ -656,10 +683,9 @@ export default function MathStepWorkbench({
   const [moreMenuOpen, setMoreMenuOpen] = useState<boolean>(false);
   const [canvasSnapshotUrl, setCanvasSnapshotUrl] = useState<string | null>(null);
 
-  // --- Two Side Panels Toggle State & Collapsible Problem ---
+  // --- Two Side Panels Toggle State ---
   const [showLeftPanel, setShowLeftPanel] = useState<boolean>(true);
   const [showRightPanel, setShowRightPanel] = useState<boolean>(true);
-  const [problemCollapsed, setProblemCollapsed] = useState<boolean>(false);
 
 
   const [hintLevel, setHintLevel] = useState<number>(0);
@@ -1948,29 +1974,29 @@ export default function MathStepWorkbench({
         </div>
 
         <div className="flex items-center gap-2 relative">
-          {/* Nút Ẩn/Hiện Thanh Nhiệm vụ bên Trái */}
+          {/* Nút Ẩn/Hiện Cột Đề bài & Nhiệm vụ bên Trái */}
           <button
             type="button"
             onClick={() => {
               setShowLeftPanel((v) => {
                 const next = !v;
-                showToast(next ? "Đã hiện thanh Nhiệm vụ bên trái." : "Đã ẩn thanh Nhiệm vụ (Mở rộng Canvas).");
+                showToast(next ? "Đã mở Cột Đề bài & Nhiệm vụ." : "Đã ẩn Cột Đề bài (Mở rộng Canvas).");
                 return next;
               });
             }}
-            title={showLeftPanel ? "Ẩn thanh Nhiệm vụ (Trái) để mở rộng tối đa khung vẽ" : "Hiện thanh Nhiệm vụ (Trái)"}
-            className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold hidden lg:flex items-center gap-1.5 shadow-xs transition-all ${
+            title={showLeftPanel ? "Thu gọn Cột Đề bài & Nhiệm vụ để mở rộng khung vẽ" : "Mở Cột Đề bài & Nhiệm vụ để đọc đề"}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold hidden lg:flex items-center gap-1.5 shadow-xs transition-all ${
               showLeftPanel
                 ? "bg-white border-[#d9e4e2] text-slate-700 hover:bg-slate-50"
-                : "bg-[#eef7f3] border-[#a3e2cf] text-[#087e7c]"
+                : "bg-teal-600 text-white border-teal-700 hover:bg-teal-700 shadow-md animate-pulse"
             }`}
           >
             {showLeftPanel ? (
               <PanelLeftClose className="w-3.5 h-3.5 text-slate-500" />
             ) : (
-              <PanelLeftOpen className="w-3.5 h-3.5 text-[#087e7c]" />
+              <PanelLeftOpen className="w-3.5 h-3.5 text-white" />
             )}
-            <span className="hidden xl:inline">{showLeftPanel ? "Ẩn nhiệm vụ" : "Hiện nhiệm vụ"}</span>
+            <span>{showLeftPanel ? "Ẩn cột đề bài" : "Mở cột đề bài (Đọc đề)"}</span>
           </button>
 
           {/* Nút Ẩn/Hiện Thanh Điều khiển bên Phải */}
@@ -1979,23 +2005,23 @@ export default function MathStepWorkbench({
             onClick={() => {
               setShowRightPanel((v) => {
                 const next = !v;
-                showToast(next ? "Đã hiện thanh Điều khiển bên phải." : "Đã ẩn thanh Điều khiển (Mở rộng Canvas).");
+                showToast(next ? "Đã mở thanh Điều khiển bên phải." : "Đã ẩn thanh Điều khiển (Mở rộng Canvas).");
                 return next;
               });
             }}
             title={showRightPanel ? "Ẩn thanh Điều khiển (Phải) để mở rộng tối đa khung vẽ" : "Hiện thanh Điều khiển (Phải)"}
-            className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold hidden lg:flex items-center gap-1.5 shadow-xs transition-all ${
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold hidden lg:flex items-center gap-1.5 shadow-xs transition-all ${
               showRightPanel
                 ? "bg-white border-[#d9e4e2] text-slate-700 hover:bg-slate-50"
-                : "bg-[#eef7f3] border-[#a3e2cf] text-[#087e7c]"
+                : "bg-teal-600 text-white border-teal-700 hover:bg-teal-700 shadow-md"
             }`}
           >
             {showRightPanel ? (
               <PanelRightClose className="w-3.5 h-3.5 text-slate-500" />
             ) : (
-              <PanelRightOpen className="w-3.5 h-3.5 text-[#087e7c]" />
+              <PanelRightOpen className="w-3.5 h-3.5 text-white" />
             )}
-            <span className="hidden xl:inline">{showRightPanel ? "Ẩn điều khiển" : "Hiện điều khiển"}</span>
+            <span>{showRightPanel ? "Ẩn điều khiển" : "Hiện điều khiển"}</span>
           </button>
 
           {/* Nút Làm lại bài này từ đầu (Reset Progress) */}
@@ -2172,7 +2198,7 @@ export default function MathStepWorkbench({
               : "bg-[#f3f6f5] text-gray-700 border-[#d9e4e2]"
           }`}
         >
-          <FileText className="w-3.5 h-3.5 inline mr-1" /> Nhiệm vụ (B{currentStep + 1})
+          <BookOpen className="w-3.5 h-3.5 inline mr-1" /> Đề bài & Nhiệm vụ (B{currentStep + 1})
         </button>
         <button
           type="button"
@@ -2220,16 +2246,13 @@ export default function MathStepWorkbench({
               </button>
             </div>
 
-            {/* 1. MODULE ĐỀ BÀI & BỐI CẢNH THỰC TẾ (PROBLEM STATEMENT CARD - KHÔNG TRÀN VIỀN) */}
+            {/* 1. MODULE ĐỀ BÀI & BỐI CẢNH THỰC TẾ (PROBLEM STATEMENT CARD - LUÔN HIỂN THỊ ĐẦY ĐỦ 100%) */}
             {(() => {
-              const prob = REAL_WORLD_PROBLEMS[stationId || "10.03"] || REAL_WORLD_PROBLEMS["10.03"];
+              const prob = activeProblem;
               return (
                 <div className="bg-gradient-to-br from-[#0c2e35] via-[#082329] to-[#06181d] text-white rounded-xl border border-teal-500/30 shadow-md overflow-hidden transition-all duration-200">
-                  {/* Header Card với nút Thu gọn / Mở rộng */}
-                  <div
-                    onClick={() => setProblemCollapsed((v) => !v)}
-                    className="p-2.5 bg-teal-950/70 border-b border-teal-500/20 flex items-center justify-between cursor-pointer select-none hover:bg-teal-950 transition-colors gap-2"
-                  >
+                  {/* Header Card với nhãn Đề bài chuẩn mực */}
+                  <div className="p-2.5 bg-teal-950/80 border-b border-teal-500/20 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <BookOpen className="w-3.5 h-3.5 text-teal-400 shrink-0" />
                       <span className="text-[11px] font-bold text-teal-300 uppercase tracking-wide truncate">
@@ -2237,75 +2260,58 @@ export default function MathStepWorkbench({
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="px-1.5 py-0.5 bg-teal-900/80 border border-teal-400/40 rounded text-[9px] text-teal-200 font-medium">
+                      <span className="px-1.5 py-0.5 bg-teal-900/90 border border-teal-400/40 rounded text-[9px] text-teal-200 font-medium">
                         {prob.source.split("Bài")[0]?.trim() || "SGK KNTT"}
                       </span>
-                      <button
-                        type="button"
-                        className="p-0.5 text-teal-300 hover:text-white"
-                        title={problemCollapsed ? "Mở rộng đề bài" : "Thu gọn đề bài"}
-                      >
-                        {problemCollapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
-                      </button>
                     </div>
                   </div>
 
-                  {/* Nội dung chi tiết của đề bài (có thể thu gọn) */}
-                  {!problemCollapsed ? (
-                    <div className="p-3 space-y-2.5 text-xs">
-                      {/* Bối cảnh đề bài */}
-                      <p className="text-[11px] text-slate-200 leading-relaxed font-normal break-words">
-                        {prob.context}
-                      </p>
+                  {/* Nội dung chi tiết của đề bài (Luôn luôn mở 100%) */}
+                  <div className="p-3 space-y-2.5 text-xs">
+                    {/* Bối cảnh đề bài */}
+                    <p className="text-[11px] text-slate-100 leading-relaxed font-normal break-words">
+                      {prob.context}
+                    </p>
 
-                      {/* Mục tiêu / Câu hỏi trọng tâm */}
-                      <div className="p-2 bg-slate-900/80 rounded-lg border border-teal-500/30 text-[11px] font-semibold text-amber-300 flex items-start gap-1.5 break-words">
-                        <Target className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                        <span className="leading-snug">{prob.objectiveText}</span>
-                      </div>
+                    {/* Mục tiêu / Câu hỏi trọng tâm */}
+                    <div className="p-2 bg-slate-900/80 rounded-lg border border-teal-500/30 text-[11px] font-semibold text-amber-300 flex items-start gap-1.5 break-words">
+                      <Target className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                      <span className="leading-snug">{prob.objectiveText}</span>
+                    </div>
 
-                      {/* Danh sách thông số kỹ thuật / Bảng ma trận không bị tràn viền */}
-                      {prob.matrixRows && prob.matrixRows.length > 0 && (
-                        <div className="space-y-1.5 pt-0.5">
-                          <div className="text-[10px] font-bold text-teal-300 uppercase tracking-wider flex items-center justify-between">
-                            <span>Thông số & Ràng buộc:</span>
-                            <span className="text-[9px] text-gray-400 lowercase font-normal">{prob.source}</span>
-                          </div>
-                          <div className="space-y-1.5">
-                            {prob.matrixRows.map((r, i) => (
-                              <div
-                                key={i}
-                                className="p-2 bg-slate-900/60 rounded-lg border border-teal-900/60 hover:border-teal-700/60 transition-colors text-[10px] space-y-1"
-                              >
-                                <div className="flex items-center justify-between gap-1 flex-wrap font-bold text-slate-200">
-                                  <span>{r.label}</span>
-                                  {r.limit && (
-                                    <span className="font-mono text-amber-300 text-[9.5px] bg-amber-950/70 px-1.5 py-0.5 rounded border border-amber-600/40 break-words">
-                                      {r.limit}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="flex items-center justify-between text-teal-300 font-mono text-[9.5px] pt-1 border-t border-teal-900/40">
-                                  <span>{prob.matrixHeaders[1]}: <strong className="text-white">{r.col1}</strong></span>
-                                  <span>{prob.matrixHeaders[2]}: <strong className="text-white">{r.col2}</strong></span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                    {/* Danh sách thông số kỹ thuật / Bảng ma trận không bị tràn viền */}
+                    {prob.matrixRows && prob.matrixRows.length > 0 && (
+                      <div className="space-y-1.5 pt-0.5">
+                        <div className="text-[10px] font-bold text-teal-300 uppercase tracking-wider flex items-center justify-between">
+                          <span>Thông số & Ràng buộc:</span>
+                          <span className="text-[9px] text-gray-400 lowercase font-normal">{prob.source}</span>
                         </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div
-                      onClick={() => setProblemCollapsed(false)}
-                      className="px-3 py-1.5 bg-teal-950/30 text-[10px] text-slate-300 flex items-center justify-between cursor-pointer hover:bg-teal-950/50"
-                    >
-                      <span className="truncate italic text-teal-200/80">
-                        {prob.objectiveText}
-                      </span>
-                      <span className="text-[9px] text-teal-400 font-bold ml-1 shrink-0">Xem chi tiết ▼</span>
-                    </div>
-                  )}
+                        <div className="space-y-1.5">
+                          {prob.matrixRows.map((r, i) => (
+                            <div
+                              key={i}
+                              className="p-2 bg-slate-900/60 rounded-lg border border-teal-900/60 hover:border-teal-700/60 transition-colors text-[10px] space-y-1"
+                            >
+                              <div className="flex items-center justify-between gap-1 flex-wrap font-bold text-slate-200">
+                                <span>{r.label}</span>
+                                {r.limit && (
+                                  <span className="font-mono text-amber-300 text-[9.5px] bg-amber-950/70 px-1.5 py-0.5 rounded border border-amber-600/40 break-words">
+                                    {r.limit}
+                                  </span>
+                                )}
+                              </div>
+                              {r.col1 && r.col2 && (
+                                <div className="flex items-center justify-between text-teal-300 font-mono text-[9.5px] pt-1 border-t border-teal-900/40">
+                                  <span>{prob.matrixHeaders[1] || "Thông số 1"}: <strong className="text-white">{r.col1}</strong></span>
+                                  <span>{prob.matrixHeaders[2] || "Thông số 2"}: <strong className="text-white">{r.col2}</strong></span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })()}
@@ -2886,22 +2892,71 @@ export default function MathStepWorkbench({
         )}
 
         {/* CỘT 2: KHUNG MÔ PHỎNG & CANVAS (SCENE-SIDE) - CHIẾM 100% CHIỀU CAO, THOÁNG ĐÃNG NHƯ DESMOS */}
-        <section className={`bg-white border border-[#d9e4e2] rounded-xl overflow-hidden flex-col shadow-sm relative ${
+        <section className={`bg-white border border-[#d9e4e2] rounded-xl overflow-hidden flex flex-col shadow-sm relative ${
           isFullscreenScene ? "fixed inset-2 z-50 flex shadow-2xl" : activeMobileTab === "scene" ? "flex" : "hidden lg:flex"
         }`}>
-          {/* Nút nổi mở lại Thanh Trái (khi đang bị ẩn trên màn hình lớn) */}
+          {/* Header trên của Canvas: Luôn hiển thị Đề bài tóm tắt và nút công cụ toàn màn hình */}
+          <div className="bg-[#f0f7f5] border-b border-[#d9e4e2] px-3.5 py-1.5 flex items-center justify-between gap-3 text-xs shrink-0 z-20">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="p-1 rounded-md bg-[#e2f1ec] text-[#087e7c] shrink-0">
+                <BookOpen className="w-3.5 h-3.5" />
+              </span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-[#152f35] text-xs truncate">
+                    {activeProblem.title}
+                  </span>
+                  <span className="hidden sm:inline-block text-[9.5px] text-[#087e7c] font-medium bg-[#eef7f3] px-2 py-0.5 rounded-full border border-[#a3e2cf] shrink-0">
+                    {activeProblem.source.split("Bài")[0]?.trim() || "SGK"}
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#4b6368] truncate" title={activeProblem.objectiveText}>
+                  <strong className="text-[#087e7c]">Mục tiêu:</strong> {activeProblem.objectiveText}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              {!showLeftPanel && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLeftPanel(true);
+                    showToast("Đã mở Cột Đề bài & Nhiệm vụ.");
+                  }}
+                  className="px-2.5 py-1 bg-[#087e7c] hover:bg-[#066563] text-white rounded-lg text-[11px] font-bold flex items-center gap-1 shadow-xs transition-colors"
+                  title="Mở toàn văn đề bài chi tiết bên cột trái"
+                >
+                  <BookOpen className="w-3 h-3" />
+                  <span className="hidden sm:inline">Mở đề chi tiết</span>
+                </button>
+              )}
+              {meta.is3D && (
+                <button
+                  type="button"
+                  onClick={() => setIsFullscreenScene((v) => !v)}
+                  className="px-2 py-1 bg-white border border-[#d9e4e2] rounded-lg text-[11px] font-semibold text-[#152f35] hover:bg-gray-100 flex items-center gap-1"
+                >
+                  <span>{isFullscreenScene ? "✕" : "⛶"}</span>
+                  <span className="hidden sm:inline">{isFullscreenScene ? "Thu nhỏ" : "Toàn màn hình"}</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Nút nổi mở lại Cột Đề bài & Nhiệm vụ (khi đang bị ẩn trên màn hình lớn) */}
           {!showLeftPanel && (
             <button
               type="button"
               onClick={() => {
                 setShowLeftPanel(true);
-                showToast("Đã hiện thanh Nhiệm vụ bên trái.");
+                showToast("Đã mở Cột Đề bài & Nhiệm vụ.");
               }}
-              className="hidden lg:flex absolute left-3 top-3 z-30 px-3 py-1.5 bg-white/95 backdrop-blur-md hover:bg-white text-[#087e7c] border border-[#a3e2cf] rounded-xl shadow-md text-xs font-bold items-center gap-1.5 transition-all hover:scale-105"
-              title="Hiện thanh Nhiệm vụ (Trái)"
+              className="hidden lg:flex absolute left-3 top-14 z-30 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white border border-teal-700 rounded-xl shadow-lg text-xs font-bold items-center gap-1.5 transition-all hover:scale-105"
+              title="Mở Cột Đề bài & Nhiệm vụ (Trái) để đọc đề chi tiết"
             >
-              <PanelLeftOpen className="w-4 h-4" />
-              <span>Nhiệm vụ (B{currentStep + 1})</span>
+              <PanelLeftOpen className="w-4 h-4 text-white" />
+              <span>📖 Đọc đề bài (B{currentStep + 1})</span>
             </button>
           )}
 
@@ -2913,26 +2968,12 @@ export default function MathStepWorkbench({
                 setShowRightPanel(true);
                 showToast("Đã hiện thanh Điều khiển bên phải.");
               }}
-              className="hidden lg:flex absolute right-3 top-3 z-30 px-3 py-1.5 bg-white/95 backdrop-blur-md hover:bg-white text-[#087e7c] border border-[#a3e2cf] rounded-xl shadow-md text-xs font-bold items-center gap-1.5 transition-all hover:scale-105"
+              className="hidden lg:flex absolute right-3 top-14 z-30 px-3 py-1.5 bg-white/95 backdrop-blur-md hover:bg-white text-[#087e7c] border border-[#a3e2cf] rounded-xl shadow-md text-xs font-bold items-center gap-1.5 transition-all hover:scale-105"
               title="Hiện thanh Điều khiển & Kết quả (Phải)"
             >
               <PanelRightOpen className="w-4 h-4" />
               <span>Điều khiển</span>
             </button>
-          )}
-          {/* Header phụ chỉ hiển thị khi ở chế độ 3D để bật/tắt toàn màn hình */}
-          {meta.is3D && (
-            <div className="bg-white border-b border-[#d9e4e2] px-3 py-1.5 flex items-center justify-between text-xs">
-              <span className="font-bold text-[#087e7c] text-xs">Mô phỏng không gian 3D</span>
-              <button
-                type="button"
-                onClick={() => setIsFullscreenScene((v) => !v)}
-                className="px-2 py-1 bg-white border border-[#d9e4e2] rounded-lg text-[11px] font-semibold text-[#152f35] hover:bg-gray-100 flex items-center gap-1"
-              >
-                <span>{isFullscreenScene ? "✕" : "⛶"}</span>
-                <span>{isFullscreenScene ? "Thu nhỏ" : "Toàn màn hình"}</span>
-              </button>
-            </div>
           )}
 
           {/* Khung Canvas giải phóng toàn bộ chiều cao từ trên xuống dưới */}
