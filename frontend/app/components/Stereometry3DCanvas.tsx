@@ -1032,7 +1032,8 @@ export default function Stereometry3DCanvas({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full flex flex-col bg-gradient-to-b from-[#0F172A] via-[#091122] to-[#020617] select-none overflow-hidden rounded-xl border border-slate-700 shadow-2xl ${className}`}
+      style={{ touchAction: "none" }}
+      className={`relative w-full h-full flex flex-col bg-[#090D16] select-none overflow-hidden rounded-xl border border-slate-800 ${className}`}
     >
       {/* Toast thông báo đóng băng cấu hình */}
       {freezeNotice && (
@@ -1267,6 +1268,7 @@ export default function Stereometry3DCanvas({
         dpr={[1, 1.5]}
         gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: "high-performance" }}
         className="w-full h-full cursor-grab active:cursor-grabbing"
+        style={{ touchAction: "none" }}
       >
         {/* Studio Three-Point Lighting */}
         <ambientLight intensity={0.45} />

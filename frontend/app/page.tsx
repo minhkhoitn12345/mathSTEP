@@ -84,12 +84,14 @@ function normalizeMathDelimiters(content: string): string {
 function MathMessage({ content }: { content: string }) {
   const normalized = useMemo(() => normalizeMathDelimiters(content), [content]);
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkMath]}
-      rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: false }]]}
-    >
-      {normalized}
-    </ReactMarkdown>
+    <div className="overflow-x-auto max-w-full break-words">
+      <ReactMarkdown
+        remarkPlugins={[remarkMath]}
+        rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: false }]]}
+      >
+        {normalized}
+      </ReactMarkdown>
+    </div>
   );
 }
 
@@ -648,6 +650,17 @@ function HomeContent() {
   const [tutorOpen, setTutorOpen] = useState(false);
   const [visualizerOpen, setVisualizerOpen] = useState(false);
 
+  // Lock body overflow when tutor drawer is open to prevent screen overflow when zoomed
+  useEffect(() => {
+    if (tutorOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [tutorOpen]);
+
   // Catalog filtering state
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGrade, setSelectedGrade] = useState<number>(0);
@@ -991,43 +1004,43 @@ function HomeContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#fbf9f5] text-[#102026] font-sans selection:bg-[#c25e3e20] selection:text-[#a94c2d]">
-      {/* 1. TOP NAVIGATION BAR */}
-      <header className="sticky top-0 z-40 bg-[#0e1c20] text-white border-b border-[#1f343b] px-4 md:px-8 h-16 flex items-center justify-between gap-4 shadow-xs">
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen max-w-full overflow-x-hidden flex flex-col bg-[#090D16] text-slate-100 font-sans selection:bg-blue-600/30 selection:text-white">
+      {/* 1. TOP NAVIGATION BAR (DESKTOP APP SHELL HEADER 48px) */}
+      <header className="sticky top-0 z-40 bg-slate-950 text-slate-100 border-b border-slate-800 px-3 md:px-6 h-12 flex items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-2.5">
           <Link
             href="/"
             onClick={() => {
               setViewMode("home");
               setSubsystem("student");
             }}
-            className="flex items-center gap-2.5 text-white no-underline group"
+            className="flex items-center gap-2 text-white no-underline group"
           >
-            <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#c25e3e] to-[#a34426] text-[#fff6f0] font-serif italic font-bold text-lg flex items-center justify-center border border-[#d87c5e]/40 shadow-xs group-hover:scale-105 transition-transform">
-              m
+            <span className="w-7 h-7 rounded-md bg-blue-600 text-white font-mono font-bold text-sm flex items-center justify-center shadow-xs group-hover:bg-blue-500 transition-colors">
+              M
             </span>
             <div className="leading-tight">
-              <strong className="font-serif text-sm tracking-wider font-bold block text-white">MATHSTEP</strong>
-              <span className="text-[10px] text-[#93a8b0] tracking-widest hidden sm:inline font-sans">HỌC LIỆU TOÁN HỌC 3D</span>
+              <strong className="font-sans text-xs tracking-wider font-bold block text-white">MATHSTEP</strong>
+              <span className="text-[9px] text-slate-400 font-mono hidden sm:inline">HỌC LIỆU TOÁN HỌC 3D</span>
             </div>
           </Link>
         </div>
 
-        {/* 3 PHÂN HỆ CHÍNH KHKT NAVIGATION TABS */}
-        <nav className="flex items-center gap-1 bg-[#182e36] p-1 rounded-2xl border border-[#25424d]">
+        {/* 3 PHÂN HỆ CHÍNH KHKT NAVIGATION TABS (SEGMENTED CONTROL) */}
+        <nav className="flex items-center bg-slate-900 p-0.5 rounded-md border border-slate-800 h-8">
           <button
             type="button"
             onClick={() => {
               setSubsystem("student");
               setViewMode("home");
             }}
-            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
+            className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition-colors ${
               subsystem === "student" && viewMode === "home"
-                ? "bg-[#c25e3e] text-white shadow-xs"
-                : "text-gray-300 hover:text-white hover:bg-white/10"
+                ? "bg-blue-600 text-white shadow-xs font-semibold"
+                : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            <Layers className="w-4 h-4 text-[#e89b78]" />
+            <Layers className="w-3.5 h-3.5 text-blue-400" />
             <span className="hidden md:inline">48 Trạm học</span>
           </button>
           <button
@@ -1036,13 +1049,13 @@ function HomeContent() {
               setSubsystem("student");
               setViewMode("lab");
             }}
-            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
+            className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition-colors ${
               subsystem === "student" && viewMode === "lab"
-                ? "bg-[#c25e3e] text-white shadow-xs"
-                : "text-gray-300 hover:text-white hover:bg-white/10"
+                ? "bg-blue-600 text-white shadow-xs font-semibold"
+                : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            <Compass className="w-4 h-4 text-amber-400" />
+            <Compass className="w-3.5 h-3.5 text-emerald-400" />
             <span className="hidden md:inline">Phòng thực hành</span>
           </button>
           <button
@@ -1052,13 +1065,13 @@ function HomeContent() {
               setViewMode("home");
               syncUrl(null, null, "teacher");
             }}
-            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
+            className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition-colors ${
               subsystem === "teacher"
-                ? "bg-[#c25e3e] text-white shadow-xs"
-                : "text-gray-300 hover:text-white hover:bg-white/10"
+                ? "bg-blue-600 text-white shadow-xs font-semibold"
+                : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            <GraduationCap className="w-4 h-4 text-emerald-400" />
+            <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden md:inline">Giáo viên</span>
           </button>
           <button
@@ -1068,43 +1081,38 @@ function HomeContent() {
               setViewMode("home");
               syncUrl(null, null, "research");
             }}
-            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
+            className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition-colors ${
               subsystem === "research"
-                ? "bg-[#c25e3e] text-white shadow-xs"
-                : "text-gray-300 hover:text-white hover:bg-white/10"
+                ? "bg-blue-600 text-white shadow-xs font-semibold"
+                : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            <FileText className="w-4 h-4 text-sky-400" />
+            <FileText className="w-3.5 h-3.5 text-sky-400" />
             <span className="hidden md:inline">Cơ sở KHKT</span>
           </button>
         </nav>
 
         {/* USER MENU & AUTH */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {sessionLoading ? (
-            <span className="text-[10px] text-gray-400">...</span>
+            <span className="text-[10px] text-slate-500 font-mono">...</span>
           ) : session?.authenticated ? (
-            <div className="flex items-center gap-2 bg-[#133d41] py-1 px-2.5 rounded-xl border border-[#2a595f] shadow-sm">
+            <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => {
                   setAccountModalTab("profile");
                   setAccountModalOpen(true);
                 }}
-                className="flex items-center gap-2 text-left hover:opacity-90 transition-opacity"
-                title="Xem và chỉnh sửa hồ sơ học sinh (Họ tên, Khối lớp, Trường, Mục tiêu)"
+                className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-200 hover:bg-slate-850 text-xs transition-colors"
+                title="Hồ sơ học sinh"
               >
-                <span className="w-7 h-7 rounded-full bg-[#087e7c] text-[#adf0d6] font-black text-xs flex items-center justify-center shadow-xs">
+                <span className="w-5 h-5 rounded bg-blue-600 text-white font-mono font-bold text-[10px] flex items-center justify-center">
                   {(session.name || session.email || "M").slice(0, 1).toUpperCase()}
                 </span>
-                <div className="flex flex-col text-left leading-tight hidden sm:flex">
-                  <span className="text-xs font-bold text-white line-clamp-1 max-w-[130px]">
-                    {session.name || session.email?.split("@")[0] || "Học viên"}
-                  </span>
-                  <span className="text-[9px] text-[#adf0d6] font-medium flex items-center gap-1">
-                    <span>Hồ sơ & Lớp</span>
-                  </span>
-                </div>
+                <span className="text-xs font-medium text-slate-200 line-clamp-1 max-w-[100px] hidden sm:inline">
+                  {session.name || session.email?.split("@")[0] || "Học viên"}
+                </span>
               </button>
 
               {/* Nút Cấu hình AI Model */}
@@ -1114,14 +1122,10 @@ function HomeContent() {
                   setAccountModalTab("ai");
                   setAccountModalOpen(true);
                 }}
-                className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-colors flex items-center gap-1 ${
-                  customAiConfig?.apiKey
-                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30"
-                    : "bg-white/10 text-gray-300 border-white/15 hover:bg-white/20 hover:text-white"
-                }`}
-                title="Cấu hình Model AI & API Key riêng (Gemini 2.5, GPT-4o, DeepSeek R1)"
+                className="px-2 py-1 rounded-md text-[11px] font-mono border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-300 transition-colors flex items-center gap-1"
+                title="Cấu hình Model AI (Gemini 2.5, GPT-4o, DeepSeek R1)"
               >
-                <Cpu className="w-3 h-3 text-[#adf0d6]" />
+                <Cpu className="w-3 h-3 text-emerald-400" />
                 <span className="hidden md:inline">
                   {customAiConfig?.model
                     ? customAiConfig.model.replace("gemini-", "").replace("gpt-", "").replace("deepseek-", "")
@@ -1131,7 +1135,7 @@ function HomeContent() {
 
               <button
                 onClick={() => void logout()}
-                className="text-[11px] text-gray-300 hover:text-rose-300 font-medium underline ml-1"
+                className="text-[11px] text-slate-400 hover:text-rose-400 font-medium px-1.5 py-1 transition-colors"
                 title="Đăng xuất tài khoản"
               >
                 Thoát
@@ -1145,21 +1149,17 @@ function HomeContent() {
                   setAccountModalTab("ai");
                   setAccountModalOpen(true);
                 }}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1.5 ${
-                  customAiConfig?.apiKey
-                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30"
-                    : "bg-white/10 hover:bg-white/20 text-gray-200 border-white/20"
-                }`}
+                className="px-2 py-1 rounded-md text-[11px] font-mono border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-300 transition-colors flex items-center gap-1"
                 title="Cấu hình API Key riêng (Gemini 2.5, GPT-4o, DeepSeek R1)"
               >
-                <Cpu className="w-3.5 h-3.5 text-[#adf0d6]" />
+                <Cpu className="w-3.5 h-3.5 text-emerald-400" />
                 <span className="hidden sm:inline">
                   {customAiConfig?.model ? customAiConfig.model : "Nhập API Key"}
                 </span>
               </button>
               <button
                 onClick={() => setAuthModalOpen(true)}
-                className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20"
+                className="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors"
               >
                 Đăng nhập
               </button>
@@ -1195,30 +1195,30 @@ function HomeContent() {
         {/* SUB-SYSTEM 1: STUDENT HOME PORTAL (CATALOG & HERO) */}
         {subsystem === "student" && viewMode === "home" && (
           <div className="flex-1 space-y-8 pb-12">
-            {/* HERO BANNER - ATELIER SCHOLARLY THEME */}
-            <section className="bg-gradient-to-b from-[#0e1c20] via-[#142830] to-[#18343e] text-[#f5f8f7] px-4 md:px-8 py-12 md:py-16 relative overflow-hidden border-b border-[#25424d]">
+            {/* HERO BANNER - SCHOLARLY DESKTOP SHELL */}
+            <section className="bg-slate-950 text-slate-100 px-4 md:px-8 py-10 md:py-14 relative overflow-hidden border-b border-slate-800">
               <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8 md:gap-12 items-center">
-                <div className="space-y-4">
-                  <span className="text-xs font-extrabold uppercase tracking-widest text-[#e89b78] block font-sans">
+                <div className="space-y-3.5">
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-blue-400 block">
                     Phòng học tương tác · Toán THPT Lớp 10 — 12
                   </span>
-                  <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.18]">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-[1.2] text-slate-100">
                     Chạm vào mô hình.<br />
-                    <span className="font-serif italic font-normal text-[#e89b78]">Tự tìm ra quy luật.</span>
+                    <span className="italic font-serif text-blue-400 font-normal">Tự tìm ra quy luật.</span>
                   </h1>
-                  <p className="text-[#c1d3d8] text-sm md:text-base leading-relaxed max-w-xl font-sans">
+                  <p className="text-slate-300 text-xs md:text-sm leading-relaxed max-w-xl font-sans">
                     Kéo một điểm. Xoay một góc nhìn. Thử một giả thuyết. Khám phá toán học bằng chính những điều em quan sát, kiểm chứng và tự đúc kết quy luật.
                   </p>
 
-                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <div className="flex flex-wrap items-center gap-2.5 pt-1">
                     <button
                       onClick={() => {
                         const el = document.getElementById("modules-section");
                         el?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="px-5 py-3 rounded-2xl bg-[#c25e3e] hover:bg-[#a94c2d] text-white font-bold text-xs md:text-sm shadow-lg shadow-[#c25e3e]/20 transition-transform active:scale-95 flex items-center gap-2 cursor-pointer"
+                      className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
                     >
-                      <SlidersHorizontal className="w-4 h-4 text-white" />
+                      <SlidersHorizontal className="w-3.5 h-3.5 text-white" />
                       <span>7 Module Thí Nghiệm Động ↓</span>
                     </button>
                     <button
@@ -1226,65 +1226,58 @@ function HomeContent() {
                         const el = document.getElementById("catalog-section");
                         el?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="px-4 py-3 rounded-2xl bg-[#133d41] hover:bg-[#1a4f54] text-white font-bold text-xs md:text-sm border border-[#2a595f] transition-all flex items-center gap-1.5 cursor-pointer"
+                      className="px-3.5 py-2 rounded-md bg-slate-900 hover:bg-slate-850 text-slate-200 font-medium text-xs border border-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer"
                     >
-                      <Layers className="w-4 h-4 text-emerald-400" />
+                      <Layers className="w-3.5 h-3.5 text-blue-400" />
                       <span>48 Trạm chuyên đề ↓</span>
                     </button>
                     <button
                       onClick={() => setVisualizerOpen(true)}
-                      className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs md:text-sm border border-white/20 transition-all cursor-pointer"
+                      className="px-3.5 py-2 rounded-md bg-slate-900 hover:bg-slate-850 text-slate-300 font-medium text-xs border border-slate-800 transition-colors cursor-pointer"
                     >
                       Mô hình Oxy & 3D
                     </button>
                   </div>
 
                   {/* STATS ROW */}
-                  <div className="flex items-center gap-8 pt-4 border-t border-[#1d3d43]">
+                  <div className="flex items-center gap-6 pt-3 border-t border-slate-800/80">
                     <div>
-                      <strong className="text-2xl font-black text-[#adf0d6] block">7</strong>
-                      <small className="text-xs text-gray-400">module GeoGebra động</small>
+                      <strong className="text-xl font-mono font-bold text-blue-400 block">7</strong>
+                      <small className="text-[11px] text-slate-400 font-sans">module GeoGebra động</small>
                     </div>
                     <div>
-                      <strong className="text-2xl font-black text-white block">48</strong>
-                      <small className="text-xs text-gray-400">trạm học tương tác</small>
+                      <strong className="text-xl font-mono font-bold text-slate-100 block">48</strong>
+                      <small className="text-[11px] text-slate-400 font-sans">trạm học tương tác</small>
                     </div>
                     <div>
-                      <strong className="text-2xl font-black text-teal-300 block">2D + 3D</strong>
-                      <small className="text-xs text-gray-400">thấy và kiểm chứng</small>
+                      <strong className="text-xl font-mono font-bold text-emerald-400 block">2D + 3D</strong>
+                      <small className="text-[11px] text-slate-400 font-sans">mô phỏng 60fps</small>
                     </div>
                     <div>
-                      <strong className="text-2xl font-black text-amber-300 block">TES</strong>
-                      <small className="text-xs text-gray-400">trợ lý Socratic</small>
+                      <strong className="text-xl font-mono font-bold text-amber-400 block">TES</strong>
+                      <small className="text-[11px] text-slate-400 font-sans">trợ lý Socratic</small>
                     </div>
                   </div>
                 </div>
 
                 {/* HERO GRAPHIC ART SVG */}
-                <div className="relative border border-[#345258] rounded-3xl bg-radial from-[#1d5053] to-transparent p-6 flex items-center justify-center shadow-2xl">
-                  <div className="absolute right-4 top-4 bg-[#133d41] border border-[#54817b] px-3 py-1 rounded-xl text-[#adf0d6] text-xs font-bold">
+                <div className="relative border border-slate-800 rounded-xl bg-slate-900/60 p-5 flex items-center justify-center">
+                  <div className="absolute right-3 top-3 bg-slate-950/90 border border-slate-800 px-2.5 py-0.5 rounded text-blue-400 text-[11px] font-mono">
                     Mặt cầu · Không gian Oxyz
                   </div>
-                  <svg viewBox="0 0 450 300" className="w-full h-64" aria-hidden="true">
-                    <defs>
-                      <radialGradient id="hero-orb" cx="30%" cy="25%">
-                        <stop stopColor="#ccffe2" />
-                        <stop offset="0.5" stopColor="#3daba1" />
-                        <stop offset="1" stopColor="#143841" />
-                      </radialGradient>
-                    </defs>
-                    <g stroke="#8dcbb9" fill="none" opacity="0.45">
+                  <svg viewBox="0 0 450 300" className="w-full h-56" aria-hidden="true">
+                    <g stroke="#3b82f6" fill="none" opacity="0.3">
                       <ellipse cx="225" cy="150" rx="180" ry="65" transform="rotate(-25 225 150)" />
                       <ellipse cx="225" cy="150" rx="150" ry="90" transform="rotate(38 225 150)" />
                       <path d="M35 230L415 250M70 270L385 60M210 280L210 30" strokeDasharray="5 5" />
                     </g>
-                    <circle cx="225" cy="140" r="75" fill="url(#hero-orb)" />
-                    <g fill="#c4ffe7">
+                    <circle cx="225" cy="140" r="70" fill="#1e3a5f" opacity="0.4" stroke="#3b82f6" strokeWidth="1.5" />
+                    <g fill="#60a5fa">
                       <circle cx="95" cy="165" r="4" />
                       <circle cx="355" cy="95" r="4" />
                       <circle cx="310" cy="225" r="3.5" />
                     </g>
-                    <text x="30" y="280" fill="#92c3b8" fontSize="11" letterSpacing="2" fontWeight="bold">
+                    <text x="30" y="280" fill="#64748b" fontSize="10" letterSpacing="1.5" fontFamily="monospace">
                       DỰ ĐOÁN · THAO TÁC · KIỂM CHỨNG
                     </text>
                   </svg>
@@ -1293,33 +1286,33 @@ function HomeContent() {
             </section>
 
             {/* SECTION: 7 MODULE THÍ NGHIỆM TOÁN HỌC ĐỘNG (GEOGEBRA & DESMOS ENGINE) */}
-            <section id="modules-section" className="max-w-6xl mx-auto px-4 md:px-8 space-y-6 pt-4">
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#d9e4e2] pb-4">
+            <section id="modules-section" className="max-w-6xl mx-auto px-4 md:px-8 space-y-4 pt-2">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 border-b border-slate-800 pb-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                    <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#087e7c]">
+                    <span className="w-2 h-2 rounded-full bg-blue-500" />
+                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-blue-400">
                       ĐỘNG CƠ THÍ NGHIỆM TOÁN HỌC ĐỘNG · GEOGEBRA &amp; DESMOS 60FPS
                     </span>
                   </div>
-                  <h2 className="text-xl md:text-3xl font-extrabold text-[#152f35] mt-1">
+                  <h2 className="text-xl md:text-2xl font-bold text-slate-100 mt-1">
                     7 Module Thí Nghiệm Toán Học Tương Tác
                   </h2>
-                  <p className="text-xs md:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
-                    Mỗi module là một phòng thí nghiệm toán học động chuyên sâu chuẩn SGK Kết nối tri thức. Học sinh được tự do điều chỉnh thanh trượt tham số (Sliders), thêm biến số, thay đổi hàm số và quan sát đồ thị biến đổi tức thời, đồng thời được Trợ lý Socratic TES đồng hành qua quy trình nhận thức 8 bước chuẩn nghiên cứu KHKT.
+                  <p className="text-xs md:text-sm text-slate-400 mt-1 max-w-3xl leading-relaxed">
+                    Mỗi module là một phòng thí nghiệm toán học động chuyên sâu chuẩn SGK Kết nối tri thức. Học sinh tự do điều chỉnh thanh trượt tham số (Sliders), thêm biến số, thay đổi hàm số và quan sát đồ thị biến đổi tức thời.
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300 flex items-center gap-1.5 shadow-xs">
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-700" />
-                    <span>Đầy đủ 7 Module Chuẩn SGK</span>
+                  <span className="px-2.5 py-1 rounded bg-slate-900 text-slate-300 text-xs font-mono border border-slate-800 flex items-center gap-1.5">
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-blue-400" />
+                    <span>7 Module Chuẩn SGK</span>
                   </span>
                 </div>
               </div>
 
               {/* Module Filter Chips */}
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-[#d9e4e2] shadow-xs">
-                <div className="flex flex-wrap gap-1.5 text-xs font-bold">
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                <div className="flex flex-wrap gap-1 text-xs">
                   {[
                     { id: 0, label: "Tất cả 7 Module (7)" },
                     { id: 10, label: "Lớp 10 (2 Module)" },
@@ -1329,91 +1322,91 @@ function HomeContent() {
                     <button
                       key={g.id}
                       onClick={() => setSelectedModuleGrade(g.id)}
-                      className={`px-3 py-1.5 rounded-xl transition-all ${
+                      className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                         selectedModuleGrade === g.id
-                          ? "bg-[#087e7c] text-white shadow-xs"
-                          : "bg-[#f8faf9] text-gray-700 hover:bg-[#edf6f3] border border-[#d9e4e2]"
+                          ? "bg-blue-600 text-white font-semibold"
+                          : "bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800"
                       }`}
                     >
                       {g.label}
                     </button>
                   ))}
                 </div>
-                <div className="text-[11px] text-gray-500 italic hidden sm:flex items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Bố cục chuẩn 3 cột: Đề bài 8 bước ↔ Canvas tương tác ↔ Bảng điều khiển tham số</span>
+                <div className="text-[11px] text-slate-400 font-mono hidden sm:flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Bố cục chuẩn 3 cột: Đề bài ↔ Canvas tương tác ↔ Tham số động</span>
                 </div>
               </div>
 
               {/* Grid 7 Module Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredCoreModules.map((mod) => (
                   <article
                     key={mod.id}
-                    className={`bg-white rounded-2xl border-2 border-[#d9e4e2] ${mod.borderHover} overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between group`}
+                    className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden hover:border-slate-700 transition-all duration-150 flex flex-col justify-between group"
                   >
                     <div>
                       {/* Visual SVG Card Art */}
-                      <div className="h-40 relative overflow-hidden bg-slate-900">
+                      <div className="h-36 relative overflow-hidden bg-slate-950">
                         <ModuleCardArt moduleId={mod.id} />
                         {/* Top Badges */}
-                        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                          <span className="bg-black/75 backdrop-blur-md text-white px-2 py-0.5 rounded-lg text-[10px] font-black font-mono shadow-xs border border-white/20">
+                        <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                          <span className="bg-slate-900/90 text-slate-200 px-2 py-0.5 rounded text-[10px] font-mono font-bold border border-slate-800">
                             MODULE {mod.moduleNumber}
                           </span>
-                          <span className="bg-emerald-600/90 backdrop-blur-md text-white px-2 py-0.5 rounded-lg text-[10px] font-bold">
+                          <span className="bg-blue-600/90 text-white px-2 py-0.5 rounded text-[10px] font-mono font-bold">
                             LỚP {mod.grade}
                           </span>
                         </div>
-                        <span className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-md text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-lg text-[10px] font-bold">
+                        <span className="absolute top-2 right-2 bg-slate-900/80 text-blue-300 border border-slate-800 px-2 py-0.5 rounded text-[10px] font-mono font-semibold">
                           {mod.is3D ? "KHÔNG GIAN 3D" : "MẶT PHẲNG 2D"}
                         </span>
                       </div>
 
                       {/* Card Content */}
-                      <div className="p-4 space-y-2.5">
+                      <div className="p-3.5 space-y-2">
                         <div className="flex items-center justify-between text-[10px]">
-                          <span className="font-extrabold text-[#087e7c] uppercase tracking-wider">
+                          <span className="font-mono font-bold text-blue-400 uppercase tracking-wider">
                             {mod.tag}
                           </span>
-                          <span className="px-2 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="px-1.5 py-0.5 rounded font-mono text-[9px] bg-slate-800 text-slate-300 border border-slate-700">
                             60fps Dynamic
                           </span>
                         </div>
 
-                        <h3 className="font-bold text-sm text-[#152f35] leading-snug group-hover:text-[#087e7c] transition-colors">
+                        <h3 className="font-semibold text-sm text-slate-100 leading-snug group-hover:text-blue-400 transition-colors">
                           {mod.title}
                         </h3>
 
-                        <p className="text-gray-600 text-xs line-clamp-2 leading-relaxed">
+                        <p className="text-slate-400 text-xs line-clamp-2 leading-relaxed">
                           {mod.goal}
                         </p>
 
                         {/* Feature Highlights */}
-                        <ul className="space-y-1 pt-1.5 border-t border-gray-100 text-[11px] text-gray-700">
+                        <ul className="space-y-1 pt-1.5 border-t border-slate-800/80 text-[11px] text-slate-300">
                           {mod.features.slice(0, 3).map((feat, i) => (
                             <li key={i} className="flex items-start gap-1.5 line-clamp-1">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                              <CheckCircle2 className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
                               <span className="line-clamp-1">{feat}</span>
                             </li>
                           ))}
                         </ul>
 
-                        <div className="text-[10px] text-gray-500 italic pt-1 border-t border-gray-100 flex items-center justify-between">
-                          <span>{mod.source}</span>
-                          <span className="text-emerald-700 font-bold font-mono">Trạm {mod.defaultStationId}</span>
+                        <div className="text-[10px] text-slate-500 font-mono pt-1 border-t border-slate-800/80 flex items-center justify-between">
+                          <span className="truncate max-w-[170px]">{mod.source}</span>
+                          <span className="text-blue-400 font-bold">Trạm {mod.defaultStationId}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="p-4 pt-0">
+                    <div className="p-3.5 pt-0">
                       <button
                         type="button"
                         onClick={() => handleOpenModuleInLab(mod)}
-                        className="w-full py-2.5 bg-gradient-to-r from-[#087e7c] to-[#0d9488] hover:from-[#066563] hover:to-[#0f766e] text-white rounded-xl font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 group-hover:shadow-lg active:scale-98 cursor-pointer"
+                        className="w-full py-2 bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-slate-700 hover:border-blue-500"
                       >
                         <span>Vào phòng thực hành Module {mod.moduleNumber}</span>
-                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                       </button>
                     </div>
                   </article>
@@ -1643,7 +1636,7 @@ function HomeContent() {
 
         {/* SUB-SYSTEM 1: STUDENT INTERACTIVE LAB VIEW (MathStepWorkbench) */}
         {subsystem === "student" && viewMode === "lab" && (
-          <div className="flex-1 w-full h-[calc(100vh-64px)] p-2 md:p-3 overflow-hidden">
+          <div className="flex-1 w-full h-[calc(100dvh-48px)] p-1.5 md:p-2 overflow-hidden bg-[#090D16]">
             <MathStepWorkbench
               moduleId={moduleId}
               stationId={stationId}
@@ -1699,61 +1692,59 @@ function HomeContent() {
         <button
           type="button"
           onClick={() => setTutorOpen(true)}
-          className="fixed bottom-6 right-6 z-40 px-4 py-3 bg-[#087e7c] hover:bg-[#066563] text-white rounded-2xl shadow-xl font-bold text-xs flex items-center gap-2.5 transition-all transform hover:scale-105 active:scale-95 border-2 border-white/40"
+          className="fixed bottom-4 right-4 z-40 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-full shadow-lg border border-slate-700 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer"
           title="Mở Trợ lý gợi mở Socratic TES"
         >
-          <Bot className="w-5 h-5 text-white" />
-          <span className="font-extrabold tracking-wide">Trợ lý TES</span>
-          <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+          <Bot className="w-4 h-4 text-blue-400" />
+          <span>Trợ lý TES</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
         </button>
       )}
 
-      {/* 4. SLIDE-OUT SOCRATIC AI TUTOR DRAWER (NO SQUASHING OF LAB WORKSPACE) */}
+      {/* 4. SLIDE-OUT SOCRATIC AI TUTOR DRAWER (BOUNDED TO MAX 100vw, NEVER OVERFLOWS ON 3D ZOOM) */}
       {tutorOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+        <div className="fixed inset-0 z-50 overflow-hidden pointer-events-none flex justify-end">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/30 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity pointer-events-auto"
             onClick={() => setTutorOpen(false)}
           />
 
-          {/* Drawer Panel */}
-          <aside className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col z-10 border-l border-[#d9e4e2] animate-in slide-in-from-right duration-200">
+          {/* Drawer Panel: strict max-w-[min(380px,100vw)] */}
+          <aside className="relative w-full sm:w-[380px] max-w-[min(380px,100vw)] h-[100dvh] bg-slate-900 text-slate-100 shadow-2xl flex flex-col z-10 border-l border-slate-800 animate-in slide-in-from-right duration-200 pointer-events-auto overflow-hidden">
             {/* Header */}
-            <div className="p-4 border-b border-[#e5ebe4] bg-[#f8faf9] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#eff8f4] text-[#087e7c] border border-[#a3e2cf] flex items-center justify-center text-xl shadow-xs">
-                  <Bot className="w-5 h-5" />
+            <div className="h-12 px-3.5 border-b border-slate-800 bg-slate-950 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-7 h-7 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center shrink-0">
+                  <Bot className="w-4 h-4" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <strong className="text-sm text-[#152f35]">Trợ lý Socratic TES</strong>
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="font-bold text-xs text-slate-100 truncate">Trợ lý Socratic TES</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   </div>
-                  <p className="text-[10px] text-gray-500">
-                    Linh vật gợi mở · Tuyệt đối không cho đáp án trực tiếp
-                  </p>
+                  <span className="text-[10px] text-slate-400 truncate block">Gợi mở · Không cho đáp án trực tiếp</span>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
                   onClick={() => {
                     setAccountModalTab("ai");
                     setAccountModalOpen(true);
                   }}
-                  className="px-2.5 py-1.5 rounded-xl border border-teal-200 bg-teal-50 hover:bg-teal-100 text-[#087e7c] font-bold text-[11px] flex items-center gap-1.5 shadow-xs transition-colors"
-                  title="Cấu hình Model AI & API Key riêng (Gemini, OpenAI, DeepSeek)"
+                  className="px-2 py-1 rounded-md border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[10px] flex items-center gap-1 transition-colors"
+                  title="Cấu hình Model AI (Gemini, OpenAI, DeepSeek)"
                 >
-                  <Cpu className="w-3.5 h-3.5 text-[#087e7c]" />
-                  <span className="max-w-[120px] truncate">
-                    {customAiConfig?.model || "Cấu hình AI"}
+                  <Cpu className="w-3 h-3 text-emerald-400" />
+                  <span className="max-w-[75px] truncate">
+                    {customAiConfig?.model?.replace("gemini-", "").replace("gpt-", "") || "Model AI"}
                   </span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setTutorOpen(false)}
-                  className="w-8 h-8 rounded-xl bg-white border border-[#d9e4e2] text-gray-500 hover:text-black hover:bg-gray-50 flex items-center justify-center font-bold text-sm"
+                  className="w-7 h-7 rounded-md text-slate-400 hover:text-slate-100 hover:bg-slate-800 flex items-center justify-center transition-colors text-sm"
                   title="Đóng trợ lý"
                 >
                   ✕
@@ -1763,11 +1754,11 @@ function HomeContent() {
 
             {/* Banner trạng thái Model AI đang kích hoạt */}
             {customAiConfig?.apiKey && (
-              <div className="px-4 py-1.5 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between text-[11px] text-emerald-800">
+              <div className="px-3.5 py-1.5 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between text-[11px] text-slate-400 shrink-0">
                 <div className="flex items-center gap-1.5 truncate">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                  <span className="truncate">
-                    Model: <strong>{customAiConfig.model}</strong> ({customAiConfig.provider.toUpperCase()})
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                  <span className="truncate font-mono text-[10px]">
+                    {customAiConfig.model} ({customAiConfig.provider.toUpperCase()})
                   </span>
                 </div>
                 <button
@@ -1776,35 +1767,35 @@ function HomeContent() {
                     setAccountModalTab("ai");
                     setAccountModalOpen(true);
                   }}
-                  className="text-emerald-700 hover:text-emerald-900 underline font-semibold text-[10px] shrink-0 ml-2"
+                  className="text-blue-400 hover:text-blue-300 underline font-medium text-[10px] shrink-0 ml-2"
                 >
-                  Đổi model
+                  Đổi
                 </button>
               </div>
             )}
 
             {/* Conversation Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-3.5 space-y-3 font-sans">
               {messages.map((item) => (
                 <article
                   key={item.id}
-                  className={`flex gap-2.5 ${item.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+                  className={`flex gap-2 min-w-0 ${item.role === "user" ? "flex-row-reverse" : "flex-row"}`}
                 >
                   <div
-                    className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${
+                    className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 ${
                       item.role === "assistant"
-                        ? "bg-[#eff8f4] text-[#087e7c] border border-[#a3e2cf]"
-                        : "bg-gray-200 text-gray-700"
+                        ? "bg-slate-800 text-blue-400 border border-slate-700"
+                        : "bg-blue-600 text-white"
                     }`}
                   >
-                    {item.role === "assistant" ? <Bot className="w-3.5 h-3.5" /> : (session?.name || "E").slice(0, 1).toUpperCase()}
+                    {item.role === "assistant" ? <Bot className="w-3 h-3" /> : (session?.name || "E").slice(0, 1).toUpperCase()}
                   </div>
-                  <div className="max-w-[85%] space-y-1 text-xs">
+                  <div className="max-w-[85%] space-y-1 text-xs min-w-0">
                     <div
-                      className={`p-3 rounded-2xl leading-relaxed ${
+                      className={`p-2.5 rounded-lg leading-relaxed text-xs break-words ${
                         item.role === "assistant"
-                          ? "bg-[#f8faf9] text-[#152f35] border border-[#d9e4e2]"
-                          : "bg-[#087e7c] text-white"
+                          ? "bg-slate-800/90 text-slate-200 border border-slate-700/80"
+                          : "bg-blue-600 text-white"
                       }`}
                     >
                       <MathMessage content={item.content} />
@@ -1812,40 +1803,41 @@ function HomeContent() {
                     {item.nextQuestion && (
                       <button
                         onClick={() => void handleSendTutorMessage(item.nextQuestion)}
-                        className="text-[10px] text-[#087e7c] hover:underline font-bold flex items-center gap-1 pl-1"
+                        className="text-[10px] text-blue-400 hover:underline flex items-center gap-1 pl-1 text-left"
                       >
                         <span>↳</span>
-                        <span>{item.nextQuestion}</span>
+                        <span className="line-clamp-2">{item.nextQuestion}</span>
                       </button>
                     )}
                   </div>
                 </article>
               ))}
               {busy && (
-                <div className="flex items-center gap-2 text-xs text-gray-400">
-                  <Bot className="w-3.5 h-3.5 text-[#087e7c]" />
-                  <span className="italic">TES đang phân tích lập luận của em...</span>
+                <div className="flex items-center gap-2 text-xs text-slate-400 py-1">
+                  <Bot className="w-3.5 h-3.5 text-blue-400 animate-spin" />
+                  <span className="italic">TES đang phân tích câu trả lời của em...</span>
                 </div>
               )}
               <div ref={endRef} />
             </div>
 
             {/* Composer */}
-            <div className="p-3 border-t border-[#e5ebe4] bg-[#fbfcf8] space-y-2">
-              <div className="flex items-center justify-between text-[10px]">
-                <span className="text-gray-400">Trợ lý sư phạm GDPT 2018</span>
+            <div className="p-3 border-t border-slate-800 bg-slate-950 shrink-0 space-y-2">
+              <div className="flex items-center justify-between text-[10px] text-slate-400">
+                <span>Trợ lý Socratic GDPT 2018</span>
                 <button
                   type="button"
                   onClick={() => {
                     void handleSendTutorMessage("Em muốn tự suy nghĩ và thử tiếp mà không cần thêm gợi ý.");
                   }}
-                  className="text-[#087e7c] hover:underline font-bold flex items-center gap-1"
+                  className="text-blue-400 hover:underline font-medium flex items-center gap-1"
                 >
-                  <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-[#087e7c]" /><span>Em muốn tự thử tiếp</span></span>
+                  <Sparkles className="w-3 h-3 text-blue-400" />
+                  <span>Tự thử tiếp</span>
                 </button>
               </div>
 
-              {error && <div className="text-[10px] text-red-600">{error}</div>}
+              {error && <div className="text-[10px] text-rose-400">{error}</div>}
 
               <form
                 onSubmit={(e) => {
@@ -1863,16 +1855,16 @@ function HomeContent() {
                       void handleSendTutorMessage();
                     }
                   }}
-                  placeholder="Hỏi trợ lý TES (Enter để gửi)..."
+                  placeholder="Nhập câu trả lời hoặc câu hỏi cho TES..."
                   rows={2}
-                  className="flex-1 border border-[#bed0cd] rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#087e7c] resize-none"
+                  className="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 resize-none min-w-0"
                 />
                 <button
                   type="submit"
                   disabled={busy || !input.trim()}
-                  className="px-3 py-1.5 bg-[#087e7c] text-white rounded-xl font-bold text-xs hover:bg-[#066563] disabled:opacity-40 transition-colors"
+                  className="px-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white rounded-lg text-xs font-semibold shrink-0 transition-colors cursor-pointer"
                 >
-                  ↑
+                  Gửi
                 </button>
               </form>
             </div>
