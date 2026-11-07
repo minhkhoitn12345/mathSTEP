@@ -97,10 +97,23 @@ export default function Interactive2DMathCanvas({
   }, [lines, currentTestPt]);
 
   // Calculate default bounding box of vertices to center properly
-  // Optimized Viewport: Focus on Quadrant I [-1; 10] x [-1; 8]
+  // Dynamic Adaptive Viewport: Focus on Quadrant I with 1:1 Aspect Ratio Lock
   const initialBounds = useMemo(() => {
-    return { minX: -1.2, maxX: 10.2, minY: -1.2, maxY: 8.2 };
-  }, []);
+    if (vertices.length === 0) return { minX: -1.5, maxX: 18.5, minY: -1.5, maxY: 18.5 };
+    let maxX = 4, maxY = 4;
+    vertices.forEach((v) => {
+      maxX = Math.max(maxX, v.x);
+      maxY = Math.max(maxY, v.y);
+    });
+    const spanX = Math.max(6, maxX);
+    const spanY = Math.max(5, maxY);
+    return {
+      minX: -Math.max(1.2, spanX * 0.1),
+      maxX: spanX + Math.max(2, spanX * 0.15),
+      minY: -Math.max(1.2, spanY * 0.1),
+      maxY: spanY + Math.max(2, spanY * 0.15),
+    };
+  }, [vertices]);
 
   // Compute 1:1 Aspect Ratio scale and transformations
   const getTransform = useCallback(

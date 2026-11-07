@@ -124,11 +124,87 @@ const MODULE_META: Record<
   },
 };
 
+// Bối cảnh bài toán thực tế chuẩn SGK Kết nối tri thức cho từng trạm cốt lõi
+export interface RealWorldProblem {
+  title: string;
+  source: string;
+  context: string;
+  objectiveText: string;
+  matrixHeaders: string[];
+  matrixRows: Array<{ label: string; col1: string; col2: string; limit: string }>;
+  optimalSummary: string;
+}
+
+const REAL_WORLD_PROBLEMS: Record<string, RealWorldProblem> = {
+  "10.03": {
+    title: "TỐI ƯU HÓA LỢI NHUẬN XƯỞNG MỘC",
+    source: "SGK Toán 10 KNTT Bài 4, Trang 26-29",
+    context: "Một xưởng mộc sản xuất x chiếc bàn và y chiếc ghế (x, y ∈ ℕ). Khâu lắp ráp có tối đa 24 giờ công (mỗi bàn cần 1.5h, mỗi ghế cần 1h => 3x + 2y ≤ 48). Khâu hoàn thiện có tối đa 32 giờ công (mỗi bàn cần 1h, mỗi ghế cần 2h => x + 2y ≤ 32). Mỗi chiếc bàn mang lại tiền lãi 600 nghìn đồng, mỗi chiếc ghế mang lại tiền lãi 450 nghìn đồng.",
+    objectiveText: "Xác định kế hoạch sản xuất (x; y) để tổng tiền lãi F(x; y) = 600x + 450y đạt giá trị lớn nhất.",
+    matrixHeaders: ["Công đoạn", "1 Bàn (x)", "1 Ghế (y)", "Quỹ thời gian tối đa"],
+    matrixRows: [
+      { label: "Khâu Lắp ráp", col1: "1.5 giờ", col2: "1.0 giờ", limit: "24 giờ (3x + 2y ≤ 48)" },
+      { label: "Khâu Hoàn thiện", col1: "1.0 giờ", col2: "2.0 giờ", limit: "32 giờ (x + 2y ≤ 32)" },
+      { label: "Lợi nhuận", col1: "600.000 đ", col2: "450.000 đ", limit: "F = 600x + 450y (nghìn đồng)" },
+    ],
+    optimalSummary: "Phương án tối ưu: Đỉnh B(8; 12) => Sản xuất 8 bàn và 12 ghế => Lợi nhuận cực đại 10.200.000 đ.",
+  },
+  "10.02": {
+    title: "BẤT PHƯƠNG TRÌNH & NỬA MẶT PHẲNG BỜ d",
+    source: "SGK Toán 10 KNTT Bài 3, Trang 22-25",
+    context: "Một nhân viên giao hàng có tổng trọng lượng hàng x và y không vượt quá 6 kg theo quy định an toàn: 2x + y ≤ 6. Cần xác định các tổ hợp (x; y) hợp lệ và gạch bỏ phần vi phạm trên mặt phẳng tọa độ.",
+    objectiveText: "Lấy điểm thử O(0; 0) để nhận biết nửa mặt phẳng chứa nghiệm và quy ước gạch miền loại.",
+    matrixHeaders: ["Thông số", "Quy định", "Ý nghĩa hình học"],
+    matrixRows: [
+      { label: "Đường biên d", col1: "2x + y = 6", col2: "Bờ phân chia 2 nửa mặt phẳng", limit: "Nét liền (lấy bờ)" },
+      { label: "Điểm thử O(0; 0)", col1: "2(0) + 0 = 0 ≤ 6", col2: "Mệnh đề ĐÚNG", limit: "Nửa mặt phẳng chứa O là nghiệm" },
+    ],
+    optimalSummary: "Gạch bỏ nửa mặt phẳng không chứa gốc O(0; 0); giữ trắng miền nghiệm.",
+  },
+  "11.06": {
+    title: "THIẾT KẾ MÁI CHE THÁP CANH S.ABCD",
+    source: "SGK Hình học 11 KNTT Bài 11, Trang 78-83",
+    context: "Thiết kế mô hình mái che sân trường hình chóp tứ giác đều S.ABCD. Đáy ABCD là hình vuông cạnh a = 3 m. Chiều cao thẳng đứng SH = h thay đổi từ 1.5 m đến 4.0 m để tối ưu khả năng thoát nước mưa và diện tích bạt che.",
+    objectiveText: "Quan sát phối cảnh 3D; phân biệt quy ước cạnh thấy (nét liền) và cạnh khuất (nét đứt) khi xoay mô hình.",
+    matrixHeaders: ["Bộ phận", "Kích thước", "Quy ước biểu diễn"],
+    matrixRows: [
+      { label: "Đáy ABCD", col1: "3.0 m x 3.0 m", col2: "Hình vuông nằm ngang", limit: "Các cạnh nhìn thấy hoặc khuất" },
+      { label: "Chiều cao SH", col1: "1.5 - 4.0 m", col2: "SH ⊥ (ABCD)", limit: "Nét đứt màu đỏ hồng Rose-500" },
+      { label: "Thể tích V", col1: "V = (1/3) a² h", col2: "Dung tích không gian mái", limit: "Tự động tính theo thời gian thực" },
+    ],
+    optimalSummary: "Thuật toán Back-face Culling tự động chuyển nét đứt cho các cạnh khuất khi xoay camera.",
+  },
+  "11.07": {
+    title: "KHAI TRIỂN PHẲNG ↔ GẤP KHỐI ĐA DIỆN",
+    source: "SGK Hình học 11 KNTT Bài 12, Trang 84-88",
+    context: "Kỹ thuật cắt may bạt che và gấp khối đa diện: 4 mặt tam giác bên SAB, SBC, SCD, SDA của hình chóp được xoay bản lề quanh 4 cạnh đáy để trải phẳng hoàn toàn trên mặt đất.",
+    objectiveText: "Quan sát góc nhị diện giữa mặt bên và mặt đáy khi kéo thanh trượt từ 100% về 0%.",
+    matrixHeaders: ["Trạng thái", "Thao tác", "Mục tiêu sư phạm"],
+    matrixRows: [
+      { label: "Gấp khối 100%", col1: "Khối chóp 3D", col2: "4 đỉnh S chụm tại đỉnh chung", limit: "Quan sát hình học không gian" },
+      { label: "Khai triển 0%", col1: "Bản vẽ phẳng 2D", col2: "4 đỉnh S trải ra 4 hướng", limit: "Tính diện tích toàn phần chính xác" },
+    ],
+    optimalSummary: "Liên kết trực quan giữa bản vẽ kỹ thuật 2D và mô hình vật lý 3D trong không gian.",
+  },
+  "11.01": {
+    title: "CHUYỂN ĐỘNG TRÒN ĐỀU & ĐƯỜNG TRÒN LƯỢNG GIÁC",
+    source: "SGK Toán 11 KNTT Bài 1, Trang 5-16",
+    context: "Mô phỏng vị trí của tay máy tự động hoặc vệ tinh viễn thông chuyển động tròn đều trên đường tròn lượng giác đơn vị bán kính R = 1. Góc quay α thay đổi liên tục từ 0° đến 360°.",
+    objectiveText: "Liên hệ trực quan tọa độ điểm M(cos α; sin α) với các giá trị lượng giác.",
+    matrixHeaders: ["Đại lượng", "Giá trị hình học", "Ý nghĩa"],
+    matrixRows: [
+      { label: "Hoành độ Ox", col1: "cos α", col2: "Đoạn hình chiếu trên trục hoành", limit: "Mang dấu âm ở góc phần tư II, III" },
+      { label: "Tung độ Oy", col1: "sin α", col2: "Đoạn hình chiếu trên trục tung", limit: "Mang dấu dương ở góc phần tư I, II" },
+    ],
+    optimalSummary: "Bản chất hình học của lượng giác: Tọa độ điểm ngọn của cung trên đường tròn đơn vị.",
+  },
+};
+
 const DEFAULT_CONSTRAINTS: Constraint[] = [
-  { a: 1, b: 0, c: 0, op: ">=" },
-  { a: 0, b: 1, c: 0, op: ">=" },
-  { a: 1, b: 2, c: 8, op: "<=" }, // x + 2y <= 8 chuẩn SGK KNTT Toán 10
-  { a: 1, b: 1, c: 5, op: "<=" }, // x + y <= 5
+  { a: 1, b: 0, c: 0, op: ">=" }, // x >= 0 (Số lượng bàn x >= 0)
+  { a: 0, b: 1, c: 0, op: ">=" }, // y >= 0 (Số lượng ghế y >= 0)
+  { a: 3, b: 2, c: 48, op: "<=" }, // Khâu lắp ráp: 1.5x + y <= 24 <=> 3x + 2y <= 48
+  { a: 1, b: 2, c: 32, op: "<=" }, // Khâu hoàn thiện: x + 2y <= 32
 ];
 
 const QUIZ_DATA: Record<ModuleId, { question: string; options: string[]; correctIdx: number; explanation: string }> = {
@@ -455,7 +531,7 @@ function solveLP(cs: Constraint[], u: number, v: number): LPResult {
 function getDefaultParams(mod: ModuleId): Record<string, number> {
   switch (mod) {
     case "linear_programming":
-      return { x: 2, y: 3, u: 3, v: 2, k: 12 };
+      return { x: 8, y: 12, u: 3, v: 2, F: 48, k: 48 };
     case "spatial_geometry":
       return { h: 3, x: 0, cut: 0.5 };
     case "trigonometry":
@@ -591,7 +667,7 @@ export default function MathStepWorkbench({
       y: v[1],
     }));
   }, [constraints, params.u, params.v]);
-  const [showIntegerPoints, setShowIntegerPoints] = useState<boolean>(false);
+  const [showIntegerPoints] = useState<boolean>(true);
   const [solidType, setSolidType] = useState<"pyramid" | "prism" | "frustum">("pyramid");
 
   // SGK KNTT & KHKT Strategy Features
@@ -1916,11 +1992,60 @@ export default function MathStepWorkbench({
         <aside className={`bg-white border border-[#d9e4e2] rounded-xl p-3.5 flex-col gap-3 max-h-[calc(100vh-250px)] overflow-y-auto text-xs text-[#152f35] ${
           activeMobileTab === "task" ? "flex" : "hidden lg:flex"
         }`}>
-          <div className="border-b border-[#d9e4e2] pb-2">
+          {/* 1. MODULE ĐỀ BÀI & BỐI CẢNH THỰC TẾ (PROBLEM STATEMENT CARD) */}
+          {(() => {
+            const prob = REAL_WORLD_PROBLEMS[stationId || "10.03"] || REAL_WORLD_PROBLEMS["10.03"];
+            return (
+              <div className="p-3 bg-gradient-to-br from-[#0c2e35] to-[#071c20] text-white rounded-xl border border-teal-500/40 shadow-md space-y-2">
+                <div className="flex items-center justify-between gap-1">
+                  <div className="flex items-center gap-1.5 text-teal-300 font-bold text-xs uppercase tracking-wide">
+                    <span>📖</span>
+                    <span className="truncate">{prob.title}</span>
+                  </div>
+                  <span className="px-2 py-0.5 bg-teal-900/80 border border-teal-400/50 rounded-full text-[9px] text-teal-200 font-medium shrink-0">
+                    {prob.source}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-200 leading-relaxed font-normal">
+                  {prob.context}
+                </p>
+                <div className="p-2 bg-slate-900/70 rounded-lg border border-teal-500/40 text-[11px] font-semibold text-amber-300 flex items-start gap-1.5">
+                  <span className="shrink-0">🎯</span>
+                  <span>{prob.objectiveText}</span>
+                </div>
+                {/* Bảng tra cứu dữ liệu mini (Data Matrix) */}
+                {prob.matrixRows && prob.matrixRows.length > 0 && (
+                  <div className="overflow-x-auto pt-1">
+                    <table className="w-full text-[10px] border-collapse border border-teal-700/60 rounded overflow-hidden">
+                      <thead>
+                        <tr className="bg-teal-900/60 text-teal-200">
+                          {prob.matrixHeaders.map((h, i) => (
+                            <th key={i} className="p-1 border border-teal-700/60 text-left font-bold">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {prob.matrixRows.map((r, i) => (
+                          <tr key={i} className="hover:bg-teal-950/40 border-t border-teal-800/50">
+                            <td className="p-1 border-r border-teal-800/50 font-medium text-slate-200">{r.label}</td>
+                            <td className="p-1 border-r border-teal-800/50 font-mono text-center text-teal-300">{r.col1}</td>
+                            <td className="p-1 border-r border-teal-800/50 font-mono text-center text-teal-300">{r.col2}</td>
+                            {r.limit && <td className="p-1 font-mono text-amber-300">{r.limit}</td>}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          <div className="border-b border-[#d9e4e2] pb-2 pt-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#087e7c]">
-              BƯỚC {currentStep + 1} · {STEP_NAMES[currentStep]}
+              TIẾN TRÌNH 8 BƯỚC SƯ PHẠM · BƯỚC {currentStep + 1}
             </span>
-            <h3 className="text-xs font-bold mt-1 text-[#152f35]">{meta.title}</h3>
+            <h3 className="text-xs font-bold mt-1 text-[#152f35]">{STEP_NAMES[currentStep]}</h3>
           </div>
 
           {/* Nội dung từng bước */}
@@ -2812,91 +2937,169 @@ export default function MathStepWorkbench({
           {/* Parameter Sliders with exact Number inputs */}
           <div className="space-y-3">
             {moduleId === "linear_programming" && (
-              <>
-                <div>
-                  <div className="flex justify-between text-[11px] font-bold mb-1">
-                    <span>Điểm thử M (x):</span>
-                    <span className="font-mono text-[#087e7c]">{params.x}</span>
+              <div className="space-y-3.5">
+                {/* 1. Thanh trượt Số lượng bàn x */}
+                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                  <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                    <span className="flex items-center gap-1">🪑 Số lượng bàn (x):</span>
+                    <span className="font-mono text-teal-800 text-sm font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
+                      {params.x ?? 8} chiếc
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="range"
-                      min="-2"
-                      max="7"
-                      step="0.5"
-                      value={params.x || 2}
-                      onChange={(e) => updateParam("x", parseFloat(e.target.value))}
-                      className="flex-1 accent-[#087e7c]"
-                    />
-                    <input
-                      type="number"
-                      step="0.5"
-                      value={params.x || 2}
-                      onChange={(e) => updateParam("x", parseFloat(e.target.value) || 0)}
-                      className="w-14 p-1 border border-[#bed0cd] rounded text-right font-mono text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-[11px] font-bold mb-1">
-                    <span>Điểm thử M (y):</span>
-                    <span className="font-mono text-[#087e7c]">{params.y}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="range"
-                      min="-2"
-                      max="7"
-                      step="0.5"
-                      value={params.y || 3}
-                      onChange={(e) => updateParam("y", parseFloat(e.target.value))}
-                      className="flex-1 accent-[#087e7c]"
-                    />
-                    <input
-                      type="number"
-                      step="0.5"
-                      value={params.y || 3}
-                      onChange={(e) => updateParam("y", parseFloat(e.target.value) || 0)}
-                      className="w-14 p-1 border border-[#bed0cd] rounded text-right font-mono text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-[11px] font-bold mb-1">
-                    <span>Đường mức F = k:</span>
-                    <span className="font-mono text-[#b87439]">{params.k}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="range"
-                      min="0"
-                      max="24"
-                      step="0.5"
-                      value={params.k || 12}
-                      onChange={(e) => updateParam("k", parseFloat(e.target.value))}
-                      className="flex-1 accent-[#b87439]"
-                    />
-                    <input
-                      type="number"
-                      step="0.5"
-                      value={params.k || 12}
-                      onChange={(e) => updateParam("k", parseFloat(e.target.value) || 0)}
-                      className="w-14 p-1 border border-[#bed0cd] rounded text-right font-mono text-xs"
-                    />
-                  </div>
-                </div>
-
-                <label className="flex items-center gap-2 text-[11px] cursor-pointer pt-1">
                   <input
-                    type="checkbox"
-                    checked={showIntegerPoints}
-                    onChange={(e) => setShowIntegerPoints(e.target.checked)}
-                    className="accent-[#087e7c]"
+                    type="range"
+                    min="0"
+                    max="16"
+                    step="1"
+                    value={params.x ?? 8}
+                    onChange={(e) => updateParam("x", parseInt(e.target.value, 10))}
+                    className="w-full accent-teal-600"
                   />
-                  <span>Hiện lưới điểm nguyên (Lattice Points)</span>
-                </label>
+                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                    <span>0 chiếc</span>
+                    <span className="font-bold text-teal-700">8 chiếc (tối ưu)</span>
+                    <span>16 chiếc (tối đa)</span>
+                  </div>
+                </div>
+
+                {/* 2. Thanh trượt Số lượng ghế y */}
+                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                  <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                    <span className="flex items-center gap-1">💺 Số lượng ghế (y):</span>
+                    <span className="font-mono text-teal-800 text-sm font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
+                      {params.y ?? 12} chiếc
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="16"
+                    step="1"
+                    value={params.y ?? 12}
+                    onChange={(e) => updateParam("y", parseInt(e.target.value, 10))}
+                    className="w-full accent-teal-600"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                    <span>0 chiếc</span>
+                    <span className="font-bold text-teal-700">12 chiếc (tối ưu)</span>
+                    <span>16 chiếc (tối đa)</span>
+                  </div>
+                </div>
+
+                {/* 3. Đồng hồ Kiểm soát 2 Khâu sản xuất */}
+                <div className="space-y-2 p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
+                  <span className="text-[11px] font-bold text-slate-800 block">Kiểm soát quỹ thời gian 2 khâu:</span>
+                  
+                  {/* Khâu Lắp ráp: 3x + 2y <= 48 */}
+                  {(() => {
+                    const xVal = params.x ?? 8;
+                    const yVal = params.y ?? 12;
+                    const usedLapRap = 3 * xVal + 2 * yVal;
+                    const okLapRap = usedLapRap <= 48;
+                    const pct = Math.min(100, Math.round((usedLapRap / 48) * 100));
+                    return (
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[11px]">
+                          <span className="font-medium text-slate-600">Khâu Lắp ráp (3x + 2y ≤ 48):</span>
+                          <span className={`font-mono font-bold ${okLapRap ? "text-emerald-700" : "text-rose-600"}`}>
+                            {usedLapRap} / 48 giờ {okLapRap ? "✓" : "✗ VƯỢT"}
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border">
+                          <div
+                            className={`h-full transition-all duration-300 ${okLapRap ? "bg-emerald-500" : "bg-rose-500"}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Khâu Hoàn thiện: x + 2y <= 32 */}
+                  {(() => {
+                    const xVal = params.x ?? 8;
+                    const yVal = params.y ?? 12;
+                    const usedHoanThien = 1 * xVal + 2 * yVal;
+                    const okHoanThien = usedHoanThien <= 32;
+                    const pct = Math.min(100, Math.round((usedHoanThien / 32) * 100));
+                    return (
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[11px]">
+                          <span className="font-medium text-slate-600">Khâu Hoàn thiện (x + 2y ≤ 32):</span>
+                          <span className={`font-mono font-bold ${okHoanThien ? "text-emerald-700" : "text-rose-600"}`}>
+                            {usedHoanThien} / 32 giờ {okHoanThien ? "✓" : "✗ VƯỢT"}
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border">
+                          <div
+                            className={`h-full transition-all duration-300 ${okHoanThien ? "bg-emerald-500" : "bg-rose-500"}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* 4. Thẻ KPI Tổng Tiền Lãi Thời Gian Thực */}
+                {(() => {
+                  const xVal = params.x ?? 8;
+                  const yVal = params.y ?? 12;
+                  const totalProfitThousand = 600 * xVal + 450 * yVal;
+                  const isFeasible = 3 * xVal + 2 * yVal <= 48 && xVal + 2 * yVal <= 32 && xVal >= 0 && yVal >= 0;
+                  const isOptimal = xVal === 8 && yVal === 12;
+                  return (
+                    <div className={`p-3 rounded-xl border space-y-1.5 ${
+                      isOptimal
+                        ? "bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-400 shadow-md"
+                        : isFeasible
+                        ? "bg-emerald-50 border-emerald-300"
+                        : "bg-rose-50 border-rose-300"
+                    }`}>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-bold text-slate-700">Tổng tiền lãi F(x; y):</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          isOptimal ? "bg-amber-500 text-white animate-pulse" : isFeasible ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
+                        }`}>
+                          {isOptimal ? "★ TỐI ƯU GTLN" : isFeasible ? "✓ KHẢ THI" : "✗ VI PHẠM"}
+                        </span>
+                      </div>
+                      <div className="text-xl font-extrabold font-mono text-slate-900 tracking-tight">
+                        {(totalProfitThousand * 1000).toLocaleString("vi-VN")} đ
+                      </div>
+                      <p className="text-[10px] text-slate-600 leading-tight">
+                        {isOptimal
+                          ? "🏆 Đạt lợi nhuận cực đại tại đỉnh B(8; 12): Sản xuất 8 bàn và 12 ghế, tận dụng trọn vẹn 100% công suất của cả hai khâu!"
+                          : isFeasible
+                          ? `Phương án khả thi với ${xVal} bàn và ${yVal} ghế. Hãy thử điều chỉnh để đạt mức lãi tối đa 10.200.000 đ.`
+                          : "Phương án này vượt quá quỹ thời gian cho phép của công nhân. Học sinh cần điều chỉnh giảm x hoặc y."}
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                {/* 5. Đường mức lợi nhuận d_F */}
+                <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                  <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                    <span>Đường mức lợi nhuận d_F:</span>
+                    <span className="font-mono text-amber-700 font-bold">
+                      {((params.F ?? 48) * 150 * 1000).toLocaleString("vi-VN")} đ
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="68"
+                    step="1"
+                    value={params.F ?? 48}
+                    onChange={(e) => updateParam("F", parseFloat(e.target.value))}
+                    className="w-full accent-amber-500"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                    <span>0 đ</span>
+                    <span className="font-bold text-amber-700">F_max = 10.200.000 đ</span>
+                  </div>
+                </div>
 
                 <div className="pt-2 border-t border-[#d9e4e2] flex items-center justify-between text-[11px]">
                   <span className="font-bold text-[#152f35]">Hệ ràng buộc ({constraints.length}):</span>
@@ -2904,14 +3107,16 @@ export default function MathStepWorkbench({
                     type="button"
                     onClick={() => {
                       setConstraints(DEFAULT_CONSTRAINTS);
-                      showToast("Đã khôi phục hệ ràng buộc chuẩn SGK!");
+                      updateParam("x", 8);
+                      updateParam("y", 12);
+                      showToast("Đã khôi phục bài toán Xưởng mộc chuẩn SGK KNTT!");
                     }}
                     className="text-[10px] text-[#087e7c] hover:underline font-bold"
                   >
                     Khôi phục hệ mẫu
                   </button>
                 </div>
-              </>
+              </div>
             )}
 
             {moduleId === "spatial_geometry" && (

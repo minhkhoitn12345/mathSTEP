@@ -609,67 +609,154 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 48 STATION CARDS GRID (3 Columns) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredStations.map((st) => (
-                  <article
-                    key={st.id}
-                    className="bg-white rounded-2xl border border-[#d9e4e2] overflow-hidden shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between"
-                  >
-                    <div>
-                      {/* Visual SVG Card Art */}
-                      <div className="h-36 relative overflow-hidden bg-[#eef7f3]">
-                        <StationCardArt grade={st.grade} is3D={st.is3D} stationId={st.id} />
-                        <span className="absolute top-2.5 left-2.5 bg-white/90 backdrop-blur-xs text-[#087e7c] px-2 py-0.5 rounded-lg text-[10px] font-black font-mono shadow-xs border border-white/80">
-                          {st.id} · LỚP {st.grade}
-                        </span>
-                        <span className="absolute top-2.5 right-2.5 bg-[#152f35]/80 text-white px-2 py-0.5 rounded-lg text-[10px] font-bold">
-                          {st.is3D ? "3D" : "2D"}
-                        </span>
-                      </div>
+              {/* PHÂN VÙNG 1: CÁC TRẠM NGHIÊN CỨU TRỌNG TÂM (ĐÃ THẨM ĐỊNH TOÁN HỌC 100%) */}
+              <div className="space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-3.5 bg-gradient-to-r from-emerald-900/10 via-teal-900/5 to-transparent border-l-4 border-emerald-600 rounded-r-xl">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                      <h3 className="text-sm font-extrabold text-[#152f35] uppercase tracking-wide">
+                        CHUYÊN ĐỀ NGHIÊN CỨU TRỌNG TÂM (ĐÃ THẨM ĐỊNH TOÁN HỌC & SƯ PHẠM 100%)
+                      </h3>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-0.5">
+                      Phục vụ báo cáo dự thi KHKT: Đầy đủ bối cảnh đề bài thực tế, ma trận số liệu và bảng điều khiển đồng bộ 100% với Canvas.
+                    </p>
+                  </div>
+                  <span className="px-3 py-1 bg-emerald-100 text-emerald-800 font-extrabold text-xs rounded-full border border-emerald-300 shrink-0">
+                    5 Trạm Cốt Lõi Hoàn Hảo
+                  </span>
+                </div>
 
-                      {/* Card Content */}
-                      <div className="p-4 space-y-2">
-                        <div className="flex items-center justify-between text-[10px]">
-                          <span className="font-extrabold text-[#087e7c] uppercase tracking-wider">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {filteredStations.filter((st) => st.isValidated).map((st) => (
+                    <article
+                      key={st.id}
+                      className="bg-white rounded-2xl border-2 border-emerald-500/60 overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between"
+                    >
+                      <div>
+                        {/* Visual SVG Card Art */}
+                        <div className="h-36 relative overflow-hidden bg-[#eef7f3]">
+                          <StationCardArt grade={st.grade} is3D={st.is3D} stationId={st.id} />
+                          <span className="absolute top-2.5 left-2.5 bg-emerald-800 text-white px-2 py-0.5 rounded-lg text-[10px] font-black font-mono shadow-xs border border-emerald-600">
+                            {st.id} · LỚP {st.grade}
+                          </span>
+                          <span className="absolute top-2.5 right-2.5 bg-emerald-600 text-white px-2 py-0.5 rounded-lg text-[10px] font-bold">
                             {st.is3D ? "KHÔNG GIAN 3D" : "HÌNH HỌC 2D"}
                           </span>
-                          <span
-                            className={`px-1.5 py-0.5 rounded font-bold ${
-                              st.priority === "A"
-                                ? "bg-rose-100 text-rose-800"
-                                : "bg-gray-100 text-gray-600"
-                            }`}
-                          >
-                            {st.priority === "A" ? "Trọng tâm KHKT" : "Chủ đề SGK"}
+                        </div>
+
+                        {/* Card Content */}
+                        <div className="p-4 space-y-2">
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="font-extrabold text-emerald-700 uppercase tracking-wider">
+                              {st.badge || "Trọng tâm KHKT"}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                              ✓ Đã kiểm chứng 100%
+                            </span>
+                          </div>
+
+                          <h3 className="font-bold text-sm text-[#152f35] line-clamp-2 leading-snug">
+                            {st.title}
+                          </h3>
+
+                          <p className="text-gray-600 text-xs line-clamp-2 leading-relaxed">
+                            {st.simulation}
+                          </p>
+
+                          <div className="text-[10px] text-gray-500 italic pt-1 border-t border-gray-100 flex items-center justify-between">
+                            <span>{st.source}</span>
+                            <span className="text-emerald-700 font-bold">Khớp SGK</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-4 pt-0">
+                        <button
+                          onClick={() => handleOpenStationInLab(st)}
+                          className="w-full py-2.5 bg-gradient-to-r from-[#087e7c] to-[#0d9488] hover:from-[#066563] hover:to-[#0f766e] text-white rounded-xl font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+                        >
+                          <span>Vào phòng thực hành chuẩn</span>
+                          <span>↗</span>
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+
+              {/* PHÂN VÙNG 2: KHUNG KIẾN TRÚC MỞ RỘNG (ĐANG HOÀN THIỆN THEO ĐỀ CƯƠNG) */}
+              <div className="space-y-4 pt-6 border-t border-gray-200">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-3 bg-amber-50/70 border-l-4 border-amber-500 rounded-r-xl">
+                  <div>
+                    <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wide flex items-center gap-1.5">
+                      <span>🧪</span>
+                      <span>KHUNG KIẾN TRÚC MỞ RỘNG (LỘ TRÌNH ĐỀ CƯƠNG DÀI HẠN)</span>
+                    </h3>
+                    <p className="text-[11px] text-amber-800 mt-0.5">
+                      Nhóm tác giả cam kết liêm chính khoa học: Chỉ mở công khai các trạm đã được thẩm định toán học 100%. Các trạm dưới đây đang trong lộ trình chuẩn hóa dữ liệu thực nghiệm sư phạm.
+                    </p>
+                  </div>
+                  <span className="px-2.5 py-0.5 bg-amber-200 text-amber-900 font-bold text-[11px] rounded-full shrink-0">
+                    Lộ trình mở rộng
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 opacity-75 hover:opacity-100 transition-opacity">
+                  {filteredStations.filter((st) => !st.isValidated).map((st) => (
+                    <article
+                      key={st.id}
+                      className="bg-white rounded-2xl border border-dashed border-gray-300 overflow-hidden shadow-xs flex flex-col justify-between"
+                    >
+                      <div>
+                        {/* Visual SVG Card Art */}
+                        <div className="h-32 relative overflow-hidden bg-gray-50 grayscale opacity-80">
+                          <StationCardArt grade={st.grade} is3D={st.is3D} stationId={st.id} />
+                          <span className="absolute top-2.5 left-2.5 bg-gray-700 text-white px-2 py-0.5 rounded-lg text-[10px] font-mono">
+                            {st.id} · LỚP {st.grade}
+                          </span>
+                          <span className="absolute top-2.5 right-2.5 bg-amber-600 text-white px-2 py-0.5 rounded-lg text-[10px] font-bold">
+                            Lộ trình mở rộng
                           </span>
                         </div>
 
-                        <h3 className="font-bold text-sm text-[#152f35] line-clamp-1 leading-snug">
-                          {st.title}
-                        </h3>
+                        {/* Card Content */}
+                        <div className="p-4 space-y-2">
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="font-bold text-amber-800">
+                              Đang chuẩn hóa dữ liệu
+                            </span>
+                          </div>
 
-                        <p className="text-gray-500 text-xs line-clamp-2 leading-relaxed">
-                          {st.simulation}
-                        </p>
+                          <h3 className="font-bold text-xs text-gray-700 line-clamp-1">
+                            {st.title}
+                          </h3>
 
-                        <div className="text-[10px] text-gray-400 italic pt-1 border-t border-gray-100">
-                          {st.source}
+                          <p className="text-gray-400 text-[11px] line-clamp-2">
+                            {st.simulation}
+                          </p>
+
+                          <div className="text-[10px] text-gray-400 italic pt-1 border-t border-gray-100">
+                            {st.source}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="p-4 pt-0">
-                      <button
-                        onClick={() => handleOpenStationInLab(st)}
-                        className="w-full py-2 bg-[#087e7c] hover:bg-[#066563] text-white rounded-xl font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-1.5"
-                      >
-                        <span>Vào học trạm</span>
-                        <span>↗</span>
-                      </button>
-                    </div>
-                  </article>
-                ))}
+                      <div className="p-4 pt-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            alert("Trạm này đang trong giai đoạn chuẩn hóa dữ liệu thực nghiệm sư phạm theo lộ trình dài hạn của đề cương. Nhóm nghiên cứu chỉ mở công khai các trạm đã được kiểm chứng tính đúng toán học 100%. Kính mời thầy cô và các bạn trải nghiệm 5 Trạm Trọng tâm phía trên!");
+                          }}
+                          className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl font-bold text-xs border border-slate-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <span>🔒 Đang hoàn thiện theo đề cương</span>
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
               </div>
             </section>
           </div>

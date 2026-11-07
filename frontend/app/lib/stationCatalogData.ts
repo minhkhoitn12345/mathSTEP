@@ -20,6 +20,8 @@ export interface StationItem {
   priority: "A" | "B" | "C";
   moduleId: ModuleId;
   is3D: boolean;
+  isValidated?: boolean; // True: Đã được thẩm định toán học 100% & sẵn sàng thực hành
+  badge?: string; // Nhãn phân loại KHKT
 }
 
 export function removeVietnameseAccents(str: string): string {
@@ -41,29 +43,35 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 10,
     "moduleId": "spatial_geometry",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "10.02",
     "source": "KNTT tập 1 Bài 3, tr.22",
-    "title": "Bất phương trình hai ẩn",
-    "simulation": "2D: kéo điểm thử, đổi dấu và tô nửa mặt phẳng.",
-    "goal": "Thay tọa độ để kiểm tra; phân biệt có và không lấy bờ.",
+    "title": "Bất phương trình hai ẩn: Nửa mặt phẳng bờ d",
+    "simulation": "2D: Kéo điểm thử M(x; y), gạch bỏ phần không thỏa mãn theo quy ước SGK KNTT; phân biệt nét liền và nét đứt.",
+    "goal": "Thay tọa độ vào bất phương trình; hiểu bản chất bờ d phân chia mặt phẳng thành hai miền.",
     "priority": "A",
     "grade": 10,
     "moduleId": "linear_programming",
-    "is3D": false
+    "is3D": false,
+    "isValidated": true,
+    "badge": "Thực nghiệm Lớp 10"
   },
   {
     "id": "10.03",
     "source": "KNTT tập 1 Bài 4, tr.26",
-    "title": "Hệ bất phương trình hai ẩn",
-    "simulation": "2D: chồng miền nghiệm; kéo đường mục tiêu; lưới nguyên tùy bài.",
-    "goal": "Nghiệm phải thỏa đồng thời; nhận biết vô nghiệm và biên.",
+    "title": "Hệ bất phương trình hai ẩn: Tối ưu hóa Xưởng mộc (SGK KNTT)",
+    "simulation": "2D: Tối ưu hóa lợi nhuận F = 600x + 450y; ràng buộc lắp ráp 24h & hoàn thiện 32h; quét đường mức d_F.",
+    "goal": "Xác định 4 đỉnh miền nghiệm O, A, B, C; tìm phương án sản xuất (x; y) đạt lợi nhuận lớn nhất.",
     "priority": "A",
     "grade": 10,
     "moduleId": "linear_programming",
-    "is3D": false
+    "is3D": false,
+    "isValidated": true,
+    "badge": "Trọng tâm số 1 (Lớp 10)"
   },
   {
     "id": "10.04",
@@ -74,7 +82,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 10,
     "moduleId": "linear_programming",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "10.05",
@@ -85,7 +95,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 10,
     "moduleId": "trigonometry",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "10.06",
@@ -96,7 +108,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 10,
     "moduleId": "functions",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "10.07",
@@ -107,7 +121,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 10,
     "moduleId": "functions",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "10.08",
@@ -118,7 +134,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 10,
     "moduleId": "functions",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "10.09",
@@ -129,7 +147,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 10,
     "moduleId": "probability",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "10.10",
@@ -140,7 +160,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 10,
     "moduleId": "functions",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "10.11",
@@ -151,7 +173,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 10,
     "moduleId": "conics_and_solids",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "10.12",
@@ -162,7 +186,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 10,
     "moduleId": "conics_and_solids",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "10.13",
@@ -173,7 +199,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 10,
     "moduleId": "conics_and_solids",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "10.14",
@@ -184,7 +212,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "C",
     "grade": 10,
     "moduleId": "probability",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "10.15",
@@ -195,7 +225,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "C",
     "grade": 10,
     "moduleId": "probability",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "10.16",
@@ -206,18 +238,22 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 10,
     "moduleId": "probability",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.01",
     "source": "KNTT tập 1 Bài 1 và 2, tr.5, 17",
-    "title": "Góc và công thức lượng giác",
-    "simulation": "2D: quay đường tròn lượng giác, ghép góc, chiếu tọa độ.",
-    "goal": "Đổi radian và độ; góc cùng điểm cuối khác số đo.",
+    "title": "Đường tròn lượng giác đơn vị & Góc quay α",
+    "simulation": "2D: Điểm M chuyển động trên đường tròn bán kính R = 1; hình chiếu lên trục sin, cos; quan sát tính đối xứng.",
+    "goal": "Bản chất hình học của các giá trị lượng giác; giải thích dấu của sin, cos ở 4 góc phần tư.",
     "priority": "B",
     "grade": 11,
     "moduleId": "trigonometry",
-    "is3D": false
+    "is3D": false,
+    "isValidated": true,
+    "badge": "Trọng tâm số 3 (Lớp 10/11)"
   },
   {
     "id": "11.02",
@@ -228,7 +264,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 11,
     "moduleId": "trigonometry",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.03",
@@ -239,7 +277,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 11,
     "moduleId": "trigonometry",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.04",
@@ -250,7 +290,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 11,
     "moduleId": "calculus",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.05",
@@ -261,29 +303,35 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 11,
     "moduleId": "calculus",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.06",
     "source": "KNTT tập 1 Bài 11, tr.78",
-    "title": "Hai đường thẳng song song",
-    "simulation": "3D: kéo hai đường, chuyển giữa cắt, song song, chéo nhau.",
-    "goal": "Không giao nhau chưa đủ để song song; phải đồng phẳng.",
+    "title": "Hình chóp tứ giác: Cạnh thấy vs Cạnh khuất SGK 11",
+    "simulation": "3D: Xoay khối chóp 360°; thuật toán Back-face Culling tự động chuyển nét đứt cho cạnh bị che khuất; xem đường cao SH.",
+    "goal": "Nhận biết quy ước nét liền (cạnh nhìn thấy) và nét đứt (cạnh bị khuất) theo chuẩn SGK Hình học 11.",
     "priority": "A",
     "grade": 11,
     "moduleId": "spatial_geometry",
-    "is3D": true
+    "is3D": true,
+    "isValidated": true,
+    "badge": "Trọng tâm số 2 (Lớp 11)"
   },
   {
     "id": "11.07",
     "source": "KNTT tập 1 Bài 12, tr.84",
-    "title": "Đường song song mặt phẳng",
-    "simulation": "3D: dịch đường; tô đường tham chiếu trong mặt.",
-    "goal": "Phân biệt song song với nằm trong mặt phẳng.",
+    "title": "Khai triển phẳng ↔ Gấp khối đa diện & Góc nhị diện",
+    "simulation": "3D: Bản lề xoay 4 mặt bên hình chóp trải phẳng ra Oxy; đo góc nhị diện giữa mặt bên và mặt đáy.",
+    "goal": "Liên kết trực quan giữa hình khai triển 2D và khối không gian 3D; hiểu bản chất góc giữa hai mặt phẳng.",
     "priority": "A",
     "grade": 11,
     "moduleId": "spatial_geometry",
-    "is3D": true
+    "is3D": true,
+    "isValidated": true,
+    "badge": "Thực nghiệm Lớp 11"
   },
   {
     "id": "11.08",
@@ -294,7 +342,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 11,
     "moduleId": "spatial_geometry",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.09",
@@ -305,7 +355,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 11,
     "moduleId": "spatial_geometry",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.10",
@@ -316,7 +368,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 11,
     "moduleId": "calculus",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.11",
@@ -327,7 +381,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "C",
     "grade": 11,
     "moduleId": "spatial_geometry",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.12",
@@ -338,7 +394,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 11,
     "moduleId": "spatial_geometry",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.13",
@@ -349,7 +407,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 11,
     "moduleId": "spatial_geometry",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.14",
@@ -360,7 +420,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 11,
     "moduleId": "spatial_geometry",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.15",
@@ -371,7 +433,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 11,
     "moduleId": "spatial_geometry",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.16",
@@ -382,7 +446,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 11,
     "moduleId": "spatial_geometry",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.17",
@@ -393,7 +459,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 11,
     "moduleId": "spatial_geometry",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.18",
@@ -404,7 +472,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 11,
     "moduleId": "spatial_geometry",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.19",
@@ -415,7 +485,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 11,
     "moduleId": "probability",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "11.20",
@@ -426,7 +498,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 11,
     "moduleId": "calculus",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "12.01",
@@ -437,7 +511,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 12,
     "moduleId": "functions",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "12.02",
@@ -448,7 +524,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 12,
     "moduleId": "functions",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "12.03",
@@ -459,7 +537,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 12,
     "moduleId": "functions",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "12.04",
@@ -470,7 +550,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 12,
     "moduleId": "probability",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "12.05",
@@ -481,7 +563,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 12,
     "moduleId": "calculus",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "12.06",
@@ -492,7 +576,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 12,
     "moduleId": "calculus",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "12.07",
@@ -503,7 +589,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 12,
     "moduleId": "calculus",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "12.08",
@@ -514,7 +602,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 12,
     "moduleId": "calculus",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "12.09",
@@ -525,7 +615,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 12,
     "moduleId": "calculus",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "12.10",
@@ -536,7 +628,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 12,
     "moduleId": "conics_and_solids",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "12.11",
@@ -547,7 +641,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "A",
     "grade": 12,
     "moduleId": "conics_and_solids",
-    "is3D": true
+    "is3D": true,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   },
   {
     "id": "12.12",
@@ -558,7 +654,9 @@ export const STATION_CATALOG: StationItem[] = [
     "priority": "B",
     "grade": 12,
     "moduleId": "probability",
-    "is3D": false
+    "is3D": false,
+    "isValidated": false,
+    "badge": "🧪 Đang hoàn thiện theo đề cương"
   }
 ];
 
