@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Html, Grid } from "@react-three/drei";
+import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
 import {
   RotateCcw,
@@ -13,6 +13,8 @@ import {
   FileText,
   ChevronDown,
   ChevronUp,
+  Grid3X3,
+  Axis3d,
 } from "lucide-react";
 import KatexMath, { formatVNFloat } from "./KatexMath";
 
@@ -29,6 +31,116 @@ export interface Stereometry3DCanvasProps {
 }
 
 // -------------------------------------------------------------
+// Component OxyzAxesHelper:
+// Hệ trục tọa độ Oxyz chuẩn Sư phạm Toán học THPT (SGK Kết nối tri thức)
+// Trục Ox: Đỏ (#EF4444) | Trục Oy: Xanh lục (#10B981) | Trục Oz: Xanh dương (#3B82F6) hướng thẳng đứng
+// -------------------------------------------------------------
+interface OxyzAxesHelperProps {
+  size?: number;
+  position?: THREE.Vector3;
+  isAtVertexA?: boolean;
+}
+
+function OxyzAxesHelper({
+  size = 7,
+  position = new THREE.Vector3(0, 0, 0),
+  isAtVertexA = false,
+}: OxyzAxesHelperProps) {
+  // Three.js AxesHelper chuẩn RGB Toán học
+  const axes = useMemo(() => {
+    const helper = new THREE.AxesHelper(size);
+    helper.setColors(
+      new THREE.Color("#EF4444"), // Ox: Đỏ
+      new THREE.Color("#3B82F6"), // Oz: Xanh dương (thẳng đứng lên trên)
+      new THREE.Color("#10B981")  // Oy: Xanh lục
+    );
+    // Định hướng trục Oy theo phương -Z (cùng chiều vectơ AD của đáy chóp)
+    const posAttr = helper.geometry.attributes.position;
+    if (posAttr) {
+      posAttr.setZ(5, -size);
+      posAttr.needsUpdate = true;
+    }
+    return helper;
+  }, [size]);
+
+  const lineR = 0.022;
+  const coneR = 0.085;
+  const coneH = 0.28;
+
+  return (
+    <group position={position}>
+      {/* 1. Three.js Native AxesHelper */}
+      <primitive object={axes} />
+
+      {/* 2. Trục Ox (Đỏ #EF4444) */}
+      <mesh position={[size / 2, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
+        <cylinderGeometry args={[lineR, lineR, size, 16]} />
+        <meshStandardMaterial color="#EF4444" roughness={0.3} metalness={0.2} />
+      </mesh>
+      <mesh position={[size, 0, 0]} rotation={[0, 0, -Math.PI / 2]}>
+        <coneGeometry args={[coneR, coneH, 16]} />
+        <meshStandardMaterial color="#EF4444" roughness={0.3} metalness={0.2} />
+      </mesh>
+
+      {/* 3. Trục Oz (Xanh dương #3B82F6) - Hướng thẳng đứng lên trên */}
+      <mesh position={[0, size / 2, 0]}>
+        <cylinderGeometry args={[lineR, lineR, size, 16]} />
+        <meshStandardMaterial color="#3B82F6" roughness={0.3} metalness={0.2} />
+      </mesh>
+      <mesh position={[0, size, 0]}>
+        <coneGeometry args={[coneR, coneH, 16]} />
+        <meshStandardMaterial color="#3B82F6" roughness={0.3} metalness={0.2} />
+      </mesh>
+
+      {/* 4. Trục Oy (Xanh lục #10B981) - Nằm ngang trên mặt phẳng Oxy */}
+      <mesh position={[0, 0, -size / 2]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[lineR, lineR, size, 16]} />
+        <meshStandardMaterial color="#10B981" roughness={0.3} metalness={0.2} />
+      </mesh>
+      <mesh position={[0, 0, -size]} rotation={[-Math.PI / 2, 0, 0]}>
+        <coneGeometry args={[coneR, coneH, 16]} />
+        <meshStandardMaterial color="#10B981" roughness={0.3} metalness={0.2} />
+      </mesh>
+
+      {/* 5. Gốc tọa độ O: Quả cầu tâm chuẩn */}
+      <mesh position={[0, 0, 0]}>
+        <sphereGeometry args={[0.07, 16, 16]} />
+        <meshStandardMaterial color="#f8fafc" roughness={0.2} metalness={0.5} />
+      </mesh>
+
+      {/* 6. Nhãn KaTeX 3D Billboard */}
+      {/* Nhãn Ox */}
+      <Html position={[size + 0.45, 0, 0]} center distanceFactor={9}>
+        <div className="px-2 py-0.5 bg-red-950/90 backdrop-blur-md rounded-md border border-red-500/80 text-red-300 font-bold text-xs shadow-lg select-none pointer-events-none whitespace-nowrap">
+          <KatexMath math="x" />
+        </div>
+      </Html>
+
+      {/* Nhãn Oz (thẳng đứng lên trên) */}
+      <Html position={[0, size + 0.45, 0]} center distanceFactor={9}>
+        <div className="px-2 py-0.5 bg-blue-950/90 backdrop-blur-md rounded-md border border-blue-500/80 text-blue-300 font-bold text-xs shadow-lg select-none pointer-events-none whitespace-nowrap">
+          <KatexMath math="z" />
+        </div>
+      </Html>
+
+      {/* Nhãn Oy */}
+      <Html position={[0, 0, -size - 0.45]} center distanceFactor={9}>
+        <div className="px-2 py-0.5 bg-emerald-950/90 backdrop-blur-md rounded-md border border-emerald-500/80 text-emerald-300 font-bold text-xs shadow-lg select-none pointer-events-none whitespace-nowrap">
+          <KatexMath math="y" />
+        </div>
+      </Html>
+
+      {/* Nhãn Gốc O */}
+      <Html position={[-0.3, -0.25, 0.3]} center distanceFactor={9}>
+        <div className="px-2 py-0.5 bg-slate-900/95 backdrop-blur-md rounded-md border border-slate-500 text-slate-100 font-bold text-[11px] shadow-lg select-none pointer-events-none whitespace-nowrap">
+          <KatexMath math={isAtVertexA ? "O \\equiv A(0;\\,0;\\,0)" : "O(0;\\,0;\\,0)"} />
+        </div>
+      </Html>
+    </group>
+  );
+}
+
+// -------------------------------------------------------------
 // Component DynamicPyramidMeshAndEdges:
 // Tính toán Cạnh Thấy / Cạnh Khuất 60fps & Billboard KaTeX Labels
 // -------------------------------------------------------------
@@ -38,11 +150,14 @@ interface DynamicEdgesProps {
   baseB: THREE.Vector3;
   baseC: THREE.Vector3;
   baseD: THREE.Vector3;
+  baseWidth: number;
+  baseDepth: number;
   foldT: number; // 0 -> 1
   showCoordinates: boolean;
   showNormalVector: boolean;
   showPerpendicularSymbol: boolean;
   showDiagonals: boolean;
+  originAtVertexA: boolean;
 }
 
 function DynamicPyramidMeshAndEdges({
@@ -51,11 +166,14 @@ function DynamicPyramidMeshAndEdges({
   baseB,
   baseC,
   baseD,
+  baseWidth,
+  baseDepth,
   foldT,
   showCoordinates,
   showNormalVector,
   showPerpendicularSymbol,
   showDiagonals,
+  originAtVertexA,
 }: DynamicEdgesProps) {
   const { camera } = useThree();
 
@@ -361,7 +479,7 @@ function DynamicPyramidMeshAndEdges({
       {/* 2. Group chứa các cạnh động Thấy & Khuất */}
       <group ref={linesGroupRef} />
 
-      {/* 3. Vectơ Pháp Tuyến mặt phẳng đáy: n = (0; 1; 0) */}
+      {/* 3. Vectơ Pháp Tuyến mặt phẳng đáy: n = (0; 0; 1) chuẩn Oz thẳng đứng */}
       {showNormalVector && (
         <group position={[0, 0, 0]}>
           {/* Thân mũi tên */}
@@ -377,7 +495,7 @@ function DynamicPyramidMeshAndEdges({
           {/* Nhãn KaTeX Vectơ pháp tuyến */}
           <Html position={[0, 1.82, 0]} center distanceFactor={8}>
             <div className="px-2.5 py-1 bg-amber-950/90 backdrop-blur-md border border-amber-500/80 rounded-lg text-amber-300 text-xs font-bold shadow-xl select-none pointer-events-none whitespace-nowrap">
-              <KatexMath math="\vec{n}_{(ABCD)} = (0;\, 1;\, 0)" />
+              <KatexMath math="\vec{n}_{(ABCD)} = (0;\, 0;\, 1)" />
             </div>
           </Html>
         </group>
@@ -392,12 +510,18 @@ function DynamicPyramidMeshAndEdges({
         </Html>
       )}
 
-      {/* 5. Đỉnh Billboard Labels bằng KaTeX 100% */}
+      {/* 5. Đỉnh Billboard Labels bằng KaTeX 100% chuẩn tọa độ THPT (x, y, z với z là chiều cao) */}
       {/* Đỉnh S */}
       <Html position={[apex.x, apex.y + 0.28, apex.z]} center distanceFactor={9}>
         <div className="px-2.5 py-1 bg-slate-900/95 backdrop-blur-md rounded-lg border border-teal-400/80 text-teal-300 font-bold text-xs shadow-xl select-none pointer-events-none flex items-center gap-1.5 whitespace-nowrap">
           <KatexMath
-            math={showCoordinates ? `S(0;\\, ${formatVNFloat(apex.y)};\\, 0)` : "S"}
+            math={
+              showCoordinates
+                ? originAtVertexA
+                  ? `S(${formatVNFloat(baseWidth / 2)};\\, ${formatVNFloat(baseDepth / 2)};\\, ${formatVNFloat(apex.y)})`
+                  : `S(0;\\, 0;\\, ${formatVNFloat(apex.y)})`
+                : "S"
+            }
           />
         </div>
       </Html>
@@ -406,7 +530,13 @@ function DynamicPyramidMeshAndEdges({
       <Html position={[baseA.x - 0.25, baseA.y - 0.18, baseA.z + 0.25]} center distanceFactor={9}>
         <div className="px-2.5 py-1 bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold text-xs shadow-lg select-none pointer-events-none whitespace-nowrap">
           <KatexMath
-            math={showCoordinates ? `A(${formatVNFloat(baseA.x)};\\, 0;\\, ${formatVNFloat(baseA.z)})` : "A"}
+            math={
+              showCoordinates
+                ? originAtVertexA
+                  ? "A(0;\\, 0;\\, 0)"
+                  : `A(-${formatVNFloat(baseWidth / 2)};\\, -${formatVNFloat(baseDepth / 2)};\\, 0)`
+                : "A"
+            }
           />
         </div>
       </Html>
@@ -415,7 +545,13 @@ function DynamicPyramidMeshAndEdges({
       <Html position={[baseB.x + 0.25, baseB.y - 0.18, baseB.z + 0.25]} center distanceFactor={9}>
         <div className="px-2.5 py-1 bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold text-xs shadow-lg select-none pointer-events-none whitespace-nowrap">
           <KatexMath
-            math={showCoordinates ? `B(${formatVNFloat(baseB.x)};\\, 0;\\, ${formatVNFloat(baseB.z)})` : "B"}
+            math={
+              showCoordinates
+                ? originAtVertexA
+                  ? `B(${formatVNFloat(baseWidth)};\\, 0;\\, 0)`
+                  : `B(${formatVNFloat(baseWidth / 2)};\\, -${formatVNFloat(baseDepth / 2)};\\, 0)`
+                : "B"
+            }
           />
         </div>
       </Html>
@@ -424,7 +560,13 @@ function DynamicPyramidMeshAndEdges({
       <Html position={[baseC.x + 0.25, baseC.y - 0.18, baseC.z - 0.25]} center distanceFactor={9}>
         <div className="px-2.5 py-1 bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold text-xs shadow-lg select-none pointer-events-none whitespace-nowrap">
           <KatexMath
-            math={showCoordinates ? `C(${formatVNFloat(baseC.x)};\\, 0;\\, ${formatVNFloat(baseC.z)})` : "C"}
+            math={
+              showCoordinates
+                ? originAtVertexA
+                  ? `C(${formatVNFloat(baseWidth)};\\, ${formatVNFloat(baseDepth)};\\, 0)`
+                  : `C(${formatVNFloat(baseWidth / 2)};\\, ${formatVNFloat(baseDepth / 2)};\\, 0)`
+                : "C"
+            }
           />
         </div>
       </Html>
@@ -433,7 +575,13 @@ function DynamicPyramidMeshAndEdges({
       <Html position={[baseD.x - 0.25, baseD.y - 0.18, baseD.z - 0.25]} center distanceFactor={9}>
         <div className="px-2.5 py-1 bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold text-xs shadow-lg select-none pointer-events-none whitespace-nowrap">
           <KatexMath
-            math={showCoordinates ? `D(${formatVNFloat(baseD.x)};\\, 0;\\, ${formatVNFloat(baseD.z)})` : "D"}
+            math={
+              showCoordinates
+                ? originAtVertexA
+                  ? `D(0;\\, ${formatVNFloat(baseDepth)};\\, 0)`
+                  : `D(-${formatVNFloat(baseWidth / 2)};\\, ${formatVNFloat(baseDepth / 2)};\\, 0)`
+                : "D"
+            }
           />
         </div>
       </Html>
@@ -441,7 +589,15 @@ function DynamicPyramidMeshAndEdges({
       {/* Chân đường cao H */}
       <Html position={[apex.x, 0.12, apex.z]} center distanceFactor={9}>
         <div className="px-2 py-0.5 bg-rose-950/95 backdrop-blur-md rounded-lg border border-rose-500/80 text-rose-300 font-bold text-[11px] shadow-md select-none pointer-events-none whitespace-nowrap">
-          <KatexMath math={showCoordinates ? "H(0;\\, 0;\\, 0)" : "H"} />
+          <KatexMath
+            math={
+              showCoordinates
+                ? originAtVertexA
+                  ? `H(${formatVNFloat(baseWidth / 2)};\\, ${formatVNFloat(baseDepth / 2)};\\, 0)`
+                  : "H(0;\\, 0;\\, 0)"
+                : "H"
+            }
+          />
         </div>
       </Html>
     </group>
@@ -465,6 +621,9 @@ export default function Stereometry3DCanvas({
   const [mounted, setMounted] = useState(false);
   const [showCoordinates, setShowCoordinates] = useState<boolean>(true);
   const [showNormalVector, setShowNormalVector] = useState<boolean>(true);
+  const [showAxes, setShowAxes] = useState<boolean>(true);
+  const [showFloorGrid, setShowFloorGrid] = useState<boolean>(true);
+  const [originAtVertexA, setOriginAtVertexA] = useState<boolean>(false);
   const [showHudCard, setShowHudCard] = useState<boolean>(true);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -529,10 +688,10 @@ export default function Stereometry3DCanvas({
     >
       {/* Top Banner Toolbar: Tiêu đề & Công cụ khảo sát chuẩn SGK */}
       <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
-        <div className="flex items-center gap-2 pointer-events-auto flex-wrap">
-          <div className="px-3 py-1.5 bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-2 shadow-lg">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span>Hình chóp tứ giác</span>
+        <div className="flex items-center gap-1.5 pointer-events-auto flex-wrap">
+          <div className="px-2.5 py-1.5 bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 shadow-lg">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            <span className="hidden sm:inline">Hình chóp tứ giác</span>
             <KatexMath math="S.ABCD" className="font-bold text-teal-300" />
           </div>
 
@@ -545,12 +704,55 @@ export default function Stereometry3DCanvas({
             }`}
           >
             <Eye className="w-3.5 h-3.5" />
-            <span>{orthogonalView ? "Trực giao (2 đường chéo)" : "Phối cảnh 3D"}</span>
+            <span>{orthogonalView ? "Trực giao" : "Phối cảnh 3D"}</span>
           </button>
 
+          {/* Nút Toggle: Hiện / Ẩn Trục Oxyz */}
+          <button
+            onClick={() => setShowAxes((v) => !v)}
+            title="Bật/Tắt hệ trục tọa độ Oxyz chuẩn RGB (Đỏ Ox, Xanh lục Oy, Xanh dương Oz)"
+            className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
+              showAxes
+                ? "bg-slate-800 border-red-500/80 text-red-300"
+                : "bg-slate-900/85 border-slate-700 text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Axis3d className="w-3.5 h-3.5" />
+            <span>{showAxes ? "Trục Oxyz" : "Ẩn Oxyz"}</span>
+          </button>
+
+          {/* Nút Toggle: Hiện / Ẩn Mặt sàn Oxy */}
+          <button
+            onClick={() => setShowFloorGrid((v) => !v)}
+            title="Bật/Tắt lưới mặt sàn không gian Oxy bên dưới hình chóp"
+            className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
+              showFloorGrid
+                ? "bg-slate-800 border-cyan-500/80 text-cyan-300"
+                : "bg-slate-900/85 border-slate-700 text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Grid3X3 className="w-3.5 h-3.5" />
+            <span>{showFloorGrid ? "Mặt sàn Oxy" : "Ẩn sàn"}</span>
+          </button>
+
+          {/* Nút Toggle: Gắn gốc O vào đỉnh A (Phương pháp tọa độ hóa Toán 12) */}
+          <button
+            onClick={() => setOriginAtVertexA((v) => !v)}
+            title="Chuyển đổi vị trí gốc O giữa tâm đáy H và đỉnh A (Hỗ trợ phương pháp tọa độ hóa giải hình học không gian)"
+            className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
+              originAtVertexA
+                ? "bg-slate-800 border-amber-500/90 text-amber-300 ring-1 ring-amber-500/40"
+                : "bg-slate-900/85 border-slate-700 text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <MapPin className="w-3.5 h-3.5" />
+            <span>{originAtVertexA ? "Gốc O tại Đỉnh A" : "Gốc O tại Tâm H"}</span>
+          </button>
+
+          {/* Nút Toggle: Tọa độ điểm */}
           <button
             onClick={() => setShowCoordinates((v) => !v)}
-            title="Bật/Tắt hiển thị tọa độ điểm trong không gian Oxyz"
+            title="Bật/Tắt hiển thị nhãn tọa độ các đỉnh trong không gian Oxyz"
             className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
               showCoordinates
                 ? "bg-slate-800 border-teal-500/80 text-teal-300"
@@ -558,12 +760,13 @@ export default function Stereometry3DCanvas({
             }`}
           >
             <MapPin className="w-3.5 h-3.5" />
-            <span>Tọa độ Oxyz</span>
+            <span>Tọa độ</span>
           </button>
 
+          {/* Nút Toggle: Vectơ pháp tuyến mặt đáy */}
           <button
             onClick={() => setShowNormalVector((v) => !v)}
-            title="Bật/Tắt hiển thị vectơ pháp tuyến mặt đáy"
+            title="Bật/Tắt hiển thị vectơ pháp tuyến mặt đáy n = (0; 0; 1)"
             className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
               showNormalVector
                 ? "bg-slate-800 border-amber-500/80 text-amber-300"
@@ -586,22 +789,40 @@ export default function Stereometry3DCanvas({
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>Bảng SGK 11</span>
+            <span>Bảng SGK 11/12</span>
             {showHudCard ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
         </div>
       </div>
 
-      {/* Floating HUD Card: BẢNG ĐẠI LƯỢNG HÌNH HỌC (SGK TOÁN 11 KẾT NỐI TRI THỨC) */}
+      {/* Floating HUD Card: BẢNG ĐẠI LƯỢNG HÌNH HỌC (SGK TOÁN 11 & 12 KẾT NỐI TRI THỨC) */}
       {showHudCard && (
-        <div className="absolute top-14 right-3 z-20 w-72 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-700/80 p-3 shadow-2xl text-xs text-slate-200 space-y-2 animate-in fade-in slide-in-from-top-2">
+        <div className="absolute top-14 right-3 z-20 w-80 bg-slate-900/95 backdrop-blur-md rounded-xl border border-slate-700/80 p-3 shadow-2xl text-xs text-slate-200 space-y-2 animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center justify-between pb-1.5 border-b border-slate-700">
             <span className="font-bold text-teal-300 text-[11px] uppercase tracking-wide flex items-center gap-1.5">
               <Compass className="w-3.5 h-3.5 text-teal-400" />
-              <span>ĐẠI LƯỢNG HÌNH HỌC (SGK 11)</span>
+              <span>ĐẠI LƯỢNG HÌNH HỌC (SGK 11 & 12)</span>
             </span>
             <span className="text-[10px] text-slate-400 font-medium">Chuẩn KNTT</span>
           </div>
+
+          {/* Phương pháp Tọa độ hóa hình học không gian (Toán 12) khi gắn gốc O vào A */}
+          {originAtVertexA && (
+            <div className="p-2 bg-amber-950/80 border border-amber-600/70 rounded-lg space-y-1 text-[11px] text-amber-200">
+              <div className="font-bold text-amber-300 flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-amber-400" />
+                <span>TỌA ĐỘ HÓA TẠI ĐỈNH A (SGK TOÁN 12)</span>
+              </div>
+              <p className="text-[10px] text-slate-300 leading-tight">
+                Gốc <KatexMath math="O \equiv A(0;\,0;\,0)" />, tia <KatexMath math="AB \equiv Ox" />, tia <KatexMath math="AD \equiv Oy" />, tia <KatexMath math="Az \parallel SH" />.
+              </p>
+              <div className="pt-0.5 space-y-0.5 text-[10px]">
+                <div>• <KatexMath math={`\\vec{AB} = (${formatVNFloat(baseWidth)};\\, 0;\\, 0)`} /></div>
+                <div>• <KatexMath math={`\\vec{AD} = (0;\\, ${formatVNFloat(baseDepth)};\\, 0)`} /></div>
+                <div>• <KatexMath math={`\\vec{AS} = (${formatVNFloat(baseWidth / 2)};\\, ${formatVNFloat(baseDepth / 2)};\\, ${formatVNFloat(apexHeight)})`} /></div>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-1.5 text-[11px]">
             <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
@@ -645,11 +866,11 @@ export default function Stereometry3DCanvas({
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-cyan-400 font-bold">•</span>
-              <span>Mặt phẳng đáy: <KatexMath math="(ABCD): y = 0" /></span>
+              <span>Mặt phẳng đáy: <KatexMath math="(ABCD): z = 0" /> (Mặt sàn Oxy)</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-amber-400 font-bold">•</span>
-              <span>Vectơ pháp tuyến: <KatexMath math="\vec{n} = (0;\, 1;\, 0)" /></span>
+              <span>Vectơ pháp tuyến: <KatexMath math="\vec{n} = (0;\, 0;\, 1)" /></span>
             </div>
           </div>
         </div>
@@ -667,32 +888,38 @@ export default function Stereometry3DCanvas({
         <directionalLight position={[-6, 4, -4]} intensity={0.5} />
         <directionalLight position={[0, -2, -6]} intensity={0.7} color="#38bdf8" />
 
-        {/* Sàn lưới không gian Infinite Floor */}
-        <Grid
-          position={[0, -0.01, 0]}
-          args={[20, 20]}
-          cellSize={1}
-          cellThickness={0.8}
-          cellColor="#334155"
-          sectionSize={5}
-          sectionThickness={1.2}
-          sectionColor="#64748b"
-          fadeDistance={18}
-          fadeStrength={1.5}
-        />
+        {/* 1. Sàn lưới không gian Infinite Floor */}
+        {showFloorGrid && (
+          <gridHelper
+            args={[20, 20, "#475569", "#334155"]}
+            position={[0, -0.01, 0]}
+          />
+        )}
 
-        {/* Trọng tâm mô hình: Khối đa diện + Cạnh động thấy/khuất + Billboard KaTeX */}
+        {/* 2. Hệ trục tọa độ Oxyz chuẩn RGB (Đỏ Ox, Xanh lục Oy, Xanh dương Oz) */}
+        {showAxes && (
+          <OxyzAxesHelper
+            size={7}
+            position={originAtVertexA ? baseA : new THREE.Vector3(0, 0, 0)}
+            isAtVertexA={originAtVertexA}
+          />
+        )}
+
+        {/* 3. Trọng tâm mô hình: Khối đa diện + Cạnh động thấy/khuất + Billboard KaTeX */}
         <DynamicPyramidMeshAndEdges
           apex={apex}
           baseA={baseA}
           baseB={baseB}
           baseC={baseC}
           baseD={baseD}
+          baseWidth={baseWidth}
+          baseDepth={baseDepth}
           foldT={foldT}
           showCoordinates={showCoordinates}
           showNormalVector={showNormalVector}
           showPerpendicularSymbol={true}
           showDiagonals={true}
+          originAtVertexA={originAtVertexA}
         />
 
         {/* Camera OrbitControls có Damping mượt mà */}

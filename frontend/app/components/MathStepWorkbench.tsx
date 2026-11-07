@@ -17,7 +17,6 @@ import {
   Activity,
   SlidersHorizontal,
   Calculator,
-  Layers,
   Compass,
   GraduationCap,
   FileText,
@@ -1917,20 +1916,12 @@ export default function MathStepWorkbench({
             <button
               onClick={onBackToCatalog}
               className="px-3 py-1.5 rounded-xl bg-[#eef7f3] hover:bg-[#dbeee7] text-[#087e7c] font-bold text-xs border border-[#a3e2cf] flex items-center gap-1.5 shadow-sm transition-all"
-              title="Quay lại danh mục 48 trạm học"
+              title="Quay lại danh mục trạm học"
             >
               <span>←</span>
               <span>Danh mục trạm</span>
             </button>
           )}
-          <button
-            onClick={() => setCatalogModalOpen(true)}
-            className="px-3 py-1.5 rounded-xl bg-[#087e7c] text-white font-bold text-xs hover:bg-[#066563] flex items-center gap-1.5 shadow-sm transition-all"
-            title="Mở danh mục 48 trạm học Toán THPT"
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>48 Trạm học</span>
-          </button>
           <div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs font-extrabold text-[#087e7c] px-2 py-0.5 rounded bg-[#e2f1ec]">

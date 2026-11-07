@@ -482,32 +482,8 @@ function HomeContent() {
           </button>
         </nav>
 
-        {/* USER MENU & QUICK JUMP */}
+        {/* USER MENU & AUTH */}
         <div className="flex items-center gap-2">
-          {viewMode === "home" && subsystem === "student" ? (
-            <button
-              onClick={() => {
-                setViewMode("lab");
-                setSubsystem("student");
-              }}
-              className="px-3.5 py-1.5 rounded-xl bg-[#adf0d6] hover:bg-[#86efc3] text-[#0b2329] font-extrabold text-xs flex items-center gap-1 shadow-sm transition-transform active:scale-95"
-            >
-              <span>Vào học trạm ({stationId})</span>
-              <span>→</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                setViewMode("home");
-                setSubsystem("student");
-              }}
-              className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 flex items-center gap-1 transition-all"
-            >
-              <span>←</span>
-              <span>Danh mục 48 trạm</span>
-            </button>
-          )}
-
           {sessionLoading ? (
             <span className="text-[10px] text-gray-400">...</span>
           ) : session?.authenticated ? (

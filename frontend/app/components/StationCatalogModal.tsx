@@ -271,17 +271,33 @@ export default function StationCatalogModal({
 
                     {/* Action button */}
                     <button
+                      type="button"
+                      disabled={!station.isValidated}
                       onClick={() => {
+                        if (!station.isValidated) {
+                          alert(
+                            "Trạm này đang trong giai đoạn chuẩn hóa dữ liệu thực nghiệm sư phạm theo đề cương dài hạn. Nhóm nghiên cứu chỉ mở công khai các trạm đã được kiểm chứng 100%!"
+                          );
+                          return;
+                        }
                         onSelectStation(station);
                         onClose();
                       }}
                       className={`w-full py-1.5 mt-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1 transition-colors ${
-                        isSelected
+                        !station.isValidated
+                          ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
+                          : isSelected
                           ? "bg-[#087e7c] text-white hover:bg-[#066563]"
                           : "bg-[#e2f1ec] text-[#087e7c] hover:bg-[#087e7c] hover:text-white"
                       }`}
                     >
-                      <span>{isSelected ? "Đang học trạm này" : "Khám phá trạm ↗"}</span>
+                      <span>
+                        {!station.isValidated
+                          ? "Đang chuẩn hóa (Khóa)"
+                          : isSelected
+                          ? "Đang học trạm này"
+                          : "Khám phá trạm ↗"}
+                      </span>
                     </button>
                   </div>
                 );
