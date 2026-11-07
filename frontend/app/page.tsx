@@ -256,8 +256,10 @@ function HomeContent() {
         const res = await fetch("/api/auth/session");
         const data = await res.json();
         if (ignore) return;
-        if (data.authenticated) {
-          setSession({ authenticated: true, name: data.user.name, email: data.user.email });
+        if (data && data.authenticated) {
+          const userName = data.user?.name ?? data.name ?? null;
+          const userEmail = data.user?.email ?? data.email ?? null;
+          setSession({ authenticated: true, name: userName, email: userEmail });
         } else {
           setSession({ authenticated: false, name: null, email: null });
         }
@@ -393,7 +395,16 @@ function HomeContent() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail?.message || "Đăng nhập không thành công.");
-      setSession({ authenticated: true, name: data.user.name, email: data.user.email });
+      // Tải lại phiên người dùng mới nhất từ server
+      const sessionRes = await fetch("/api/auth/session");
+      const sessionData = await sessionRes.json().catch(() => null);
+      if (sessionData && sessionData.authenticated) {
+        const userName = sessionData.user?.name ?? sessionData.name ?? displayName ?? null;
+        const userEmail = sessionData.user?.email ?? sessionData.email ?? loginEmail ?? null;
+        setSession({ authenticated: true, name: userName, email: userEmail });
+      } else {
+        setSession({ authenticated: true, name: displayName || loginEmail, email: loginEmail });
+      }
       setAuthModalOpen(false);
     } catch (err: unknown) {
       setLoginError(err instanceof Error ? err.message : "Đã xảy ra lỗi.");
@@ -503,13 +514,20 @@ function HomeContent() {
           {sessionLoading ? (
             <span className="text-[10px] text-gray-400">...</span>
           ) : session?.authenticated ? (
-            <div className="flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full bg-[#16827d] text-white font-bold text-xs flex items-center justify-center">
+            <div className="flex items-center gap-2 bg-[#133d41] py-1 px-2.5 rounded-xl border border-[#2a595f] shadow-sm">
+              <span className="w-7 h-7 rounded-full bg-[#087e7c] text-[#adf0d6] font-black text-xs flex items-center justify-center shadow-xs">
                 {(session.name || session.email || "M").slice(0, 1).toUpperCase()}
               </span>
+              <div className="flex flex-col text-left leading-tight hidden sm:flex">
+                <span className="text-xs font-bold text-white line-clamp-1 max-w-[140px]">
+                  {session.name || session.email?.split("@")[0] || "Học viên"}
+                </span>
+                <span className="text-[9px] text-[#adf0d6] font-medium">Đã đăng nhập</span>
+              </div>
               <button
                 onClick={() => void logout()}
-                className="text-[11px] text-gray-300 hover:text-white font-medium underline hidden sm:inline"
+                className="text-[11px] text-gray-300 hover:text-rose-300 font-medium underline ml-1"
+                title="Đăng xuất tài khoản"
               >
                 Thoát
               </button>

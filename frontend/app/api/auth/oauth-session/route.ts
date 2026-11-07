@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     if (!check.ok) return jsonError("OAUTH_FAILED", "Google chưa hoàn tất đăng nhập. Hãy thử lại.", 401);
     const response = NextResponse.json({ ok: true });
     setAuthCookies(response, { access_token: accessToken, refresh_token: refreshToken, expires_in: typeof expiresIn === "number" ? expiresIn : 3600 });
-    response.cookies.set("mathstep_oauth_verifier", "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/api/auth/oauth-session", maxAge: 0 });
+    response.cookies.set("mathstep_oauth_verifier", "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 0 });
     return response;
   } catch {
     return jsonError("SUPABASE_UNAVAILABLE", "Chưa kết nối được dịch vụ đăng nhập.", 502);

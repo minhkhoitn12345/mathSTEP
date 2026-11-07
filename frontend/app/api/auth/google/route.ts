@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     authorize.searchParams.set("code_challenge", challenge);
     authorize.searchParams.set("code_challenge_method", "s256");
     const response = NextResponse.redirect(authorize);
-    response.cookies.set("mathstep_oauth_verifier", verifier, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/api/auth/oauth-session", maxAge: 600 });
+    response.cookies.set("mathstep_oauth_verifier", verifier, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 600 });
     return response;
   } catch {
     return NextResponse.redirect(new URL("/?auth_error=unavailable", request.nextUrl.origin));

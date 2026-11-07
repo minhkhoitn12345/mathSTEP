@@ -13,12 +13,19 @@ export async function GET(request: NextRequest) {
       return response;
     }
     const user = await getSupabaseUser(token);
-    if (!user) return NextResponse.json({ authenticated: false, name: null, email: null }, { headers: { "Cache-Control": "private, no-store" } });
+    if (!user) return NextResponse.json({ authenticated: false, name: null, email: null, user: null }, { headers: { "Cache-Control": "private, no-store" } });
     const metadata = user.user_metadata ?? {};
+    const userName = metadata.full_name ?? metadata.name ?? null;
+    const userEmail = user.email ?? null;
     const response = NextResponse.json({
       authenticated: true,
-      name: metadata.full_name ?? metadata.name ?? null,
-      email: user.email ?? null,
+      name: userName,
+      email: userEmail,
+      user: {
+        id: user.id,
+        name: userName,
+        email: userEmail,
+      },
     }, { headers: { "Cache-Control": "private, no-store" } });
     if (refreshed) setAuthCookies(response, refreshed);
     return response;
