@@ -1,7 +1,9 @@
 "use client";
 
-import React, { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
@@ -117,11 +119,75 @@ function StationCardArt({ grade, is3D, stationId }: { grade: number; is3D: boole
   );
 }
 
-export default function Home() {
-  const [subsystem, setSubsystem] = useState<SubsystemId>("student");
-  const [viewMode, setViewMode] = useState<ViewMode>("home");
-  const [moduleId, setModuleId] = useState<ModuleId>("linear_programming");
-  const [stationId, setStationId] = useState<string>("10.03");
+function HomeContent() {
+  const searchParams = useSearchParams();
+  const urlStation = searchParams.get("station");
+  const urlStep = searchParams.get("step");
+  const urlTab = searchParams.get("tab");
+
+  const initialStation = urlStation || "10.03";
+  const matchedStation = useMemo(() => {
+    const list = getAllStations();
+    return list.find((s) => s.id === initialStation);
+  }, [initialStation]);
+
+  const initialModuleId: ModuleId = matchedStation ? matchedStation.moduleId : "linear_programming";
+  const initialViewMode: ViewMode = urlStation ? "lab" : "home";
+  const initialSubsystem: SubsystemId = urlTab === "teacher" ? "teacher" : urlTab === "research" ? "research" : "student";
+  const initialStepNumber = urlStep ? Math.max(0, Math.min(7, parseInt(urlStep, 10) - 1)) : 0;
+
+  const [subsystem, setSubsystem] = useState<SubsystemId>(initialSubsystem);
+  const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
+  const [moduleId, setModuleId] = useState<ModuleId>(initialModuleId);
+  const [stationId, setStationId] = useState<string>(initialStation);
+  const [currentStep, setCurrentStep] = useState<number>(initialStepNumber);
+
+  // Đồng bộ trạng thái vào URL search params (URL-Driven Routing)
+  const syncUrl = useCallback((newStationId: string | null, newStep: number | null, newTab: string | null) => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams();
+    if (newStationId) {
+      params.set("station", newStationId);
+      if (typeof newStep === "number" && newStep >= 1) {
+        params.set("step", newStep.toString());
+      }
+    } else if (newTab && newTab !== "catalog") {
+      params.set("tab", newTab);
+    }
+    const queryString = params.toString();
+    const newUrl = queryString ? "/?" + queryString : "/";
+    window.history.replaceState(null, "", newUrl);
+  }, []);
+
+  // Lắng nghe thay đổi searchParams khi người dùng nhấn Back/Forward
+  useEffect(() => {
+    const stationParam = searchParams.get("station");
+    const stepParam = searchParams.get("step");
+    const tabParam = searchParams.get("tab");
+
+    if (stationParam) {
+      setStationId(stationParam);
+      const st = getAllStations().find((s) => s.id === stationParam);
+      if (st) setModuleId(st.moduleId);
+      setViewMode("lab");
+      setSubsystem("student");
+      if (stepParam) {
+        const s = parseInt(stepParam, 10);
+        if (!isNaN(s) && s >= 1 && s <= 8) {
+          setCurrentStep(s - 1);
+        }
+      }
+    } else if (tabParam === "teacher") {
+      setSubsystem("teacher");
+      setViewMode("home");
+    } else if (tabParam === "research") {
+      setSubsystem("research");
+      setViewMode("home");
+    } else {
+      setSubsystem("student");
+      setViewMode("home");
+    }
+  }, [searchParams]);
   const [stage] = useState<StageId>("explore");
   const [tutorOpen, setTutorOpen] = useState(false);
   const [visualizerOpen, setVisualizerOpen] = useState(false);
@@ -210,11 +276,13 @@ export default function Home() {
     }
   }, [messages.length]);
 
-  const handleOpenStationInLab = (st: StationItem) => {
+  const handleOpenStationInLab = (st: StationItem, stepNum = 1) => {
     setStationId(st.id);
     setModuleId(st.moduleId);
     setViewMode("lab");
     setSubsystem("student");
+    setCurrentStep(stepNum - 1);
+    syncUrl(st.id, stepNum, null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -382,7 +450,11 @@ export default function Home() {
           </button>
           <button
             type="button"
-            onClick={() => setSubsystem("teacher")}
+            onClick={() => {
+              setSubsystem("teacher");
+              setViewMode("home");
+              syncUrl(null, null, "teacher");
+            }}
             className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
               subsystem === "teacher"
                 ? "bg-[#087e7c] text-white shadow-sm"
@@ -394,7 +466,11 @@ export default function Home() {
           </button>
           <button
             type="button"
-            onClick={() => setSubsystem("research")}
+            onClick={() => {
+              setSubsystem("research");
+              setViewMode("home");
+              syncUrl(null, null, "research");
+            }}
             className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
               subsystem === "research"
                 ? "bg-[#087e7c] text-white shadow-sm"
@@ -779,11 +855,19 @@ export default function Home() {
             <MathStepWorkbench
               moduleId={moduleId}
               stationId={stationId}
-              onBackToCatalog={() => setViewMode("home")}
+              initialStep={currentStep}
+              onStepChange={(stepNum) => {
+                setCurrentStep(stepNum - 1);
+                syncUrl(stationId, stepNum, null);
+              }}
+              onBackToCatalog={() => {
+                setViewMode("home");
+                setSubsystem("student");
+                syncUrl(null, null, "catalog");
+              }}
               onAskTutor={handleAskTutorFromWorkbench}
               onSelectStation={(st) => {
-                setStationId(st.id);
-                setModuleId(st.moduleId);
+                handleOpenStationInLab(st, 1);
               }}
             />
           </div>
@@ -1087,5 +1171,21 @@ export default function Home() {
         </div>
       </footer>
     </div>
+  );
+}
+
+
+export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#082329] flex flex-col items-center justify-center text-teal-400 gap-3">
+          <div className="w-8 h-8 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-semibold tracking-wide">Đang nạp dữ liệu trạm học MathSTEP...</span>
+        </div>
+      }
+    >
+      <HomeContent />
+    </Suspense>
   );
 }

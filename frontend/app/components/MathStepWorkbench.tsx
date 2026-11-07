@@ -5,6 +5,7 @@ import { verifyAnswer } from "../lib/miniCas";
 import StationCatalogModal from "./StationCatalogModal";
 import WorksheetPrintModal from "./WorksheetPrintModal";
 import { StationItem, getStationById } from "../lib/stationCatalogData";
+import { loadStationState, saveStationState, clearStationState } from "../lib/useStationStorage";
 import { generateIsomorphicIntegerProblem, IntegerProblem } from "../lib/integerVertexGenerator";
 import Interactive2DMathCanvas, { BoundaryLine, PolygonVertex } from "./Interactive2DMathCanvas";
 import Stereometry3DCanvas from "./Stereometry3DCanvas";
@@ -12,6 +13,7 @@ import TrigonometricCircleCanvas, { SPECIAL_ANGLES } from "./TrigonometricCircle
 import KatexMath, { formatVNFloat } from "./KatexMath";
 import {
   MoreVertical,
+  RotateCcw,
   Activity,
   SlidersHorizontal,
   Calculator,
@@ -72,6 +74,7 @@ export interface EvidenceRecord {
 interface MathStepWorkbenchProps {
   moduleId: ModuleId;
   stationId?: string;
+  initialStep?: number;
   onAskTutor?: (question: string) => void;
   onStepChange?: (stepNumber: number, stepTitle: string) => void;
   onSelectStation?: (station: StationItem) => void;
@@ -603,6 +606,7 @@ function checkSemanticQuality(str: string): { type: "short" | "good" | "neutral"
 export default function MathStepWorkbench({
   moduleId,
   stationId,
+  initialStep = 0,
   onAskTutor,
   onStepChange,
   onSelectStation,
@@ -623,7 +627,7 @@ export default function MathStepWorkbench({
   }, [currentStation, moduleId]);
 
   // --- Step Progression State ---
-  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [currentStep, setCurrentStep] = useState<number>(typeof initialStep === "number" && initialStep >= 0 && initialStep <= 7 ? initialStep : 0);
   const [prediction, setPrediction] = useState<string>("");
   const [reason, setReason] = useState<string>("");
   const [manipulations, setManipulations] = useState<number>(0);
@@ -721,7 +725,6 @@ export default function MathStepWorkbench({
 
   // Reset parameters when moduleId or stationId changes, and load cached data
   useEffect(() => {
-    setCurrentStep(0);
     setManipulations(0);
     setQuizAnswer(null);
     setQuizSubmitted(false);
@@ -730,42 +733,103 @@ export default function MathStepWorkbench({
     setHintLevel(0);
     setDynamicProblem(null);
     setCamera({ yaw: -0.65, pitch: 0.45, zoom: 1, panX: 0, panY: 0 });
-    setParams(getDefaultParams(moduleId));
 
-    try {
-      const cacheKey = `mathstep:state:${stationId || moduleId}`;
-      const saved = localStorage.getItem(cacheKey);
-      if (saved) {
-        const data = JSON.parse(saved);
-        if (data.prediction) setPrediction(data.prediction);
-        else setPrediction("");
-        if (data.reason) setReason(data.reason);
-        else setReason("");
-        if (Array.isArray(data.observations)) setObservations(data.observations);
-        else setObservations([]);
-        if (Array.isArray(data.evidenceHistory)) setEvidenceHistory(data.evidenceHistory);
+    const key = stationId || moduleId;
+    const saved = loadStationState(key);
+
+    if (saved) {
+      if (saved.params && Object.keys(saved.params).length > 0) {
+        setParams(saved.params);
       } else {
-        setPrediction("");
-        setReason("");
-        setObservations([]);
+        setParams(getDefaultParams(moduleId));
       }
-    } catch {
+
+      if (typeof initialStep === "number" && initialStep >= 0 && initialStep <= 7) {
+        setCurrentStep(initialStep);
+      } else if (typeof saved.currentStep === "number" && saved.currentStep >= 0 && saved.currentStep <= 7) {
+        setCurrentStep(saved.currentStep);
+      } else {
+        setCurrentStep(0);
+      }
+
+      setPrediction(saved.prediction || "");
+      setReason(saved.reason || "");
+      setObservations(
+        Array.isArray(saved.observations)
+          ? saved.observations.map((o) => ({
+              at: o.at,
+              summary: o.summary,
+              params: o.params || {},
+            }))
+          : []
+      );
+      setEvidenceHistory(Array.isArray(saved.evidenceHistory) ? saved.evidenceHistory : []);
+      if (typeof saved.quizAnswer === "number") setQuizAnswer(saved.quizAnswer);
+      if (typeof saved.quizSubmitted === "boolean") setQuizSubmitted(saved.quizSubmitted);
+      if (saved.transferInput) setTransferInput(saved.transferInput);
+
+      showToast("Đã khôi phục phiên học tập trước đó của bạn.");
+    } else {
+      setParams(getDefaultParams(moduleId));
+      if (typeof initialStep === "number" && initialStep >= 0 && initialStep <= 7) {
+        setCurrentStep(initialStep);
+      } else {
+        setCurrentStep(0);
+      }
       setPrediction("");
       setReason("");
       setObservations([]);
+      setEvidenceHistory([]);
+      setQuizAnswer(null);
+      setQuizSubmitted(false);
+      setTransferInput("");
     }
-  }, [moduleId, stationId]);
+  }, [moduleId, stationId, initialStep, showToast]);
 
-  // Persist offline progress
+  // Đồng bộ bước ra ngoài để cập nhật query URL
   useEffect(() => {
-    try {
-      const cacheKey = `mathstep:state:${stationId || moduleId}`;
-      localStorage.setItem(
-        cacheKey,
-        JSON.stringify({ prediction, reason, observations, evidenceHistory })
-      );
-    } catch {}
-  }, [moduleId, stationId, prediction, reason, observations, evidenceHistory]);
+    onStepChange?.(currentStep + 1, STEP_NAMES[currentStep]);
+  }, [currentStep, onStepChange]);
+
+  // Persist offline progress automatically
+  useEffect(() => {
+    const key = stationId || moduleId;
+    if (!key) return;
+    saveStationState(key, {
+      currentStep,
+      params,
+      prediction,
+      reason,
+      observations,
+      evidenceHistory,
+      quizAnswer,
+      quizSubmitted,
+      transferInput,
+      moduleId,
+    });
+  }, [moduleId, stationId, currentStep, params, prediction, reason, observations, evidenceHistory, quizAnswer, quizSubmitted, transferInput]);
+
+  // Handler Làm lại bài này từ đầu (Reset Progress)
+  const handleResetProgress = () => {
+    const key = stationId || moduleId;
+    if (typeof window !== "undefined") {
+      const ok = window.confirm("Em có chắc chắn muốn làm lại bài này từ đầu? Toàn bộ câu trả lời và thông số đã lưu sẽ được thiết lập lại.");
+      if (!ok) return;
+    }
+    clearStationState(key);
+    setParams(getDefaultParams(moduleId));
+    setPrediction("");
+    setReason("");
+    setObservations([]);
+    setEvidenceHistory([]);
+    setQuizAnswer(null);
+    setQuizSubmitted(false);
+    setTransferInput("");
+    setTransferVerification(null);
+    setCurrentStep(0);
+    onStepChange?.(1, STEP_NAMES[0]);
+    showToast("Đã làm mới phiên học tập từ đầu.");
+  };
 
   // Read URL hash on initial load for shared scene (#scene=...)
   useEffect(() => {
@@ -1882,6 +1946,17 @@ export default function MathStepWorkbench({
         </div>
 
         <div className="flex items-center gap-2 relative">
+          {/* Nút Làm lại bài này từ đầu (Reset Progress) */}
+          <button
+            type="button"
+            onClick={handleResetProgress}
+            title="Làm lại bài này từ đầu (Xóa câu trả lời và số liệu đã lưu)"
+            className="px-2.5 py-1.5 rounded-xl border border-[#d9e4e2] bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 hover:border-rose-300 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+            <span className="hidden sm:inline">Làm lại từ đầu</span>
+          </button>
+
           {/* Quick Indicator if Teacher Mode is on */}
           {isTeacherMode && (
             <span className="px-2 py-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold flex items-center gap-1">
