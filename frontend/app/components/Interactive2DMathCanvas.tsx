@@ -97,23 +97,10 @@ export default function Interactive2DMathCanvas({
   }, [lines, currentTestPt]);
 
   // Calculate default bounding box of vertices to center properly
+  // Optimized Viewport: Focus on Quadrant I [-1; 10] x [-1; 8]
   const initialBounds = useMemo(() => {
-    if (vertices.length === 0) return { minX: -2, maxX: 12, minY: -2, maxY: 12 };
-    let minX = 0, maxX = 4, minY = 0, maxY = 4;
-    vertices.forEach((v) => {
-      minX = Math.min(minX, v.x);
-      maxX = Math.max(maxX, v.x);
-      minY = Math.min(minY, v.y);
-      maxY = Math.max(maxY, v.y);
-    });
-    // Add padding
-    return {
-      minX: Math.min(-2, minX - 2),
-      maxX: Math.max(10, maxX + 3),
-      minY: Math.min(-2, minY - 2),
-      maxY: Math.max(8, maxY + 3),
-    };
-  }, [vertices]);
+    return { minX: -1.2, maxX: 10.2, minY: -1.2, maxY: 8.2 };
+  }, []);
 
   // Compute 1:1 Aspect Ratio scale and transformations
   const getTransform = useCallback(
@@ -465,12 +452,47 @@ export default function Interactive2DMathCanvas({
         ctx.strokeStyle = "#F59E0B";
         ctx.stroke();
 
-        // Normal vector arrow n = (a, b)
+        // 1) Normal vector n = (a, b) from Origin O(0, 0)
+        const [oSx, oSy] = worldToScreen(0, 0);
+        const [nSx, nSy] = worldToScreen(objectiveCoeffs.a, objectiveCoeffs.b);
+
+        ctx.beginPath();
+        ctx.moveTo(oSx, oSy);
+        ctx.lineTo(nSx, nSy);
+        ctx.strokeStyle = "#4338CA"; // Indigo-700
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Arrow head at (a, b)
+        const angleO = Math.atan2(nSy - oSy, nSx - oSx);
+        ctx.fillStyle = "#4338CA";
+        ctx.beginPath();
+        ctx.moveTo(nSx, nSy);
+        ctx.lineTo(nSx - 10 * Math.cos(angleO - Math.PI / 6), nSy - 10 * Math.sin(angleO - Math.PI / 6));
+        ctx.lineTo(nSx - 10 * Math.cos(angleO + Math.PI / 6), nSy - 10 * Math.sin(angleO + Math.PI / 6));
+        ctx.closePath();
+        ctx.fill();
+
+        // Label n = (a, b) at O
+        const nLabel = `n = (${objectiveCoeffs.a}; ${objectiveCoeffs.b})`;
+        ctx.font = "bold 11px 'JetBrains Mono', sans-serif";
+        const nW = ctx.measureText(nLabel).width;
+        ctx.fillStyle = "rgba(238, 242, 255, 0.95)";
+        ctx.strokeStyle = "#4338CA";
+        ctx.lineWidth = 1;
+        ctx.fillRect(nSx + 6, nSy - 16, nW + 8, 18);
+        ctx.strokeRect(nSx + 6, nSy - 16, nW + 8, 18);
+        ctx.fillStyle = "#312E81";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(nLabel, nSx + 10, nSy - 7);
+
+        // 2) Direction arrow along d_F showing parallel translation
         const midWorldX = (seg[0][0] + seg[1][0]) / 2;
         const midWorldY = (seg[0][1] + seg[1][1]) / 2;
         const len = Math.hypot(objectiveCoeffs.a, objectiveCoeffs.b) || 1;
-        const normX = (objectiveCoeffs.a / len) * 1.5;
-        const normY = (objectiveCoeffs.b / len) * 1.5;
+        const normX = (objectiveCoeffs.a / len) * 1.6;
+        const normY = (objectiveCoeffs.b / len) * 1.6;
 
         const [midSx, midSy] = worldToScreen(midWorldX, midWorldY);
         const [normSx, normSy] = worldToScreen(midWorldX + normX, midWorldY + normY);
@@ -482,7 +504,7 @@ export default function Interactive2DMathCanvas({
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Normal arrow head
+        // Normal arrow head on d_F
         ctx.fillStyle = "#D97706";
         const angle = Math.atan2(normSy - midSy, normSx - midSx);
         ctx.beginPath();
@@ -765,7 +787,7 @@ export default function Interactive2DMathCanvas({
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            <span>{isSgkMode ? "Chuẩn SGK KNTT (Gạch sọc)" : "Chuẩn GeoGebra (Tô màu)"}</span>
+            <span>{isSgkMode ? "Quy ước: Gạch miền loại (SGK KNTT)" : "Chế độ: Tô màu miền nghiệm (GeoGebra)"}</span>
           </button>
         </div>
 

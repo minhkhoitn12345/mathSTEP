@@ -127,8 +127,8 @@ const MODULE_META: Record<
 const DEFAULT_CONSTRAINTS: Constraint[] = [
   { a: 1, b: 0, c: 0, op: ">=" },
   { a: 0, b: 1, c: 0, op: ">=" },
-  { a: 2, b: 1, c: 8, op: "<=" },
-  { a: 1, b: 1, c: 5, op: "<=" },
+  { a: 1, b: 2, c: 8, op: "<=" }, // x + 2y <= 8 chuẩn SGK KNTT Toán 10
+  { a: 1, b: 1, c: 5, op: "<=" }, // x + y <= 5
 ];
 
 const QUIZ_DATA: Record<ModuleId, { question: string; options: string[]; correctIdx: number; explanation: string }> = {
@@ -206,9 +206,9 @@ const QUIZ_DATA: Record<ModuleId, { question: string; options: string[]; correct
 
 const TRANSFER_DATA: Record<ModuleId, { prompt: string; answer: number; hint: string }> = {
   linear_programming: {
-    prompt: "Cho hệ x ≥ 0, y ≥ 0, 2x + y ≤ 8, x + y ≤ 5. Tìm giá trị lớn nhất của F(x, y) = 3x + 2y:",
-    answer: 13,
-    hint: "So sánh giá trị tại 4 đỉnh: (0;0)->0, (4;0)->12, (3;2)->13, (0;5)->10. GTLN là 13.",
+    prompt: "Cho hệ x ≥ 0, y ≥ 0, x + 2y ≤ 8, x + y ≤ 5. Tìm giá trị lớn nhất của F(x, y) = 3x + 2y:",
+    answer: 15,
+    hint: "So sánh giá trị tại 4 đỉnh: O(0;0)->0, A(0;4)->8, B(2;3)->12, C(5;0)->15. GTLN là 15 tại đỉnh C(5;0).",
   },
   spatial_geometry: {
     prompt: "Cho hình chóp tam giác đều có diện tích đáy S = 12 cm² và chiều cao h = 5 cm. Thể tích V bằng bao nhiêu cm³?",
@@ -286,14 +286,14 @@ function generateRandomProblem(mod: ModuleId): { prompt: string; answer: number;
       const u = Math.floor(Math.random() * 4) + 2;
       const v = Math.floor(Math.random() * 4) + 1;
       const v0 = 0;
-      const v1 = u * 4;
-      const v2 = u * 3 + v * 2;
-      const v3 = v * 5;
-      const maxVal = Math.max(v0, v1, v2, v3);
+      const vA = v * 4;
+      const vB = u * 2 + v * 3;
+      const vC = u * 5;
+      const maxVal = Math.max(v0, vA, vB, vC);
       return {
-        prompt: `Cho hệ x ≥ 0, y ≥ 0, 2x + y ≤ 8, x + y ≤ 5. Tìm giá trị lớn nhất của F(x, y) = ${u}x + ${v}y:`,
+        prompt: `Cho hệ x ≥ 0, y ≥ 0, x + 2y ≤ 8, x + y ≤ 5. Tìm giá trị lớn nhất của F(x, y) = ${u}x + ${v}y:`,
         answer: maxVal,
-        hint: `Tính giá trị tại 4 đỉnh: (0;0)->0, (4;0)->${v1}, (3;2)->${v2}, (0;5)->${v3}. GTLN là ${maxVal}.`,
+        hint: `Tính giá trị tại 4 đỉnh: O(0;0)->0, A(0;4)->${vA}, B(2;3)->${vB}, C(5;0)->${vC}. GTLN là ${maxVal}.`,
       };
     }
     case "spatial_geometry": {
@@ -410,7 +410,7 @@ function solveLP(cs: Constraint[], u: number, v: number): LPResult {
   }
   if (!poly.length) return { feasible: false, vertices: [], best: [0, 0], value: 0, poly: [] };
 
-  const vertices: [number, number][] = [];
+  const rawVertices: [number, number][] = [];
   for (let i = 0; i < cs.length; i++) {
     for (let j = i + 1; j < cs.length; j++) {
       const a = canonicalConstraint(cs[i]);
@@ -420,11 +420,23 @@ function solveLP(cs: Constraint[], u: number, v: number): LPResult {
       const x = (a.c * b.b - a.b * b.c) / det;
       const y = (a.a * b.c - a.c * b.a) / det;
       if (cs.every((r) => satisfies(r, x, y, 1e-4))) {
-        if (!vertices.some((p) => Math.hypot(p[0] - x, p[1] - y) < 1e-4)) {
-          vertices.push([parseFloat(x.toFixed(2)), parseFloat(y.toFixed(2))]);
+        if (!rawVertices.some((p) => Math.hypot(p[0] - x, p[1] - y) < 1e-4)) {
+          rawVertices.push([parseFloat(x.toFixed(2)), parseFloat(y.toFixed(2))]);
         }
       }
     }
+  }
+
+  // Sắp xếp các đỉnh theo chiều ngược kim đồng hồ quanh tâm để vẽ đa giác lồi không bị cắt chéo
+  let vertices = rawVertices;
+  if (rawVertices.length >= 3) {
+    const cx = rawVertices.reduce((sum, p) => sum + p[0], 0) / rawVertices.length;
+    const cy = rawVertices.reduce((sum, p) => sum + p[1], 0) / rawVertices.length;
+    vertices = [...rawVertices].sort((p1, p2) => {
+      const a1 = Math.atan2(p1[1] - cy, p1[0] - cx);
+      const a2 = Math.atan2(p2[1] - cy, p2[0] - cx);
+      return a1 - a2;
+    });
   }
 
   let best = vertices[0] || [0, 0];
@@ -2500,7 +2512,7 @@ export default function MathStepWorkbench({
                     }`}
                     title="Chuyển đổi chuẩn SGK KNTT (gạch sọc miền sai) và chuẩn GeoGebra (tô màu miền đúng)"
                   >
-                    {!invertFilling ? "🌓 SGK KNTT: Gạch sai" : "🌓 GeoGebra: Tô đúng"}
+                    {!invertFilling ? "🌓 Quy ước: Gạch miền loại (SGK KNTT)" : "🌓 GeoGebra: Tô đúng"}
                   </button>
                   <button
                     type="button"
