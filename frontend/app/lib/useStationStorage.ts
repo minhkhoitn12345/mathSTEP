@@ -2,6 +2,20 @@
 
 import { useEffect, useState, useCallback } from "react";
 
+export interface ActivityLogEntry {
+  timestamp: string;
+  type:
+    | "vertex_drag"
+    | "param_change"
+    | "prediction"
+    | "error"
+    | "scaffold"
+    | "self_explain"
+    | "independent_quiz"
+    | "view_change";
+  details: string;
+}
+
 export interface StationSavedState {
   stationId: string;
   moduleId: string;
@@ -17,6 +31,11 @@ export interface StationSavedState {
     summary: string;
     data: Record<string, unknown>;
   }[];
+  activityLogs?: ActivityLogEntry[];
+  errorCount?: number;
+  scaffoldLevel?: number; // H0 - H4
+  selfExplanation?: string;
+  independentScore?: number;
   quizAnswer?: number | null;
   quizSubmitted?: boolean;
   transferInput?: string;
@@ -132,4 +151,32 @@ export function useStationStorage(stationId: string, moduleId: string) {
     save,
     reset,
   };
+}
+
+/**
+ * Lấy toàn bộ nhật ký tự học của tất cả các trạm đã lưu trong localStorage
+ * Phục vụ cho Teacher Dashboard và Hội đồng chấm KHKT
+ */
+export function getAllSavedStudentLogs(): StationSavedState[] {
+  if (typeof window === "undefined") return [];
+  const results: StationSavedState[] = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(STORAGE_PREFIX)) {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            results.push(parsed as StationSavedState);
+          } catch {
+            // bỏ qua entry lỗi cú pháp
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[useStationStorage] Không thể đọc danh sách toàn bộ logs:", err);
+  }
+  return results;
 }

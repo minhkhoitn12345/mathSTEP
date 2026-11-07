@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree, ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
 import {
   RotateCcw,
+  RotateCw,
   Eye,
   Sparkles,
   MapPin,
@@ -15,6 +16,12 @@ import {
   ChevronUp,
   Grid3X3,
   Axis3d,
+  Camera,
+  Scissors,
+  Layers,
+  Move3d,
+  Hash,
+  Compass as CompassIcon,
 } from "lucide-react";
 import KatexMath, { formatVNFloat } from "./KatexMath";
 
@@ -27,6 +34,8 @@ export interface Stereometry3DCanvasProps {
   baseDepth?: number;
   orthogonalView?: boolean;
   onToggleOrthogonalView?: () => void;
+  isTeacherMode?: boolean; // Chế độ Trình chiếu Giáo viên (phóng to 1.5x, toolbar bài giảng)
+  onVertexManipulated?: (log: { vertex: string; oldPos: THREE.Vector3; newPos: THREE.Vector3 }) => void;
   className?: string;
 }
 
@@ -141,8 +150,139 @@ function OxyzAxesHelper({
 }
 
 // -------------------------------------------------------------
+// Component DraggableHandle:
+// Tay nắm tương tác kéo đỉnh 3D trực tiếp bằng chuột/cảm ứng (Raycasting Drag Controls)
+// -------------------------------------------------------------
+interface DraggableHandleProps {
+  id: "S" | "A" | "B" | "D";
+  label: string;
+  position: THREE.Vector3;
+  color: string;
+  glowColor: string;
+  constraint: "floor" | "vertical" | "free";
+  onDrag: (newPos: THREE.Vector3) => void;
+  onDragEnd?: () => void;
+  setOrbitEnabled: (enabled: boolean) => void;
+  isTeacherMode?: boolean;
+}
+
+function DraggableHandle({
+  id,
+  label,
+  position,
+  color,
+  glowColor,
+  constraint,
+  onDrag,
+  onDragEnd,
+  setOrbitEnabled,
+  isTeacherMode = false,
+}: DraggableHandleProps) {
+  const [hovered, setHovered] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const { camera, raycaster, gl } = useThree();
+  const planeRef = useRef(new THREE.Plane());
+
+  const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
+    e.stopPropagation();
+    setDragging(true);
+    setOrbitEnabled(false);
+    gl.domElement.style.cursor = "grabbing";
+
+    // Thiết lập mặt phẳng ràng buộc kéo
+    if (constraint === "floor") {
+      // Mặt phẳng đáy sàn y = 0
+      planeRef.current.set(new THREE.Vector3(0, 1, 0), 0);
+    } else {
+      // Mặt phẳng song song camera đi qua vị trí đỉnh
+      const camDir = new THREE.Vector3();
+      camera.getWorldDirection(camDir).negate();
+      planeRef.current.setFromNormalAndCoplanarPoint(camDir, position);
+    }
+
+    const onPointerMove = (moveEv: PointerEvent) => {
+      const rect = gl.domElement.getBoundingClientRect();
+      const x = ((moveEv.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -((moveEv.clientY - rect.top) / rect.height) * 2 + 1;
+
+      const pointerVec = new THREE.Vector2(x, y);
+      raycaster.setFromCamera(pointerVec, camera);
+
+      const intersection = new THREE.Vector3();
+      if (raycaster.ray.intersectPlane(planeRef.current, intersection)) {
+        if (constraint === "floor") {
+          const clampedX = Math.max(-4.5, Math.min(4.5, intersection.x));
+          const clampedZ = Math.max(-4.5, Math.min(4.5, intersection.z));
+          onDrag(new THREE.Vector3(clampedX, 0, clampedZ));
+        } else if (constraint === "vertical") {
+          const clampedY = Math.max(0.8, Math.min(6.0, intersection.y));
+          onDrag(new THREE.Vector3(position.x, clampedY, position.z));
+        } else {
+          const clampedY = Math.max(0.8, Math.min(6.0, intersection.y));
+          onDrag(new THREE.Vector3(intersection.x, clampedY, intersection.z));
+        }
+      }
+    };
+
+    const onPointerUp = () => {
+      setDragging(false);
+      setOrbitEnabled(true);
+      gl.domElement.style.cursor = "auto";
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      if (onDragEnd) onDragEnd();
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+  };
+
+  const sphereRadius = isTeacherMode ? 0.22 : 0.16;
+
+  return (
+    <group position={position} name={`handle-${id}`} userData={{ label }}>
+      {/* Vòng hào quang phát sáng khi rê chuột hoặc kéo */}
+      {(hovered || dragging) && (
+        <mesh>
+          <sphereGeometry args={[sphereRadius * 1.6, 16, 16]} />
+          <meshBasicMaterial
+            color={glowColor}
+            transparent={true}
+            opacity={0.4}
+            wireframe={true}
+          />
+        </mesh>
+      )}
+
+      {/* Quả cầu tương tác bắt chuột/chạm cảm ứng */}
+      <mesh
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          setHovered(true);
+          gl.domElement.style.cursor = "grab";
+        }}
+        onPointerOut={() => {
+          setHovered(false);
+          if (!dragging) gl.domElement.style.cursor = "auto";
+        }}
+        onPointerDown={handlePointerDown}
+      >
+        <sphereGeometry args={[sphereRadius, 24, 24]} />
+        <meshStandardMaterial
+          color={hovered || dragging ? "#ffffff" : color}
+          roughness={0.2}
+          metalness={0.5}
+          emissive={color}
+          emissiveIntensity={hovered || dragging ? 0.9 : 0.3}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+// -------------------------------------------------------------
 // Component DynamicPyramidMeshAndEdges:
-// Tính toán Cạnh Thấy / Cạnh Khuất 60fps & Billboard KaTeX Labels
+// Tính toán Cạnh Thấy / Cạnh Khuất 60fps, Điểm tỉ số M, N & Billboard KaTeX Labels
 // -------------------------------------------------------------
 interface DynamicEdgesProps {
   apex: THREE.Vector3;
@@ -150,6 +290,8 @@ interface DynamicEdgesProps {
   baseB: THREE.Vector3;
   baseC: THREE.Vector3;
   baseD: THREE.Vector3;
+  pointM: THREE.Vector3;
+  pointN: THREE.Vector3;
   baseWidth: number;
   baseDepth: number;
   foldT: number; // 0 -> 1
@@ -157,7 +299,10 @@ interface DynamicEdgesProps {
   showNormalVector: boolean;
   showPerpendicularSymbol: boolean;
   showDiagonals: boolean;
+  showSectionPlane?: boolean;
+  showHiddenEdges?: boolean;
   originAtVertexA: boolean;
+  isTeacherMode?: boolean;
 }
 
 function DynamicPyramidMeshAndEdges({
@@ -166,6 +311,8 @@ function DynamicPyramidMeshAndEdges({
   baseB,
   baseC,
   baseD,
+  pointM,
+  pointN,
   baseWidth,
   baseDepth,
   foldT,
@@ -173,7 +320,10 @@ function DynamicPyramidMeshAndEdges({
   showNormalVector,
   showPerpendicularSymbol,
   showDiagonals,
+  showSectionPlane = true,
+  showHiddenEdges = true,
   originAtVertexA,
+  isTeacherMode = false,
 }: DynamicEdgesProps) {
   const { camera } = useThree();
 
@@ -367,7 +517,7 @@ function DynamicPyramidMeshAndEdges({
       if (isVisible) {
         const line = new THREE.Line(geo, solidMaterial);
         group.add(line);
-      } else {
+      } else if (showHiddenEdges) {
         const line = new THREE.Line(geo, dashedMaterial);
         line.computeLineDistances();
         group.add(line);
@@ -407,13 +557,27 @@ function DynamicPyramidMeshAndEdges({
     if (showPerpendicularSymbol) {
       const sqSize = 0.22;
       const cornerVerts = [
-        new THREE.Vector3(0, sqSize, 0),
-        new THREE.Vector3(sqSize, sqSize, 0),
-        new THREE.Vector3(sqSize, 0, 0),
+        new THREE.Vector3(foot.x, sqSize, foot.z),
+        new THREE.Vector3(foot.x + sqSize, sqSize, foot.z),
+        new THREE.Vector3(foot.x + sqSize, 0, foot.z),
       ];
       const cornerGeo = new THREE.BufferGeometry().setFromPoints(cornerVerts);
       const cornerLine = new THREE.Line(cornerGeo, rightAngleMat);
       group.add(cornerLine);
+    }
+
+    // Thiết diện cắt qua đoạn MN (Trung điểm SA và Điểm tỉ số 2:1 trên SB)
+    if (showSectionPlane && pointM && pointN) {
+      const mnGeo = new THREE.BufferGeometry().setFromPoints([pointM, pointN]);
+      const mnMat = new THREE.LineDashedMaterial({
+        color: 0x84cc16, // Lime-500
+        dashSize: 0.2,
+        gapSize: 0.12,
+        linewidth: isTeacherMode ? 3.5 : 2,
+      });
+      const mnLine = new THREE.Line(mnGeo, mnMat);
+      mnLine.computeLineDistances();
+      group.add(mnLine);
     }
   });
 
@@ -476,25 +640,53 @@ function DynamicPyramidMeshAndEdges({
         />
       </mesh>
 
+      {/* Mặt phẳng cắt thiết diện (MN) mờ nếu kích hoạt */}
+      {showSectionPlane && pointM && pointN && (
+        <mesh>
+          <bufferGeometry>
+            <bufferAttribute
+              attach="attributes-position"
+              args={[
+                new Float32Array([
+                  pointM.x, pointM.y, pointM.z,
+                  pointN.x, pointN.y, pointN.z,
+                  baseB.x, baseB.y, baseB.z,
+                  pointM.x, pointM.y, pointM.z,
+                  baseB.x, baseB.y, baseB.z,
+                  baseA.x, baseA.y, baseA.z,
+                ]),
+                3,
+              ]}
+            />
+          </bufferGeometry>
+          <meshStandardMaterial
+            color="#84cc16"
+            transparent={true}
+            opacity={0.25}
+            side={THREE.DoubleSide}
+            roughness={0.3}
+          />
+        </mesh>
+      )}
+
       {/* 2. Group chứa các cạnh động Thấy & Khuất */}
       <group ref={linesGroupRef} />
 
       {/* 3. Vectơ Pháp Tuyến mặt phẳng đáy: n = (0; 0; 1) chuẩn Oz thẳng đứng */}
       {showNormalVector && (
         <group position={[0, 0, 0]}>
-          {/* Thân mũi tên */}
           <mesh position={[0, 0.75, 0]}>
             <cylinderGeometry args={[0.025, 0.025, 1.5, 16]} />
             <meshStandardMaterial color="#f59e0b" roughness={0.3} metalness={0.5} />
           </mesh>
-          {/* Đầu chóp nhọn */}
           <mesh position={[0, 1.55, 0]}>
             <coneGeometry args={[0.08, 0.22, 16]} />
             <meshStandardMaterial color="#f59e0b" roughness={0.3} metalness={0.5} />
           </mesh>
-          {/* Nhãn KaTeX Vectơ pháp tuyến */}
           <Html position={[0, 1.82, 0]} center distanceFactor={8}>
-            <div className="px-2.5 py-1 bg-amber-950/90 backdrop-blur-md border border-amber-500/80 rounded-lg text-amber-300 text-xs font-bold shadow-xl select-none pointer-events-none whitespace-nowrap">
+            <div className={`px-2.5 py-1 bg-amber-950/90 backdrop-blur-md border border-amber-500/80 rounded-lg text-amber-300 font-bold shadow-xl select-none pointer-events-none whitespace-nowrap ${
+              isTeacherMode ? "text-sm" : "text-xs"
+            }`}>
               <KatexMath math="\vec{n}_{(ABCD)} = (0;\, 0;\, 1)" />
             </div>
           </Html>
@@ -503,17 +695,49 @@ function DynamicPyramidMeshAndEdges({
 
       {/* 4. Nhãn Ký hiệu Vuông góc SH vuông góc đáy */}
       {showPerpendicularSymbol && (
-        <Html position={[0.42, 0.2, 0.42]} center distanceFactor={8}>
+        <Html position={[apex.x + 0.42, 0.2, apex.z + 0.42]} center distanceFactor={8}>
           <div className="px-1.5 py-0.5 bg-rose-950/90 backdrop-blur-md border border-rose-500/80 rounded text-rose-300 text-[10px] font-bold shadow select-none pointer-events-none whitespace-nowrap">
             <KatexMath math="SH \perp (ABCD)" />
           </div>
         </Html>
       )}
 
-      {/* 5. Đỉnh Billboard Labels bằng KaTeX 100% chuẩn tọa độ THPT (x, y, z với z là chiều cao) */}
+      {/* Điểm M (Trung điểm SA) */}
+      <group position={pointM}>
+        <mesh>
+          <sphereGeometry args={[isTeacherMode ? 0.12 : 0.08, 16, 16]} />
+          <meshStandardMaterial color="#10b981" roughness={0.2} metalness={0.6} />
+        </mesh>
+        <Html position={[0.2, 0.2, 0]} center distanceFactor={isTeacherMode ? 10 : 8.5}>
+          <div className={`px-2 py-0.5 bg-emerald-950/95 backdrop-blur-md border border-emerald-400 rounded font-bold text-emerald-300 shadow select-none pointer-events-none whitespace-nowrap ${
+            isTeacherMode ? "text-xs px-2.5 py-1" : "text-[10px]"
+          }`}>
+            <KatexMath math="M \text{ (Trung điểm } SA)" />
+          </div>
+        </Html>
+      </group>
+
+      {/* Điểm N (Tỉ số 2:1 trên SB) */}
+      <group position={pointN}>
+        <mesh>
+          <sphereGeometry args={[isTeacherMode ? 0.12 : 0.08, 16, 16]} />
+          <meshStandardMaterial color="#a855f7" roughness={0.2} metalness={0.6} />
+        </mesh>
+        <Html position={[0.2, 0.2, 0]} center distanceFactor={isTeacherMode ? 10 : 8.5}>
+          <div className={`px-2 py-0.5 bg-purple-950/95 backdrop-blur-md border border-purple-400 rounded font-bold text-purple-300 shadow select-none pointer-events-none whitespace-nowrap ${
+            isTeacherMode ? "text-xs px-2.5 py-1" : "text-[10px]"
+          }`}>
+            <KatexMath math="N \left(\frac{SN}{SB} = \frac{2}{3}\right)" />
+          </div>
+        </Html>
+      </group>
+
+      {/* 5. Đỉnh Billboard Labels bằng KaTeX 100% chuẩn tọa độ THPT */}
       {/* Đỉnh S */}
-      <Html position={[apex.x, apex.y + 0.28, apex.z]} center distanceFactor={9}>
-        <div className="px-2.5 py-1 bg-slate-900/95 backdrop-blur-md rounded-lg border border-teal-400/80 text-teal-300 font-bold text-xs shadow-xl select-none pointer-events-none flex items-center gap-1.5 whitespace-nowrap">
+      <Html position={[apex.x, apex.y + 0.32, apex.z]} center distanceFactor={isTeacherMode ? 11 : 9}>
+        <div className={`bg-slate-900/95 backdrop-blur-md rounded-lg border border-teal-400/80 text-teal-300 font-bold shadow-xl select-none pointer-events-none flex items-center gap-1.5 whitespace-nowrap ${
+          isTeacherMode ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs"
+        }`}>
           <KatexMath
             math={
               showCoordinates
@@ -527,8 +751,10 @@ function DynamicPyramidMeshAndEdges({
       </Html>
 
       {/* Đỉnh A */}
-      <Html position={[baseA.x - 0.25, baseA.y - 0.18, baseA.z + 0.25]} center distanceFactor={9}>
-        <div className="px-2.5 py-1 bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold text-xs shadow-lg select-none pointer-events-none whitespace-nowrap">
+      <Html position={[baseA.x - 0.25, baseA.y - 0.18, baseA.z + 0.25]} center distanceFactor={isTeacherMode ? 11 : 9}>
+        <div className={`bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold shadow-lg select-none pointer-events-none whitespace-nowrap ${
+          isTeacherMode ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs"
+        }`}>
           <KatexMath
             math={
               showCoordinates
@@ -542,8 +768,10 @@ function DynamicPyramidMeshAndEdges({
       </Html>
 
       {/* Đỉnh B */}
-      <Html position={[baseB.x + 0.25, baseB.y - 0.18, baseB.z + 0.25]} center distanceFactor={9}>
-        <div className="px-2.5 py-1 bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold text-xs shadow-lg select-none pointer-events-none whitespace-nowrap">
+      <Html position={[baseB.x + 0.25, baseB.y - 0.18, baseB.z + 0.25]} center distanceFactor={isTeacherMode ? 11 : 9}>
+        <div className={`bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold shadow-lg select-none pointer-events-none whitespace-nowrap ${
+          isTeacherMode ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs"
+        }`}>
           <KatexMath
             math={
               showCoordinates
@@ -557,8 +785,10 @@ function DynamicPyramidMeshAndEdges({
       </Html>
 
       {/* Đỉnh C */}
-      <Html position={[baseC.x + 0.25, baseC.y - 0.18, baseC.z - 0.25]} center distanceFactor={9}>
-        <div className="px-2.5 py-1 bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold text-xs shadow-lg select-none pointer-events-none whitespace-nowrap">
+      <Html position={[baseC.x + 0.25, baseC.y - 0.18, baseC.z - 0.25]} center distanceFactor={isTeacherMode ? 11 : 9}>
+        <div className={`bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold shadow-lg select-none pointer-events-none whitespace-nowrap ${
+          isTeacherMode ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs"
+        }`}>
           <KatexMath
             math={
               showCoordinates
@@ -572,8 +802,10 @@ function DynamicPyramidMeshAndEdges({
       </Html>
 
       {/* Đỉnh D */}
-      <Html position={[baseD.x - 0.25, baseD.y - 0.18, baseD.z - 0.25]} center distanceFactor={9}>
-        <div className="px-2.5 py-1 bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold text-xs shadow-lg select-none pointer-events-none whitespace-nowrap">
+      <Html position={[baseD.x - 0.25, baseD.y - 0.18, baseD.z - 0.25]} center distanceFactor={isTeacherMode ? 11 : 9}>
+        <div className={`bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold shadow-lg select-none pointer-events-none whitespace-nowrap ${
+          isTeacherMode ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs"
+        }`}>
           <KatexMath
             math={
               showCoordinates
@@ -587,8 +819,10 @@ function DynamicPyramidMeshAndEdges({
       </Html>
 
       {/* Chân đường cao H */}
-      <Html position={[apex.x, 0.12, apex.z]} center distanceFactor={9}>
-        <div className="px-2 py-0.5 bg-rose-950/95 backdrop-blur-md rounded-lg border border-rose-500/80 text-rose-300 font-bold text-[11px] shadow-md select-none pointer-events-none whitespace-nowrap">
+      <Html position={[apex.x, 0.12, apex.z]} center distanceFactor={isTeacherMode ? 11 : 9}>
+        <div className={`bg-rose-950/95 backdrop-blur-md rounded-lg border border-rose-500/80 text-rose-300 font-bold shadow-md select-none pointer-events-none whitespace-nowrap ${
+          isTeacherMode ? "px-2.5 py-1 text-xs" : "px-2 py-0.5 text-[11px]"
+        }`}>
           <KatexMath
             math={
               showCoordinates
@@ -616,6 +850,8 @@ export default function Stereometry3DCanvas({
   baseDepth = 3.0,
   orthogonalView = false,
   onToggleOrthogonalView,
+  isTeacherMode = false,
+  onVertexManipulated,
   className = "",
 }: Stereometry3DCanvasProps) {
   const [mounted, setMounted] = useState(false);
@@ -623,8 +859,12 @@ export default function Stereometry3DCanvas({
   const [showNormalVector, setShowNormalVector] = useState<boolean>(true);
   const [showAxes, setShowAxes] = useState<boolean>(true);
   const [showFloorGrid, setShowFloorGrid] = useState<boolean>(true);
+  const [showSectionPlane, setShowSectionPlane] = useState<boolean>(true);
+  const [showHiddenEdges, setShowHiddenEdges] = useState<boolean>(true);
   const [originAtVertexA, setOriginAtVertexA] = useState<boolean>(false);
   const [showHudCard, setShowHudCard] = useState<boolean>(true);
+  const [isFrozenView, setIsFrozenView] = useState<boolean>(false);
+  const [freezeNotice, setFreezeNotice] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -643,30 +883,94 @@ export default function Stereometry3DCanvas({
 
   const controlsRef = useRef<React.ComponentRef<typeof OrbitControls>>(null);
 
-  // Vị trí các đỉnh cơ bản của hình chóp tứ giác đều
+  // Vị trí các đỉnh cơ bản của hình chóp tứ giác đều (Cho phép Kéo thả trực tiếp 3D Direct Manipulation)
   const halfW = baseWidth / 2;
   const halfD = baseDepth / 2;
 
-  const baseA = useMemo(() => new THREE.Vector3(-halfW, 0, halfD), [halfW, halfD]);
-  const baseB = useMemo(() => new THREE.Vector3(halfW, 0, halfD), [halfW, halfD]);
-  const baseC = useMemo(() => new THREE.Vector3(halfW, 0, -halfD), [halfW, halfD]);
-  const baseD = useMemo(() => new THREE.Vector3(-halfW, 0, -halfD), [halfW, halfD]);
-  const apex = useMemo(() => new THREE.Vector3(0, apexHeight, 0), [apexHeight]);
+  const [vertexA, setVertexA] = useState<THREE.Vector3>(() => new THREE.Vector3(-halfW, 0, halfD));
+  const [vertexB, setVertexB] = useState<THREE.Vector3>(() => new THREE.Vector3(halfW, 0, halfD));
+  const [vertexD, setVertexD] = useState<THREE.Vector3>(() => new THREE.Vector3(-halfW, 0, -halfD));
+  const [apexPos, setApexPos] = useState<THREE.Vector3>(() => new THREE.Vector3(0, apexHeight, 0));
 
-  // Các đại lượng giải tích toán học chuẩn mực SGK Toán 11
-  const baseArea = baseWidth * baseDepth;
-  const volume = (1 / 3) * baseArea * apexHeight;
-  const diagonal = Math.sqrt(baseWidth * baseWidth + baseDepth * baseDepth);
-  const halfDiagonal = diagonal / 2;
-  const edgeLength = Math.sqrt(apexHeight * apexHeight + halfDiagonal * halfDiagonal);
-  const slantAngle = (Math.atan2(apexHeight, halfDiagonal) * 180) / Math.PI;
+  // Đồng bộ khi tham số ngoài thay đổi
+  useEffect(() => {
+    setApexPos((prev) => new THREE.Vector3(prev.x, apexHeight, prev.z));
+  }, [apexHeight]);
+
+  // Reactive Dependency Graph:
+  // Đỉnh C tự động tính theo quy tắc hình bình hành: C = B + (D - A)
+  const vertexC = useMemo(
+    () => new THREE.Vector3().addVectors(vertexB, new THREE.Vector3().subVectors(vertexD, vertexA)),
+    [vertexA, vertexB, vertexD]
+  );
+
+  // Tâm đáy H / O: Giao điểm hai đường chéo AC và BD
+  const centerH = useMemo(
+    () => new THREE.Vector3().addVectors(vertexA, vertexC).multiplyScalar(0.5),
+    [vertexA, vertexC]
+  );
+
+  // Trung điểm M của cạnh bên SA: M = (S + A) / 2
+  const pointM = useMemo(
+    () => new THREE.Vector3().addVectors(apexPos, vertexA).multiplyScalar(0.5),
+    [apexPos, vertexA]
+  );
+
+  // Điểm tỉ số N trên cạnh bên SB (tỉ số 2:1 tức SN/SB = 2/3)
+  const pointN = useMemo(
+    () =>
+      new THREE.Vector3().addVectors(
+        apexPos,
+        new THREE.Vector3().subVectors(vertexB, apexPos).multiplyScalar(2 / 3)
+      ),
+    [apexPos, vertexB]
+  );
+
+  // Các đại lượng giải tích toán học chuẩn mực SGK Toán 11 & 12 (tính động 60fps)
+  const edgeAB = vertexA.distanceTo(vertexB);
+  const edgeAD = vertexA.distanceTo(vertexD);
+  const vecAB = new THREE.Vector3().subVectors(vertexB, vertexA);
+  const vecAD = new THREE.Vector3().subVectors(vertexD, vertexA);
+  const crossBase = new THREE.Vector3().crossVectors(vecAB, vecAD);
+  const realBaseArea = crossBase.length();
+  const currentHeight = apexPos.y;
+  const currentVolume = (1 / 3) * realBaseArea * currentHeight;
+  const edgeSA = apexPos.distanceTo(vertexA);
+  const slantAngle = (Math.atan2(currentHeight, vertexA.distanceTo(centerH)) * 180) / Math.PI;
 
   const foldT = foldPercent / 100;
 
-  // Reset góc nhìn Camera về góc chuẩn
+  // Reset góc nhìn Camera về góc chuẩn & vị trí đỉnh ban đầu
   const handleResetCamera = () => {
     if (controlsRef.current) {
       controlsRef.current.reset();
+    }
+    setVertexA(new THREE.Vector3(-halfW, 0, halfD));
+    setVertexB(new THREE.Vector3(halfW, 0, halfD));
+    setVertexD(new THREE.Vector3(-halfW, 0, -halfD));
+    setApexPos(new THREE.Vector3(0, apexHeight, 0));
+    setIsFrozenView(false);
+  };
+
+  // Xoay 45 độ theo phương ngang (hỗ trợ trình chiếu lớp học)
+  const handleRotate45 = () => {
+    if (controlsRef.current) {
+      const az = controlsRef.current.getAzimuthalAngle();
+      controlsRef.current.setAzimuthalAngle(az + Math.PI / 4);
+      controlsRef.current.update();
+    }
+  };
+
+  // Đóng băng cấu hình / Snapshot góc nhìn phục vụ bài giảng
+  const handleSnapshotFreeze = () => {
+    setIsFrozenView((v) => !v);
+    setFreezeNotice(!isFrozenView ? "Đã đóng băng góc nhìn cấu hình cho bài giảng." : "Đã mở lại chế độ xoay tự do.");
+    setTimeout(() => setFreezeNotice(null), 3000);
+  };
+
+  const setOrbitEnabled = (enabled: boolean) => {
+    if (controlsRef.current) {
+      controlsRef.current.enabled = enabled && !isFrozenView;
     }
   };
 
@@ -684,15 +988,28 @@ export default function Stereometry3DCanvas({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full flex flex-col bg-gradient-to-b from-[#0F172A] to-[#020617] select-none overflow-hidden rounded-xl border border-slate-700 shadow-2xl ${className}`}
+      className={`relative w-full h-full flex flex-col bg-gradient-to-b from-[#0F172A] via-[#091122] to-[#020617] select-none overflow-hidden rounded-xl border border-slate-700 shadow-2xl ${className}`}
     >
+      {/* Toast thông báo đóng băng cấu hình */}
+      {freezeNotice && (
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-amber-500 text-slate-950 rounded-xl font-bold text-xs shadow-2xl animate-fade-in flex items-center gap-2">
+          <Camera className="w-4 h-4 text-slate-950" />
+          <span>{freezeNotice}</span>
+        </div>
+      )}
+
       {/* Top Banner Toolbar: Tiêu đề & Công cụ khảo sát chuẩn SGK */}
       <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
         <div className="flex items-center gap-1.5 pointer-events-auto flex-wrap">
           <div className="px-2.5 py-1.5 bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 shadow-lg">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="hidden sm:inline">Hình chóp tứ giác</span>
+            <span className="hidden sm:inline">Hình chóp</span>
             <KatexMath math="S.ABCD" className="font-bold text-teal-300" />
+            {isTeacherMode && (
+              <span className="ml-1 px-1.5 py-0.2 rounded bg-amber-500 text-slate-950 text-[9px] font-extrabold uppercase">
+                GV 1.5x
+              </span>
+            )}
           </div>
 
           <button
@@ -735,10 +1052,10 @@ export default function Stereometry3DCanvas({
             <span>{showFloorGrid ? "Mặt sàn Oxy" : "Ẩn sàn"}</span>
           </button>
 
-          {/* Nút Toggle: Gắn gốc O vào đỉnh A (Phương pháp tọa độ hóa Toán 12) */}
+          {/* Nút Toggle: Gắn gốc O vào đỉnh A */}
           <button
             onClick={() => setOriginAtVertexA((v) => !v)}
-            title="Chuyển đổi vị trí gốc O giữa tâm đáy H và đỉnh A (Hỗ trợ phương pháp tọa độ hóa giải hình học không gian)"
+            title="Chuyển đổi vị trí gốc O giữa tâm đáy H và đỉnh A (Hỗ trợ phương pháp tọa độ hóa)"
             className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
               originAtVertexA
                 ? "bg-slate-800 border-amber-500/90 text-amber-300 ring-1 ring-amber-500/40"
@@ -749,32 +1066,60 @@ export default function Stereometry3DCanvas({
             <span>{originAtVertexA ? "Gốc O tại Đỉnh A" : "Gốc O tại Tâm H"}</span>
           </button>
 
-          {/* Nút Toggle: Tọa độ điểm */}
+          {/* Nút Toggle: Mặt phẳng cắt qua MN */}
+          <button
+            onClick={() => setShowSectionPlane((v) => !v)}
+            title="Bật/Tắt hiển thị thiết diện cắt qua đoạn MN (Trung điểm SA và Tỉ số 2:1 trên SB)"
+            className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
+              showSectionPlane
+                ? "bg-slate-800 border-lime-500/80 text-lime-300"
+                : "bg-slate-900/85 border-slate-700 text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Scissors className="w-3.5 h-3.5" />
+            <span>{showSectionPlane ? "Mặt phẳng (MN)" : "Ẩn mặt MN"}</span>
+          </button>
+
+          {/* Nút Toggle: Nét đứt cạnh khuất */}
+          <button
+            onClick={() => setShowHiddenEdges((v) => !v)}
+            title="Bật/Tắt hiển thị quy ước cạnh khuất nét đứt (Back-face Culling)"
+            className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
+              showHiddenEdges
+                ? "bg-slate-800 border-slate-500 text-slate-200"
+                : "bg-slate-900/85 border-slate-700 text-slate-500"
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>{showHiddenEdges ? "Nét đứt: BẬT" : "Nét đứt: TẮT"}</span>
+          </button>
+
+          {/* Nút Toggle: Tọa độ Đỉnh */}
           <button
             onClick={() => setShowCoordinates((v) => !v)}
-            title="Bật/Tắt hiển thị nhãn tọa độ các đỉnh trong không gian Oxyz"
+            title="Bật/Tắt hiển thị nhãn tọa độ số học trên các đỉnh"
             className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
               showCoordinates
                 ? "bg-slate-800 border-teal-500/80 text-teal-300"
-                : "bg-slate-900/85 border-slate-700 text-slate-400 hover:text-slate-200"
+                : "bg-slate-900/85 border-slate-700 text-slate-500"
             }`}
           >
-            <MapPin className="w-3.5 h-3.5" />
-            <span>Tọa độ</span>
+            <Hash className="w-3.5 h-3.5" />
+            <span>{showCoordinates ? "Tọa độ: BẬT" : "Tọa độ: TẮT"}</span>
           </button>
 
-          {/* Nút Toggle: Vectơ pháp tuyến mặt đáy */}
+          {/* Nút Toggle: Vectơ Pháp Tuyến */}
           <button
             onClick={() => setShowNormalVector((v) => !v)}
-            title="Bật/Tắt hiển thị vectơ pháp tuyến mặt đáy n = (0; 0; 1)"
+            title="Bật/Tắt hiển thị vectơ pháp tuyến n vuông góc đáy"
             className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
               showNormalVector
                 ? "bg-slate-800 border-amber-500/80 text-amber-300"
-                : "bg-slate-900/85 border-slate-700 text-slate-400 hover:text-slate-200"
+                : "bg-slate-900/85 border-slate-700 text-slate-500"
             }`}
           >
-            <Compass className="w-3.5 h-3.5" />
-            <span>Vectơ <KatexMath math="\vec{n}" /></span>
+            <CompassIcon className="w-3.5 h-3.5" />
+            <span>{showNormalVector ? "Vectơ n" : "Ẩn vectơ"}</span>
           </button>
         </div>
 
@@ -817,9 +1162,9 @@ export default function Stereometry3DCanvas({
                 Gốc <KatexMath math="O \equiv A(0;\,0;\,0)" />, tia <KatexMath math="AB \equiv Ox" />, tia <KatexMath math="AD \equiv Oy" />, tia <KatexMath math="Az \parallel SH" />.
               </p>
               <div className="pt-0.5 space-y-0.5 text-[10px]">
-                <div>• <KatexMath math={`\\vec{AB} = (${formatVNFloat(baseWidth)};\\, 0;\\, 0)`} /></div>
-                <div>• <KatexMath math={`\\vec{AD} = (0;\\, ${formatVNFloat(baseDepth)};\\, 0)`} /></div>
-                <div>• <KatexMath math={`\\vec{AS} = (${formatVNFloat(baseWidth / 2)};\\, ${formatVNFloat(baseDepth / 2)};\\, ${formatVNFloat(apexHeight)})`} /></div>
+                <div>• <KatexMath math={`\\vec{AB} = (${formatVNFloat(edgeAB)};\\, 0;\\, 0)`} /></div>
+                <div>• <KatexMath math={`\\vec{AD} = (0;\\, ${formatVNFloat(edgeAD)};\\, 0)`} /></div>
+                <div>• <KatexMath math={`\\vec{AS} = (${formatVNFloat(edgeAB / 2)};\\, ${formatVNFloat(edgeAD / 2)};\\, ${formatVNFloat(currentHeight)})`} /></div>
               </div>
             </div>
           )}
@@ -827,50 +1172,46 @@ export default function Stereometry3DCanvas({
           <div className="space-y-1.5 text-[11px]">
             <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
               <span className="text-slate-400">Chiều cao chóp:</span>
-              <KatexMath math={`h = SH = ${formatVNFloat(apexHeight)}\\text{ m}`} className="text-emerald-300 font-semibold" />
+              <KatexMath math={`h = SH = ${formatVNFloat(currentHeight)}\\text{ m}`} className="text-emerald-300 font-semibold" />
             </div>
 
             <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
-              <span className="text-slate-400">Cạnh đáy hình vuông:</span>
-              <KatexMath math={`a = AB = ${formatVNFloat(baseWidth)}\\text{ m}`} className="text-cyan-300 font-semibold" />
+              <span className="text-slate-400">Cạnh đáy AB & AD:</span>
+              <KatexMath math={`a \\approx ${formatVNFloat(edgeAB)}\\text{ m}`} className="text-cyan-300 font-semibold" />
             </div>
 
             <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
-              <span className="text-slate-400">Diện tích đáy:</span>
-              <KatexMath math={`S_{ABCD} = a^2 = ${formatVNFloat(baseArea)}\\text{ m}^2`} className="text-cyan-300 font-semibold" />
+              <span className="text-slate-400">Diện tích đáy S(ABCD):</span>
+              <KatexMath math={`S_{ABCD} \\approx ${formatVNFloat(realBaseArea)}\\text{ m}^2`} className="text-cyan-300 font-semibold" />
             </div>
 
             <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
               <span className="text-slate-400">Thể tích khối chóp:</span>
               <KatexMath
-                math={`V = \\frac{1}{3} S_{ABCD} \\cdot h = ${formatVNFloat(volume)}\\text{ m}^3`}
+                math={`V = \\frac{1}{3} S_{ABCD} \\cdot h \\approx ${formatVNFloat(currentVolume)}\\text{ m}^3`}
                 className="text-amber-300 font-bold"
               />
             </div>
 
             <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
-              <span className="text-slate-400">Độ dài cạnh bên:</span>
-              <KatexMath math={`SA = \\sqrt{h^2 + AH^2} \\approx ${formatVNFloat(edgeLength)}\\text{ m}`} className="text-slate-200" />
+              <span className="text-slate-400">Độ dài cạnh bên SA:</span>
+              <KatexMath math={`SA \\approx ${formatVNFloat(edgeSA)}\\text{ m}`} className="text-slate-200" />
             </div>
 
             <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
               <span className="text-slate-400">Góc cạnh bên & đáy:</span>
-              <KatexMath math={`\\varphi = \\widehat{(SA, (ABCD))} \\approx ${formatVNFloat(slantAngle)}^\\circ`} className="text-purple-300 font-semibold" />
+              <KatexMath math={`\\varphi \\approx ${formatVNFloat(slantAngle)}^\\circ`} className="text-purple-300 font-semibold" />
             </div>
           </div>
 
           <div className="pt-1.5 border-t border-slate-700 text-[10px] space-y-1 text-slate-300">
             <div className="flex items-center gap-1.5">
-              <span className="text-rose-400 font-bold">•</span>
-              <span>Quan hệ: <KatexMath math="SH \perp (ABCD)" /></span>
+              <span className="text-emerald-400 font-bold">•</span>
+              <span>Kéo thả trực tiếp: Click & kéo đỉnh <strong className="text-amber-300">S</strong>, <strong className="text-cyan-300">A, B, D</strong></span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-cyan-400 font-bold">•</span>
-              <span>Mặt phẳng đáy: <KatexMath math="(ABCD): z = 0" /> (Mặt sàn Oxy)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-amber-400 font-bold">•</span>
-              <span>Vectơ pháp tuyến: <KatexMath math="\vec{n} = (0;\, 0;\, 1)" /></span>
+              <span className="text-lime-400 font-bold">•</span>
+              <span>Điểm tỉ số: <strong className="text-lime-300">M</strong> (Trung điểm SA), <strong className="text-purple-300">N</strong> (2/3 SB)</span>
             </div>
           </div>
         </div>
@@ -883,15 +1224,15 @@ export default function Stereometry3DCanvas({
         className="w-full h-full cursor-grab active:cursor-grabbing"
       >
         {/* Studio Three-Point Lighting */}
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[6, 8, 5]} intensity={1.2} castShadow />
-        <directionalLight position={[-6, 4, -4]} intensity={0.5} />
-        <directionalLight position={[0, -2, -6]} intensity={0.7} color="#38bdf8" />
+        <ambientLight intensity={0.45} />
+        <directionalLight position={[7, 10, 6]} intensity={1.3} castShadow />
+        <directionalLight position={[-7, 5, -5]} intensity={0.6} />
+        <directionalLight position={[0, -3, -7]} intensity={0.8} color="#38bdf8" />
 
         {/* 1. Sàn lưới không gian Infinite Floor */}
         {showFloorGrid && (
           <gridHelper
-            args={[20, 20, "#475569", "#334155"]}
+            args={[20, 20, "#475569", "#1e293b"]}
             position={[0, -0.01, 0]}
           />
         )}
@@ -900,26 +1241,123 @@ export default function Stereometry3DCanvas({
         {showAxes && (
           <OxyzAxesHelper
             size={7}
-            position={originAtVertexA ? baseA : new THREE.Vector3(0, 0, 0)}
+            position={originAtVertexA ? vertexA : new THREE.Vector3(0, 0, 0)}
             isAtVertexA={originAtVertexA}
           />
         )}
 
         {/* 3. Trọng tâm mô hình: Khối đa diện + Cạnh động thấy/khuất + Billboard KaTeX */}
         <DynamicPyramidMeshAndEdges
-          apex={apex}
-          baseA={baseA}
-          baseB={baseB}
-          baseC={baseC}
-          baseD={baseD}
-          baseWidth={baseWidth}
-          baseDepth={baseDepth}
+          apex={apexPos}
+          baseA={vertexA}
+          baseB={vertexB}
+          baseC={vertexC}
+          baseD={vertexD}
+          pointM={pointM}
+          pointN={pointN}
+          baseWidth={edgeAB}
+          baseDepth={edgeAD}
           foldT={foldT}
           showCoordinates={showCoordinates}
           showNormalVector={showNormalVector}
           showPerpendicularSymbol={true}
           showDiagonals={true}
+          showSectionPlane={showSectionPlane}
+          showHiddenEdges={showHiddenEdges}
           originAtVertexA={originAtVertexA}
+          isTeacherMode={isTeacherMode}
+        />
+
+        {/* 4. Tay nắm tương tác 3D Direct Manipulation Handles */}
+        {/* Đỉnh S (Kéo thay đổi chiều cao h trên trục Oz) */}
+        <DraggableHandle
+          id="S"
+          label="S"
+          position={apexPos}
+          color="#f59e0b"
+          glowColor="#fbbf24"
+          constraint="vertical"
+          onDrag={(newPos) => {
+            setApexPos(newPos);
+            if (onApexHeightChange) onApexHeightChange(Number(newPos.y.toFixed(2)));
+          }}
+          onDragEnd={() => {
+            if (onVertexManipulated) {
+              onVertexManipulated({
+                vertex: "S",
+                oldPos: new THREE.Vector3(0, apexHeight, 0),
+                newPos: apexPos.clone(),
+              });
+            }
+          }}
+          setOrbitEnabled={setOrbitEnabled}
+          isTeacherMode={isTeacherMode}
+        />
+
+        {/* Đỉnh A (Kéo trên mặt phẳng đáy y = 0) */}
+        <DraggableHandle
+          id="A"
+          label="A"
+          position={vertexA}
+          color="#06b6d4"
+          glowColor="#22d3ee"
+          constraint="floor"
+          onDrag={(newPos) => setVertexA(newPos)}
+          onDragEnd={() => {
+            if (onVertexManipulated) {
+              onVertexManipulated({
+                vertex: "A",
+                oldPos: new THREE.Vector3(-halfW, 0, halfD),
+                newPos: vertexA.clone(),
+              });
+            }
+          }}
+          setOrbitEnabled={setOrbitEnabled}
+          isTeacherMode={isTeacherMode}
+        />
+
+        {/* Đỉnh B (Kéo trên mặt phẳng đáy y = 0) */}
+        <DraggableHandle
+          id="B"
+          label="B"
+          position={vertexB}
+          color="#06b6d4"
+          glowColor="#22d3ee"
+          constraint="floor"
+          onDrag={(newPos) => setVertexB(newPos)}
+          onDragEnd={() => {
+            if (onVertexManipulated) {
+              onVertexManipulated({
+                vertex: "B",
+                oldPos: new THREE.Vector3(halfW, 0, halfD),
+                newPos: vertexB.clone(),
+              });
+            }
+          }}
+          setOrbitEnabled={setOrbitEnabled}
+          isTeacherMode={isTeacherMode}
+        />
+
+        {/* Đỉnh D (Kéo trên mặt phẳng đáy y = 0) */}
+        <DraggableHandle
+          id="D"
+          label="D"
+          position={vertexD}
+          color="#06b6d4"
+          glowColor="#22d3ee"
+          constraint="floor"
+          onDrag={(newPos) => setVertexD(newPos)}
+          onDragEnd={() => {
+            if (onVertexManipulated) {
+              onVertexManipulated({
+                vertex: "D",
+                oldPos: new THREE.Vector3(-halfW, 0, -halfD),
+                newPos: vertexD.clone(),
+              });
+            }
+          }}
+          setOrbitEnabled={setOrbitEnabled}
+          isTeacherMode={isTeacherMode}
         />
 
         {/* Camera OrbitControls có Damping mượt mà */}
@@ -959,32 +1397,57 @@ export default function Stereometry3DCanvas({
           <div className="flex flex-col gap-1 pt-1 border-t border-slate-800">
             <div className="flex items-center justify-between text-xs">
               <span className="font-semibold text-slate-300 flex items-center gap-1">
-                <span>Chiều cao:</span>
-                <KatexMath math={`h = SH = ${formatVNFloat(apexHeight)}`} />
+                <Move3d className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Chiều cao <KatexMath math={`h = SH = ${formatVNFloat(currentHeight)}`} />:</span>
               </span>
-              <span className="font-mono text-emerald-400 font-bold">{formatVNFloat(apexHeight)} m</span>
+              <span className="font-mono text-emerald-400 font-bold">{formatVNFloat(currentHeight)} m</span>
             </div>
             <input
               type="range"
               min={1.2}
-              max={4.5}
+              max={5.0}
               step={0.1}
-              value={apexHeight}
-              onChange={(e) => onApexHeightChange(Number(e.target.value))}
+              value={currentHeight}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                setApexPos((prev) => new THREE.Vector3(prev.x, val, prev.z));
+                onApexHeightChange(val);
+              }}
               className="w-56 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
             />
           </div>
         )}
       </div>
 
-      {/* Floating Toolbar (Bottom Right) */}
-      <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1.5 p-1.5 bg-slate-900/85 backdrop-blur-md rounded-xl border border-slate-700/80 shadow-2xl">
+      {/* Teacher Presentation & Studio Quick Toolbar (Bottom Right) */}
+      <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1.5 p-1.5 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-700/80 shadow-2xl flex-wrap">
+        <button
+          onClick={handleRotate45}
+          title="Xoay camera 45° mượt mà (Hỗ trợ trình chiếu lớp học)"
+          className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-cyan-300 transition-colors flex items-center gap-1 text-xs font-semibold"
+        >
+          <RotateCw className="w-4 h-4 text-cyan-400" />
+          <span className="hidden md:inline">Xoay 45°</span>
+        </button>
+
+        <button
+          onClick={handleSnapshotFreeze}
+          title={isFrozenView ? "Mở lại góc nhìn xoay tự do" : "Đóng băng cấu hình góc nhìn bài giảng"}
+          className={`p-2 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold ${
+            isFrozenView ? "bg-amber-500 text-slate-950 font-bold" : "hover:bg-slate-800 text-slate-300 hover:text-white"
+          }`}
+        >
+          <Camera className="w-4 h-4" />
+          <span className="hidden md:inline">{isFrozenView ? "Đã ghim" : "Ghim góc nhìn"}</span>
+        </button>
+
         <button
           onClick={handleResetCamera}
-          title="Reset góc nhìn Camera về chuẩn"
-          className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors"
+          title="Reset góc nhìn Camera và hoàn nguyên các đỉnh về chuẩn"
+          className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors flex items-center gap-1 text-xs font-semibold"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-4 h-4 text-amber-400" />
+          <span className="hidden md:inline">Chuẩn tâm</span>
         </button>
       </div>
     </div>

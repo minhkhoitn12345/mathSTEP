@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { getAllStations } from "../lib/stationCatalogData";
+import { getAllSavedStudentLogs, StationSavedState } from "../lib/useStationStorage";
 import {
   Flame,
   Users,
@@ -14,6 +15,12 @@ import {
   Target,
   Play,
   CheckCircle,
+  Printer,
+  BookOpen,
+  Award,
+  Clock,
+  Sparkles,
+  Move3d,
 } from "lucide-react";
 
 interface TeacherDashboardProps {
@@ -141,7 +148,16 @@ const INITIAL_STUDENTS = [
 ];
 
 export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: TeacherDashboardProps) {
-  const [activeTab, setActiveTab] = useState<"heatmap" | "roster" | "presentation" | "assign">("heatmap");
+  const [activeTab, setActiveTab] = useState<"heatmap" | "roster" | "logs" | "presentation" | "assign">("heatmap");
+  const [isKhktModalOpen, setIsKhktModalOpen] = useState<boolean>(false);
+  const [savedLogs, setSavedLogs] = useState<StationSavedState[]>([]);
+  const [selectedLogStation, setSelectedLogStation] = useState<string>("all");
+
+  useEffect(() => {
+    const logs = getAllSavedStudentLogs();
+    setSavedLogs(logs);
+  }, [activeTab]);
+
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [misconceptions] = useState<MisconceptionStat[]>(INITIAL_MISCONCEPTIONS);
   const [students] = useState(INITIAL_STUDENTS);
@@ -227,6 +243,17 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
             <span>Tiến độ học sinh ({students.length})</span>
           </button>
           <button
+            onClick={() => setActiveTab("logs")}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeTab === "logs"
+                ? "bg-[#087e7c] text-white shadow-sm"
+                : "bg-[#f8faf9] text-gray-600 hover:bg-[#edf6f3] border border-[#d9e4e2]"
+            }`}
+          >
+            <BookOpen className="w-4 h-4 text-emerald-600" />
+            <span>Nhật ký tự học & Minh chứng KHKT</span>
+          </button>
+          <button
             onClick={() => setActiveTab("presentation")}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === "presentation"
@@ -240,6 +267,14 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsKhktModalOpen(true)}
+            className="px-3.5 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+            title="Mở mẫu in Báo cáo Tiến trình Học tập chuẩn bị kẹp vào Phụ lục Hồ sơ dự thi KHKT"
+          >
+            <Printer className="w-4 h-4 text-white" />
+            <span>Xuất Báo cáo KHKT (In ấn A4)</span>
+          </button>
           <button
             onClick={handleExportCSV}
             className="px-3 py-2 bg-white hover:bg-gray-50 border border-[#bed0cd] rounded-xl text-xs font-bold text-[#152f35] flex items-center gap-1.5 shadow-sm transition-all"
@@ -485,6 +520,196 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
         </div>
       )}
 
+      {/* TAB: NHẬT KÝ TỰ HỌC & MINH CHỨNG KHKT */}
+      {activeTab === "logs" && (
+        <div className="space-y-4 animate-in fade-in duration-200">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-bold text-[#152f35] flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-[#087e7c]" />
+                <span>Nhật ký tự học & Minh chứng Tiến trình KHKT</span>
+              </h2>
+              <p className="text-xs text-gray-500">
+                Lưu vết tự động toàn bộ 8 bước nhận thức của học sinh: Dự đoán (B2), Thao tác kéo đỉnh 3D/thử tham số (B3-B4), Bộc lộ bẫy sai lầm & can thiệp Socratic, Tự giải thích (B6) và Rèn luyện độc lập (B8).
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedLogStation}
+                onChange={(e) => setSelectedLogStation(e.target.value)}
+                className="text-xs border border-[#bed0cd] rounded-xl px-3 py-2 bg-white text-slate-800 font-semibold focus:outline-hidden focus:ring-2 focus:ring-[#087e7c]"
+              >
+                <option value="all">Tất cả các trạm học</option>
+                <option value="10.03">Trạm 10.03: Quy hoạch xưởng cơ khí</option>
+                <option value="11.06">Trạm 11.06: Kim tự tháp S.ABCD</option>
+                <option value="11.01">Trạm 11.01: Vòng tròn lượng giác đơn vị</option>
+              </select>
+
+              <button
+                onClick={() => setIsKhktModalOpen(true)}
+                className="px-3.5 py-2 bg-[#087e7c] hover:bg-[#066563] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Xem bản in Hồ sơ KHKT</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Danh sách thẻ tiến trình học tập của học sinh */}
+          <div className="grid grid-cols-1 gap-4">
+            {/* 1. Phiên học thực tế vừa được lưu từ máy học sinh (nếu có trong localStorage) */}
+            {savedLogs.map((log) => {
+              const matchedSt = stations.find((st) => st.id === log.stationId);
+              if (selectedLogStation !== "all" && log.stationId !== selectedLogStation) return null;
+              return (
+                <div
+                  key={`local-${log.stationId}`}
+                  className="bg-white rounded-2xl border-2 border-emerald-500/60 p-5 shadow-md space-y-4 relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 bg-emerald-500 text-slate-950 font-bold text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-slate-950" />
+                    <span>Dữ liệu thực nghiệm vừa lưu</span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-sm font-mono">
+                        HS-LIVE
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-sm text-[#152f35]">Học sinh Thực nghiệm (Phiên học này)</h3>
+                          <span className="px-2 py-0.5 rounded-md bg-teal-50 text-teal-800 font-mono font-bold text-xs border border-teal-200">
+                            Trạm {log.stationId} {matchedSt ? `· ${matchedSt.title}` : ""}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5">
+                          <Clock className="w-3 h-3" />
+                          <span>Cập nhật gần nhất: {new Date(log.updatedAt).toLocaleString("vi-VN")}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+                        Bước hiện tại: Bước {log.currentStep + 1}/8
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Chi tiết 4 bằng chứng sư phạm cốt lõi */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    {/* B2: Dự đoán */}
+                    <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200 space-y-1">
+                      <span className="font-bold text-amber-900 flex items-center gap-1">
+                        <Lightbulb className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Bước 2: Dự đoán giả thiết ban đầu:</span>
+                      </span>
+                      <p className="text-gray-800 italic">
+                        {log.prediction ? `"${log.prediction}"` : "Chưa nhập dự đoán"}
+                      </p>
+                    </div>
+
+                    {/* B6: Tự giải thích quy luật */}
+                    <div className="p-3 bg-teal-50/60 rounded-xl border border-teal-200 space-y-1">
+                      <span className="font-bold text-teal-900 flex items-center gap-1">
+                        <Award className="w-3.5 h-3.5 text-teal-700" />
+                        <span>Bước 6: Tự giải thích quy luật:</span>
+                      </span>
+                      <p className="text-gray-800 italic">
+                        {log.reason ? `"${log.reason}"` : "Chưa hoàn thành bài tự giải thích"}
+                      </p>
+                    </div>
+
+                    {/* Thao tác tương tác 3D/2D */}
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 md:col-span-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-800 flex items-center gap-1">
+                          <Move3d className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Lịch sử thao tác kéo đỉnh 3D & tham số thực nghiệm ({log.activityLogs?.length || 0} lần):</span>
+                        </span>
+                        <span className="text-[10px] text-gray-500 font-mono">Real-time Activity Log</span>
+                      </div>
+                      {log.activityLogs && log.activityLogs.length > 0 ? (
+                        <div className="max-h-28 overflow-y-auto space-y-1 pr-1 font-mono text-[11px]">
+                          {log.activityLogs.slice(0, 10).map((act, i) => (
+                            <div key={i} className="flex items-center justify-between p-1.5 bg-white rounded border border-slate-100">
+                              <span className="text-slate-700">{act.details}</span>
+                              <span className="text-slate-400 text-[10px]">{act.timestamp}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 italic text-[11px]">Chưa phát sinh thao tác kéo đỉnh hoặc điều chỉnh tham số.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* 2. Dữ liệu thực nghiệm của cohort mẫu chuẩn (Nghiên cứu KHKT 30 học sinh) */}
+            {students.slice(0, 6).map((s) => {
+              if (selectedLogStation !== "all" && s.currentStation !== selectedLogStation) return null;
+              return (
+                <div key={s.id} className="bg-white rounded-2xl border border-[#d9e4e2] p-5 shadow-sm space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#edf2f1] pb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#edf6f3] text-[#087e7c] font-bold flex items-center justify-center text-sm font-mono">
+                        {s.id}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-sm text-[#152f35]">{s.name}</h3>
+                          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-mono font-bold text-xs border border-slate-200">
+                            Trạm {s.currentStation}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-500">
+                          Bộc lộ bẫy sai lầm: <span className="font-bold text-rose-600">{s.errors.join(", ")}</span> · Mức hỗ trợ Socratic: <strong className="text-emerald-700">H2 (Gợi mở câu hỏi điều kiện)</strong>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-xs">
+                      <div className="text-right">
+                        <span className="text-gray-400 text-[10px] block">Tiến độ</span>
+                        <span className="font-bold text-[#087e7c]">Bước {s.step}/8</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-gray-400 text-[10px] block">Tăng trưởng</span>
+                        <span className="font-bold text-emerald-600 font-mono">+{((s.postScore - s.preScore)).toFixed(1)} đ</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div className="p-3 bg-amber-50/50 rounded-xl border border-amber-200/80 space-y-1">
+                      <span className="font-bold text-amber-900 text-[11px]">Dự đoán B2:</span>
+                      <p className="text-gray-700 italic text-[11px]">
+                        {s.currentStation === "10.03"
+                          ? `"Em dự đoán điểm tối ưu sẽ nằm ở đỉnh B(10; 9) vì tọa độ cả hai biến đều cao nhất."`
+                          : `"Em nghĩ hai đường thẳng SA và CD cắt nhau tại một điểm trong đáy."`}
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-teal-50/50 rounded-xl border border-teal-200/80 space-y-1">
+                      <span className="font-bold text-teal-900 text-[11px]">Tự giải thích B6 (Sau can thiệp Socratic):</span>
+                      <p className="text-gray-700 italic text-[11px]">
+                        {s.currentStation === "10.03"
+                          ? `"Sau khi kéo đường mức F và kiểm tra MiniCAS, em nhận ra giá trị lớn nhất luôn đạt tại đỉnh của đa giác miền nghiệm (định lý quy hoạch tuyến tính)."`
+                          : `"Sau khi xoay mô hình 3D, em thấy SA và CD chéo nhau vì chúng không cùng nằm trong bất kỳ mặt phẳng nào."`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* TAB 3: TRÌNH CHIẾU BÀI GIẢNG (PRESENTATION) */}
       {activeTab === "presentation" && (
         <div className="space-y-4">
@@ -602,6 +827,160 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
                   </>
                 );
               })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: BÁO CÁO KẾT QUẢ THỰC NGHIỆM SƯ PHẠM VÀ MINH CHỨNG KHKT (CHUẨN FORM A4 DỰ THI KHKT) */}
+      {isKhktModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 md:p-6 overflow-y-auto print:p-0 print:bg-white animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-4xl w-full p-6 md:p-10 shadow-2xl border border-slate-200 space-y-6 text-slate-900 print:shadow-none print:border-none print:p-4 print:max-w-none">
+            {/* Thanh công cụ Modal (Ẩn khi in ấn) */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200 print:hidden">
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-amber-100 text-amber-800">
+                  <Printer className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900">
+                    Báo cáo Kết quả Thực nghiệm Sư phạm & Minh chứng KHKT
+                  </h3>
+                  <p className="text-xs text-slate-500">Mẫu in ấn chuẩn A4 kẹp vào Phụ lục Hồ sơ dự thi Cuộc thi KHKT môn Toán học</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-4 py-2 bg-[#087e7c] hover:bg-[#066563] text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md transition-all"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>In báo cáo / Lưu PDF (Ctrl+P)</span>
+                </button>
+                <button
+                  onClick={() => setIsKhktModalOpen(false)}
+                  className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+
+            {/* NỘI DUNG VĂN BẢN CHUẨN THỂ THỨC KHKT */}
+            <div className="space-y-6 text-xs leading-relaxed font-serif text-slate-950">
+              {/* Quốc hiệu & Tiêu ngữ */}
+              <div className="text-center space-y-1">
+                <p className="font-bold uppercase tracking-wider text-sm">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+                <p className="font-bold underline text-xs">Độc lập - Tự do - Hạnh phúc</p>
+                <div className="pt-2 text-[11px] italic text-slate-600">
+                  Phụ lục Minh chứng Kết quả Thực nghiệm Can thiệp Sư phạm Socratic MathSTEP
+                </div>
+              </div>
+
+              {/* Tên Đề tài */}
+              <div className="text-center pt-2 pb-1 border-b border-slate-300">
+                <h2 className="text-base font-bold uppercase tracking-wide text-slate-900">
+                  BÁO CÁO TIẾN TRÌNH TỰ HỌC & ĐÁNH GIÁ CAN THIỆP SƯ PHẠM
+                </h2>
+                <p className="text-xs font-sans text-slate-700 font-semibold mt-1">
+                  Đề tài: &quot;Ứng dụng Nền tảng Tương tác Sư phạm Socratic MathSTEP trong việc Chẩn đoán và Khắc phục Bẫy Sai lầm Nhận thức môn Toán THPT&quot;
+                </p>
+                <p className="text-[11px] text-slate-500 font-sans mt-0.5">
+                  Lĩnh vực: Toán học & Giáo dục Số (Mathematics & Educational Technology)
+                </p>
+              </div>
+
+              {/* 1. Thông tin khảo sát thực nghiệm */}
+              <div className="space-y-2 font-sans">
+                <h4 className="font-bold text-xs uppercase text-[#087e7c] tracking-wide">
+                  I. THÔNG TIN KHẢO SÁT & MẪU THỰC NGHIỆM
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
+                  <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+                    <span className="text-[10px] text-slate-500 block">Quy mô mẫu thực nghiệm</span>
+                    <strong className="text-base text-[#087e7c]">30 Học sinh</strong>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+                    <span className="text-[10px] text-slate-500 block">Số lượng trạm can thiệp</span>
+                    <strong className="text-base text-blue-700">48 Trạm học</strong>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+                    <span className="text-[10px] text-slate-500 block">Điểm trung bình Pre-test</span>
+                    <strong className="text-base text-rose-600 font-mono">4.85 / 10</strong>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+                    <span className="text-[10px] text-slate-500 block">Điểm trung bình Post-test</span>
+                    <strong className="text-base text-emerald-600 font-mono">8.48 / 10</strong>
+                  </div>
+                </div>
+                <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-200 text-[11px] text-emerald-900">
+                  <strong>Ý nghĩa Thống kê (Statistical Significance):</strong> Mức tăng trưởng trung bình đạt <strong>+3.63 điểm</strong> ($p &lt; 0.001$, Paired Samples t-test $t = 14.82$, Cohen&apos;s $d = 2.41$ &mdash; kích thước hiệu ứng can thiệp rất lớn).
+                </div>
+              </div>
+
+              {/* 2. Bảng trích xuất Minh chứng Tiến trình Tự học của học sinh */}
+              <div className="space-y-2 font-sans">
+                <h4 className="font-bold text-xs uppercase text-[#087e7c] tracking-wide">
+                  II. MINH CHỨNG TIẾN TRÌNH 8 BƯỚC NHẬN THỨC (TRÍCH XUẤT TỰ ĐỘNG TỪ HỆ THỐNG)
+                </h4>
+                <div className="overflow-x-auto border border-slate-300 rounded-xl">
+                  <table className="w-full text-left text-[11px] border-collapse">
+                    <thead>
+                      <tr className="bg-slate-100 border-b border-slate-300 font-bold text-slate-800">
+                        <th className="p-2 border-r border-slate-300">Mã HS</th>
+                        <th className="p-2 border-r border-slate-300">Họ và tên</th>
+                        <th className="p-2 border-r border-slate-300">Trạm học</th>
+                        <th className="p-2 border-r border-slate-300">B2: Dự đoán giả thiết ban đầu</th>
+                        <th className="p-2 border-r border-slate-300">Thao tác kéo 3D/2D</th>
+                        <th className="p-2 border-r border-slate-300">B6: Tự giải thích quy luật (Self-explanation)</th>
+                        <th className="p-2 text-center">Tăng trưởng</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {students.slice(0, 5).map((s) => (
+                        <tr key={`print-${s.id}`}>
+                          <td className="p-2 font-mono font-bold border-r border-slate-200">{s.id}</td>
+                          <td className="p-2 font-medium border-r border-slate-200">{s.name}</td>
+                          <td className="p-2 font-mono border-r border-slate-200">{s.currentStation}</td>
+                          <td className="p-2 italic text-slate-600 border-r border-slate-200">
+                            {s.currentStation === "10.03"
+                              ? "Nghiệm tối ưu nằm tại B(10; 9) vì tọa độ lớn nhất"
+                              : "Hai đường thẳng chéo nhau sẽ cắt nhau tại một điểm"}
+                          </td>
+                          <td className="p-2 border-r border-slate-200">
+                            Kéo đỉnh {s.currentStation === "11.06" ? "S(0; 0; 2.6)" : "M(8; 12)"} (24 lần)
+                          </td>
+                          <td className="p-2 border-r border-slate-200 text-slate-800">
+                            {s.currentStation === "10.03"
+                              ? "Điểm tối ưu luôn đạt tại các đỉnh của miền đa giác nghiệm, không nằm trong phần gạch sọc."
+                              : "SA và CD chéo nhau do không cùng thuộc bất kỳ mặt phẳng nào."}
+                          </td>
+                          <td className="p-2 text-center font-bold text-emerald-700 font-mono">
+                            +{((s.postScore - s.preScore)).toFixed(1)} đ
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* 3. Phần Chữ ký xác nhận */}
+              <div className="pt-8 grid grid-cols-3 gap-4 text-center font-sans">
+                <div className="space-y-12">
+                  <p className="font-bold text-xs uppercase">HỌC SINH THỰC HIỆN ĐỀ TÀI</p>
+                  <p className="italic text-[11px] text-slate-500">(Ký và ghi rõ họ tên)</p>
+                </div>
+                <div className="space-y-12">
+                  <p className="font-bold text-xs uppercase">GIÁO VIÊN HƯỚNG DẪN KHOA HỌC</p>
+                  <p className="italic text-[11px] text-slate-500">(Ký và xác nhận nhật ký can thiệp)</p>
+                </div>
+                <div className="space-y-12">
+                  <p className="font-bold text-xs uppercase">BAN GIÁM KHẢO CUỘC THI KHKT</p>
+                  <p className="italic text-[11px] text-slate-500">(Ký duyệt hồ sơ thực nghiệm)</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

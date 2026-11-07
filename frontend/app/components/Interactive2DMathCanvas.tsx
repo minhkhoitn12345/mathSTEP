@@ -11,6 +11,7 @@ import {
   Layers,
   CheckCircle2,
   AlertCircle,
+  Palette,
 } from "lucide-react";
 
 export interface BoundaryLine {
@@ -45,6 +46,7 @@ export interface Interactive2DMathCanvasProps {
   className?: string;
   hideTestPoint?: boolean;
   hideObjectiveLine?: boolean;
+  theme?: "blueprint" | "paper";
 }
 
 export default function Interactive2DMathCanvas({
@@ -60,9 +62,12 @@ export default function Interactive2DMathCanvas({
   className = "",
   hideTestPoint = false,
   hideObjectiveLine = false,
+  theme = "blueprint",
 }: Interactive2DMathCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const [canvasTheme, setCanvasTheme] = useState<"blueprint" | "paper">(theme);
 
   // Viewport / Camera transform state
   // World coordinates range centered on the problem domain
@@ -220,10 +225,10 @@ export default function Interactive2DMathCanvas({
     const { scale, originScreenX, originScreenY, worldToScreen, viewport } = getTransform(w, h);
 
     // 1. Background
-    ctx.fillStyle = "#F8FAFC"; // Ultra clean slate-50
+    ctx.fillStyle = canvasTheme === "blueprint" ? "#0B132B" : "#F8FAFC";
     ctx.fillRect(0, 0, w, h);
 
-    // 2. Dynamic LOD Grid
+    // 2. Dynamic LOD Grid (Lưới bản vẽ kỹ thuật Blueprint hoặc Lưới giấy SGK)
     if (showGrid) {
       let gridStep = 1;
       if (scale < 18) gridStep = 5;
@@ -235,9 +240,28 @@ export default function Interactive2DMathCanvas({
       const firstY = Math.floor(viewport.minY / gridStep) * gridStep;
       const lastY = Math.ceil(viewport.maxY / gridStep) * gridStep;
 
-      // Sub-grid lines
+      // Millimeter sub-grid lines (chỉ vẽ trên Blueprint để tạo hiệu ứng bản vẽ kỹ thuật)
+      if (canvasTheme === "blueprint") {
+        ctx.lineWidth = 0.6;
+        ctx.strokeStyle = "rgba(56, 189, 248, 0.07)"; // Cyan millimeter lines
+        const subStep = gridStep / 5;
+        ctx.beginPath();
+        for (let x = firstX; x <= lastX; x += subStep) {
+          const [sx] = worldToScreen(x, 0);
+          ctx.moveTo(sx, 0);
+          ctx.lineTo(sx, h);
+        }
+        for (let y = firstY; y <= lastY; y += subStep) {
+          const [, sy] = worldToScreen(0, y);
+          ctx.moveTo(0, sy);
+          ctx.lineTo(w, sy);
+        }
+        ctx.stroke();
+      }
+
+      // Major grid lines
       ctx.lineWidth = 1;
-      ctx.strokeStyle = "#E2E8F0"; // Slate-200
+      ctx.strokeStyle = canvasTheme === "blueprint" ? "rgba(56, 189, 248, 0.22)" : "#E2E8F0";
       ctx.beginPath();
       for (let x = firstX; x <= lastX; x += gridStep) {
         const [sx] = worldToScreen(x, 0);
@@ -261,9 +285,9 @@ export default function Interactive2DMathCanvas({
         const [sx, sy] = worldToScreen(x, 0);
         if (sx < 15 || sx > w - 15) continue;
         const textY = Math.max(16, Math.min(h - 16, sy + 14));
-        ctx.fillStyle = "rgba(248, 250, 252, 0.85)";
+        ctx.fillStyle = canvasTheme === "blueprint" ? "rgba(11, 19, 43, 0.85)" : "rgba(248, 250, 252, 0.85)";
         ctx.fillRect(sx - 10, textY - 6, 20, 12);
-        ctx.fillStyle = "#64748B"; // Slate-500
+        ctx.fillStyle = canvasTheme === "blueprint" ? "#7DD3FC" : "#64748B";
         ctx.fillText(String(Math.round(x * 10) / 10), sx, textY);
       }
 
@@ -272,9 +296,9 @@ export default function Interactive2DMathCanvas({
         const [sx, sy] = worldToScreen(0, y);
         if (sy < 15 || sy > h - 15) continue;
         const textX = Math.max(16, Math.min(w - 16, sx - 16));
-        ctx.fillStyle = "rgba(248, 250, 252, 0.85)";
+        ctx.fillStyle = canvasTheme === "blueprint" ? "rgba(11, 19, 43, 0.85)" : "rgba(248, 250, 252, 0.85)";
         ctx.fillRect(textX - 10, sy - 6, 20, 12);
-        ctx.fillStyle = "#64748B";
+        ctx.fillStyle = canvasTheme === "blueprint" ? "#7DD3FC" : "#64748B";
         ctx.fillText(String(Math.round(y * 10) / 10), textX, sy);
       }
     }
@@ -286,7 +310,7 @@ export default function Interactive2DMathCanvas({
     patternCanvas.height = 12;
     const pctx = patternCanvas.getContext("2d");
     if (pctx) {
-      pctx.strokeStyle = "rgba(148, 163, 184, 0.4)"; // Slate-400 mờ trang nhã
+      pctx.strokeStyle = canvasTheme === "blueprint" ? "rgba(56, 189, 248, 0.18)" : "rgba(148, 163, 184, 0.4)";
       pctx.lineWidth = 1.4;
       pctx.beginPath();
       pctx.moveTo(0, 12);
@@ -296,14 +320,14 @@ export default function Interactive2DMathCanvas({
     const hatchPattern = ctx.createPattern(patternCanvas, "repeat");
 
     if (isSgkMode) {
-      // SGK KNTT: Gạch sọc trên toàn bộ màn hình NGOẠI TRỪ miền nghiệm OABC (giữ trắng sáng)
+      // SGK KNTT: Gạch sọc trên toàn bộ màn hình NGOẠI TRỪ miền nghiệm OABC (giữ trắng sáng hoặc cyan mờ)
       if (vertices.length >= 3 && hatchPattern) {
         ctx.save();
         // 1) Fill entire screen with hatching
         ctx.fillStyle = hatchPattern;
         ctx.fillRect(0, 0, w, h);
 
-        // 2) Cut out the feasible polygon (clip & clear to pure white)
+        // 2) Cut out the feasible polygon (clip & clear)
         ctx.globalCompositeOperation = "destination-out";
         ctx.beginPath();
         vertices.forEach((v, idx) => {
@@ -314,9 +338,9 @@ export default function Interactive2DMathCanvas({
         ctx.closePath();
         ctx.fill();
 
-        // 3) Restore to draw clean white fill with soft glow
+        // 3) Restore to draw feasible background
         ctx.globalCompositeOperation = "destination-over";
-        ctx.fillStyle = "#FFFFFF";
+        ctx.fillStyle = canvasTheme === "blueprint" ? "rgba(14, 165, 233, 0.16)" : "#FFFFFF";
         ctx.fill();
         ctx.restore();
 
@@ -329,10 +353,10 @@ export default function Interactive2DMathCanvas({
           else ctx.lineTo(sx, sy);
         });
         ctx.closePath();
-        ctx.strokeStyle = "#0D9488"; // Emerald-600
+        ctx.strokeStyle = canvasTheme === "blueprint" ? "#38BDF8" : "#0D9488";
         ctx.lineWidth = 2.5;
         ctx.stroke();
-        ctx.fillStyle = "rgba(13, 148, 136, 0.06)";
+        ctx.fillStyle = canvasTheme === "blueprint" ? "rgba(56, 189, 248, 0.15)" : "rgba(13, 148, 136, 0.06)";
         ctx.fill();
         ctx.restore();
       }
@@ -347,9 +371,9 @@ export default function Interactive2DMathCanvas({
           else ctx.lineTo(sx, sy);
         });
         ctx.closePath();
-        ctx.fillStyle = "rgba(13, 148, 136, 0.25)"; // Teal fill
+        ctx.fillStyle = canvasTheme === "blueprint" ? "rgba(14, 165, 233, 0.3)" : "rgba(13, 148, 136, 0.25)";
         ctx.fill();
-        ctx.strokeStyle = "#0F766E";
+        ctx.strokeStyle = canvasTheme === "blueprint" ? "#38BDF8" : "#0F766E";
         ctx.lineWidth = 2.5;
         ctx.stroke();
         ctx.restore();
@@ -358,7 +382,7 @@ export default function Interactive2DMathCanvas({
 
     // 4. Ox & Oy Axes with Direction Arrows & Origin "O"
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#334155"; // Slate-700
+    ctx.strokeStyle = canvasTheme === "blueprint" ? "#38BDF8" : "#334155";
     ctx.beginPath();
     // Ox Axis
     ctx.moveTo(0, originScreenY);
@@ -369,7 +393,7 @@ export default function Interactive2DMathCanvas({
     ctx.stroke();
 
     // Arrow on Ox
-    ctx.fillStyle = "#334155";
+    ctx.fillStyle = canvasTheme === "blueprint" ? "#38BDF8" : "#334155";
     ctx.beginPath();
     ctx.moveTo(w - 2, originScreenY);
     ctx.lineTo(w - 12, originScreenY - 5);
@@ -387,12 +411,14 @@ export default function Interactive2DMathCanvas({
 
     // Axis Labels with Halo
     ctx.font = "bold 13px 'Computer Modern', 'KaTeX_Math', sans-serif";
-    ctx.fillStyle = "#0F172A";
+    ctx.fillStyle = canvasTheme === "blueprint" ? "#38BDF8" : "#0F172A";
 
     // "x"
     ctx.fillText("x", w - 20, originScreenY + 16);
     // "y"
     ctx.fillText("y", originScreenX + 16, 18);
+    // "O"
+    ctx.fillText("O", originScreenX - 14, originScreenY + 16);
     // "O"
     ctx.fillText("O", originScreenX - 14, originScreenY + 16);
 
@@ -683,6 +709,7 @@ export default function Interactive2DMathCanvas({
     isSgkMode,
     visualCounterExample,
     showGrid,
+    canvasTheme,
     hideTestPoint,
     hideObjectiveLine,
     getTransform,
@@ -827,6 +854,19 @@ export default function Interactive2DMathCanvas({
           >
             <Layers className="w-3 h-3" />
             <span className="hidden sm:inline">{isSgkMode ? "SGK KNTT" : "GeoGebra"}</span>
+          </button>
+
+          <button
+            onClick={() => setCanvasTheme((t) => (t === "blueprint" ? "paper" : "blueprint"))}
+            title={canvasTheme === "blueprint" ? "Chuyển sang Giấy vẽ chuẩn SGK" : "Chuyển sang Bản vẽ kỹ thuật Blueprint (#0B132B)"}
+            className={`px-2 py-1 rounded text-[11px] font-medium transition-colors flex items-center gap-1 ${
+              canvasTheme === "blueprint"
+                ? "bg-sky-950/90 text-sky-300 border border-sky-500/50"
+                : "bg-slate-800 text-slate-300 hover:text-white"
+            }`}
+          >
+            <Palette className="w-3 h-3 text-sky-400" />
+            <span className="hidden sm:inline">{canvasTheme === "blueprint" ? "Blueprint" : "Giấy SGK"}</span>
           </button>
 
           <div className="w-[1px] h-3.5 bg-slate-700 mx-0.5" />

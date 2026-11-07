@@ -5,7 +5,7 @@ import { verifyAnswer } from "../lib/miniCas";
 import StationCatalogModal from "./StationCatalogModal";
 import WorksheetPrintModal from "./WorksheetPrintModal";
 import { StationItem, getStationById } from "../lib/stationCatalogData";
-import { loadStationState, saveStationState, clearStationState } from "../lib/useStationStorage";
+import { loadStationState, saveStationState, clearStationState, ActivityLogEntry } from "../lib/useStationStorage";
 import { generateIsomorphicIntegerProblem, IntegerProblem } from "../lib/integerVertexGenerator";
 import Interactive2DMathCanvas, { BoundaryLine, PolygonVertex } from "./Interactive2DMathCanvas";
 import Stereometry3DCanvas from "./Stereometry3DCanvas";
@@ -674,6 +674,27 @@ export default function MathStepWorkbench({
     setTimeout(() => setToastMessage(null), 3200);
   }, []);
 
+  const [activityLogs, setActivityLogs] = useState<ActivityLogEntry[]>([]);
+
+  const recordActivity = useCallback(
+    (entry: { type: ActivityLogEntry["type"]; details: string }) => {
+      const newEntry: ActivityLogEntry = {
+        timestamp: new Date().toLocaleTimeString("vi-VN"),
+        type: entry.type,
+        details: entry.details,
+      };
+      setActivityLogs((prev) => {
+        const next = [newEntry, ...prev].slice(0, 50);
+        const key = stationId || moduleId;
+        if (key) {
+          saveStationState(key, { activityLogs: next });
+        }
+        return next;
+      });
+    },
+    [stationId, moduleId]
+  );
+
   const [evidenceModalOpen, setEvidenceModalOpen] = useState<boolean>(false);
   const [isTeacherMode, setIsTeacherMode] = useState<boolean>(false);
   const [activeMobileTab, setActiveMobileTab] = useState<"task" | "scene" | "controls">("scene");
@@ -803,6 +824,9 @@ export default function MathStepWorkbench({
       if (typeof saved.quizAnswer === "number") setQuizAnswer(saved.quizAnswer);
       if (typeof saved.quizSubmitted === "boolean") setQuizSubmitted(saved.quizSubmitted);
       if (saved.transferInput) setTransferInput(saved.transferInput);
+      if (saved.activityLogs && Array.isArray(saved.activityLogs)) {
+        setActivityLogs(saved.activityLogs);
+      }
 
       showToast("Đã khôi phục phiên học tập trước đó của bạn.");
     } else {
@@ -841,9 +865,10 @@ export default function MathStepWorkbench({
       quizAnswer,
       quizSubmitted,
       transferInput,
+      activityLogs,
       moduleId,
     });
-  }, [moduleId, stationId, currentStep, params, prediction, reason, observations, evidenceHistory, quizAnswer, quizSubmitted, transferInput]);
+  }, [moduleId, stationId, currentStep, params, prediction, reason, observations, evidenceHistory, quizAnswer, quizSubmitted, transferInput, activityLogs]);
 
   // Handler Làm lại bài này từ đầu (Reset Progress)
   const handleResetProgress = () => {
@@ -858,6 +883,7 @@ export default function MathStepWorkbench({
     setReason("");
     setObservations([]);
     setEvidenceHistory([]);
+    setActivityLogs([]);
     setQuizAnswer(null);
     setQuizSubmitted(false);
     setTransferInput("");
@@ -1667,21 +1693,38 @@ export default function MathStepWorkbench({
           ctx.lineWidth = 2;
           ctx.stroke();
         } else if (moduleId === "probability") {
+          // Thematic: Bàn thực nghiệm Matte Slate Tabletop (#1e293b)
+          ctx.save();
+          ctx.fillStyle = "#1e293b"; // Matte Slate Tabletop
+          ctx.fillRect(0, 0, W, H);
+
+          // Khung viền nỉ bàn thực nghiệm
+          ctx.strokeStyle = "#334155";
+          ctx.lineWidth = 3;
+          ctx.strokeRect(12, 12, W - 24, H - 24);
+
+          // Tiêu đề bàn thực nghiệm
+          ctx.font = "bold 12px sans-serif";
+          ctx.fillStyle = "#38bdf8";
+          ctx.fillText("BÀN THỰC NGHIỆM XÁC SUẤT: PHÂN BỐ TẦN SUẤT XÚC XẮC 6 MẶT", 24, 34);
+
           // Dice frequency bars
           const counts = [4, 5, 6, 5, 4, params.rolls ? Math.floor(params.rolls / 6) + 2 : 7];
           const total = counts.reduce((a, b) => a + b, 0);
-          ctx.font = "bold 11px sans-serif";
+          ctx.font = "bold 11px 'JetBrains Mono', monospace";
           for (let i = 0; i < 6; i++) {
             const freq = counts[i] / total;
             const barH = freq * 180;
             const bx = O[0] - 120 + i * 40;
             const by = O[1] - barH;
-            ctx.fillStyle = i === 5 ? "#087e7c" : "#94a3b8";
+            ctx.fillStyle = i === 5 ? "#10b981" : "#0284c7";
             ctx.fillRect(bx, by, 30, barH);
-            ctx.fillStyle = "#152f35";
+            ctx.fillStyle = "#f1f5f9";
             ctx.fillText(`${i + 1}`, bx + 10, O[1] + 16);
+            ctx.fillStyle = i === 5 ? "#34d399" : "#38bdf8";
             ctx.fillText(`${(freq * 100).toFixed(0)}%`, bx + 2, by - 6);
           }
+          ctx.restore();
         }
       }
 
@@ -1751,6 +1794,10 @@ export default function MathStepWorkbench({
       data: { prediction: prediction.trim() },
     };
     setEvidenceHistory((prev) => [record, ...prev]);
+    recordActivity({
+      type: "prediction",
+      details: `Dự đoán: "${prediction.trim()}"`,
+    });
     showToast("✓ Đã lưu vết dự đoán vào sổ khám phá!");
   };
 
@@ -1769,6 +1816,10 @@ export default function MathStepWorkbench({
       data: { params: { ...params } },
     };
     setEvidenceHistory((prev) => [record, ...prev]);
+    recordActivity({
+      type: "param_change",
+      details: `Ghi nhận số liệu: ${obs.summary}`,
+    });
     showToast(`✓ Đã lưu quan sát thứ ${observations.length + 1} vào bằng chứng!`);
   };
 
@@ -1785,6 +1836,10 @@ export default function MathStepWorkbench({
       data: { explanation: reason.trim() },
     };
     setEvidenceHistory((prev) => [record, ...prev]);
+    recordActivity({
+      type: "self_explain",
+      details: `Tự giải thích: "${reason.trim()}"`,
+    });
     showToast("✓ Đã lưu vết giải thích quy luật toán học!");
   };
 
@@ -1795,6 +1850,12 @@ export default function MathStepWorkbench({
     }
     setQuizSubmitted(true);
     const isCorrect = quizAnswer === QUIZ_DATA[moduleId].correctIdx;
+    recordActivity({
+      type: "independent_quiz",
+      details: isCorrect
+        ? `Rèn luyện độc lập: Đúng đáp án [${quizAnswer + 1}]`
+        : `Rèn luyện độc lập: Chọn sai phương án [${quizAnswer + 1}]`,
+    });
     if (isCorrect) {
       showToast("✓ Chính xác! Em đã hiểu đúng bản chất toán học.");
     } else {
@@ -1811,6 +1872,12 @@ export default function MathStepWorkbench({
     }
     const result = verifyAnswer(currentProblem.answer, transferInput);
     setTransferVerification(result);
+    recordActivity({
+      type: "self_explain",
+      details: result.correct
+        ? `MiniCAS kiểm chứng đúng: ${transferInput.trim()}`
+        : `MiniCAS phát hiện chưa đúng: ${transferInput.trim()}`,
+    });
     if (result.correct) {
       const record: EvidenceRecord = {
         stepId: 7,
@@ -2035,13 +2102,34 @@ export default function MathStepWorkbench({
             <span className="hidden sm:inline">Làm lại từ đầu</span>
           </button>
 
-          {/* Quick Indicator if Teacher Mode is on */}
-          {isTeacherMode && (
-            <span className="px-2 py-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold flex items-center gap-1">
-              <GraduationCap className="w-3.5 h-3.5 text-amber-800" />
-              <span className="hidden sm:inline">Chế độ dạy: BẬT</span>
-            </span>
-          )}
+          {/* Nút gạt Header: [Chế độ Trình chiếu (GV)] ↔ [Chế độ Thực hành (HS)] */}
+          <button
+            type="button"
+            onClick={() => {
+              setIsTeacherMode((prev) => {
+                const next = !prev;
+                if (next) {
+                  setShowLeftPanel(false);
+                  setShowRightPanel(false);
+                  showToast("Đã bật Chế độ Trình chiếu (GV): Phóng to 1.5x, toàn màn hình Canvas, thanh công cụ giảng dạy.");
+                } else {
+                  setShowLeftPanel(true);
+                  setShowRightPanel(true);
+                  showToast("Đã chuyển sang Chế độ Thực hành (HS): 8 bước nhận thức chuẩn, thử nghiệm và khám phá.");
+                }
+                return next;
+              });
+            }}
+            title={isTeacherMode ? "Đang ở Chế độ Giáo viên. Nhấp để chuyển về Chế độ Học sinh" : "Đang ở Chế độ Học sinh. Nhấp để chuyển sang Chế độ Giáo viên"}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 shadow-sm transition-all ${
+              isTeacherMode
+                ? "bg-amber-500 text-slate-950 border-amber-600 shadow-md ring-2 ring-amber-400/40"
+                : "bg-white border-[#d9e4e2] text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <GraduationCap className={`w-4 h-4 ${isTeacherMode ? "text-slate-950" : "text-amber-600"}`} />
+            <span>{isTeacherMode ? "Chế độ Trình chiếu (GV)" : "Chế độ Thực hành (HS)"}</span>
+          </button>
 
           {/* 3-Dots More Options Menu */}
           <div className="relative">
@@ -2989,6 +3077,13 @@ export default function MathStepWorkbench({
                 onApexHeightChange={(h) => updateParam("h", h)}
                 orthogonalView={orthogonalView}
                 onToggleOrthogonalView={() => setOrthogonalView((v) => !v)}
+                isTeacherMode={isTeacherMode}
+                onVertexManipulated={(log) => {
+                  recordActivity({
+                    type: "vertex_drag",
+                    details: `Kéo đỉnh ${log.vertex} đến (${formatVNFloat(log.newPos.x)}; ${formatVNFloat(log.newPos.y)}; ${formatVNFloat(log.newPos.z)})`,
+                  });
+                }}
               />
             ) : moduleId === "linear_programming" ? (
               <Interactive2DMathCanvas

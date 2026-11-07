@@ -138,7 +138,45 @@ export default function TrigonometricCircleCanvas({
     const ox = w / 2 + pan.x;
     const oy = h / 2 + pan.y;
 
-    // 1. Vẽ Lưới tọa độ phụ (Grid) nếu bật
+    // 0. Thematic Background: Thiên văn & Radar Lượng giác (Cosmic Deep Space Radar)
+    const bgGrad = ctx.createRadialGradient(ox, oy, 15, ox, oy, Math.max(w, h) * 0.85);
+    bgGrad.addColorStop(0, "#0b162f"); // Cosmic core
+    bgGrad.addColorStop(0.5, "#070d1e");
+    bgGrad.addColorStop(1, "#02050c"); // Deep outer space
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, w, h);
+
+    // 1. Quỹ đạo thiên văn đồng tâm (Astronomical Concentric Orbits: 0.5R, 1.5R, 2.0R)
+    [0.5, 1.5, 2.0].forEach((ratio) => {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(ox, oy, R * ratio, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.12)"; // Sky-400 mờ
+      ctx.setLineDash([3, 5]);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Nhãn khoảng cách radar
+      ctx.font = "9px 'JetBrains Mono', monospace";
+      ctx.fillStyle = "rgba(148, 163, 184, 0.45)";
+      ctx.fillText(`${ratio}R`, ox + R * ratio - 10, oy - 4);
+      ctx.restore();
+    });
+
+    // Các nan quạt góc đặc biệt (Celestial Angle Rays)
+    [30, 45, 60, 120, 135, 150, 210, 225, 240, 300, 315, 330].forEach((ang) => {
+      const radA = (ang * Math.PI) / 180;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(ox, oy);
+      ctx.lineTo(ox + R * 1.6 * Math.cos(radA), oy - R * 1.6 * Math.sin(radA));
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.08)";
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    // 2. Vẽ Lưới tọa độ phụ (Grid) nếu bật
     if (showGrid) {
       ctx.strokeStyle = "#1e293b";
       ctx.lineWidth = 1;
