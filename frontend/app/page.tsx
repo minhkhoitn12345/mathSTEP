@@ -7,7 +7,11 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import MathGraphVisualizer from "./components/MathGraphVisualizer";
 import MathStepWorkbench from "./components/MathStepWorkbench";
+import TeacherDashboard from "./components/TeacherDashboard";
+import ResearchMethodologyHub from "./components/ResearchMethodologyHub";
 import { generateSmartSocraticResponse } from "./lib/smartSocratic";
+
+type SubsystemId = "student" | "teacher" | "research";
 
 type ModuleId =
   | "linear_programming"
@@ -195,6 +199,7 @@ function ModuleIcon({ id }: { id: ModuleId }) {
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
+  const [subsystem, setSubsystem] = useState<SubsystemId>("student");
   const [moduleId, setModuleId] = useState<ModuleId>("linear_programming");
   const [stationId, setStationId] = useState<string>("10.03");
   const [stage, setStage] = useState<StageId>("explore");
@@ -537,14 +542,74 @@ export default function Home() {
 
   return (
     <main className="app-shell">
-      <header className="topbar">
+      <header className="topbar flex flex-wrap items-center justify-between gap-3">
         <Link className="brand" href="/" aria-label="MathSTEP trang chủ"><span className="brand-mark">m</span><span>math<span className="brand-accent">step</span></span></Link>
-        <div className="topbar-center"><span className="status-dot" /> {sessionLoading ? "Đang đồng bộ..." : "HỌC THEO CÁCH CỦA EM"}</div>
-        {session?.authenticated ? <div className="user-menu"><span className="user-avatar">{(session.name ?? session.email ?? "M").slice(0, 1).toUpperCase()}</span><span className="user-name">{session.name ?? session.email}</span><button className="quiet-button" onClick={() => void logout()}>Thoát</button></div> : demoMode ? <div className="guest-session-tools"><span className="demo-badge">Mô phỏng 2D/3D & AR</span><button className="quiet-button" onClick={() => setAuthModalOpen(true)}>Đăng nhập</button></div> : <div className="topbar-note">Bạn đồng hành Toán THPT</div>}
+        
+        {/* THANH CHUYỂN ĐỔI 3 PHÂN HỆ KHKT */}
+        <nav className="flex items-center gap-1 bg-[#eff6f3] p-1 rounded-2xl border border-[#cbe2d9] shadow-xs">
+          <button
+            type="button"
+            onClick={() => setSubsystem("student")}
+            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
+              subsystem === "student"
+                ? "bg-[#087e7c] text-white shadow-sm"
+                : "text-gray-700 hover:text-black hover:bg-white/80"
+            }`}
+          >
+            <span>🎓</span>
+            <span>Học sinh</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSubsystem("teacher")}
+            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
+              subsystem === "teacher"
+                ? "bg-[#087e7c] text-white shadow-sm"
+                : "text-gray-700 hover:text-black hover:bg-white/80"
+            }`}
+          >
+            <span>👨‍🏫</span>
+            <span>Giáo viên</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSubsystem("research")}
+            className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
+              subsystem === "research"
+                ? "bg-[#087e7c] text-white shadow-sm"
+                : "text-gray-700 hover:text-black hover:bg-white/80"
+            }`}
+          >
+            <span>🔬</span>
+            <span>Cơ sở KHKT</span>
+          </button>
+        </nav>
+        {sessionLoading ? <div className="text-[10px] text-gray-400 font-medium">Đang đồng bộ...</div> : session?.authenticated ? <div className="user-menu"><span className="user-avatar">{(session.name ?? session.email ?? "M").slice(0, 1).toUpperCase()}</span><span className="user-name">{session.name ?? session.email}</span><button className="quiet-button" onClick={() => void logout()}>Thoát</button></div> : demoMode ? <div className="guest-session-tools"><span className="demo-badge">Mô phỏng 2D/3D & AR</span><button className="quiet-button" onClick={() => setAuthModalOpen(true)}>Đăng nhập</button></div> : <div className="topbar-note">Bạn đồng hành Toán THPT</div>}
         {session?.authenticated && <button className="quiet-button account-open-button" type="button" onClick={() => void openAccount()}>Tài khoản của tôi</button>}
       </header>
 
-      <section className="workspace" id="home">
+      {subsystem === "teacher" && (
+        <section className="flex-1 overflow-y-auto bg-[#f8faf9] p-3 md:p-6">
+          <TeacherDashboard
+            onLaunchStation={(stId) => {
+              setStationId(stId);
+              const matched = modules.find((m) => DEFAULT_STATION_MAP[m.id] === stId);
+              if (matched) setModuleId(matched.id);
+              setSubsystem("student");
+            }}
+            onOpenWorkbench={() => setSubsystem("student")}
+          />
+        </section>
+      )}
+
+      {subsystem === "research" && (
+        <section className="flex-1 overflow-y-auto bg-[#f8faf9] p-3 md:p-6">
+          <ResearchMethodologyHub />
+        </section>
+      )}
+
+      {subsystem === "student" && (
+        <section className="workspace" id="home">
         {mobileDrawerOpen && <button className="mobile-drawer-backdrop" type="button" aria-label="Đóng danh mục học" onClick={() => setMobileDrawerOpen(false)}/>}
         <aside className={`left-rail ${sidebarOpen ? "open" : "collapsed"} ${mobileDrawerOpen ? "mobile-open" : ""}`}>
           <div className="sidebar-actions">
@@ -736,6 +801,29 @@ export default function Home() {
 
               {/* Composer */}
               <div className="p-2.5 border-t border-[#e5ebe4] bg-[#fbfcf8]">
+                <div className="flex items-center justify-between mb-1.5 text-[10px]">
+                  <span className="text-gray-400">Trợ lý Socratic gợi mở</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const userMsg: ChatMessage = {
+                        id: crypto.randomUUID(),
+                        role: "user",
+                        content: "Em muốn tự thử tiếp, không cần gợi ý thêm.",
+                      };
+                      const botReply: ChatMessage = {
+                        id: crypto.randomUUID(),
+                        role: "assistant",
+                        content: "Rất hoan nghênh tinh thần tự lực của em! 🌟 Em hãy tiếp tục thao tác trên mô phỏng hoặc nháp trên giấy nhé. Bất kỳ lúc nào cần đối chiếu, em cứ nhắn cho thầy.",
+                        intent: "reflect",
+                      };
+                      setMessages((prev) => [...prev, userMsg, botReply]);
+                    }}
+                    className="text-[#087e7c] hover:underline font-bold flex items-center gap-1"
+                  >
+                    <span>🌱</span> Em muốn tự thử tiếp
+                  </button>
+                </div>
                 {error && <div className="text-[10px] text-red-600 mb-1">{error}</div>}
                 <form
                   onSubmit={(e) => {
@@ -776,6 +864,7 @@ export default function Home() {
           )}
         </div>
       </section>
+      )}
       <footer className="page-footer"><span>© MathSTEP</span><span>Học bằng cách khám phá <i>✳</i></span><span>Toán THPT · Việt Nam</span></footer>
       {visualizerOpen && (
         <MathGraphVisualizer

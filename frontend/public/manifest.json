@@ -1,0 +1,17 @@
+{
+  "name": "MathSTEP - Học liệu số Toán học THPT 3D/AR & Socratic AI",
+  "short_name": "MathSTEP",
+  "description": "Nền tảng học liệu số tương tác Toán học THPT 2D/3D & AR tích hợp Trợ lý Socratic AI và chuẩn sư phạm KHKT",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f3f6f5",
+  "theme_color": "#087e7c",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

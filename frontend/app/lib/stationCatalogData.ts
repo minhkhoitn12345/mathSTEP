@@ -585,3 +585,7 @@ export function filterStations(
 export function getStationById(id: string): StationItem | undefined {
   return STATION_CATALOG.find((s) => s.id === id);
 }
+
+export function getAllStations(): StationItem[] {
+  return STATION_CATALOG;
+}

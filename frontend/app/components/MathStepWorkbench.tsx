@@ -5,6 +5,7 @@ import { verifyAnswer } from "../lib/miniCas";
 import StationCatalogModal from "./StationCatalogModal";
 import WorksheetPrintModal from "./WorksheetPrintModal";
 import { StationItem, getStationById } from "../lib/stationCatalogData";
+import { generateIsomorphicIntegerProblem, IntegerProblem } from "../lib/integerVertexGenerator";
 
 export type ModuleId =
   | "linear_programming"
@@ -47,14 +48,16 @@ interface MathStepWorkbenchProps {
 }
 
 // 7 Bước sư phạm chuẩn theo nghiên cứu giáo dục toán học & file index (2).html
+// 8 Bước nhận thức chuẩn KHKT & Giáo dục toán học (Ainsworth DeFT, Alfieri, Chi, Duval, Newman)
 const STEP_NAMES = [
-  "Khởi động",
+  "Nhìn thấy",
   "Dự đoán",
   "Thao tác",
+  "Khám phá & Lỗi",
   "Kiểm chứng",
-  "Đúc kết",
-  "Kiểm tra",
-  "Vận dụng",
+  "Giải thích",
+  "Chuyển giao",
+  "Rèn luyện độc lập",
 ];
 
 const MODULE_META: Record<
@@ -541,6 +544,20 @@ export default function MathStepWorkbench({
   const [showIntegerPoints, setShowIntegerPoints] = useState<boolean>(false);
   const [solidType, setSolidType] = useState<"pyramid" | "prism" | "frustum">("pyramid");
 
+  // SGK KNTT & KHKT Strategy Features
+  const [invertFilling, setInvertFilling] = useState<boolean>(false); // false = Chuẩn SGK KNTT (gạch sọc miền sai, giữ trắng miền đúng); true = Chuẩn GeoGebra quốc tế
+  const [counterExampleActive, setCounterExampleActive] = useState<boolean>(false); // Phản ví dụ trực quan ghim chấm đỏ P(1; 0)
+  const [isUnfolded, setIsUnfolded] = useState<boolean>(false); // Khai triển phẳng ↔ Gấp khối 3D
+  const [fadingAnswers, setFadingAnswers] = useState({
+    step1: "",
+    step2: "",
+    step3: "",
+    step4: "",
+  });
+  const [fadingSubmitted, setFadingSubmitted] = useState<boolean>(false);
+  const [fadingScore, setFadingScore] = useState<{ score: number; maxScore: number; feedback: string } | null>(null);
+  const [activeIntegerProblem, setActiveIntegerProblem] = useState<IntegerProblem | null>(null);
+
   // AR Settings
   const [arTilt, setArTilt] = useState<number>(35);
   const [arScale, setArScale] = useState<number>(1.0);
@@ -788,53 +805,116 @@ export default function MathStepWorkbench({
             [-2, 2, 0],
           ];
 
-          // Base polygon shading
           const bProj = base.map(project3D);
-          ctx.beginPath();
-          bProj.forEach((p, i) => (i === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1])));
-          ctx.closePath();
-          ctx.fillStyle = "#5cae9d55";
-          ctx.fill();
-          ctx.strokeStyle = "#16827d";
-          ctx.lineWidth = 2;
-          ctx.stroke();
 
-          // Faces to apex
-          const SProj = project3D(apex);
-          bProj.forEach((p, i) => {
-            const next = bProj[(i + 1) % 4];
+          if (isUnfolded) {
+            // Khai triển phẳng 2D trên mặt phẳng Oxy (Unfolded Net)
             ctx.beginPath();
-            ctx.moveTo(p[0], p[1]);
-            ctx.lineTo(next[0], next[1]);
-            ctx.lineTo(SProj[0], SProj[1]);
+            bProj.forEach((p, i) => (i === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1])));
             ctx.closePath();
-            ctx.fillStyle = i % 2 === 0 ? "#14b8a644" : "#0d948833";
+            ctx.fillStyle = "#5cae9d55";
             ctx.fill();
-            ctx.strokeStyle = "#0f766e";
+            ctx.strokeStyle = "#16827d";
+            ctx.lineWidth = 2.5;
             ctx.stroke();
-          });
 
-          // Altitude SA (Red dashed line)
-          const footProj = project3D([params.x || 0, 0, 0]);
-          ctx.beginPath();
-          ctx.setLineDash([5, 4]);
-          ctx.strokeStyle = "#dc2626";
-          ctx.lineWidth = 2.5;
-          ctx.moveTo(SProj[0], SProj[1]);
-          ctx.lineTo(footProj[0], footProj[1]);
-          ctx.stroke();
-          ctx.setLineDash([]);
+            // 4 mặt tam giác mở phẳng xòe ra ngoài đáy
+            const slantH = Math.sqrt(h * h + 4);
+            const unfoldedApexes: [number, number, number][] = [
+              [0, -2 - slantH, 0],
+              [2 + slantH, 0, 0],
+              [0, 2 + slantH, 0],
+              [-2 - slantH, 0, 0],
+            ];
 
-          // Apex handle (Yellow dot)
-          ctx.beginPath();
-          ctx.arc(SProj[0], SProj[1], 7, 0, Math.PI * 2);
-          ctx.fillStyle = "#dcaa44";
-          ctx.fill();
-          ctx.strokeStyle = "#fff";
-          ctx.lineWidth = 2;
-          ctx.stroke();
-          ctx.fillStyle = "#152f35";
-          ctx.fillText("S", SProj[0] + 10, SProj[1] - 5);
+            unfoldedApexes.forEach((ap, i) => {
+              const pA = bProj[i];
+              const pB = bProj[(i + 1) % 4];
+              const pS = project3D(ap);
+
+              ctx.beginPath();
+              ctx.moveTo(pA[0], pA[1]);
+              ctx.lineTo(pB[0], pB[1]);
+              ctx.lineTo(pS[0], pS[1]);
+              ctx.closePath();
+              ctx.fillStyle = i % 2 === 0 ? "#14b8a633" : "#0d948822";
+              ctx.fill();
+              ctx.strokeStyle = "#087e7c";
+              ctx.lineWidth = 1.8;
+              ctx.stroke();
+
+              // Nếp gấp nét đứt
+              ctx.setLineDash([4, 4]);
+              ctx.strokeStyle = "#64748b";
+              ctx.beginPath();
+              ctx.moveTo(pA[0], pA[1]);
+              ctx.lineTo(pB[0], pB[1]);
+              ctx.stroke();
+              ctx.setLineDash([]);
+
+              // Điểm đỉnh
+              ctx.beginPath();
+              ctx.arc(pS[0], pS[1], 5, 0, Math.PI * 2);
+              ctx.fillStyle = "#dcaa44";
+              ctx.fill();
+              ctx.strokeStyle = "#fff";
+              ctx.stroke();
+              ctx.fillStyle = "#087e7c";
+              ctx.font = "bold 10px sans-serif";
+              ctx.fillText(`S${i + 1}`, pS[0] + 6, pS[1] - 4);
+            });
+
+            ctx.fillStyle = "#0f766e";
+            ctx.font = "bold 11px sans-serif";
+            ctx.fillText("📂 Bản khai triển phẳng 2D: 4 mặt bên mở xòe trên mặt phẳng đáy", 15, 25);
+          } else {
+            // Khối chóp 3D gập hoàn chỉnh
+            ctx.beginPath();
+            bProj.forEach((p, i) => (i === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1])));
+            ctx.closePath();
+            ctx.fillStyle = "#5cae9d55";
+            ctx.fill();
+            ctx.strokeStyle = "#16827d";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Faces to apex
+            const SProj = project3D(apex);
+            bProj.forEach((p, i) => {
+              const next = bProj[(i + 1) % 4];
+              ctx.beginPath();
+              ctx.moveTo(p[0], p[1]);
+              ctx.lineTo(next[0], next[1]);
+              ctx.lineTo(SProj[0], SProj[1]);
+              ctx.closePath();
+              ctx.fillStyle = i % 2 === 0 ? "#14b8a644" : "#0d948833";
+              ctx.fill();
+              ctx.strokeStyle = "#0f766e";
+              ctx.stroke();
+            });
+
+            // Altitude SA (Red dashed line)
+            const footProj = project3D([params.x || 0, 0, 0]);
+            ctx.beginPath();
+            ctx.setLineDash([5, 4]);
+            ctx.strokeStyle = "#dc2626";
+            ctx.lineWidth = 2.5;
+            ctx.moveTo(SProj[0], SProj[1]);
+            ctx.lineTo(footProj[0], footProj[1]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Apex handle (Yellow dot)
+            ctx.beginPath();
+            ctx.arc(SProj[0], SProj[1], 7, 0, Math.PI * 2);
+            ctx.fillStyle = "#dcaa44";
+            ctx.fill();
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.fillStyle = "#152f35";
+            ctx.fillText("S", SProj[0] + 10, SProj[1] - 5);
+          }
         } else if (moduleId === "conics_and_solids") {
           // Double cone wireframe
           ctx.strokeStyle = "#0d948888";
@@ -1057,33 +1137,149 @@ export default function MathStepWorkbench({
           ctx.font = "bold 11px sans-serif";
           ctx.fillText(`Đỉnh I(${h}; ${kVal})`, sI[0] + 8, sI[1] + 16);
         } else if (moduleId === "linear_programming") {
-          // Shaded Feasible Polygon
           const lp = solveLP(constraints, params.u || 3, params.v || 2);
-          if (lp.feasible && lp.poly.length > 2) {
-            ctx.beginPath();
-            lp.poly.forEach((pt, i) => {
-              const s = w2s(pt[0], pt[1]);
-              if (i === 0) ctx.moveTo(s[0], s[1]);
-              else ctx.lineTo(s[0], s[1]);
-            });
-            ctx.closePath();
-            ctx.fillStyle = "#20a38844";
-            ctx.fill();
-            ctx.strokeStyle = "#087e7c";
-            ctx.lineWidth = 2;
-            ctx.stroke();
 
-            // Polygon Vertices
+          // Chuẩn SGK KNTT Toán 10 vs GeoGebra Quốc tế
+          if (!invertFilling) {
+            // SGK KNTT: Gạch sọc phần không thỏa mãn (Hatching non-feasible regions), giữ trắng miền nghiệm
+            ctx.save();
+            ctx.strokeStyle = "#94a3b838";
+            ctx.lineWidth = 1.2;
+            const stepHatch = 14;
+            for (let d = -H; d < W + H; d += stepHatch) {
+              ctx.beginPath();
+              ctx.moveTo(d, 0);
+              ctx.lineTo(d + H, H);
+              ctx.stroke();
+            }
+
+            // Giữ trắng miền nghiệm thỏa mãn
+            if (lp.feasible && lp.poly.length > 2) {
+              ctx.beginPath();
+              lp.poly.forEach((pt, i) => {
+                const s = w2s(pt[0], pt[1]);
+                if (i === 0) ctx.moveTo(s[0], s[1]);
+                else ctx.lineTo(s[0], s[1]);
+              });
+              ctx.closePath();
+              ctx.fillStyle = "#ffffff";
+              ctx.fill();
+              ctx.strokeStyle = "#087e7c";
+              ctx.lineWidth = 2.5;
+              ctx.stroke();
+            }
+            ctx.restore();
+          } else {
+            // GeoGebra Quốc tế: Tô màu miền nghiệm thỏa mãn
+            if (lp.feasible && lp.poly.length > 2) {
+              ctx.beginPath();
+              lp.poly.forEach((pt, i) => {
+                const s = w2s(pt[0], pt[1]);
+                if (i === 0) ctx.moveTo(s[0], s[1]);
+                else ctx.lineTo(s[0], s[1]);
+              });
+              ctx.closePath();
+              ctx.fillStyle = "#20a38844";
+              ctx.fill();
+              ctx.strokeStyle = "#087e7c";
+              ctx.lineWidth = 2;
+              ctx.stroke();
+            }
+          }
+
+          // Vẽ đường biên: Nét liền (≤, ≥) và Nét đứt (<, >)
+          constraints.forEach((c) => {
+            const isStrict = c.op === "<" || c.op === ">";
+            ctx.beginPath();
+            if (isStrict) {
+              ctx.setLineDash([6, 6]);
+            } else {
+              ctx.setLineDash([]);
+            }
+            ctx.strokeStyle = "#334155";
+            ctx.lineWidth = isStrict ? 1.5 : 2;
+
+            if (c.b !== 0) {
+              const p1 = w2s(xMin, (c.c - c.a * xMin) / c.b);
+              const p2 = w2s(xMax, (c.c - c.a * xMax) / c.b);
+              ctx.moveTo(p1[0], p1[1]);
+              ctx.lineTo(p2[0], p2[1]);
+            } else if (c.a !== 0) {
+              const xVal = c.c / c.a;
+              const p1 = w2s(xVal, yMin);
+              const p2 = w2s(xVal, yMax);
+              ctx.moveTo(p1[0], p1[1]);
+              ctx.lineTo(p2[0], p2[1]);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+          });
+
+          // Tọa độ các đỉnh của miền nghiệm
+          if (lp.feasible) {
             lp.vertices.forEach((v) => {
               const sp = w2s(v[0], v[1]);
               ctx.beginPath();
               ctx.arc(sp[0], sp[1], 5, 0, Math.PI * 2);
               ctx.fillStyle = "#087e7c";
               ctx.fill();
+              ctx.strokeStyle = "#ffffff";
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
               ctx.fillStyle = "#152f35";
               ctx.font = "bold 10px sans-serif";
               ctx.fillText(`(${v[0]}; ${v[1]})`, sp[0] + 6, sp[1] - 6);
             });
+          }
+
+          // Phản ví dụ trực quan (Visual Counter-Example Generator)
+          if (counterExampleActive || currentStep === 3 || currentStep === 4) {
+            const pX = 1;
+            const pY = 0;
+            const spP = w2s(pX, pY);
+
+            // Chấm đỏ P(1; 0)
+            ctx.beginPath();
+            ctx.arc(spP[0], spP[1], 8, 0, Math.PI * 2);
+            ctx.fillStyle = "#dc2626";
+            ctx.fill();
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Vòng tròn xung quanh
+            ctx.beginPath();
+            ctx.arc(spP[0], spP[1], 14, 0, Math.PI * 2);
+            ctx.strokeStyle = "#dc262688";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Khung badge phép tính mâu thuẫn
+            const badgeW = 210;
+            const badgeH = 46;
+            const bx = Math.min(W - badgeW - 10, Math.max(10, spP[0] + 16));
+            const by = Math.max(10, spP[1] - 25);
+
+            ctx.fillStyle = "#fff1f2";
+            ctx.strokeStyle = "#f43f5e";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.roundRect(bx, by, badgeW, badgeH, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(spP[0], spP[1]);
+            ctx.lineTo(bx, by + badgeH / 2);
+            ctx.strokeStyle = "#f43f5e";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.fillStyle = "#9f1239";
+            ctx.font = "bold 10px sans-serif";
+            ctx.fillText("⚠️ Phản ví dụ trực quan:", bx + 8, by + 16);
+            ctx.font = "bold 10px sans-serif";
+            ctx.fillText("P(1; 0) ∉ Miền: -1 + 2(0) = -1 > 4 (Sai!)", bx + 8, by + 34);
           }
 
           // Integer Lattice Points (Lưới nguyên)
@@ -1237,7 +1433,7 @@ export default function MathStepWorkbench({
 
     render();
     return () => cancelAnimationFrame(animId);
-  }, [moduleId, stationId, meta.is3D, camera, params, constraints, showIntegerPoints]);
+  }, [moduleId, stationId, meta.is3D, camera, params, constraints, showIntegerPoints, invertFilling, counterExampleActive, isUnfolded, currentStep]);
 
   // Pointer Dragging Interaction
   const pointerRef = useRef<{ x: number; y: number; dragging: boolean }>({
@@ -1454,12 +1650,12 @@ export default function MathStepWorkbench({
   };
 
   const handleNextStep = () => {
-    if (currentStep < 6) {
+    if (currentStep < 7) {
       const next = currentStep + 1;
       setCurrentStep(next);
       if (onStepChange) onStepChange(next + 1, STEP_NAMES[next]);
     } else {
-      showToast("🎉 Chúc mừng em đã hoàn thành toàn bộ 7 bước trạm học!");
+      showToast("🎉 Chúc mừng em đã hoàn thành toàn bộ 8 bước chu trình nhận thức!");
     }
   };
 
@@ -1666,6 +1862,7 @@ export default function MathStepWorkbench({
           </div>
 
           {/* Nội dung từng bước */}
+          {/* BƯỚC 1: NHÌN THẤY (OBSERVE) */}
           {currentStep === 0 && (
             <div className="space-y-2.5">
               <p className="text-[11px] text-[#63777c] leading-relaxed">{meta.simulation}</p>
@@ -1674,11 +1871,19 @@ export default function MathStepWorkbench({
                 <p className="mt-1 text-[#152f35]">{meta.goal}</p>
               </div>
               <p className="text-[10px] text-[#63777c]">
-                Căn cứ SGK: {meta.source}. Mô hình số minh họa; hãy đi từng bước để lưu đủ bằng chứng.
+                Căn cứ SGK: {meta.source}. Quan sát trực quan mô hình và xác định các yếu tố xuất hiện trên hình vẽ trước khi dự đoán.
               </p>
+              <button
+                type="button"
+                onClick={handleNextStep}
+                className="w-full py-2 bg-[#087e7c] text-white rounded-lg font-bold text-xs hover:bg-[#066563] transition-colors shadow-sm"
+              >
+                Em đã quan sát xong, chuyển sang Dự đoán →
+              </button>
             </div>
           )}
 
+          {/* BƯỚC 2: DỰ ĐOÁN (PREDICT) */}
           {currentStep === 1 && (
             <div className="space-y-2">
               <label className="font-bold text-[11px] text-[#152f35]">
@@ -1737,58 +1942,148 @@ export default function MathStepWorkbench({
             </div>
           )}
 
+          {/* BƯỚC 3: THAO TÁC (MANIPULATE) */}
           {currentStep === 2 && (
             <div className="space-y-2.5">
               <div className="p-2.5 rounded-lg bg-[#eff8f4] border-l-4 border-[#087e7c] text-[11px]">
-                <strong>Thao tác mô phỏng</strong>
+                <strong>Thao tác tương tác mô phỏng</strong>
                 <p className="mt-1">
-                  Kéo điểm màu vàng trên khung vẽ hoặc dùng thanh trượt ở cột bên phải để quan sát sự thay đổi.
+                  Kéo điểm màu vàng trên khung vẽ hoặc dùng thanh trượt ở cột bên phải để thử các giá trị khác nhau.
                 </p>
               </div>
               <div className="text-center py-2 bg-[#f3f6f5] rounded-lg border border-[#d9e4e2]">
                 <span className="text-lg font-bold text-[#087e7c] block">{manipulations}</span>
                 <span className="text-[10px] text-[#63777c]">lượt thao tác đã ghi nhận</span>
               </div>
+              <p className="text-[10px] text-gray-500 italic">
+                💡 Lời khuyên: Hãy thử ít nhất 3 cấu hình khác nhau trước khi ghi nhận quan sát.
+              </p>
             </div>
           )}
 
+          {/* BƯỚC 4: KHÁM PHÁ & PHÁT HIỆN LỖI (ERROR DETECTION & MISCONCEPTION) */}
           {currentStep === 3 && (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <button
                 onClick={handleRecordObservation}
                 className="w-full py-2 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563] transition-colors shadow-sm"
               >
-                Ghi cấu hình đang thấy
+                📌 Ghi cấu hình đang thấy ({observations.length} đã lưu)
               </button>
-              <div className="text-[11px] font-bold text-[#63777c] mt-2">
-                {observations.length} quan sát đã lưu:
+
+              <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                  <span>⚠️</span>
+                  <span>Cảnh báo mã lỗi tư duy thường gặp:</span>
+                </div>
+                <p className="text-amber-800 text-[10px] leading-relaxed">
+                  {moduleId === "linear_programming"
+                    ? "Lỗi M1 & M2: Quên đổi chiều BPT khi nhân số âm; hoặc lấy nghiệm thập phân trong bài toán yêu cầu biến nguyên x, y ∈ ℕ*."
+                    : moduleId === "spatial_geometry"
+                    ? "Lỗi G1 & G2: Ngộ nhận 2 đường thẳng chéo nhau là cắt nhau; hoặc vẽ sai nét liền cho cạnh bị khuất."
+                    : moduleId === "trigonometry"
+                    ? "Lỗi T1: Nhầm dấu của cos và sin khi góc tù nằm ở góc phần tư thứ II."
+                    : "Lỗi nhận thức: Không kiểm tra điều kiện cần và đủ của bài toán."}
+                </p>
               </div>
-              <div className="space-y-1.5 max-h-36 overflow-y-auto">
-                {observations.length === 0 ? (
-                  <p className="text-[10px] text-[#63777c] italic">Chưa ghi cấu hình nào.</p>
-                ) : (
-                  observations.map((obs, idx) => (
-                    <div
+
+              <div className="space-y-1 max-h-28 overflow-y-auto">
+                {observations.map((obs, idx) => (
+                  <div key={idx} className="p-1.5 bg-[#eef7f3] rounded border border-[#d9e4e2] text-[10px]">
+                    <span className="font-mono text-[#087e7c] font-bold">[{obs.at}]</span> {obs.summary}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* BƯỚC 5: KIỂM CHỨNG (VERIFY & VISUAL COUNTER-EXAMPLE) */}
+          {currentStep === 4 && (
+            <div className="space-y-2.5">
+              {/* Nút bật Phản ví dụ trực quan */}
+              <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-lg space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-[11px] text-rose-900">
+                    Phản ví dụ trực quan (Counter-Example)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCounterExampleActive((v) => !v);
+                      showToast(!counterExampleActive ? "Đã ghim chấm đỏ phản ví dụ P(1; 0) trên đồ thị!" : "Đã ẩn chấm phản ví dụ.");
+                    }}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${
+                      counterExampleActive
+                        ? "bg-rose-600 text-white border-rose-600"
+                        : "bg-white text-rose-700 border-rose-300 hover:bg-rose-50"
+                    }`}
+                  >
+                    {counterExampleActive ? "Bật: Chấm đỏ P" : "Ghim chấm đỏ P"}
+                  </button>
+                </div>
+                <p className="text-[10px] text-rose-800 leading-relaxed">
+                  Thay vì chỉ báo đúng/sai, hệ thống ghim điểm <strong className="font-mono text-rose-700">P(1; 0)</strong> lên miền sai để bộc lộ mâu thuẫn: -1 + 2(0) = -1 &gt; 4 (Sai!).
+                </p>
+              </div>
+
+              {/* Trắc nghiệm kiểm chứng toán học */}
+              <div className="space-y-2 pt-1">
+                <p className="font-bold text-[11px] text-[#152f35]">
+                  {QUIZ_DATA[moduleId].question}
+                </p>
+                <div className="space-y-1.5">
+                  {QUIZ_DATA[moduleId].options.map((opt, idx) => (
+                    <label
                       key={idx}
-                      className="p-1.5 bg-[#eef7f3] rounded border border-[#d9e4e2] text-[10px]"
+                      className={`flex items-start gap-2 p-2 rounded-lg border text-[11px] cursor-pointer transition-all ${
+                        quizAnswer === idx
+                          ? "bg-[#eaf7f2] border-[#087e7c] text-[#087e7c] font-semibold"
+                          : "bg-white border-[#bed0cd] text-[#152f35] hover:bg-[#f3f6f5]"
+                      }`}
                     >
-                      <span className="font-mono text-[#087e7c] font-bold">[{obs.at}]</span>{" "}
-                      {obs.summary}
-                    </div>
-                  ))
+                      <input
+                        type="radio"
+                        name="workbench-quiz"
+                        checked={quizAnswer === idx}
+                        onChange={() => setQuizAnswer(idx)}
+                        className="mt-0.5 accent-[#087e7c]"
+                      />
+                      <span>{opt}</span>
+                    </label>
+                  ))}
+                </div>
+                <button
+                  onClick={handleCheckQuiz}
+                  className="w-full py-1.5 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563] transition-colors"
+                >
+                  Kiểm tra câu trả lời
+                </button>
+                {quizSubmitted && (
+                  <div
+                    className={`p-2 rounded-lg text-[10px] leading-relaxed ${
+                      quizAnswer === QUIZ_DATA[moduleId].correctIdx
+                        ? "bg-[#edf6f3] text-[#087e7c] font-medium"
+                        : "bg-[#fff0ec] text-[#b23c48]"
+                    }`}
+                  >
+                    {quizAnswer === QUIZ_DATA[moduleId].correctIdx
+                      ? `✓ Đúng! ${QUIZ_DATA[moduleId].explanation}`
+                      : `Chưa đúng. Gợi ý: ${QUIZ_DATA[moduleId].explanation}`}
+                  </div>
                 )}
               </div>
             </div>
           )}
 
-          {currentStep === 4 && (
+          {/* BƯỚC 6: GIẢI THÍCH (SELF-EXPLANATION) */}
+          {currentStep === 5 && (
             <div className="space-y-2">
               <div className="p-2.5 rounded-lg bg-[#eff8f4] border-l-4 border-[#087e7c] text-[11px]">
                 <strong>Điều cần đúc kết</strong>
                 <p className="mt-1 text-[#152f35]">{meta.goal}</p>
               </div>
               <label className="font-bold text-[11px] text-[#152f35]">
-                Giải thích quy luật và điều kiện:
+                Giải thích quy luật và điều kiện (Self-explanation):
               </label>
               <textarea
                 value={reason}
@@ -1843,75 +2138,59 @@ export default function MathStepWorkbench({
             </div>
           )}
 
-          {currentStep === 5 && (
-            <div className="space-y-2">
-              <p className="font-bold text-[11px] text-[#152f35]">
-                {QUIZ_DATA[moduleId].question}
-              </p>
-              <div className="space-y-1.5">
-                {QUIZ_DATA[moduleId].options.map((opt, idx) => (
-                  <label
-                    key={idx}
-                    className={`flex items-start gap-2 p-2 rounded-lg border text-[11px] cursor-pointer transition-all ${
-                      quizAnswer === idx
-                        ? "bg-[#eaf7f2] border-[#087e7c] text-[#087e7c] font-semibold"
-                        : "bg-white border-[#bed0cd] text-[#152f35] hover:bg-[#f3f6f5]"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="workbench-quiz"
-                      checked={quizAnswer === idx}
-                      onChange={() => setQuizAnswer(idx)}
-                      className="mt-0.5 accent-[#087e7c]"
-                    />
-                    <span>{opt}</span>
-                  </label>
-                ))}
-              </div>
-              <button
-                onClick={handleCheckQuiz}
-                className="w-full py-1.5 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563] transition-colors mt-2"
-              >
-                Kiểm tra câu trả lời
-              </button>
-              {quizSubmitted && (
-                <div
-                  className={`p-2 rounded-lg text-[10px] leading-relaxed ${
-                    quizAnswer === QUIZ_DATA[moduleId].correctIdx
-                      ? "bg-[#edf6f3] text-[#087e7c] font-medium"
-                      : "bg-[#fff0ec] text-[#b23c48]"
-                  }`}
-                >
-                  {quizAnswer === QUIZ_DATA[moduleId].correctIdx
-                    ? `✓ Đúng! ${QUIZ_DATA[moduleId].explanation}`
-                    : `Chưa đúng. Gợi ý: ${QUIZ_DATA[moduleId].explanation}`}
-                </div>
-              )}
-            </div>
-          )}
-
+          {/* BƯỚC 7: CHUYỂN GIAO (TRANSFER & ISOMORPHIC INTEGER GENERATOR) */}
           {currentStep === 6 && (
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-[11px] text-[#152f35]">Bài toán vận dụng:</span>
-                <button
-                  type="button"
-                  onClick={handleNewProblem}
-                  className="px-2 py-1 rounded bg-[#f3f6f5] hover:bg-[#e2f1ec] text-[#087e7c] border border-[#d9e4e2] font-bold text-[10px] flex items-center gap-1 transition-colors"
-                  title="Sinh tham số bài toán mới để luyện tập"
-                >
-                  <span>🎲</span> Bài mới
-                </button>
+                <span className="font-bold text-[11px] text-[#152f35]">Bài toán chuyển giao:</span>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const iso = generateIsomorphicIntegerProblem();
+                      setActiveIntegerProblem(iso);
+                      setTransferInput("");
+                      setTransferVerification(null);
+                      showToast(`🎲 Đã tạo bài toán thực tế mới: ${iso.contextTitle}`);
+                    }}
+                    className="px-2 py-1 rounded bg-[#eff8f4] hover:bg-[#d6f0e6] text-[#087e7c] border border-[#a3e2cf] font-bold text-[10px] flex items-center gap-1 transition-colors"
+                    title="Sinh bài toán đồng cấu đỉnh nguyên ℤ²"
+                  >
+                    <span>🎲</span> Đỉnh nguyên ℤ²
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveIntegerProblem(null);
+                      handleNewProblem();
+                    }}
+                    className="px-2 py-1 rounded bg-[#f3f6f5] hover:bg-[#e2f1ec] text-[#087e7c] border border-[#d9e4e2] font-bold text-[10px] flex items-center gap-1 transition-colors"
+                    title="Sinh tham số bài toán mới"
+                  >
+                    <span>🔄</span> Đổi số
+                  </button>
+                </div>
               </div>
 
-              <div className="p-2.5 rounded-lg bg-[#f8faf9] border border-[#d9e4e2] text-[11px] leading-relaxed text-[#152f35]">
-                {currentProblem.prompt}
-              </div>
+              {activeIntegerProblem ? (
+                <div className="p-2.5 rounded-lg bg-[#eff8f4] border border-[#a3e2cf] text-[11px] leading-relaxed text-[#152f35] space-y-1.5">
+                  <div className="font-bold text-[#087e7c] flex items-center gap-1">
+                    <span>🌾</span> {activeIntegerProblem.contextTitle}
+                  </div>
+                  <p>{activeIntegerProblem.story}</p>
+                  <div className="p-1.5 bg-white/80 rounded border border-[#a3e2cf] text-[10px] font-mono text-gray-700">
+                    Mục tiêu: {activeIntegerProblem.objective.label}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-2.5 rounded-lg bg-[#f8faf9] border border-[#d9e4e2] text-[11px] leading-relaxed text-[#152f35]">
+                  {currentProblem.prompt}
+                </div>
+              )}
 
               <div>
                 <label className="block text-[10px] text-gray-500 mb-1 font-medium">
-                  Nhập số nguyên, số thập phân hoặc phân số (ví dụ: 13, 0.5 hoặc 1/2):
+                  Nhập số nguyên, số thập phân hoặc phân số (ví dụ: 84, 13, 0.5):
                 </label>
                 <div className="flex gap-1.5">
                   <input
@@ -1919,35 +2198,49 @@ export default function MathStepWorkbench({
                     value={transferInput}
                     onChange={(e) => setTransferInput(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") handleCheckTransfer();
+                      if (e.key === "Enter") {
+                        if (activeIntegerProblem) {
+                          const val = parseFloat(transferInput.trim());
+                          const isOk = Math.abs(val - activeIntegerProblem.optimalValue) < 1e-4;
+                          setTransferVerification({
+                            correct: isOk,
+                            enteredNum: val,
+                            expectedNum: activeIntegerProblem.optimalValue,
+                            message: isOk
+                              ? `Chính xác! ${activeIntegerProblem.explanation}`
+                              : `Chưa đúng. Giá trị tối ưu kỳ vọng là ${activeIntegerProblem.optimalValue}.`,
+                          });
+                        } else {
+                          handleCheckTransfer();
+                        }
+                      }
                     }}
                     placeholder="Đáp số của em..."
                     className="flex-1 p-2 border border-[#bed0cd] rounded-lg text-xs font-mono focus:outline-none focus:border-[#087e7c]"
                   />
                   <button
-                    onClick={handleCheckTransfer}
+                    onClick={() => {
+                      if (activeIntegerProblem) {
+                        const val = parseFloat(transferInput.trim());
+                        const isOk = Math.abs(val - activeIntegerProblem.optimalValue) < 1e-4;
+                        setTransferVerification({
+                          correct: isOk,
+                          enteredNum: val,
+                          expectedNum: activeIntegerProblem.optimalValue,
+                          message: isOk
+                            ? `Chính xác! ${activeIntegerProblem.explanation}`
+                            : `Chưa đúng. Giá trị tối ưu kỳ vọng là ${activeIntegerProblem.optimalValue}.`,
+                        });
+                      } else {
+                        handleCheckTransfer();
+                      }
+                    }}
                     className="px-3 py-1.5 bg-[#087e7c] text-white rounded-lg font-bold text-xs hover:bg-[#066563] transition-colors shrink-0"
                   >
                     Kiểm tra
                   </button>
                 </div>
               </div>
-
-              {/* MiniCAS Verification Result */}
-              {transferVerification && (
-                <div
-                  className={`p-2.5 rounded-lg text-[10px] leading-relaxed border ${
-                    transferVerification.correct
-                      ? "bg-[#edf6f3] border-[#a3e2cf] text-[#087e7c] font-medium"
-                      : "bg-[#fff0ec] border-[#fed7cc] text-[#b23c48]"
-                  }`}
-                >
-                  <div className="font-bold mb-0.5">
-                    {transferVerification.correct ? "✓ MiniCAS: Đáp số chính xác" : "✗ MiniCAS: Chưa trùng khớp"}
-                  </div>
-                  <div>{transferVerification.message}</div>
-                </div>
-              )}
 
               {/* Socratic Hints System (3 Levels) */}
               <div className="pt-2 border-t border-[#e2e8e7] space-y-1.5">
@@ -1980,9 +2273,144 @@ export default function MathStepWorkbench({
                   </div>
                 )}
               </div>
+
+              {transferVerification && (
+                <div
+                  className={`p-2.5 rounded-lg text-[10px] leading-relaxed border ${
+                    transferVerification.correct
+                      ? "bg-[#edf6f3] border-[#a3e2cf] text-[#087e7c] font-medium"
+                      : "bg-[#fff0ec] border-[#fed7cc] text-[#b23c48]"
+                  }`}
+                >
+                  <div className="font-bold mb-0.5">
+                    {transferVerification.correct ? "✓ MiniCAS: Đáp số chính xác" : "✗ MiniCAS: Chưa trùng khớp"}
+                  </div>
+                  <div>{transferVerification.message}</div>
+                </div>
+              )}
             </div>
           )}
 
+          {/* BƯỚC 8: RÈN LUYỆN ĐỘC LẬP (FADING & INDEPENDENT TEST MODE) */}
+          {currentStep === 7 && (
+            <div className="space-y-2.5">
+              <div className="p-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 text-[11px] space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                  <span>🎯</span>
+                  <span>Chế độ Đánh giá độc lập (Fading)</span>
+                </div>
+                <p className="text-amber-800 text-[10px] leading-relaxed">
+                  Để đánh giá năng lực thực chất, mô hình tương tác và trợ lý AI đã được rút bỏ giàn giáo. Em hãy tự lập luận và điền các bước giải vào khung bán tự luận dưới đây:
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <div>
+                  <label className="text-[10px] font-bold text-gray-700 block mb-0.5">
+                    1. Đặt ẩn và điều kiện ràng buộc:
+                  </label>
+                  <input
+                    type="text"
+                    value={fadingAnswers.step1}
+                    onChange={(e) => setFadingAnswers({ ...fadingAnswers, step1: e.target.value })}
+                    placeholder="Ví dụ: Gọi x là số xe loại A (x ∈ ℕ*), y là..."
+                    className="w-full p-1.5 border border-[#bed0cd] rounded text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-gray-700 block mb-0.5">
+                    2. Thiết lập hệ bất phương trình:
+                  </label>
+                  <input
+                    type="text"
+                    value={fadingAnswers.step2}
+                    onChange={(e) => setFadingAnswers({ ...fadingAnswers, step2: e.target.value })}
+                    placeholder="Ví dụ: 20x + 10y ≥ 140, 0.6x + 1.5y ≥ 9..."
+                    className="w-full p-1.5 border border-[#bed0cd] rounded text-xs font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-gray-700 block mb-0.5">
+                    3. Tọa độ các đỉnh của miền nghiệm:
+                  </label>
+                  <input
+                    type="text"
+                    value={fadingAnswers.step3}
+                    onChange={(e) => setFadingAnswers({ ...fadingAnswers, step3: e.target.value })}
+                    placeholder="Ví dụ: A(3; 8), B(7; 4), C(9; 2)..."
+                    className="w-full p-1.5 border border-[#bed0cd] rounded text-xs font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-gray-700 block mb-0.5">
+                    4. Biểu thức mục tiêu F(x, y) & Kết luận phương án:
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={fadingAnswers.step4}
+                    onChange={(e) => setFadingAnswers({ ...fadingAnswers, step4: e.target.value })}
+                    placeholder="Ví dụ: F(x, y) = 4x + 3y. Đạt min tại (7; 4) với chi phí 40 triệu..."
+                    className="w-full p-1.5 border border-[#bed0cd] rounded text-xs resize-none"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    let score = 0;
+                    if (fadingAnswers.step1.trim().length > 5) score += 2.5;
+                    if (fadingAnswers.step2.trim().length > 5) score += 2.5;
+                    if (fadingAnswers.step3.trim().length > 5) score += 2.5;
+                    if (fadingAnswers.step4.trim().length > 5) score += 2.5;
+
+                    setFadingSubmitted(true);
+                    setFadingScore({
+                      score,
+                      maxScore: 10,
+                      feedback:
+                        score >= 8
+                          ? "Xuất sắc! Lập luận tự luận hoàn chỉnh và đáp ứng chuẩn chấm thi KHKT."
+                          : score >= 5
+                          ? "Tốt, em đã hoàn thành phần lớn các bước. Cần giải thích rõ hơn ở bước kết luận phương án."
+                          : "Em hãy điền đầy đủ các bước lập luận để đạt điểm tối đa.",
+                    });
+
+                    // Lưu bằng chứng tự luận vào sổ học tập
+                    const newRecord: EvidenceRecord = {
+                      stepId: 8,
+                      stepName: "Bước 8: Rèn luyện độc lập (Fading)",
+                      completedAt: new Date().toLocaleTimeString("vi-VN"),
+                      summary: `Hoàn thành bài kiểm tra độc lập: Điểm ${score}/10. Lời giải: ${fadingAnswers.step4.slice(0, 50)}...`,
+                      data: { ...fadingAnswers, score },
+                    };
+                    setEvidenceHistory((prev) => [...prev, newRecord]);
+                    showToast(`🎯 Đã chấm điểm tự luận: ${score}/10! Bằng chứng đã lưu vào sổ học tập.`);
+                  }}
+                  className="w-full py-2 bg-[#087e7c] text-white rounded-lg font-bold text-xs hover:bg-[#066563] transition-colors"
+                >
+                  Nộp bài tự luận độc lập & Chấm điểm
+                </button>
+
+                {fadingSubmitted && fadingScore && (
+                  <div
+                    className={`p-2.5 rounded-lg text-[10px] leading-relaxed border ${
+                      fadingScore.score >= 8
+                        ? "bg-[#edf6f3] border-[#a3e2cf] text-[#087e7c] font-medium"
+                        : "bg-amber-50 border-amber-200 text-amber-900"
+                    }`}
+                  >
+                    <div className="font-bold">
+                      Kết quả đánh giá: {fadingScore.score} / {fadingScore.maxScore} điểm
+                    </div>
+                    <div>{fadingScore.feedback}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           {/* Socratic Helper Mascot Button */}
           {onAskTutor && (
             <div className="pt-2 border-t border-[#d9e4e2] mt-auto">
@@ -2007,6 +2435,70 @@ export default function MathStepWorkbench({
           {/* Thanh công cụ vẽ Geogebra & 3D (Scene Toolbar) */}
           <div className="bg-white border-b border-[#d9e4e2] p-2 flex flex-wrap items-center justify-between gap-1.5 text-xs">
             <div className="flex items-center gap-1">
+              {moduleId === "linear_programming" && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInvertFilling((v) => !v);
+                      showToast(!invertFilling ? "Chế độ GeoGebra: Đã tô màu miền nghiệm." : "Chuẩn SGK KNTT: Gạch sọc phần sai, giữ trắng miền đúng.");
+                    }}
+                    className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all border ${
+                      !invertFilling
+                        ? "bg-[#087e7c] text-white border-[#087e7c]"
+                        : "bg-white text-[#087e7c] border-[#bed0cd] hover:bg-gray-50"
+                    }`}
+                    title="Chuyển đổi chuẩn SGK KNTT (gạch sọc miền sai) và chuẩn GeoGebra (tô màu miền đúng)"
+                  >
+                    {!invertFilling ? "🌓 SGK KNTT: Gạch sai" : "🌓 GeoGebra: Tô đúng"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCounterExampleActive((v) => !v);
+                      showToast(!counterExampleActive ? "Đã ghim điểm phản ví dụ đỏ P(1; 0)!" : "Đã ẩn điểm phản ví dụ.");
+                    }}
+                    className={`px-2 py-1 rounded-lg font-bold text-[11px] transition-all border ${
+                      counterExampleActive
+                        ? "bg-rose-600 text-white border-rose-600"
+                        : "bg-white text-rose-700 border-rose-300 hover:bg-rose-50"
+                    }`}
+                    title="Ghim chấm đỏ phản ví dụ P(1; 0) bộc lộ mâu thuẫn"
+                  >
+                    🎯 Phản ví dụ đỏ P
+                  </button>
+                </>
+              )}
+              {moduleId === "spatial_geometry" && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsUnfolded((v) => !v);
+                      showToast(!isUnfolded ? "📂 Đã khai triển phẳng 4 mặt bên trên Oxy." : "Đã gấp lại thành khối chóp 3D.");
+                    }}
+                    className={`px-2 py-1 rounded-lg font-bold text-[11px] transition-all border ${
+                      isUnfolded
+                        ? "bg-[#087e7c] text-white border-[#087e7c]"
+                        : "bg-white text-[#087e7c] border-[#bed0cd] hover:bg-gray-50"
+                    }`}
+                    title="Khai triển phẳng ↔ Gấp khối 3D"
+                  >
+                    📂 {isUnfolded ? "Gấp khối 3D" : "Khai triển phẳng"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCamera({ yaw: 0, pitch: 0, zoom: 1.15, panX: 0, panY: 0 });
+                      showToast("Đã xoay trực giao: Bộc lộ rõ 2 đường chéo nhau ở 2 độ cao khác nhau!");
+                    }}
+                    className="px-2 py-1 rounded-lg font-bold text-[11px] bg-white text-gray-700 border border-[#bed0cd] hover:bg-gray-50"
+                    title="Xoay trực giao để bộc lộ khoảng cách giữa hai đường chéo nhau"
+                  >
+                    📐 Xoay trực giao
+                  </button>
+                </>
+              )}
               <button
                 onClick={() => setToolMode("move")}
                 className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all ${
@@ -2597,7 +3089,7 @@ export default function MathStepWorkbench({
           onClick={handleNextStep}
           className="px-4 py-1.5 rounded-lg bg-[#087e7c] text-white font-bold hover:bg-[#066563] transition-colors shadow-sm"
         >
-          {currentStep === 6 ? "Hoàn thành trạm ✓" : "Bước tiếp →"}
+          {currentStep === 7 ? "Hoàn thành trạm ✓" : "Bước tiếp →"}
         </button>
       </div>
 
