@@ -1,6 +1,11 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { Wand2, BookOpen } from "lucide-react";
+import Geometry3DViewer from "./Geometry3DViewer";
+import NaturalLanguageGeometryPanel from "./NaturalLanguageGeometryPanel";
+import { GEOMETRY_PRESET_TEMPLATES, resolveGeometrySolid, ResolvedGeometryScene } from "../lib/geometrySolver";
+import { ParsedGeometrySolid } from "../lib/geometryParserPrompt";
 
 type ModuleId =
   | "linear_programming"
@@ -18,6 +23,16 @@ interface MathGraphVisualizerProps {
 
 export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisualizerProps) {
   const [activeTab, setActiveTab] = useState<ModuleId>(moduleId);
+
+  // --- State cho AI 3D Geometry Parser (Module 2 & Module 7) ---
+  const [geoSubTab, setGeoSubTab] = useState<"standard" | "ai_parser">("ai_parser");
+  const [conicSubTab, setConicSubTab] = useState<"standard" | "ai_parser">("standard");
+  const [parsedAiScene, setParsedAiScene] = useState<ResolvedGeometryScene>(() =>
+    resolveGeometrySolid(GEOMETRY_PRESET_TEMPLATES[0].solid)
+  );
+  const [, setRawAiSolid] = useState<ParsedGeometrySolid>(
+    GEOMETRY_PRESET_TEMPLATES[0].solid
+  );
 
   // --- State cho Module 4: Functions (Hàm số) ---
   const [funcPreset, setFuncPreset] = useState<number>(0);
@@ -689,7 +704,56 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
           )}
 
           {activeTab === "spatial_geometry" && (
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+            <div className="space-y-3.5">
+              {/* Thanh chọn chế độ Mô hình SGK vs Tự do / Sáng tạo (AI Dựng hình 3D) */}
+              <div className="flex items-center justify-between bg-slate-100/80 p-1 rounded-xl border border-slate-200">
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setGeoSubTab("ai_parser")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      geoSubTab === "ai_parser"
+                        ? "bg-gradient-to-r from-[#087e7c] to-[#0f9488] text-white shadow-sm"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    <Wand2 className="w-3.5 h-3.5 text-amber-300" />
+                    <span>Tự do / Sáng tạo (AI Dựng hình 3D)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGeoSubTab("standard")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      geoSubTab === "standard"
+                        ? "bg-white text-[#146e52] shadow-sm"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Mô hình SGK cơ bản (S.ABC)</span>
+                  </button>
+                </div>
+                <span className="text-[11px] text-slate-500 hidden sm:inline px-2 font-medium">
+                  geometry3d &bull; SGK Toán THPT Việt Nam
+                </span>
+              </div>
+
+              {geoSubTab === "ai_parser" ? (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                  <div className="lg:col-span-5 order-2 lg:order-1">
+                    <NaturalLanguageGeometryPanel
+                      onModelGenerated={(scene, raw) => {
+                        setParsedAiScene(scene);
+                        setRawAiSolid(raw);
+                      }}
+                    />
+                  </div>
+                  <div className="lg:col-span-7 order-1 lg:order-2 h-[520px]">
+                    <Geometry3DViewer scene={parsedAiScene} className="h-full" />
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
               {/* Mô hình hình học không gian chiếu phối cảnh */}
               <div className="md:col-span-7 bg-white p-4 rounded-xl border border-[#e1e7e0] flex flex-col items-center shadow-sm">
                 <span className="text-[11px] font-bold text-[#146e52] mb-1">
@@ -808,6 +872,8 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
                   </ul>
                 </div>
               </div>
+            </div>
+              )}
             </div>
           )}
 
@@ -1607,7 +1673,56 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
           {/* TAB 7: HÌNH KHỐI & CONIC (Module 7) - CẮT MẶT NÓN 3D & ELIP */}
           {/* ======================================================== */}
           {activeTab === "conics_and_solids" && (
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+            <div className="space-y-3.5">
+              {/* Thanh chọn chế độ Mô hình SGK vs Tự do / Sáng tạo (AI Dựng hình 3D) */}
+              <div className="flex items-center justify-between bg-slate-100/80 p-1 rounded-xl border border-slate-200">
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setConicSubTab("ai_parser")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      conicSubTab === "ai_parser"
+                        ? "bg-gradient-to-r from-[#087e7c] to-[#0f9488] text-white shadow-sm"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    <Wand2 className="w-3.5 h-3.5 text-amber-300" />
+                    <span>Tự do / Sáng tạo (AI Dựng hình 3D)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConicSubTab("standard")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      conicSubTab === "standard"
+                        ? "bg-white text-[#146e52] shadow-sm"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Mô hình Conic & Khối nón SGK</span>
+                  </button>
+                </div>
+                <span className="text-[11px] text-slate-500 hidden sm:inline px-2 font-medium">
+                  geometry3d &bull; Khối tròn xoay & Đường Conic
+                </span>
+              </div>
+
+              {conicSubTab === "ai_parser" ? (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                  <div className="lg:col-span-5 order-2 lg:order-1">
+                    <NaturalLanguageGeometryPanel
+                      onModelGenerated={(scene, raw) => {
+                        setParsedAiScene(scene);
+                        setRawAiSolid(raw);
+                      }}
+                    />
+                  </div>
+                  <div className="lg:col-span-7 order-1 lg:order-2 h-[520px]">
+                    <Geometry3DViewer scene={parsedAiScene} className="h-full" />
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
               {/* Cột trái: Trực quan 3D Mặt nón & Conic */}
               <div className="md:col-span-7 bg-white p-3 rounded-xl border border-[#e1e7e0] flex flex-col items-center shadow-sm">
                 <div className="w-full flex justify-between items-center text-[11px] mb-2 px-1">
@@ -1841,6 +1956,8 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
                   <p>• <strong>Định nghĩa Parabol:</strong> Tập hợp điểm M cách đều tiêu điểm F và đường chuẩn $\Delta$. Tâm sai $e = 1$.</p>
                 </div>
               </div>
+            </div>
+              )}
             </div>
           )}
         </div>

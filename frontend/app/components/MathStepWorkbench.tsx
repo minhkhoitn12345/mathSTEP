@@ -9,6 +9,14 @@ import { loadStationState, saveStationState, clearStationState, ActivityLogEntry
 import { generateIsomorphicIntegerProblem, IntegerProblem } from "../lib/integerVertexGenerator";
 import Interactive2DMathCanvas, { BoundaryLine, PolygonVertex } from "./Interactive2DMathCanvas";
 import Stereometry3DCanvas from "./Stereometry3DCanvas";
+import NaturalLanguageGeometryPanel from "./NaturalLanguageGeometryPanel";
+import Geometry3DViewer from "./Geometry3DViewer";
+import {
+  resolveGeometrySolid,
+  GEOMETRY_PRESET_TEMPLATES,
+  ResolvedGeometryScene,
+} from "../lib/geometrySolver";
+import { ParsedGeometrySolid } from "../lib/geometryParserPrompt";
 import TrigonometricCircleCanvas, { SPECIAL_ANGLES } from "./TrigonometricCircleCanvas";
 import KatexMath, { formatVNFloat } from "./KatexMath";
 import {
@@ -36,6 +44,7 @@ import {
   Download,
   Upload,
   Sparkles,
+  Wand2,
   PanelLeftClose,
   PanelLeftOpen,
   PanelRightClose,
@@ -722,6 +731,15 @@ export default function MathStepWorkbench({
 
   // --- Math Simulation Parameters (Synchronized Sliders & Number inputs) ---
   const [params, setParams] = useState<Record<string, number>>(() => getDefaultParams(moduleId));
+
+  // --- Natural Language to 3D Geometry Parser (Tự do / Sáng tạo Module 2 & Module 7) ---
+  const [aiCreativeMode, setAiCreativeMode] = useState<boolean>(false);
+  const [parsedAiScene, setParsedAiScene] = useState<ResolvedGeometryScene>(() =>
+    resolveGeometrySolid(GEOMETRY_PRESET_TEMPLATES[0].solid)
+  );
+  const [, setRawAiSolid] = useState<ParsedGeometrySolid>(
+    GEOMETRY_PRESET_TEMPLATES[0].solid
+  );
 
   // Linear Programming Constraints & Options
   const [constraints, setConstraints] = useState<Constraint[]>(DEFAULT_CONSTRAINTS);
@@ -3020,6 +3038,40 @@ export default function MathStepWorkbench({
                 </button>
               )}
               {meta.is3D && (
+                <div className="flex items-center bg-[#e2ecea] p-0.5 rounded-lg border border-[#c4dad6]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAiCreativeMode(false);
+                      showToast("Đã chuyển sang Bài học SGK (8 bước).");
+                    }}
+                    className={`px-2 py-0.5 rounded-md text-[10.5px] font-bold transition-all flex items-center gap-1 ${
+                      !aiCreativeMode
+                        ? "bg-white text-[#087e7c] shadow-xs"
+                        : "text-[#536d73] hover:text-[#152f35]"
+                    }`}
+                  >
+                    <BookOpen className="w-3 h-3" />
+                    <span className="hidden sm:inline">Bài học SGK</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAiCreativeMode(true);
+                      showToast("Đã chuyển sang Tự do / Sáng tạo (AI Dựng hình 3D).");
+                    }}
+                    className={`px-2 py-0.5 rounded-md text-[10.5px] font-bold transition-all flex items-center gap-1 ${
+                      aiCreativeMode
+                        ? "bg-gradient-to-r from-[#087e7c] to-[#0f9488] text-white shadow-xs"
+                        : "text-[#536d73] hover:text-[#152f35]"
+                    }`}
+                  >
+                    <Wand2 className="w-3 h-3 text-amber-300" />
+                    <span>Tự do / Sáng tạo</span>
+                  </button>
+                </div>
+              )}
+              {meta.is3D && (
                 <button
                   type="button"
                   onClick={() => setIsFullscreenScene((v) => !v)}
@@ -3067,24 +3119,32 @@ export default function MathStepWorkbench({
           {/* Khung Canvas giải phóng toàn bộ chiều cao từ trên xuống dưới */}
           <div className="flex-1 relative flex items-center justify-center bg-[#edf3f2] overflow-hidden min-h-[480px] h-full">
             {meta.is3D ? (
-              <Stereometry3DCanvas
-                foldPercent={foldPercent}
-                onFoldPercentChange={(val) => {
-                  setFoldPercent(val);
-                  setIsUnfolded(val < 50);
-                }}
-                apexHeight={params.h || 2.6}
-                onApexHeightChange={(h) => updateParam("h", h)}
-                orthogonalView={orthogonalView}
-                onToggleOrthogonalView={() => setOrthogonalView((v) => !v)}
-                isTeacherMode={isTeacherMode}
-                onVertexManipulated={(log) => {
-                  recordActivity({
-                    type: "vertex_drag",
-                    details: `Kéo đỉnh ${log.vertex} đến (${formatVNFloat(log.newPos.x)}; ${formatVNFloat(log.newPos.y)}; ${formatVNFloat(log.newPos.z)})`,
-                  });
-                }}
-              />
+              aiCreativeMode ? (
+                <Geometry3DViewer
+                  scene={parsedAiScene}
+                  onAskTutor={onAskTutor}
+                  className="w-full h-full min-h-[500px]"
+                />
+              ) : (
+                <Stereometry3DCanvas
+                  foldPercent={foldPercent}
+                  onFoldPercentChange={(val) => {
+                    setFoldPercent(val);
+                    setIsUnfolded(val < 50);
+                  }}
+                  apexHeight={params.h || 2.6}
+                  onApexHeightChange={(h) => updateParam("h", h)}
+                  orthogonalView={orthogonalView}
+                  onToggleOrthogonalView={() => setOrthogonalView((v) => !v)}
+                  isTeacherMode={isTeacherMode}
+                  onVertexManipulated={(log) => {
+                    recordActivity({
+                      type: "vertex_drag",
+                      details: `Kéo đỉnh ${log.vertex} đến (${formatVNFloat(log.newPos.x)}; ${formatVNFloat(log.newPos.y)}; ${formatVNFloat(log.newPos.z)})`,
+                    });
+                  }}
+                />
+              )
             ) : moduleId === "linear_programming" ? (
               <Interactive2DMathCanvas
                 lines={boundaryLines}
@@ -3624,7 +3684,17 @@ export default function MathStepWorkbench({
             ) : (
               /* Các module 3D / lượng giác */
               <div className="space-y-2">
-                {moduleId === "spatial_geometry" && (
+                {meta.is3D && aiCreativeMode && (
+                  <NaturalLanguageGeometryPanel
+                    onModelGenerated={(scene, raw) => {
+                      setParsedAiScene(scene);
+                      setRawAiSolid(raw);
+                      showToast("Đã cập nhật mô hình 3D thành công!");
+                    }}
+                    onAskTutor={onAskTutor}
+                  />
+                )}
+                {moduleId === "spatial_geometry" && !aiCreativeMode && (
                   <div className="space-y-2.5">
                     <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
                       <div className="flex justify-between items-center text-xs font-bold text-slate-800">
