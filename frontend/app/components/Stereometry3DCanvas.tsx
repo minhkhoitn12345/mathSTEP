@@ -716,22 +716,20 @@ function DynamicPyramidMeshAndEdges({
       {/* 2. Group chứa các cạnh động Thấy & Khuất */}
       <group ref={linesGroupRef} />
 
-      {/* 3. Vectơ Pháp Tuyến mặt phẳng đáy: n = (0; 0; 1) chuẩn Oz thẳng đứng */}
+      {/* 3. Vectơ Pháp Tuyến đáy */}
       {showNormalVector && (
         <group position={[0, 0, 0]}>
           <mesh position={[0, 0.75, 0]}>
-            <cylinderGeometry args={[0.025, 0.025, 1.5, 16]} />
+            <cylinderGeometry args={[0.02, 0.02, 1.5, 16]} />
             <meshStandardMaterial color="#f59e0b" roughness={0.3} metalness={0.5} />
           </mesh>
           <mesh position={[0, 1.55, 0]}>
-            <coneGeometry args={[0.08, 0.22, 16]} />
+            <coneGeometry args={[0.065, 0.2, 16]} />
             <meshStandardMaterial color="#f59e0b" roughness={0.3} metalness={0.5} />
           </mesh>
-          <Html position={[0, 1.82, 0]} center distanceFactor={8}>
-            <div className={`px-2.5 py-1 bg-amber-950/90 backdrop-blur-md border border-amber-500/80 rounded-lg text-amber-300 font-bold shadow-xl select-none pointer-events-none whitespace-nowrap ${
-              isTeacherMode ? "text-sm" : "text-xs"
-            }`}>
-              <KatexMath math="\vec{n}_{(ABCD)} = (0;\, 0;\, 1)" />
+          <Html position={[0, 1.75, 0]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
+            <div className="px-1.5 py-0.5 bg-slate-900/90 border border-amber-500/60 rounded text-amber-300 font-mono text-[9px] font-bold select-none whitespace-nowrap shadow-sm">
+              n(0; 1; 0)
             </div>
           </Html>
         </group>
@@ -739,9 +737,9 @@ function DynamicPyramidMeshAndEdges({
 
       {/* 4. Nhãn Ký hiệu Vuông góc SH vuông góc đáy */}
       {showPerpendicularSymbol && (
-        <Html position={[apex.x + 0.42, 0.2, apex.z + 0.42]} center distanceFactor={8}>
-          <div className="px-1.5 py-0.5 bg-rose-950/90 backdrop-blur-md border border-rose-500/80 rounded text-rose-300 text-[10px] font-bold shadow select-none pointer-events-none whitespace-nowrap">
-            <KatexMath math="SH \perp (ABCD)" />
+        <Html position={[apex.x + 0.35, 0.15, apex.z + 0.35]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
+          <div className="px-1.5 py-0.5 bg-slate-900/90 border border-rose-500/60 rounded text-rose-300 font-mono text-[9px] font-bold select-none whitespace-nowrap shadow-sm">
+            SH ⟂ đáy
           </div>
         </Html>
       )}
@@ -749,14 +747,13 @@ function DynamicPyramidMeshAndEdges({
       {/* Điểm M (Trung điểm SA) */}
       <group position={pointM}>
         <mesh>
-          <sphereGeometry args={[isTeacherMode ? 0.12 : 0.08, 16, 16]} />
+          <sphereGeometry args={[isTeacherMode ? 0.09 : 0.065, 16, 16]} />
           <meshStandardMaterial color="#10b981" roughness={0.2} metalness={0.6} />
         </mesh>
-        <Html position={[0.2, 0.2, 0]} center distanceFactor={isTeacherMode ? 10 : 8.5}>
-          <div className={`px-2 py-0.5 bg-emerald-950/95 backdrop-blur-md border border-emerald-400 rounded font-bold text-emerald-300 shadow select-none pointer-events-none whitespace-nowrap ${
-            isTeacherMode ? "text-xs px-2.5 py-1" : "text-[10px]"
-          }`}>
-            <KatexMath math="M \text{ (Trung điểm } SA)" />
+        <Html position={[0.15, 0.15, 0]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
+          <div className="px-1.5 py-0.5 bg-slate-900/90 border border-emerald-500/60 rounded-full font-mono text-[9px] font-bold text-emerald-300 select-none whitespace-nowrap flex items-center gap-1 shadow-sm">
+            <span>M</span>
+            {showCoordinates && <span className="text-[8px] text-emerald-400 opacity-80">(1/2 SA)</span>}
           </div>
         </Html>
       </group>
@@ -764,118 +761,81 @@ function DynamicPyramidMeshAndEdges({
       {/* Điểm N (Tỉ số 2:1 trên SB) */}
       <group position={pointN}>
         <mesh>
-          <sphereGeometry args={[isTeacherMode ? 0.12 : 0.08, 16, 16]} />
+          <sphereGeometry args={[isTeacherMode ? 0.09 : 0.065, 16, 16]} />
           <meshStandardMaterial color="#a855f7" roughness={0.2} metalness={0.6} />
         </mesh>
-        <Html position={[0.2, 0.2, 0]} center distanceFactor={isTeacherMode ? 10 : 8.5}>
-          <div className={`px-2 py-0.5 bg-purple-950/95 backdrop-blur-md border border-purple-400 rounded font-bold text-purple-300 shadow select-none pointer-events-none whitespace-nowrap ${
-            isTeacherMode ? "text-xs px-2.5 py-1" : "text-[10px]"
-          }`}>
-            <KatexMath math="N \left(\frac{SN}{SB} = \frac{2}{3}\right)" />
+        <Html position={[0.15, 0.15, 0]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
+          <div className="px-1.5 py-0.5 bg-slate-900/90 border border-purple-500/60 rounded-full font-mono text-[9px] font-bold text-purple-300 select-none whitespace-nowrap flex items-center gap-1 shadow-sm">
+            <span>N</span>
+            {showCoordinates && <span className="text-[8px] text-purple-400 opacity-80">(2/3 SB)</span>}
           </div>
         </Html>
       </group>
 
-      {/* 5. Đỉnh Billboard Labels bằng KaTeX 100% chuẩn tọa độ THPT */}
+      {/* 5. Đỉnh Billboard Labels chuẩn gọn gàng không tràn màn hình */}
       {/* Đỉnh S */}
-      <Html position={[apex.x, apex.y + 0.32, apex.z]} center distanceFactor={isTeacherMode ? 11 : 9}>
-        <div className={`bg-slate-900/95 backdrop-blur-md rounded-lg border border-teal-400/80 text-teal-300 font-bold shadow-xl select-none pointer-events-none flex items-center gap-1.5 whitespace-nowrap ${
-          isTeacherMode ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs"
-        }`}>
-          <KatexMath
-            math={
-              showCoordinates
-                ? originAtVertexA
-                  ? `S(${formatVNFloat(baseWidth / 2)};\\, ${formatVNFloat(baseDepth / 2)};\\, ${formatVNFloat(apex.y)})`
-                  : `S(0;\\, 0;\\, ${formatVNFloat(apex.y)})`
-                : "S"
-            }
-          />
+      <Html position={[apex.x, apex.y + 0.25, apex.z]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
+        <div className="px-1.5 py-0.5 bg-slate-900/90 rounded border border-blue-500/60 text-blue-300 font-mono text-[10px] font-bold select-none whitespace-nowrap shadow-sm">
+          {showCoordinates
+            ? originAtVertexA
+              ? `S(${formatVNFloat(baseWidth / 2)}; ${formatVNFloat(baseDepth / 2)}; ${formatVNFloat(apex.y)})`
+              : `S(0; 0; ${formatVNFloat(apex.y)})`
+            : "S"}
         </div>
       </Html>
 
       {/* Đỉnh A */}
-      <Html position={[baseA.x - 0.25, baseA.y - 0.18, baseA.z + 0.25]} center distanceFactor={isTeacherMode ? 11 : 9}>
-        <div className={`bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold shadow-lg select-none pointer-events-none whitespace-nowrap ${
-          isTeacherMode ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs"
-        }`}>
-          <KatexMath
-            math={
-              showCoordinates
-                ? originAtVertexA
-                  ? "A(0;\\, 0;\\, 0)"
-                  : `A(-${formatVNFloat(baseWidth / 2)};\\, -${formatVNFloat(baseDepth / 2)};\\, 0)`
-                : "A"
-            }
-          />
+      <Html position={[baseA.x - 0.2, baseA.y - 0.15, baseA.z + 0.2]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
+        <div className="px-1.5 py-0.5 bg-slate-900/90 rounded border border-slate-700 text-slate-200 font-mono text-[10px] font-bold select-none whitespace-nowrap shadow-sm">
+          {showCoordinates
+            ? originAtVertexA
+              ? "A(0; 0; 0)"
+              : `A(-${formatVNFloat(baseWidth / 2)}; -${formatVNFloat(baseDepth / 2)}; 0)`
+            : "A"}
         </div>
       </Html>
 
       {/* Đỉnh B */}
-      <Html position={[baseB.x + 0.25, baseB.y - 0.18, baseB.z + 0.25]} center distanceFactor={isTeacherMode ? 11 : 9}>
-        <div className={`bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold shadow-lg select-none pointer-events-none whitespace-nowrap ${
-          isTeacherMode ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs"
-        }`}>
-          <KatexMath
-            math={
-              showCoordinates
-                ? originAtVertexA
-                  ? `B(${formatVNFloat(baseWidth)};\\, 0;\\, 0)`
-                  : `B(${formatVNFloat(baseWidth / 2)};\\, -${formatVNFloat(baseDepth / 2)};\\, 0)`
-                : "B"
-            }
-          />
+      <Html position={[baseB.x + 0.2, baseB.y - 0.15, baseB.z + 0.2]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
+        <div className="px-1.5 py-0.5 bg-slate-900/90 rounded border border-slate-700 text-slate-200 font-mono text-[10px] font-bold select-none whitespace-nowrap shadow-sm">
+          {showCoordinates
+            ? originAtVertexA
+              ? `B(${formatVNFloat(baseWidth)}; 0; 0)`
+              : `B(${formatVNFloat(baseWidth / 2)}; -${formatVNFloat(baseDepth / 2)}; 0)`
+            : "B"}
         </div>
       </Html>
 
       {/* Đỉnh C */}
-      <Html position={[baseC.x + 0.25, baseC.y - 0.18, baseC.z - 0.25]} center distanceFactor={isTeacherMode ? 11 : 9}>
-        <div className={`bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold shadow-lg select-none pointer-events-none whitespace-nowrap ${
-          isTeacherMode ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs"
-        }`}>
-          <KatexMath
-            math={
-              showCoordinates
-                ? originAtVertexA
-                  ? `C(${formatVNFloat(baseWidth)};\\, ${formatVNFloat(baseDepth)};\\, 0)`
-                  : `C(${formatVNFloat(baseWidth / 2)};\\, ${formatVNFloat(baseDepth / 2)};\\, 0)`
-                : "C"
-            }
-          />
+      <Html position={[baseC.x + 0.2, baseC.y - 0.15, baseC.z - 0.2]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
+        <div className="px-1.5 py-0.5 bg-slate-900/90 rounded border border-slate-700 text-slate-200 font-mono text-[10px] font-bold select-none whitespace-nowrap shadow-sm">
+          {showCoordinates
+            ? originAtVertexA
+              ? `C(${formatVNFloat(baseWidth)}; ${formatVNFloat(baseDepth)}; 0)`
+              : `C(${formatVNFloat(baseWidth / 2)}; ${formatVNFloat(baseDepth / 2)}; 0)`
+            : "C"}
         </div>
       </Html>
 
       {/* Đỉnh D */}
-      <Html position={[baseD.x - 0.25, baseD.y - 0.18, baseD.z - 0.25]} center distanceFactor={isTeacherMode ? 11 : 9}>
-        <div className={`bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-600 text-slate-100 font-semibold shadow-lg select-none pointer-events-none whitespace-nowrap ${
-          isTeacherMode ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs"
-        }`}>
-          <KatexMath
-            math={
-              showCoordinates
-                ? originAtVertexA
-                  ? `D(0;\\, ${formatVNFloat(baseDepth)};\\, 0)`
-                  : `D(-${formatVNFloat(baseWidth / 2)};\\, ${formatVNFloat(baseDepth / 2)};\\, 0)`
-                : "D"
-            }
-          />
+      <Html position={[baseD.x - 0.2, baseD.y - 0.15, baseD.z - 0.2]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
+        <div className="px-1.5 py-0.5 bg-slate-900/90 rounded border border-slate-700 text-slate-200 font-mono text-[10px] font-bold select-none whitespace-nowrap shadow-sm">
+          {showCoordinates
+            ? originAtVertexA
+              ? `D(0; ${formatVNFloat(baseDepth)}; 0)`
+              : `D(-${formatVNFloat(baseWidth / 2)}; ${formatVNFloat(baseDepth / 2)}; 0)`
+            : "D"}
         </div>
       </Html>
 
       {/* Chân đường cao H */}
-      <Html position={[apex.x, 0.12, apex.z]} center distanceFactor={isTeacherMode ? 11 : 9}>
-        <div className={`bg-rose-950/95 backdrop-blur-md rounded-lg border border-rose-500/80 text-rose-300 font-bold shadow-md select-none pointer-events-none whitespace-nowrap ${
-          isTeacherMode ? "px-2.5 py-1 text-xs" : "px-2 py-0.5 text-[11px]"
-        }`}>
-          <KatexMath
-            math={
-              showCoordinates
-                ? originAtVertexA
-                  ? `H(${formatVNFloat(baseWidth / 2)};\\, ${formatVNFloat(baseDepth / 2)};\\, 0)`
-                  : "H(0;\\, 0;\\, 0)"
-                : "H"
-            }
-          />
+      <Html position={[apex.x, 0.12, apex.z]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
+        <div className="px-1.5 py-0.5 bg-slate-900/90 rounded border border-rose-500/60 text-rose-300 font-mono text-[10px] font-bold select-none whitespace-nowrap shadow-sm">
+          {showCoordinates
+            ? originAtVertexA
+              ? `H(${formatVNFloat(baseWidth / 2)}; ${formatVNFloat(baseDepth / 2)}; 0)`
+              : "H(0; 0; 0)"
+            : "H"}
         </div>
       </Html>
     </group>
@@ -1043,143 +1003,146 @@ export default function Stereometry3DCanvas({
         </div>
       )}
 
-      {/* Top Banner Toolbar: Tiêu đề & Công cụ khảo sát chuẩn SGK */}
-      <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
-        <div className="flex items-center gap-1.5 pointer-events-auto flex-wrap">
-          <div className="px-2.5 py-1.5 bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5 shadow-lg">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="hidden sm:inline">Hình chóp</span>
-            <KatexMath math="S.ABCD" className="font-bold text-teal-300" />
+      {/* Top Docked Icon Toolbar: Tiêu chuẩn GeoGebra/Blender (Dùng Icon gọn gàng, tránh rối mắt) */}
+      <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
+        <div className="flex items-center gap-1 p-1 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-800 shadow-xl pointer-events-auto">
+          {/* Nhãn hình chóp gọn gàng */}
+          <div className="px-2.5 py-1 text-xs font-semibold text-slate-300 flex items-center gap-1.5 border-r border-slate-800 pr-2.5 mr-0.5">
+            <span className="w-2 h-2 rounded-full bg-blue-500" />
+            <span className="font-mono font-bold text-slate-100">S.ABCD</span>
             {isTeacherMode && (
-              <span className="ml-1 px-1.5 py-0.2 rounded bg-amber-500 text-slate-950 text-[9px] font-extrabold uppercase">
+              <span className="px-1.5 py-0.2 rounded bg-amber-500 text-slate-950 text-[9px] font-extrabold uppercase">
                 GV 1.5x
               </span>
             )}
           </div>
 
+          {/* 1. Trực giao / Phối cảnh */}
           <button
+            type="button"
             onClick={onToggleOrthogonalView}
-            className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
+            title={orthogonalView ? "Chế độ: Trực giao (Bấm đổi sang Phối cảnh 3D)" : "Chế độ: Phối cảnh 3D (Bấm đổi sang Trực giao)"}
+            className={`p-1.5 rounded-lg transition-colors ${
               orthogonalView
-                ? "bg-slate-800 border-amber-500/80 text-amber-300"
-                : "bg-slate-900/85 border-slate-700 text-slate-300 hover:text-white"
+                ? "bg-blue-600/30 text-blue-400 border border-blue-500/50"
+                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
             }`}
           >
-            <Eye className="w-3.5 h-3.5" />
-            <span>{orthogonalView ? "Trực giao" : "Phối cảnh 3D"}</span>
+            <Eye className="w-4 h-4" />
           </button>
 
-          {/* Nút Toggle: Hiện / Ẩn Trục Oxyz */}
+          {/* 2. Hệ trục Oxyz */}
           <button
+            type="button"
             onClick={() => setShowAxes((v) => !v)}
-            title="Bật/Tắt hệ trục tọa độ Oxyz chuẩn RGB (Đỏ Ox, Xanh lục Oy, Xanh dương Oz)"
-            className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
+            title={showAxes ? "Ẩn hệ trục tọa độ Oxyz" : "Hiện hệ trục tọa độ Oxyz (Đỏ Ox, Lục Oy, Lam Oz)"}
+            className={`p-1.5 rounded-lg transition-colors ${
               showAxes
-                ? "bg-slate-800 border-red-500/80 text-red-300"
-                : "bg-slate-900/85 border-slate-700 text-slate-400 hover:text-slate-200"
+                ? "bg-rose-600/30 text-rose-400 border border-rose-500/50"
+                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
             }`}
           >
-            <Axis3d className="w-3.5 h-3.5" />
-            <span>{showAxes ? "Trục Oxyz" : "Ẩn Oxyz"}</span>
+            <Axis3d className="w-4 h-4" />
           </button>
 
-          {/* Nút Toggle: Hiện / Ẩn Mặt sàn Oxy */}
+          {/* 3. Lưới mặt sàn Oxy */}
           <button
+            type="button"
             onClick={() => setShowFloorGrid((v) => !v)}
-            title="Bật/Tắt lưới mặt sàn không gian Oxy bên dưới hình chóp"
-            className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
+            title={showFloorGrid ? "Ẩn mặt sàn không gian Oxy" : "Hiện mặt sàn không gian Oxy"}
+            className={`p-1.5 rounded-lg transition-colors ${
               showFloorGrid
-                ? "bg-slate-800 border-cyan-500/80 text-cyan-300"
-                : "bg-slate-900/85 border-slate-700 text-slate-400 hover:text-slate-200"
+                ? "bg-cyan-600/30 text-cyan-400 border border-cyan-500/50"
+                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
             }`}
           >
-            <Grid3X3 className="w-3.5 h-3.5" />
-            <span>{showFloorGrid ? "Mặt sàn Oxy" : "Ẩn sàn"}</span>
+            <Grid3X3 className="w-4 h-4" />
           </button>
 
-          {/* Nút Toggle: Gắn gốc O vào đỉnh A */}
+          {/* 4. Gốc O tại Đỉnh A vs Tâm H */}
           <button
+            type="button"
             onClick={() => setOriginAtVertexA((v) => !v)}
-            title="Chuyển đổi vị trí gốc O giữa tâm đáy H và đỉnh A (Hỗ trợ phương pháp tọa độ hóa)"
-            className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
+            title={originAtVertexA ? "Gốc O tại Đỉnh A (Bấm chuyển về Tâm H)" : "Gốc O tại Tâm đáy H (Bấm chuyển sang Đỉnh A)"}
+            className={`p-1.5 rounded-lg transition-colors ${
               originAtVertexA
-                ? "bg-slate-800 border-amber-500/90 text-amber-300 ring-1 ring-amber-500/40"
-                : "bg-slate-900/85 border-slate-700 text-slate-400 hover:text-slate-200"
+                ? "bg-amber-600/30 text-amber-400 border border-amber-500/50"
+                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
             }`}
           >
-            <MapPin className="w-3.5 h-3.5" />
-            <span>{originAtVertexA ? "Gốc O tại Đỉnh A" : "Gốc O tại Tâm H"}</span>
+            <MapPin className="w-4 h-4" />
           </button>
 
-          {/* Nút Toggle: Mặt phẳng cắt qua MN */}
+          {/* 5. Mặt phẳng thiết diện qua MN */}
           <button
+            type="button"
             onClick={() => setShowSectionPlane((v) => !v)}
-            title="Bật/Tắt hiển thị thiết diện cắt qua đoạn MN (Trung điểm SA và Tỉ số 2:1 trên SB)"
-            className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
+            title={showSectionPlane ? "Ẩn mặt phẳng thiết diện (MN)" : "Hiện mặt phẳng thiết diện (MN)"}
+            className={`p-1.5 rounded-lg transition-colors ${
               showSectionPlane
-                ? "bg-slate-800 border-lime-500/80 text-lime-300"
-                : "bg-slate-900/85 border-slate-700 text-slate-400 hover:text-slate-200"
+                ? "bg-lime-600/30 text-lime-400 border border-lime-500/50"
+                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
             }`}
           >
-            <Scissors className="w-3.5 h-3.5" />
-            <span>{showSectionPlane ? "Mặt phẳng (MN)" : "Ẩn mặt MN"}</span>
+            <Scissors className="w-4 h-4" />
           </button>
 
-          {/* Nút Toggle: Nét đứt cạnh khuất */}
+          {/* 6. Nét đứt cạnh khuất */}
           <button
+            type="button"
             onClick={() => setShowHiddenEdges((v) => !v)}
-            title="Bật/Tắt hiển thị quy ước cạnh khuất nét đứt (Back-face Culling)"
-            className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
+            title={showHiddenEdges ? "Tắt hiển thị nét đứt cạnh khuất" : "Bật hiển thị nét đứt cạnh khuất"}
+            className={`p-1.5 rounded-lg transition-colors ${
               showHiddenEdges
-                ? "bg-slate-800 border-slate-500 text-slate-200"
-                : "bg-slate-900/85 border-slate-700 text-slate-500"
+                ? "bg-slate-800 text-slate-200 border border-slate-700"
+                : "text-slate-500 hover:text-slate-300 hover:bg-slate-800"
             }`}
           >
-            <Layers className="w-3.5 h-3.5" />
-            <span>{showHiddenEdges ? "Nét đứt: BẬT" : "Nét đứt: TẮT"}</span>
+            <Layers className="w-4 h-4" />
           </button>
 
-          {/* Nút Toggle: Tọa độ Đỉnh */}
+          {/* 7. Tọa độ số học */}
           <button
+            type="button"
             onClick={() => setShowCoordinates((v) => !v)}
-            title="Bật/Tắt hiển thị nhãn tọa độ số học trên các đỉnh"
-            className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
+            title={showCoordinates ? "Ẩn nhãn tọa độ số học trên đỉnh" : "Hiện nhãn tọa độ số học trên đỉnh"}
+            className={`p-1.5 rounded-lg transition-colors ${
               showCoordinates
-                ? "bg-slate-800 border-teal-500/80 text-teal-300"
-                : "bg-slate-900/85 border-slate-700 text-slate-500"
+                ? "bg-blue-600/30 text-blue-400 border border-blue-500/50"
+                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
             }`}
           >
-            <Hash className="w-3.5 h-3.5" />
-            <span>{showCoordinates ? "Tọa độ: BẬT" : "Tọa độ: TẮT"}</span>
+            <Hash className="w-4 h-4" />
           </button>
 
-          {/* Nút Toggle: Vectơ Pháp Tuyến */}
+          {/* 8. Vectơ pháp tuyến n */}
           <button
+            type="button"
             onClick={() => setShowNormalVector((v) => !v)}
-            title="Bật/Tắt hiển thị vectơ pháp tuyến n vuông góc đáy"
-            className={`px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
+            title={showNormalVector ? "Ẩn vectơ pháp tuyến n đáy" : "Hiện vectơ pháp tuyến n đáy"}
+            className={`p-1.5 rounded-lg transition-colors ${
               showNormalVector
-                ? "bg-slate-800 border-amber-500/80 text-amber-300"
-                : "bg-slate-900/85 border-slate-700 text-slate-500"
+                ? "bg-amber-600/30 text-amber-400 border border-amber-500/50"
+                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
             }`}
           >
-            <CompassIcon className="w-3.5 h-3.5" />
-            <span>{showNormalVector ? "Vectơ n" : "Ẩn vectơ"}</span>
+            <CompassIcon className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Right Toggle Button for Analytical HUD */}
-        <div className="pointer-events-auto flex items-center gap-2">
+        {/* Right Toggle Button for Analytical HUD (Icon + Tooltip) */}
+        <div className="pointer-events-auto flex items-center gap-1.5">
           <button
+            type="button"
             onClick={() => setShowHudCard((v) => !v)}
-            className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1.5 shadow-lg ${
+            title={showHudCard ? "Thu gọn bảng số liệu SGK 11/12" : "Mở bảng số liệu hình học SGK 11/12"}
+            className={`p-1.5 rounded-xl border transition-colors flex items-center gap-1 shadow-xl ${
               showHudCard
-                ? "bg-slate-800 border-slate-600 text-teal-300"
-                : "bg-slate-900/85 border-slate-700 text-slate-300 hover:text-white"
+                ? "bg-slate-800 border-slate-700 text-blue-400"
+                : "bg-slate-900/90 border-slate-800 text-slate-300 hover:bg-slate-800"
             }`}
           >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Bảng SGK 11/12</span>
+            <FileText className="w-4 h-4" />
             {showHudCard ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
         </div>
@@ -1419,13 +1382,13 @@ export default function Stereometry3DCanvas({
       </Canvas>
 
       {/* Floating Control Sliders (Bottom Left): Khai triển phẳng & Chiều cao H */}
-      <div className="absolute bottom-4 left-4 z-10 flex flex-col gap-2 p-3 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-700/80 shadow-2xl">
+      <div className="absolute bottom-3 left-3 z-10 flex flex-col gap-2 p-2.5 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-800 shadow-xl max-w-[240px]">
         {onFoldPercentChange && (
           <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-cyan-300 flex items-center gap-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-medium text-slate-300 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Gấp khối <KatexMath math="\leftrightarrow" /> Khai triển:</span>
+                <span>Gấp / Mở hình:</span>
               </span>
               <span className="font-mono text-cyan-400 font-bold">{foldPercent}%</span>
             </div>
@@ -1435,17 +1398,17 @@ export default function Stereometry3DCanvas({
               max={100}
               value={foldPercent}
               onChange={(e) => onFoldPercentChange(Number(e.target.value))}
-              className="w-56 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+              className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
             />
           </div>
         )}
 
         {onApexHeightChange && (
-          <div className="flex flex-col gap-1 pt-1 border-t border-slate-800">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-300 flex items-center gap-1">
+          <div className="flex flex-col gap-1 pt-1.5 border-t border-slate-800/80">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-medium text-slate-300 flex items-center gap-1.5">
                 <Move3d className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Chiều cao <KatexMath math={`h = SH = ${formatVNFloat(currentHeight)}`} />:</span>
+                <span>Chiều cao h (SH):</span>
               </span>
               <span className="font-mono text-emerald-400 font-bold">{formatVNFloat(currentHeight)} m</span>
             </div>
@@ -1460,41 +1423,41 @@ export default function Stereometry3DCanvas({
                 setApexPos((prev) => new THREE.Vector3(prev.x, val, prev.z));
                 onApexHeightChange(val);
               }}
-              className="w-56 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+              className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
             />
           </div>
         )}
       </div>
 
-      {/* Teacher Presentation & Studio Quick Toolbar (Bottom Right) */}
-      <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1.5 p-1.5 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-700/80 shadow-2xl flex-wrap">
+      {/* Quick Camera Controls Toolbar (Bottom Right) - Dùng icon gọn gàng */}
+      <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1 p-1 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-800 shadow-xl">
         <button
+          type="button"
           onClick={handleRotate45}
-          title="Xoay camera 45° mượt mà (Hỗ trợ trình chiếu lớp học)"
-          className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-cyan-300 transition-colors flex items-center gap-1 text-xs font-semibold"
+          title="Xoay góc nhìn 45°"
+          className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-200 transition-colors"
         >
-          <RotateCw className="w-4 h-4 text-cyan-400" />
-          <span className="hidden md:inline">Xoay 45°</span>
+          <RotateCw className="w-4 h-4" />
         </button>
 
         <button
+          type="button"
           onClick={handleSnapshotFreeze}
-          title={isFrozenView ? "Mở lại góc nhìn xoay tự do" : "Đóng băng cấu hình góc nhìn bài giảng"}
-          className={`p-2 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold ${
-            isFrozenView ? "bg-amber-500 text-slate-950 font-bold" : "hover:bg-slate-800 text-slate-300 hover:text-white"
+          title={isFrozenView ? "Mở khóa xoay tự do" : "Khóa / Ghim góc nhìn"}
+          className={`p-1.5 rounded-lg transition-colors ${
+            isFrozenView ? "bg-amber-500/20 text-amber-400 border border-amber-500/40" : "hover:bg-slate-800 text-slate-400 hover:text-slate-200"
           }`}
         >
           <Camera className="w-4 h-4" />
-          <span className="hidden md:inline">{isFrozenView ? "Đã ghim" : "Ghim góc nhìn"}</span>
         </button>
 
         <button
+          type="button"
           onClick={handleResetCamera}
-          title="Reset góc nhìn Camera và hoàn nguyên các đỉnh về chuẩn"
-          className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors flex items-center gap-1 text-xs font-semibold"
+          title="Đặt lại góc nhìn mặc định (Chuẩn tâm)"
+          className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-200 transition-colors"
         >
-          <RotateCcw className="w-4 h-4 text-amber-400" />
-          <span className="hidden md:inline">Chuẩn tâm</span>
+          <RotateCcw className="w-4 h-4" />
         </button>
       </div>
     </div>

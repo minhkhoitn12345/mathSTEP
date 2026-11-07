@@ -72,12 +72,22 @@ type Session = {
 function normalizeMathDelimiters(content: string): string {
   if (!content) return "";
   let text = content;
-  text = text.replace(/\\\[([\s\S]+?)\\\]/g, (_match, expr: string) => `$$\n${expr.trim()}\n$$`);
+  text = text.replace(/\\\[([\s\S]+?)\\\]/g, (_match, expr: string) => `\n$$\n${expr.trim()}\n$$\n`);
   text = text.replace(/\\\(([\s\S]+?)\\\)/g, (_match, expr: string) => `$${expr.trim()}$`);
   text = text.replace(/(?<!\$)\s*(\\begin\{(cases|aligned|matrix|pmatrix|bmatrix)\}[\s\S]+?\\end\{\2\})\s*(?!\$)/g, (_match, block: string) => {
     return `\n$$\n${block.trim()}\n$$\n`;
   });
   text = text.replace(/(?<!\$)\$\s+([^\$\n]+?)\s+\$(?!\$)/g, "$$$1$$");
+
+  // ĐẢM BẢO KHOẢNG TRẮNG XUNG QUANH CÔNG THỨC LATEX KHÔNG BỊ DÍNH VÀO TỪ:
+  // 1. Chèn dấu cách trước ký hiệu $ nếu đứng liền sau chữ/số (VD: "điểm$M$" -> "điểm $M$")
+  text = text.replace(/([a-zA-ZÀ-ỹ0-9_])\$(?!\$)/g, "$1 $");
+  // 2. Chèn dấu cách sau ký hiệu $ đóng nếu đứng liền trước chữ/số (VD: "$M$thuộc" -> "$M$ thuộc")
+  text = text.replace(/(\$[^\$\n]+?\$)([a-zA-ZÀ-ỹ0-9_])/g, "$1 $2");
+  // 3. Tách biến số dính vào dấu ngoặc trong công thức (VD: "N(" -> "N\,(")
+  text = text.replace(/([A-Z])\s*\\left\(/g, "$1\\,\\left(");
+  text = text.replace(/([A-Z])\s*\(/g, "$1\\,(");
+
   return text;
 }
 

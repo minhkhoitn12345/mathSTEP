@@ -20,6 +20,11 @@ export function sanitizeLatex(raw: string): string {
   s = s.replace(/(\d+(?:(?:\{,\}|,)\d+)?)\s*m\b/g, "$1\\text{ m}");
   s = s.replace(/(\d+(?:(?:\{,\}|,)\d+)?)\s*m\^2/g, "$1\\text{ m}^2");
   s = s.replace(/(\d+(?:(?:\{,\}|,)\d+)?)\s*m\^3/g, "$1\\text{ m}^3");
+  // Tự động thêm khoảng trắng LaTeX giữa biến/tên điểm và dấu mở ngoặc (VD: N( -> N\,()
+  s = s.replace(/([A-Za-z0-9])\s*\\left\(/g, "$1\\,\\left(");
+  s = s.replace(/([A-Za-z0-9])\s*\(/g, "$1\\,(");
+  // Đảm bảo quan hệ vuông góc \perp có khoảng cách thoáng
+  s = s.replace(/([^\s])\\perp([^\s])/g, "$1 \\perp $2");
   return s;
 }
 
@@ -55,5 +60,25 @@ interface KatexMathProps {
 
 export default function KatexMath({ math, display = false, className = "" }: KatexMathProps) {
   const html = useMemo(() => renderKatex(math, display), [math, display]);
-  return <span className={`inline-block ${className}`} dangerouslySetInnerHTML={{ __html: html }} />;
+  return <span className={`inline-block mx-0.5 ${className}`} dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+export function MathFormattedText({ text, className = "" }: { text?: string; className?: string }) {
+  if (!text) return null;
+  // Regex phân tách các biểu thức LaTeX kẹp giữa $...$ hoặc $$...$$
+  const parts = text.split(/(\$\$[\s\S]+?\$\$|\$[^\$\n]+?\$)/g);
+  return (
+    <span className={className}>
+      {parts.map((part, i) => {
+        if (part.startsWith("$$") && part.endsWith("$$")) {
+          const math = part.slice(2, -2);
+          return <KatexMath key={i} math={math} display={true} />;
+        } else if (part.startsWith("$") && part.endsWith("$")) {
+          const math = part.slice(1, -1);
+          return <KatexMath key={i} math={math} display={false} />;
+        }
+        return <React.Fragment key={i}>{part}</React.Fragment>;
+      })}
+    </span>
+  );
 }

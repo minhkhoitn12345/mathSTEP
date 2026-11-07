@@ -40,31 +40,31 @@ export default function StationCatalogModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-[#08232999] backdrop-blur-sm flex items-center justify-center p-3 md:p-6"
+      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-3 md:p-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="catalog-modal-title"
     >
-      <div className="bg-white w-full max-w-5xl h-[90vh] rounded-2xl shadow-2xl border border-[#d9e4e2] flex flex-col overflow-hidden text-xs">
+      <div className="bg-slate-900 w-full max-w-5xl h-[90vh] rounded-2xl shadow-2xl border border-slate-800 flex flex-col overflow-hidden text-xs text-slate-200">
         {/* Modal Header */}
-        <header className="px-5 py-4 border-b border-[#d9e4e2] bg-[#f8faf9] flex items-center justify-between shrink-0">
+        <header className="px-5 py-4 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between shrink-0">
           <div>
             <div className="flex items-center gap-2">
-              <Layers className="w-5 h-5 text-emerald-600" />
-              <h2 id="catalog-modal-title" className="font-bold text-base text-[#152f35]">
+              <Layers className="w-5 h-5 text-blue-400" />
+              <h2 id="catalog-modal-title" className="font-bold text-base text-slate-100">
                 Danh mục 48 trạm học Toán THPT (GDPT 2018)
               </h2>
-              <span className="px-2 py-0.5 rounded-full bg-[#e2f1ec] text-[#087e7c] font-bold text-[11px]">
+              <span className="px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 font-mono text-[11px]">
                 {filteredStations.length} / 48 trạm
               </span>
             </div>
-            <p className="text-[11px] text-[#63777c] mt-0.5">
+            <p className="text-[11px] text-slate-400 mt-0.5">
               Hệ thống mô phỏng 2D/3D & AR tương tác theo tiến trình 7 bước sư phạm
             </p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-lg transition-colors"
+            className="w-8 h-8 rounded-lg hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-100 font-bold text-base transition-colors cursor-pointer"
             aria-label="Đóng danh mục"
           >
             ✕
@@ -72,21 +72,21 @@ export default function StationCatalogModal({
         </header>
 
         {/* Filter & Search Bar */}
-        <div className="p-4 bg-white border-b border-[#e2e8e7] space-y-3 shrink-0">
+        <div className="p-4 bg-slate-900 border-b border-slate-800 space-y-3 shrink-0">
           {/* Input Search */}
           <div className="relative">
-            <span className="absolute left-3 top-2.5 text-gray-400"><Search className="w-4 h-4" /></span>
+            <span className="absolute left-3 top-2.5 text-slate-400"><Search className="w-4 h-4" /></span>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm kiếm trạm theo mã (10.03, 11.06...), tên bài học, nguồn SGK, từ khóa (không dấu)..."
-              className="w-full pl-9 pr-4 py-2 border border-[#d9e4e2] rounded-xl text-xs focus:outline-none focus:border-[#087e7c] bg-[#fbfcfb]"
+              className="w-full pl-9 pr-4 py-2 border border-slate-800 rounded-xl text-xs focus:outline-none focus:border-blue-500 bg-slate-950/80 text-slate-100 placeholder-slate-500"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-2 text-gray-400 hover:text-gray-700"
+                className="absolute right-3 top-2 text-slate-400 hover:text-slate-200 cursor-pointer"
               >
                 ✕
               </button>
@@ -97,13 +97,13 @@ export default function StationCatalogModal({
           <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
             {/* Grade filter */}
             <div className="flex items-center gap-1">
-              <span className="font-semibold text-gray-500 mr-1">Khối lớp:</span>
+              <span className="font-semibold text-slate-400 mr-1">Khối lớp:</span>
               <button
                 onClick={() => setGradeFilter(null)}
-                className={`px-2.5 py-1 rounded-lg border font-medium transition-colors ${
+                className={`px-2.5 py-1 rounded-lg border font-medium transition-colors cursor-pointer ${
                   gradeFilter === null
-                    ? "bg-[#087e7c] text-white border-[#087e7c]"
-                    : "bg-[#f3f6f5] text-gray-700 border-[#d9e4e2] hover:bg-[#e6eeec]"
+                    ? "bg-blue-600 text-white border-blue-500 font-semibold"
+                    : "bg-slate-950/70 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200"
                 }`}
               >
                 Tất cả (48)
@@ -112,10 +112,10 @@ export default function StationCatalogModal({
                 <button
                   key={g}
                   onClick={() => setGradeFilter(g)}
-                  className={`px-2.5 py-1 rounded-lg border font-medium transition-colors ${
+                  className={`px-2.5 py-1 rounded-lg border font-medium transition-colors cursor-pointer ${
                     gradeFilter === g
-                      ? "bg-[#087e7c] text-white border-[#087e7c]"
-                      : "bg-[#f3f6f5] text-gray-700 border-[#d9e4e2] hover:bg-[#e6eeec]"
+                      ? "bg-blue-600 text-white border-blue-500 font-semibold"
+                      : "bg-slate-950/70 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200"
                   }`}
                 >
                   Lớp {g}
@@ -125,7 +125,7 @@ export default function StationCatalogModal({
 
             {/* Dimension filter */}
             <div className="flex items-center gap-1">
-              <span className="font-semibold text-gray-500 mr-1">Không gian:</span>
+              <span className="font-semibold text-slate-400 mr-1">Không gian:</span>
               {(
                 [
                   { id: "all", label: "Tất cả" },
@@ -136,10 +136,10 @@ export default function StationCatalogModal({
                 <button
                   key={dim.id}
                   onClick={() => setDimensionFilter(dim.id)}
-                  className={`px-2.5 py-1 rounded-lg border font-medium transition-colors ${
+                  className={`px-2.5 py-1 rounded-lg border font-medium transition-colors cursor-pointer ${
                     dimensionFilter === dim.id
-                      ? "bg-[#087e7c] text-white border-[#087e7c]"
-                      : "bg-[#f3f6f5] text-gray-700 border-[#d9e4e2] hover:bg-[#e6eeec]"
+                      ? "bg-blue-600 text-white border-blue-500 font-semibold"
+                      : "bg-slate-950/70 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200"
                   }`}
                 >
                   {dim.label}
@@ -149,7 +149,7 @@ export default function StationCatalogModal({
 
             {/* Priority filter */}
             <div className="flex items-center gap-1">
-              <span className="font-semibold text-gray-500 mr-1">Mức ưu tiên:</span>
+              <span className="font-semibold text-slate-400 mr-1">Mức ưu tiên:</span>
               {(
                 [
                   { id: "all", label: "Tất cả" },
@@ -161,10 +161,10 @@ export default function StationCatalogModal({
                 <button
                   key={p.id}
                   onClick={() => setPriorityFilter(p.id)}
-                  className={`px-2.5 py-1 rounded-lg border font-medium transition-colors ${
+                  className={`px-2.5 py-1 rounded-lg border font-medium transition-colors cursor-pointer ${
                     priorityFilter === p.id
-                      ? "bg-[#087e7c] text-white border-[#087e7c]"
-                      : "bg-[#f3f6f5] text-gray-700 border-[#d9e4e2] hover:bg-[#e6eeec]"
+                      ? "bg-blue-600 text-white border-blue-500 font-semibold"
+                      : "bg-slate-950/70 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200"
                   }`}
                 >
                   {p.label}
@@ -175,14 +175,14 @@ export default function StationCatalogModal({
         </div>
 
         {/* Station Cards Grid */}
-        <div className="flex-1 overflow-y-auto p-4 bg-[#f8faf9]">
+        <div className="flex-1 overflow-y-auto p-4 bg-slate-950/60">
           {filteredStations.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center p-8 text-gray-400">
-              <Search className="w-8 h-8 mb-2 text-gray-300" />
-              <p className="font-semibold text-gray-600 text-sm">
+            <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-500">
+              <Search className="w-8 h-8 mb-2 text-slate-600" />
+              <p className="font-semibold text-slate-300 text-sm">
                 Không tìm thấy trạm học nào phù hợp với bộ lọc.
               </p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Hãy thử đổi từ khóa tìm kiếm hoặc bỏ chọn các tiêu chí lọc.
               </p>
               <button
@@ -192,7 +192,7 @@ export default function StationCatalogModal({
                   setDimensionFilter("all");
                   setPriorityFilter("all");
                 }}
-                className="mt-3 px-3 py-1.5 bg-[#087e7c] text-white rounded-lg font-bold"
+                className="mt-3 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold cursor-pointer"
               >
                 Đặt lại tất cả bộ lọc
               </button>
@@ -206,24 +206,24 @@ export default function StationCatalogModal({
                     key={station.id}
                     className={`p-3.5 rounded-xl border flex flex-col justify-between transition-all ${
                       isSelected
-                        ? "bg-[#eff8f6] border-[#087e7c] shadow-md ring-1 ring-[#087e7c]"
-                        : "bg-white border-[#d9e4e2] hover:border-[#087e7c] hover:shadow-sm"
+                        ? "bg-blue-950/20 border-blue-500 shadow-md ring-1 ring-blue-500"
+                        : "bg-slate-900/90 border-slate-800 hover:border-slate-700 hover:bg-slate-900"
                     }`}
                   >
                     <div>
                       {/* Card Header badges */}
                       <div className="flex items-center justify-between gap-1 mb-1.5">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-[#f3f6f5] text-[#152f35] border border-[#d9e4e2]">
+                          <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700">
                             {station.id}
                           </span>
                           <span
                             className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                               station.grade === 10
-                                ? "bg-blue-100 text-blue-700"
+                                ? "bg-blue-500/15 text-blue-300 border border-blue-500/25"
                                 : station.grade === 11
-                                ? "bg-amber-100 text-amber-700"
-                                : "bg-purple-100 text-purple-700"
+                                ? "bg-amber-500/15 text-amber-300 border border-amber-500/25"
+                                : "bg-purple-500/15 text-purple-300 border border-purple-500/25"
                             }`}
                           >
                             Lớp {station.grade}
@@ -231,41 +231,41 @@ export default function StationCatalogModal({
                         </div>
                         <div className="flex items-center gap-1">
                           <span
-                            className={`text-[10px] font-semibold px-1.5 py-0.2 rounded border ${
+                            className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${
                               station.priority === "A"
-                                ? "bg-red-50 text-red-600 border-red-200 font-bold"
+                                ? "bg-rose-500/15 text-rose-300 border-rose-500/30 font-bold"
                                 : station.priority === "B"
-                                ? "bg-yellow-50 text-yellow-700 border-yellow-200"
-                                : "bg-gray-50 text-gray-500 border-gray-200"
+                                ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                                : "bg-slate-800 text-slate-400 border-slate-700"
                             }`}
                           >
                             {station.priority === "A" ? "★ Ưu tiên A" : `Mức ${station.priority}`}
                           </span>
-                          <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-gray-100 text-gray-600">
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
                             {station.is3D ? "3D" : "2D"}
                           </span>
                         </div>
                       </div>
 
                       {/* Card Title & Source */}
-                      <h3 className="font-bold text-xs text-[#152f35] leading-snug line-clamp-1">
+                      <h3 className="font-bold text-xs text-slate-100 leading-snug line-clamp-1">
                         {station.title}
                       </h3>
-                      <div className="text-[10px] text-gray-400 font-mono mb-2">
+                      <div className="text-[10px] text-slate-500 font-mono mb-2">
                         {station.source}
                       </div>
 
                       {/* Simulation description */}
-                      <div className="p-2 bg-[#f3f6f5] rounded-lg border border-[#e8efed] mb-2 space-y-1">
-                        <div className="text-[10px] text-[#087e7c] font-bold">Mô phỏng:</div>
-                        <p className="text-[11px] text-gray-700 leading-relaxed line-clamp-2">
+                      <div className="p-2 bg-slate-950/70 rounded-lg border border-slate-800/80 mb-2 space-y-1">
+                        <div className="text-[10px] text-blue-400 font-semibold">Mô phỏng:</div>
+                        <p className="text-[11px] text-slate-300 leading-relaxed line-clamp-2">
                           {station.simulation}
                         </p>
                       </div>
 
                       {/* Educational Goal */}
-                      <div className="text-[11px] text-gray-600 leading-relaxed line-clamp-2 mb-2">
-                        <strong className="text-gray-800">Mục tiêu:</strong> {station.goal}
+                      <div className="text-[11px] text-slate-400 leading-relaxed line-clamp-2 mb-2">
+                        <strong className="text-slate-300 font-medium">Mục tiêu:</strong> {station.goal}
                       </div>
                     </div>
 
@@ -283,12 +283,12 @@ export default function StationCatalogModal({
                         onSelectStation(station);
                         onClose();
                       }}
-                      className={`w-full py-1.5 mt-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1 transition-colors ${
+                      className={`w-full py-1.5 mt-2 rounded-lg font-semibold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer ${
                         !station.isValidated
-                          ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
+                          ? "bg-slate-950/40 text-slate-600 cursor-not-allowed border border-slate-800"
                           : isSelected
-                          ? "bg-[#087e7c] text-white hover:bg-[#066563]"
-                          : "bg-[#e2f1ec] text-[#087e7c] hover:bg-[#087e7c] hover:text-white"
+                          ? "bg-blue-600 text-white hover:bg-blue-500 shadow-xs"
+                          : "bg-slate-800 text-blue-300 hover:bg-slate-750 border border-slate-700"
                       }`}
                     >
                       <span>
@@ -307,13 +307,13 @@ export default function StationCatalogModal({
         </div>
 
         {/* Modal Footer */}
-        <footer className="px-5 py-3 border-t border-[#d9e4e2] bg-[#f8faf9] flex items-center justify-between shrink-0">
-          <div className="text-[11px] text-gray-500">
+        <footer className="px-5 py-3 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between shrink-0">
+          <div className="text-[11px] text-slate-500">
             Dữ liệu xây dựng đồng bộ theo chương trình Giáo dục phổ thông 2018 (Toán 10, 11, 12).
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg border border-[#d9e4e2] text-gray-700 font-bold hover:bg-gray-100"
+            className="px-4 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-semibold hover:bg-slate-750 cursor-pointer"
           >
             Đóng
           </button>

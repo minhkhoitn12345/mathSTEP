@@ -53,20 +53,20 @@ export default function WorksheetPrintModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-[#08232999] backdrop-blur-sm flex items-center justify-center p-3 md:p-6 print:p-0 print:bg-white print:static"
+      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-3 md:p-6 print:p-0 print:bg-white print:static"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white w-full max-w-4xl h-[92vh] rounded-2xl shadow-2xl border border-[#d9e4e2] flex flex-col overflow-hidden text-xs print:h-auto print:max-w-none print:shadow-none print:border-none print:rounded-none">
+      <div className="bg-slate-900 w-full max-w-4xl h-[92vh] rounded-2xl shadow-2xl border border-slate-800 flex flex-col overflow-hidden text-xs print:h-auto print:max-w-none print:shadow-none print:border-none print:rounded-none">
         {/* Header - Hidden on Print */}
-        <header className="px-5 py-3 border-b border-[#d9e4e2] bg-[#f8faf9] flex items-center justify-between shrink-0 print:hidden">
-          <div className="flex items-center gap-2">
-            <Printer className="w-5 h-5 text-slate-700" />
+        <header className="px-5 py-3 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between shrink-0 print:hidden text-slate-200">
+          <div className="flex items-center gap-2.5">
+            <Printer className="w-5 h-5 text-blue-400" />
             <div>
-              <h2 className="font-bold text-sm text-[#152f35]">
+              <h2 className="font-bold text-sm text-slate-100">
                 Xem trước Phiếu học tập A4 · Trạm {station.id}
               </h2>
-              <p className="text-[11px] text-[#63777c]">
+              <p className="text-[11px] text-slate-400">
                 Phiếu in dùng cho học sinh thực hành trên lớp hoặc làm bài thu hoạch
               </p>
             </div>
@@ -74,13 +74,14 @@ export default function WorksheetPrintModal({
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="px-4 py-1.5 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563] flex items-center gap-1.5 shadow-sm"
+              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
             >
-              <span className="flex items-center gap-1.5"><Printer className="w-4 h-4" /><span>In ra giấy / Lưu PDF</span></span>
+              <Printer className="w-4 h-4" />
+              <span>In ra giấy / Lưu PDF</span>
             </button>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full hover:bg-gray-200 flex items-center justify-center text-gray-500 font-bold"
+              className="w-8 h-8 rounded-lg hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-100 font-bold transition-colors cursor-pointer"
               aria-label="Đóng"
             >
               ✕

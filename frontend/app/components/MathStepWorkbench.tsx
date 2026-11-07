@@ -26,7 +26,7 @@ import DynamicCalculusLab from "./dynamic-math/DynamicCalculusLab";
 import DynamicProbabilityLab from "./dynamic-math/DynamicProbabilityLab";
 import DynamicConicsLab from "./dynamic-math/DynamicConicsLab";
 import DynamicParameterDock from "./dynamic-math/DynamicParameterDock";
-import KatexMath, { formatVNFloat } from "./KatexMath";
+import KatexMath, { formatVNFloat, MathFormattedText } from "./KatexMath";
 import {
   MoreVertical,
   RotateCcw,
@@ -2198,19 +2198,19 @@ export default function MathStepWorkbench({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
-          {/* NÚT BẤM NỔI BẬT: XEM ĐỀ BÀI CHI TIẾT SGK */}
+        <div className="flex items-center gap-1 shrink-0">
+          {/* Nút Xem đề bài chi tiết SGK (Gọn gàng) */}
           <button
             type="button"
             onClick={() => setProblemDetailModalOpen(true)}
-            className="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+            className="p-1.5 sm:px-2.5 sm:py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer"
             title="Nhấn để xem rõ toàn văn đề bài chi tiết SGK"
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>📄 Đề bài SGK</span>
+            <span className="hidden sm:inline">Đề bài</span>
           </button>
 
-          {/* Nút Ẩn/Hiện Cột Đề bài & Nhiệm vụ bên Trái */}
+          {/* Nút Ẩn/Hiện Cột Đề bài (Icon) */}
           <button
             type="button"
             onClick={() => {
@@ -2221,21 +2221,20 @@ export default function MathStepWorkbench({
               });
             }}
             title={showLeftPanel ? "Thu gọn Cột Đề bài để mở rộng đồ thị" : "Mở Cột Đề bài để đọc đề"}
-            className={`px-2 py-1 rounded-md border text-xs font-medium hidden lg:flex items-center gap-1 transition-colors ${
+            className={`p-1.5 rounded-md border text-xs font-medium hidden lg:flex items-center transition-colors ${
               showLeftPanel
-                ? "bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800"
+                ? "bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
                 : "bg-blue-600 text-white border-blue-500 hover:bg-blue-500"
             }`}
           >
             {showLeftPanel ? (
-              <PanelLeftClose className="w-3.5 h-3.5 text-slate-400" />
+              <PanelLeftClose className="w-3.5 h-3.5" />
             ) : (
-              <PanelLeftOpen className="w-3.5 h-3.5 text-white" />
+              <PanelLeftOpen className="w-3.5 h-3.5" />
             )}
-            <span>{showLeftPanel ? "Ẩn cột đề" : "Mở cột đề"}</span>
           </button>
 
-          {/* Nút Ẩn/Hiện Thanh Điều khiển bên Phải */}
+          {/* Nút Ẩn/Hiện Thanh Điều khiển bên Phải (Icon) */}
           <button
             type="button"
             onClick={() => {
@@ -2246,29 +2245,27 @@ export default function MathStepWorkbench({
               });
             }}
             title={showRightPanel ? "Ẩn thanh Điều khiển để mở rộng đồ thị" : "Hiện thanh Điều khiển"}
-            className={`px-2 py-1 rounded-md border text-xs font-medium hidden lg:flex items-center gap-1 transition-colors ${
+            className={`p-1.5 rounded-md border text-xs font-medium hidden lg:flex items-center transition-colors ${
               showRightPanel
-                ? "bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800"
+                ? "bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
                 : "bg-blue-600 text-white border-blue-500 hover:bg-blue-500"
             }`}
           >
             {showRightPanel ? (
-              <PanelRightClose className="w-3.5 h-3.5 text-slate-400" />
+              <PanelRightClose className="w-3.5 h-3.5" />
             ) : (
-              <PanelRightOpen className="w-3.5 h-3.5 text-white" />
+              <PanelRightOpen className="w-3.5 h-3.5" />
             )}
-            <span>{showRightPanel ? "Ẩn công cụ" : "Hiện công cụ"}</span>
           </button>
 
-          {/* Nút Làm lại bài này từ đầu (Reset Progress) */}
+          {/* Nút Làm lại bài này từ đầu (Reset Progress - Icon) */}
           <button
             type="button"
             onClick={handleResetProgress}
             title="Làm lại bài này từ đầu (Xóa câu trả lời và số liệu đã lưu)"
-            className="px-2 py-1 rounded-md border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-rose-400 font-medium text-xs flex items-center gap-1 transition-colors"
+            className="p-1.5 rounded-md border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-rose-400 font-medium text-xs flex items-center transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Làm lại</span>
           </button>
 
           {/* Nút gạt Header: [Chế độ Trình chiếu (GV)] ↔ [Chế độ Thực hành (HS)] */}
@@ -2289,15 +2286,15 @@ export default function MathStepWorkbench({
                 return next;
               });
             }}
-            title={isTeacherMode ? "Đang ở Chế độ Giáo viên. Nhấp để chuyển về Chế độ Học sinh" : "Đang ở Chế độ Học sinh. Nhấp để chuyển sang Chế độ Giáo viên"}
-            className={`px-2.5 py-1 rounded-md border text-xs font-medium flex items-center gap-1.5 transition-colors ${
+            title={isTeacherMode ? "Chế độ Giáo viên (Nhấp đổi về Học sinh)" : "Chế độ Học sinh (Nhấp đổi sang Giáo viên)"}
+            className={`p-1.5 sm:px-2 sm:py-1 rounded-md border text-xs font-medium flex items-center gap-1.5 transition-colors ${
               isTeacherMode
                 ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                : "bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800"
+                : "bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
             }`}
           >
             <GraduationCap className={`w-3.5 h-3.5 ${isTeacherMode ? "text-amber-400" : "text-slate-400"}`} />
-            <span>{isTeacherMode ? "GV (Trình chiếu)" : "HS (Thực hành)"}</span>
+            <span className="hidden md:inline">{isTeacherMode ? "GV" : "HS"}</span>
           </button>
 
           {/* 3-Dots More Options Menu */}
@@ -2311,21 +2308,21 @@ export default function MathStepWorkbench({
             </button>
 
             {moreMenuOpen && (
-              <div className="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-2xl border border-slate-200 p-1.5 z-50 flex flex-col gap-1 text-xs animate-in fade-in slide-in-from-top-2">
+              <div className="absolute right-0 top-full mt-1.5 w-56 bg-slate-900 rounded-xl shadow-2xl border border-slate-800 p-1.5 z-50 flex flex-col gap-1 text-xs text-slate-200 animate-in fade-in slide-in-from-top-2">
                 <button
                   onClick={() => {
                     setIsTeacherMode((v) => !v);
                     setMoreMenuOpen(false);
                     showToast(!isTeacherMode ? "Đã bật Chế độ Giáo viên: Tự do chọn bước trình chiếu." : "Đã chuyển về Chế độ Học sinh.");
                   }}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center justify-between text-[#152f35]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800 flex items-center justify-between text-slate-200 transition-colors"
                 >
                   <span className="flex items-center gap-2">
-                    <GraduationCap className="w-3.5 h-3.5 text-slate-500" />
+                    <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
                     <span className="font-medium">Chế độ dạy học</span>
                   </span>
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                    isTeacherMode ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-500"
+                    isTeacherMode ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-slate-800 text-slate-400"
                   }`}>
                     {isTeacherMode ? "BẬT" : "TẮT"}
                   </span>
@@ -2336,9 +2333,9 @@ export default function MathStepWorkbench({
                     handleSnapshot();
                     setMoreMenuOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 text-[#152f35]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800 flex items-center gap-2 text-slate-300 transition-colors"
                 >
-                  <Camera className="w-3.5 h-3.5" />
+                  <Camera className="w-3.5 h-3.5 text-slate-400" />
                   <span>Chụp ảnh khung làm việc</span>
                 </button>
 
@@ -2347,9 +2344,9 @@ export default function MathStepWorkbench({
                     handleOpenWorksheet();
                     setMoreMenuOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 text-[#152f35]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800 flex items-center gap-2 text-slate-300 transition-colors"
                 >
-                  <Printer className="w-3.5 h-3.5" />
+                  <Printer className="w-3.5 h-3.5 text-slate-400" />
                   <span>In phiếu học tập A4</span>
                 </button>
 
@@ -2358,9 +2355,9 @@ export default function MathStepWorkbench({
                     handleShareScene();
                     setMoreMenuOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 text-[#152f35]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800 flex items-center gap-2 text-slate-300 transition-colors"
                 >
-                  <Share2 className="w-3.5 h-3.5" />
+                  <Share2 className="w-3.5 h-3.5 text-slate-400" />
                   <span>Sao chép liên kết chia sẻ</span>
                 </button>
 
@@ -2369,18 +2366,18 @@ export default function MathStepWorkbench({
                     setEvidenceModalOpen(true);
                     setMoreMenuOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center justify-between text-[#152f35]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800 flex items-center justify-between text-slate-300 transition-colors"
                 >
                   <span className="flex items-center gap-2">
-                    <BookOpen className="w-3.5 h-3.5" />
+                    <BookOpen className="w-3.5 h-3.5 text-blue-400" />
                     <span>Sổ khám phá (bằng chứng)</span>
                   </span>
-                  <span className="font-bold text-[10px] text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded">
+                  <span className="font-bold text-[10px] text-blue-300 bg-blue-500/10 border border-blue-500/20 px-1.5 py-0.5 rounded">
                     {evidenceHistory.length}
                   </span>
                 </button>
 
-                <div className="h-[1px] bg-slate-100 my-0.5" />
+                <div className="h-[1px] bg-slate-800 my-0.5" />
 
                 <button
                   onClick={() => {
@@ -2388,7 +2385,7 @@ export default function MathStepWorkbench({
                     setMoreMenuOpen(false);
                     showToast("Đã khôi phục góc nhìn chuẩn ban đầu.");
                   }}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 text-slate-600"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800 flex items-center gap-2 text-slate-400 transition-colors"
                 >
                   <span>⟲</span>
                   <span>Khôi phục góc nhìn chuẩn</span>
@@ -2522,14 +2519,16 @@ export default function MathStepWorkbench({
                   </div>
 
                   {/* Bối cảnh đề bài */}
-                  <p className="text-[11px] text-slate-300 leading-relaxed font-serif italic break-words">
-                    {prob.context}
-                  </p>
+                  <div className="text-[11px] text-slate-300 leading-relaxed font-serif italic break-words">
+                    <MathFormattedText text={prob.context} />
+                  </div>
 
                   {/* Mục tiêu trọng tâm */}
                   <div className="p-2 bg-emerald-950/30 rounded border border-emerald-500/30 text-[11px] font-medium text-emerald-300 flex items-start gap-1.5">
                     <Target className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                    <span className="leading-snug">{prob.objectiveText}</span>
+                    <span className="leading-snug">
+                      <MathFormattedText text={prob.objectiveText} />
+                    </span>
                   </div>
 
                   {/* NÚT BẤM NỔI BẬT: PHÓNG TO XEM RÕ TOÀN VĂN ĐỀ BÀI */}
@@ -2545,29 +2544,29 @@ export default function MathStepWorkbench({
               );
             })()}
 
-          <div className="border-b border-[#d9e4e2] pb-2 pt-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#087e7c]">
+          <div className="border-b border-slate-800 pb-2 pt-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">
               TIẾN TRÌNH 8 BƯỚC SƯ PHẠM · BƯỚC {currentStep + 1}
             </span>
-            <h3 className="text-xs font-bold mt-1 text-[#152f35]">{STEP_NAMES[currentStep]}</h3>
+            <h3 className="text-xs font-bold mt-1 text-slate-100">{STEP_NAMES[currentStep]}</h3>
           </div>
 
           {/* Nội dung từng bước */}
           {/* BƯỚC 1: NHÌN THẤY (OBSERVE) */}
           {currentStep === 0 && (
             <div className="space-y-2.5">
-              <p className="text-[11px] text-[#63777c] leading-relaxed">{meta.simulation}</p>
-              <div className="p-2.5 rounded-lg bg-[#eff8f4] border-l-4 border-[#087e7c] text-[11px]">
-                <strong>Mục tiêu bài học</strong>
-                <p className="mt-1 text-[#152f35]">{meta.goal}</p>
+              <p className="text-[11px] text-slate-400 leading-relaxed">{meta.simulation}</p>
+              <div className="p-2.5 rounded-lg bg-slate-950/70 border-l-2 border-blue-500 text-[11px]">
+                <strong className="text-blue-400 block mb-0.5">Mục tiêu bài học</strong>
+                <p className="text-slate-300">{meta.goal}</p>
               </div>
-              <p className="text-[10px] text-[#63777c]">
+              <p className="text-[10px] text-slate-500">
                 Căn cứ SGK: {meta.source}. Quan sát trực quan mô hình và xác định các yếu tố xuất hiện trên hình vẽ trước khi dự đoán.
               </p>
               <button
                 type="button"
                 onClick={handleNextStep}
-                className="w-full py-2 bg-[#087e7c] text-white rounded-lg font-bold text-xs hover:bg-[#066563] transition-colors shadow-sm"
+                className="w-full py-2 bg-blue-600 text-white rounded-lg font-semibold text-xs hover:bg-blue-500 transition-colors shadow-xs cursor-pointer"
               >
                 Em đã quan sát xong, chuyển sang Dự đoán →
               </button>
@@ -2577,7 +2576,7 @@ export default function MathStepWorkbench({
           {/* BƯỚC 2: DỰ ĐOÁN (PREDICT) */}
           {currentStep === 1 && (
             <div className="space-y-2">
-              <label className="font-bold text-[11px] text-[#152f35]">
+              <label className="font-semibold text-[11px] text-slate-300">
                 Dự đoán ban đầu của em:
               </label>
               <textarea
@@ -2585,7 +2584,7 @@ export default function MathStepWorkbench({
                 onChange={(e) => setPrediction(e.target.value)}
                 placeholder="Em nghĩ rằng... vì..."
                 rows={4}
-                className="w-full p-2 border border-[#bed0cd] rounded-lg text-xs focus:outline-none focus:border-[#087e7c] resize-none"
+                className="w-full p-2 border border-slate-800 bg-slate-950/80 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
               />
 
               {/* Socratic Semantic Quality Feedback */}
@@ -2596,10 +2595,10 @@ export default function MathStepWorkbench({
                   <div
                     className={`p-2 rounded-lg text-[10px] leading-relaxed border ${
                       feedback.type === "good"
-                        ? "bg-[#edf6f3] border-[#a3e2cf] text-[#087e7c] font-medium"
+                        ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-300 font-medium"
                         : feedback.type === "short"
-                        ? "bg-[#fefce8] border-[#fef08a] text-[#854d0e]"
-                        : "bg-[#f8faf9] border-[#d9e4e2] text-gray-600"
+                        ? "bg-amber-950/40 border-amber-500/30 text-amber-300"
+                        : "bg-slate-950/70 border-slate-800 text-slate-400"
                     }`}
                   >
                     {feedback.message}
@@ -2611,7 +2610,7 @@ export default function MathStepWorkbench({
                 <button
                   type="button"
                   onClick={handleSavePrediction}
-                  className="flex-1 py-1.5 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563] transition-colors"
+                  className="flex-1 py-1.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500 transition-colors cursor-pointer"
                 >
                   Lưu dự đoán
                 </button>
@@ -2623,10 +2622,10 @@ export default function MathStepWorkbench({
                         `Nhờ linh vật TES nhận xét câu dự đoán của em ở bài ${meta.title}: "${prediction.trim()}"`
                       )
                     }
-                    className="px-2.5 py-1.5 bg-[#eef7f3] text-[#087e7c] border border-[#d9e4e2] rounded-lg font-bold text-[10px] hover:bg-[#e2f1ec] shrink-0"
+                    className="px-2.5 py-1.5 bg-slate-800 text-blue-400 border border-slate-700 rounded-lg font-semibold text-[10px] hover:bg-slate-700 shrink-0 cursor-pointer"
                     title="Hỏi trợ lý nhận xét câu dự đoán"
                   >
-                    <Bot className="w-3.5 h-3.5 inline mr-1 text-[#087e7c]" /> Nhờ TES nhận xét
+                    <Bot className="w-3.5 h-3.5 inline mr-1 text-blue-400" /> Nhờ TES nhận xét
                   </button>
                 )}
               </div>
@@ -2636,18 +2635,18 @@ export default function MathStepWorkbench({
           {/* BƯỚC 3: THAO TÁC (MANIPULATE) */}
           {currentStep === 2 && (
             <div className="space-y-2.5">
-              <div className="p-2.5 rounded-lg bg-[#eff8f4] border-l-4 border-[#087e7c] text-[11px]">
-                <strong>Thao tác tương tác mô phỏng</strong>
-                <p className="mt-1">
-                  Kéo điểm màu vàng trên khung vẽ hoặc dùng thanh trượt ở cột bên phải để thử các giá trị khác nhau.
+              <div className="p-2.5 rounded-lg bg-slate-950/70 border-l-2 border-blue-500 text-[11px]">
+                <strong className="text-blue-400 block mb-0.5">Thao tác tương tác mô phỏng</strong>
+                <p className="text-slate-300">
+                  Kéo điểm tương tác trên khung vẽ hoặc dùng thanh trượt ở cột bên phải để thử các giá trị khác nhau.
                 </p>
               </div>
-              <div className="text-center py-2 bg-[#f3f6f5] rounded-lg border border-[#d9e4e2]">
-                <span className="text-lg font-bold text-[#087e7c] block">{manipulations}</span>
-                <span className="text-[10px] text-[#63777c]">lượt thao tác đã ghi nhận</span>
+              <div className="text-center py-2 bg-slate-950/70 rounded-lg border border-slate-800">
+                <span className="text-lg font-bold text-blue-400 block">{manipulations}</span>
+                <span className="text-[10px] text-slate-400">lượt thao tác đã ghi nhận</span>
               </div>
-              <p className="text-[10px] text-gray-500 italic">
-                <span className="flex items-center gap-1.5"><Lightbulb className="w-3.5 h-3.5 text-slate-500" /><span>Lời khuyên: Hãy thử ít nhất 3 cấu hình khác nhau trước khi ghi nhận quan sát.</span></span>
+              <p className="text-[10px] text-slate-400 italic">
+                <span className="flex items-center gap-1.5"><Lightbulb className="w-3.5 h-3.5 text-amber-400" /><span>Lời khuyên: Hãy thử ít nhất 3 cấu hình khác nhau trước khi ghi nhận quan sát.</span></span>
               </p>
             </div>
           )}
@@ -2657,17 +2656,17 @@ export default function MathStepWorkbench({
             <div className="space-y-2.5">
               <button
                 onClick={handleRecordObservation}
-                className="w-full py-2 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563] transition-colors shadow-sm"
+                className="w-full py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500 transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
               >
-                <BookmarkCheck className="w-3.5 h-3.5 inline mr-1" /> Ghi cấu hình đang thấy ({observations.length} đã lưu)
+                <BookmarkCheck className="w-3.5 h-3.5" /> Ghi cấu hình đang thấy ({observations.length} đã lưu)
               </button>
 
-              <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] space-y-1.5">
-                <div className="flex items-center gap-1.5 font-bold text-amber-900">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-600 inline mr-1" />
+              <div className="p-2.5 rounded-lg bg-amber-950/30 border border-amber-500/30 text-[11px] space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-amber-300">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
                   <span>Cảnh báo mã lỗi tư duy thường gặp:</span>
                 </div>
-                <p className="text-amber-800 text-[10px] leading-relaxed">
+                <p className="text-amber-200/90 text-[10px] leading-relaxed">
                   {moduleId === "linear_programming"
                     ? "Lỗi M1 & M2: Quên đổi chiều BPT khi nhân số âm; hoặc lấy nghiệm thập phân trong bài toán yêu cầu biến nguyên x, y ∈ ℕ*."
                     : moduleId === "spatial_geometry"
@@ -2680,8 +2679,8 @@ export default function MathStepWorkbench({
 
               <div className="space-y-1 max-h-28 overflow-y-auto">
                 {observations.map((obs, idx) => (
-                  <div key={idx} className="p-1.5 bg-[#eef7f3] rounded border border-[#d9e4e2] text-[10px]">
-                    <span className="font-mono text-[#087e7c] font-bold">[{obs.at}]</span> {obs.summary}
+                  <div key={idx} className="p-1.5 bg-slate-950/70 rounded border border-slate-800 text-[10px] text-slate-300">
+                    <span className="font-mono text-blue-400 font-bold">[{obs.at}]</span> {obs.summary}
                   </div>
                 ))}
               </div>
@@ -2692,9 +2691,9 @@ export default function MathStepWorkbench({
           {currentStep === 4 && (
             <div className="space-y-2.5">
               {/* Nút bật Phản ví dụ trực quan */}
-              <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-lg space-y-2">
+              <div className="p-2.5 bg-rose-950/30 border border-rose-500/30 rounded-lg space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-[11px] text-rose-900">
+                  <span className="font-bold text-[11px] text-rose-300">
                     Phản ví dụ trực quan (Counter-Example)
                   </span>
                   <button
@@ -2703,23 +2702,23 @@ export default function MathStepWorkbench({
                       setCounterExampleActive((v) => !v);
                       showToast(!counterExampleActive ? "Đã ghim chấm đỏ phản ví dụ P(1; 0) trên đồ thị!" : "Đã ẩn chấm phản ví dụ.");
                     }}
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer ${
                       counterExampleActive
-                        ? "bg-rose-600 text-white border-rose-600"
-                        : "bg-white text-rose-700 border-rose-300 hover:bg-rose-50"
+                        ? "bg-rose-600 text-white border-rose-500"
+                        : "bg-slate-900 text-rose-300 border-rose-500/40 hover:bg-rose-950/50"
                     }`}
                   >
                     {counterExampleActive ? "Bật: Chấm đỏ P" : "Ghim chấm đỏ P"}
                   </button>
                 </div>
-                <p className="text-[10px] text-rose-800 leading-relaxed">
-                  Thay vì chỉ báo đúng/sai, hệ thống ghim điểm <strong className="font-mono text-rose-700">P(1; 0)</strong> lên miền sai để bộc lộ mâu thuẫn: -1 + 2(0) = -1 &gt; 4 (Sai!).
+                <p className="text-[10px] text-rose-200/90 leading-relaxed">
+                  Thay vì chỉ báo đúng/sai, hệ thống ghim điểm <strong className="font-mono text-rose-300">P(1; 0)</strong> lên miền sai để bộc lộ mâu thuẫn: -1 + 2(0) = -1 &gt; 4 (Sai!).
                 </p>
               </div>
 
               {/* Trắc nghiệm kiểm chứng toán học */}
               <div className="space-y-2 pt-1">
-                <p className="font-bold text-[11px] text-[#152f35]">
+                <p className="font-semibold text-[11px] text-slate-200">
                   {QUIZ_DATA[moduleId].question}
                 </p>
                 <div className="space-y-1.5">
@@ -2728,8 +2727,8 @@ export default function MathStepWorkbench({
                       key={idx}
                       className={`flex items-start gap-2 p-2 rounded-lg border text-[11px] cursor-pointer transition-all ${
                         quizAnswer === idx
-                          ? "bg-[#eaf7f2] border-[#087e7c] text-[#087e7c] font-semibold"
-                          : "bg-white border-[#bed0cd] text-[#152f35] hover:bg-[#f3f6f5]"
+                          ? "bg-blue-600/20 border-blue-500/60 text-blue-200 font-medium"
+                          : "bg-slate-950/60 border-slate-800 text-slate-300 hover:bg-slate-900"
                       }`}
                     >
                       <input
@@ -2737,7 +2736,7 @@ export default function MathStepWorkbench({
                         name="workbench-quiz"
                         checked={quizAnswer === idx}
                         onChange={() => setQuizAnswer(idx)}
-                        className="mt-0.5 accent-[#087e7c]"
+                        className="mt-0.5 accent-blue-500"
                       />
                       <span>{opt}</span>
                     </label>
@@ -2745,16 +2744,16 @@ export default function MathStepWorkbench({
                 </div>
                 <button
                   onClick={handleCheckQuiz}
-                  className="w-full py-1.5 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563] transition-colors"
+                  className="w-full py-1.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500 transition-colors cursor-pointer"
                 >
                   Kiểm tra câu trả lời
                 </button>
                 {quizSubmitted && (
                   <div
-                    className={`p-2 rounded-lg text-[10px] leading-relaxed ${
+                    className={`p-2 rounded-lg text-[10px] leading-relaxed border ${
                       quizAnswer === QUIZ_DATA[moduleId].correctIdx
-                        ? "bg-[#edf6f3] text-[#087e7c] font-medium"
-                        : "bg-[#fff0ec] text-[#b23c48]"
+                        ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-300 font-medium"
+                        : "bg-rose-950/40 border-rose-500/30 text-rose-300"
                     }`}
                   >
                     {quizAnswer === QUIZ_DATA[moduleId].correctIdx
@@ -2769,11 +2768,11 @@ export default function MathStepWorkbench({
           {/* BƯỚC 6: GIẢI THÍCH (SELF-EXPLANATION) */}
           {currentStep === 5 && (
             <div className="space-y-2">
-              <div className="p-2.5 rounded-lg bg-[#eff8f4] border-l-4 border-[#087e7c] text-[11px]">
-                <strong>Điều cần đúc kết</strong>
-                <p className="mt-1 text-[#152f35]">{meta.goal}</p>
+              <div className="p-2.5 rounded-lg bg-slate-950/70 border-l-2 border-blue-500 text-[11px]">
+                <strong className="text-blue-400 block mb-0.5">Điều cần đúc kết</strong>
+                <p className="text-slate-300">{meta.goal}</p>
               </div>
-              <label className="font-bold text-[11px] text-[#152f35]">
+              <label className="font-semibold text-[11px] text-slate-300">
                 Giải thích quy luật và điều kiện (Self-explanation):
               </label>
               <textarea
@@ -2781,7 +2780,7 @@ export default function MathStepWorkbench({
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Từ các trường hợp đã thử, em nhận thấy... Điều kiện là..."
                 rows={4}
-                className="w-full p-2 border border-[#bed0cd] rounded-lg text-xs focus:outline-none focus:border-[#087e7c] resize-none"
+                className="w-full p-2 border border-slate-800 bg-slate-950/80 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
               />
 
               {/* Socratic Semantic Quality Feedback */}
@@ -2792,10 +2791,10 @@ export default function MathStepWorkbench({
                   <div
                     className={`p-2 rounded-lg text-[10px] leading-relaxed border ${
                       feedback.type === "good"
-                        ? "bg-[#edf6f3] border-[#a3e2cf] text-[#087e7c] font-medium"
+                        ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-300 font-medium"
                         : feedback.type === "short"
-                        ? "bg-[#fefce8] border-[#fef08a] text-[#854d0e]"
-                        : "bg-[#f8faf9] border-[#d9e4e2] text-gray-600"
+                        ? "bg-amber-950/40 border-amber-500/30 text-amber-300"
+                        : "bg-slate-950/70 border-slate-800 text-slate-400"
                     }`}
                   >
                     {feedback.message}
@@ -2807,7 +2806,7 @@ export default function MathStepWorkbench({
                 <button
                   type="button"
                   onClick={handleSaveReason}
-                  className="flex-1 py-1.5 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563] transition-colors"
+                  className="flex-1 py-1.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-500 transition-colors cursor-pointer"
                 >
                   Lưu giải thích
                 </button>
@@ -2819,10 +2818,10 @@ export default function MathStepWorkbench({
                         `Nhờ linh vật TES nhận xét câu đúc kết quy luật của em ở bài ${meta.title}: "${reason.trim()}"`
                       )
                     }
-                    className="px-2.5 py-1.5 bg-[#eef7f3] text-[#087e7c] border border-[#d9e4e2] rounded-lg font-bold text-[10px] hover:bg-[#e2f1ec] shrink-0"
+                    className="px-2.5 py-1.5 bg-slate-800 text-blue-400 border border-slate-700 rounded-lg font-semibold text-[10px] hover:bg-slate-700 shrink-0 cursor-pointer"
                     title="Hỏi trợ lý nhận xét câu đúc kết"
                   >
-                    <Bot className="w-3.5 h-3.5 inline mr-1 text-[#087e7c]" /> Nhờ TES nhận xét
+                    <Bot className="w-3.5 h-3.5 inline mr-1 text-blue-400" /> Nhờ TES nhận xét
                   </button>
                 )}
               </div>
@@ -2833,7 +2832,7 @@ export default function MathStepWorkbench({
           {currentStep === 6 && (
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-[11px] text-[#152f35]">Bài toán chuyển giao:</span>
+                <span className="font-semibold text-[11px] text-slate-200">Bài toán chuyển giao:</span>
                 <div className="flex gap-1">
                   <button
                     type="button"
@@ -2844,10 +2843,10 @@ export default function MathStepWorkbench({
                       setTransferVerification(null);
                       showToast(`Đã tạo bài toán thực tế mới: ${iso.contextTitle}`);
                     }}
-                    className="px-2 py-1 rounded bg-[#eff8f4] hover:bg-[#d6f0e6] text-[#087e7c] border border-[#a3e2cf] font-bold text-[10px] flex items-center gap-1 transition-colors"
+                    className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 font-semibold text-[10px] flex items-center gap-1 transition-colors cursor-pointer"
                     title="Sinh bài toán đồng cấu đỉnh nguyên ℤ²"
                   >
-                    <Calculator className="w-3.5 h-3.5 inline mr-1" /> Đỉnh nguyên ℤ²
+                    <Calculator className="w-3.5 h-3.5" /> Đỉnh nguyên ℤ²
                   </button>
                   <button
                     type="button"
@@ -2855,32 +2854,32 @@ export default function MathStepWorkbench({
                       setActiveIntegerProblem(null);
                       handleNewProblem();
                     }}
-                    className="px-2 py-1 rounded bg-[#f3f6f5] hover:bg-[#e2f1ec] text-[#087e7c] border border-[#d9e4e2] font-bold text-[10px] flex items-center gap-1 transition-colors"
+                    className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-semibold text-[10px] flex items-center gap-1 transition-colors cursor-pointer"
                     title="Sinh tham số bài toán mới"
                   >
-                    <RefreshCw className="w-3 h-3 inline mr-1" /> Đổi số
+                    <RefreshCw className="w-3 h-3" /> Đổi số
                   </button>
                 </div>
               </div>
 
               {activeIntegerProblem ? (
-                <div className="p-2.5 rounded-lg bg-[#eff8f4] border border-[#a3e2cf] text-[11px] leading-relaxed text-[#152f35] space-y-1.5">
-                  <div className="font-bold text-[#087e7c] flex items-center gap-1">
-                    <Building className="w-3.5 h-3.5 inline mr-1 text-slate-600" /> {activeIntegerProblem.contextTitle}
+                <div className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 text-[11px] leading-relaxed text-slate-300 space-y-1.5">
+                  <div className="font-bold text-blue-400 flex items-center gap-1">
+                    <Building className="w-3.5 h-3.5 text-blue-400" /> {activeIntegerProblem.contextTitle}
                   </div>
                   <p>{activeIntegerProblem.story}</p>
-                  <div className="p-1.5 bg-white/80 rounded border border-[#a3e2cf] text-[10px] font-mono text-gray-700">
+                  <div className="p-1.5 bg-slate-900 rounded border border-slate-800 text-[10px] font-mono text-slate-400">
                     Mục tiêu: {activeIntegerProblem.objective.label}
                   </div>
                 </div>
               ) : (
-                <div className="p-2.5 rounded-lg bg-[#f8faf9] border border-[#d9e4e2] text-[11px] leading-relaxed text-[#152f35]">
-                  {currentProblem.prompt}
+                <div className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 text-[11px] leading-relaxed text-slate-300">
+                  <MathFormattedText text={currentProblem.prompt} />
                 </div>
               )}
 
               <div>
-                <label className="block text-[10px] text-gray-500 mb-1 font-medium">
+                <label className="block text-[10px] text-slate-400 mb-1 font-medium">
                   Nhập số nguyên, số thập phân hoặc phân số (ví dụ: 84, 13, 0.5):
                 </label>
                 <div className="flex gap-1.5">
@@ -2907,7 +2906,7 @@ export default function MathStepWorkbench({
                       }
                     }}
                     placeholder="Đáp số của em..."
-                    className="flex-1 p-2 border border-[#bed0cd] rounded-lg text-xs font-mono focus:outline-none focus:border-[#087e7c]"
+                    className="flex-1 p-2 border border-slate-800 bg-slate-950/80 rounded-lg text-xs font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500"
                   />
                   <button
                     onClick={() => {
@@ -2926,7 +2925,7 @@ export default function MathStepWorkbench({
                         handleCheckTransfer();
                       }
                     }}
-                    className="px-3 py-1.5 bg-[#087e7c] text-white rounded-lg font-bold text-xs hover:bg-[#066563] transition-colors shrink-0"
+                    className="px-3 py-1.5 bg-blue-600 text-white rounded-lg font-semibold text-xs hover:bg-blue-500 transition-colors shrink-0 cursor-pointer"
                   >
                     Kiểm tra
                   </button>
@@ -2934,32 +2933,32 @@ export default function MathStepWorkbench({
               </div>
 
               {/* Socratic Hints System (3 Levels) */}
-              <div className="pt-2 border-t border-[#e2e8e7] space-y-1.5">
+              <div className="pt-2 border-t border-slate-800 space-y-1.5">
                 <div className="flex items-center justify-between text-[10px]">
-                  <span className="font-semibold text-gray-500">Gợi ý Socratic:</span>
+                  <span className="font-semibold text-slate-400">Gợi ý Socratic:</span>
                   {hintLevel < 3 && (
                     <button
                       type="button"
                       onClick={() => setHintLevel((l) => Math.min(3, l + 1))}
-                      className="text-[#087e7c] font-bold hover:underline flex items-center gap-0.5"
+                      className="text-blue-400 font-semibold hover:underline flex items-center gap-0.5 cursor-pointer"
                     >
-                      <Lightbulb className="w-3 h-3 inline mr-1 text-amber-600" /> Mở gợi ý cấp {hintLevel + 1}
+                      <Lightbulb className="w-3 h-3 text-amber-400" /> Mở gợi ý cấp {hintLevel + 1}
                     </button>
                   )}
                 </div>
 
                 {hintLevel >= 1 && (
-                  <div className="p-2 bg-[#fefce8] border border-[#fef08a] rounded text-[10px] text-[#854d0e] leading-relaxed">
+                  <div className="p-2 bg-amber-950/30 border border-amber-500/30 rounded text-[10px] text-amber-300 leading-relaxed">
                     <strong>Cấp 1 (Định hướng):</strong> {SOCRATIC_HINTS[moduleId]?.level1 || currentProblem.hint}
                   </div>
                 )}
                 {hintLevel >= 2 && (
-                  <div className="p-2 bg-[#fff7ed] border border-[#fed7aa] rounded text-[10px] text-[#9a3412] leading-relaxed">
+                  <div className="p-2 bg-orange-950/30 border border-orange-500/30 rounded text-[10px] text-orange-300 leading-relaxed">
                     <strong>Cấp 2 (Cảnh báo sai lầm):</strong> {SOCRATIC_HINTS[moduleId]?.level2}
                   </div>
                 )}
                 {hintLevel >= 3 && (
-                  <div className="p-2 bg-[#eff6ff] border border-[#bfdbfe] rounded text-[10px] text-[#1e40af] leading-relaxed">
+                  <div className="p-2 bg-blue-950/30 border border-blue-500/30 rounded text-[10px] text-blue-300 leading-relaxed">
                     <strong>Cấp 3 (Phương pháp & Lời giải):</strong> {SOCRATIC_HINTS[moduleId]?.level3 || currentProblem.hint}
                   </div>
                 )}
@@ -2969,8 +2968,8 @@ export default function MathStepWorkbench({
                 <div
                   className={`p-2.5 rounded-lg text-[10px] leading-relaxed border ${
                     transferVerification.correct
-                      ? "bg-[#edf6f3] border-[#a3e2cf] text-[#087e7c] font-medium"
-                      : "bg-[#fff0ec] border-[#fed7cc] text-[#b23c48]"
+                      ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-300 font-medium"
+                      : "bg-rose-950/40 border-rose-500/30 text-rose-300"
                   }`}
                 >
                   <div className="font-bold mb-0.5">
@@ -2985,19 +2984,19 @@ export default function MathStepWorkbench({
           {/* BƯỚC 8: RÈN LUYỆN ĐỘC LẬP (FADING & INDEPENDENT TEST MODE) */}
           {currentStep === 7 && (
             <div className="space-y-2.5">
-              <div className="p-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 text-[11px] space-y-1.5">
-                <div className="flex items-center gap-1.5 font-bold text-amber-900">
-                  <Target className="w-3.5 h-3.5 inline mr-1 text-[#087e7c]" />
+              <div className="p-2.5 rounded-xl bg-amber-950/20 border border-amber-500/30 text-[11px] space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-amber-300">
+                  <Target className="w-3.5 h-3.5 text-amber-400" />
                   <span>Chế độ Đánh giá độc lập (Fading)</span>
                 </div>
-                <p className="text-amber-800 text-[10px] leading-relaxed">
+                <p className="text-amber-200/90 text-[10px] leading-relaxed">
                   Để đánh giá năng lực thực chất, mô hình tương tác và trợ lý AI đã được rút bỏ giàn giáo. Em hãy tự lập luận và điền các bước giải vào khung bán tự luận dưới đây:
                 </p>
               </div>
 
               <div className="space-y-2">
                 <div>
-                  <label className="text-[10px] font-bold text-gray-700 block mb-0.5">
+                  <label className="text-[10px] font-semibold text-slate-300 block mb-0.5">
                     1. Đặt ẩn và điều kiện ràng buộc:
                   </label>
                   <input
@@ -3005,12 +3004,12 @@ export default function MathStepWorkbench({
                     value={fadingAnswers.step1}
                     onChange={(e) => setFadingAnswers({ ...fadingAnswers, step1: e.target.value })}
                     placeholder="Ví dụ: Gọi x là số xe loại A (x ∈ ℕ*), y là..."
-                    className="w-full p-1.5 border border-[#bed0cd] rounded text-xs"
+                    className="w-full p-1.5 border border-slate-800 bg-slate-950/80 rounded text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-gray-700 block mb-0.5">
+                  <label className="text-[10px] font-semibold text-slate-300 block mb-0.5">
                     2. Thiết lập hệ bất phương trình:
                   </label>
                   <input
@@ -3018,12 +3017,12 @@ export default function MathStepWorkbench({
                     value={fadingAnswers.step2}
                     onChange={(e) => setFadingAnswers({ ...fadingAnswers, step2: e.target.value })}
                     placeholder="Ví dụ: 20x + 10y ≥ 140, 0.6x + 1.5y ≥ 9..."
-                    className="w-full p-1.5 border border-[#bed0cd] rounded text-xs font-mono"
+                    className="w-full p-1.5 border border-slate-800 bg-slate-950/80 rounded text-xs font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-gray-700 block mb-0.5">
+                  <label className="text-[10px] font-semibold text-slate-300 block mb-0.5">
                     3. Tọa độ các đỉnh của miền nghiệm:
                   </label>
                   <input
@@ -3031,12 +3030,12 @@ export default function MathStepWorkbench({
                     value={fadingAnswers.step3}
                     onChange={(e) => setFadingAnswers({ ...fadingAnswers, step3: e.target.value })}
                     placeholder="Ví dụ: A(3; 8), B(7; 4), C(9; 2)..."
-                    className="w-full p-1.5 border border-[#bed0cd] rounded text-xs font-mono"
+                    className="w-full p-1.5 border border-slate-800 bg-slate-950/80 rounded text-xs font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-gray-700 block mb-0.5">
+                  <label className="text-[10px] font-semibold text-slate-300 block mb-0.5">
                     4. Biểu thức mục tiêu F(x, y) & Kết luận phương án:
                   </label>
                   <textarea
@@ -3044,7 +3043,7 @@ export default function MathStepWorkbench({
                     value={fadingAnswers.step4}
                     onChange={(e) => setFadingAnswers({ ...fadingAnswers, step4: e.target.value })}
                     placeholder="Ví dụ: F(x, y) = 4x + 3y. Đạt min tại (7; 4) với chi phí 40 triệu..."
-                    className="w-full p-1.5 border border-[#bed0cd] rounded text-xs resize-none"
+                    className="w-full p-1.5 border border-slate-800 bg-slate-950/80 rounded text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
                   />
                 </div>
 
@@ -3080,7 +3079,7 @@ export default function MathStepWorkbench({
                     setEvidenceHistory((prev) => [...prev, newRecord]);
                     showToast(`Đã chấm điểm tự luận: ${score}/10! Bằng chứng đã lưu vào sổ học tập.`);
                   }}
-                  className="w-full py-2 bg-[#087e7c] text-white rounded-lg font-bold text-xs hover:bg-[#066563] transition-colors"
+                  className="w-full py-2 bg-blue-600 text-white rounded-lg font-semibold text-xs hover:bg-blue-500 transition-colors cursor-pointer"
                 >
                   Nộp bài tự luận độc lập & Chấm điểm
                 </button>
@@ -3089,8 +3088,8 @@ export default function MathStepWorkbench({
                   <div
                     className={`p-2.5 rounded-lg text-[10px] leading-relaxed border ${
                       fadingScore.score >= 8
-                        ? "bg-[#edf6f3] border-[#a3e2cf] text-[#087e7c] font-medium"
-                        : "bg-amber-50 border-amber-200 text-amber-900"
+                        ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-300 font-medium"
+                        : "bg-amber-950/40 border-amber-500/30 text-amber-300"
                     }`}
                   >
                     <div className="font-bold">
@@ -3104,16 +3103,16 @@ export default function MathStepWorkbench({
           )}
           {/* Socratic Helper Mascot Button */}
           {onAskTutor && (
-            <div className="pt-2 border-t border-[#d9e4e2] mt-auto">
+            <div className="pt-2 border-t border-slate-800 mt-auto">
               <button
                 onClick={() =>
                   onAskTutor(
                     `Linh vật giúp em ở Bước ${currentStep + 1} (${STEP_NAMES[currentStep]}): ${meta.title}`
                   )
                 }
-                className="w-full py-2 bg-[#f4f7f6] hover:bg-[#e2f1ec] text-[#087e7c] border border-[#d9e4e2] rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors"
+                className="w-full py-2 bg-slate-800 hover:bg-slate-750 text-blue-400 border border-slate-700 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
-                <Bot className="w-4 h-4 text-emerald-700" /> <span>Hỏi trợ lý Socratic TES</span>
+                <Bot className="w-4 h-4 text-blue-400" /> <span>Hỏi trợ lý Socratic TES</span>
               </button>
             </div>
           )}
@@ -3210,7 +3209,7 @@ export default function MathStepWorkbench({
             </div>
           </div>
 
-          {/* Nút nổi mở lại Cột Đề bài & Nhiệm vụ (khi đang bị ẩn trên màn hình lớn) */}
+          {/* Nút nổi mở lại Cột Đề bài (Icon gọn) */}
           {!showLeftPanel && (
             <button
               type="button"
@@ -3218,15 +3217,14 @@ export default function MathStepWorkbench({
                 setShowLeftPanel(true);
                 showToast("Đã mở Cột Đề bài & Nhiệm vụ.");
               }}
-              className="hidden lg:flex absolute left-3 top-14 z-30 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white border border-teal-700 rounded-xl shadow-lg text-xs font-bold items-center gap-1.5 transition-all hover:scale-105"
-              title="Mở Cột Đề bài & Nhiệm vụ (Trái) để đọc đề chi tiết"
+              className="hidden lg:flex absolute left-3 top-14 z-30 p-2 bg-slate-900/90 hover:bg-slate-800 text-blue-400 border border-slate-800 rounded-xl shadow-xl transition-all hover:scale-105"
+              title="Mở Cột Đề bài & Nhiệm vụ"
             >
-              <PanelLeftOpen className="w-4 h-4 text-white" />
-              <span>📖 Đọc đề bài (B{currentStep + 1})</span>
+              <PanelLeftOpen className="w-4 h-4" />
             </button>
           )}
 
-          {/* Nút nổi mở lại Thanh Phải (khi đang bị ẩn trên màn hình lớn) */}
+          {/* Nút nổi mở lại Thanh Phải (Icon gọn) */}
           {!showRightPanel && (
             <button
               type="button"
@@ -3234,16 +3232,15 @@ export default function MathStepWorkbench({
                 setShowRightPanel(true);
                 showToast("Đã hiện thanh Điều khiển bên phải.");
               }}
-              className="hidden lg:flex absolute right-3 top-14 z-30 px-3 py-1.5 bg-white/95 backdrop-blur-md hover:bg-white text-[#087e7c] border border-[#a3e2cf] rounded-xl shadow-md text-xs font-bold items-center gap-1.5 transition-all hover:scale-105"
-              title="Hiện thanh Điều khiển & Kết quả (Phải)"
+              className="hidden lg:flex absolute right-3 top-14 z-30 p-2 bg-slate-900/90 hover:bg-slate-800 text-blue-400 border border-slate-800 rounded-xl shadow-xl transition-all hover:scale-105"
+              title="Hiện thanh Điều khiển & Kết quả"
             >
               <PanelRightOpen className="w-4 h-4" />
-              <span>Điều khiển</span>
             </button>
           )}
 
           {/* Khung Canvas giải phóng toàn bộ chiều cao từ trên xuống dưới */}
-          <div className="flex-1 relative flex items-center justify-center bg-[#edf3f2] overflow-hidden min-h-[480px] h-full">
+          <div className="flex-1 relative flex items-center justify-center bg-[#090D16] overflow-hidden min-h-[480px] h-full">
             {labMode === "dynamic" ? (
               moduleId === "linear_programming" ? (
                 <div className="w-full h-full overflow-y-auto p-4 flex items-center justify-center">
@@ -3374,19 +3371,19 @@ export default function MathStepWorkbench({
 
         {/* CỘT 3: KẾT QUẢ & ĐIỀU KHIỂN (CONTROLS & RESULTS) */}
         {showRightPanel && (
-          <aside className={`bg-white border border-[#d9e4e2] rounded-xl p-3.5 flex flex-col gap-3.5 max-h-[calc(100vh-220px)] overflow-y-auto text-xs text-[#152f35] ${
+          <aside className={`bg-slate-900 border border-slate-800 rounded-lg p-3 flex flex-col gap-2.5 max-h-[calc(100vh-140px)] overflow-y-auto text-xs text-slate-200 ${
             activeMobileTab === "controls" ? "flex" : "hidden lg:flex"
           }`}>
             {/* Header thanh Điều khiển với nút đóng/thu gọn */}
-            <div className="flex items-center justify-between pb-1.5 border-b border-[#e5ebe4]">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#087e7c] flex items-center gap-1.5">
-                <SlidersHorizontal className="w-3.5 h-3.5 text-[#087e7c]" />
+            <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
+                <SlidersHorizontal className="w-3.5 h-3.5" />
                 <span>Bảng điều khiển & Kết quả</span>
               </span>
               <button
                 type="button"
                 onClick={() => setShowRightPanel(false)}
-                className="p-1 rounded-lg text-gray-400 hover:text-black hover:bg-gray-100 transition-colors hidden lg:flex items-center"
+                className="p-1 rounded text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors hidden lg:flex items-center"
                 title="Ẩn thanh điều khiển (Phải) để mở rộng đồ thị"
               >
                 <PanelRightClose className="w-3.5 h-3.5" />
@@ -3395,9 +3392,9 @@ export default function MathStepWorkbench({
 
             {/* PHẦN 1: NỬA TRÊN - THẺ KẾT QUẢ TRỰC TIẾP (LIVE RESULTS) */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between pb-1.5 border-b border-[#d9e4e2]">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#087e7c] flex items-center gap-1">
-                  <Activity className="w-4 h-4 text-[#087e7c]" /> <span>THẺ KẾT QUẢ TRỰC TIẾP</span>
+              <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                  <Activity className="w-3.5 h-3.5 text-blue-400" /> <span>KẾT QUẢ TRỰC TIẾP</span>
                 </span>
                 <span className="text-[10px] text-slate-500 font-medium">Bước {currentStep + 1}/8</span>
               </div>
@@ -3406,15 +3403,15 @@ export default function MathStepWorkbench({
               // Progressive Disclosure cho Bài toán xưởng mộc
               currentStep < 2 ? (
                 // Bước 1 & 2: Chưa lộ đáp án, tập trung quan sát & dự đoán
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                    <Search className="w-3.5 h-3.5 text-slate-600" />
+                <div className="p-3 bg-slate-950/70 border border-slate-800 rounded-lg space-y-2 text-slate-300">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
+                    <Search className="w-3.5 h-3.5 text-blue-400" />
                     <span>Nhiệm vụ {STEP_NAMES[currentStep]}</span>
                   </div>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
                     Em hãy đọc kỹ đề bài xưởng mộc ở Cột trái, quan sát miền đa giác trên đồ thị Oxy và điền dự đoán của em vào câu hỏi trước khi sang bước Thao tác.
                   </p>
-                  <div className="p-2 bg-white rounded-lg border border-slate-200 text-[10px] space-y-1 font-mono text-slate-700">
+                  <div className="p-2 bg-slate-900 rounded-lg border border-slate-800 text-[10px] space-y-1 font-mono text-slate-300">
                     <div>• Giới hạn lắp ráp: 3x + 2y ≤ 48 giờ</div>
                     <div>• Giới hạn hoàn thiện: x + 2y ≤ 32 giờ</div>
                     <div>• Mục tiêu lợi nhuận: F = 600x + 450y</div>
@@ -3436,8 +3433,8 @@ export default function MathStepWorkbench({
                   return (
                     <div className="space-y-2.5">
                       {/* Trạng thái điểm thử M(x; y) */}
-                      <div className={`p-2.5 rounded-xl border flex items-center justify-between ${
-                        isFeasible ? "bg-emerald-50 border-emerald-300 text-emerald-900" : "bg-rose-50 border-rose-300 text-rose-900"
+                      <div className={`p-2.5 rounded-lg border flex items-center justify-between ${
+                        isFeasible ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-300" : "bg-rose-950/40 border-rose-500/30 text-rose-300"
                       }`}>
                         <div className="flex items-center gap-2">
                           <span className="text-base font-bold">{isFeasible ? "✓" : "!"}</span>
@@ -3448,27 +3445,27 @@ export default function MathStepWorkbench({
                             </div>
                           </div>
                         </div>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          isFeasible ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                          isFeasible ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-rose-500/20 text-rose-300 border border-rose-500/30"
                         }`}>
                           {isFeasible ? "HỢP LỆ" : "BỊ LOẠI"}
                         </span>
                       </div>
 
                       {/* Đồng hồ công suất 2 khâu sản xuất */}
-                      <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-[11px]">
-                        <span className="font-bold text-slate-800 block text-[10px] uppercase tracking-wide">
+                      <div className="p-2.5 bg-slate-950/70 border border-slate-800 rounded-lg space-y-2 text-[11px]">
+                        <span className="font-bold text-slate-400 block text-[10px] uppercase tracking-wide">
                           Quỹ giờ công 2 khâu xưởng:
                         </span>
                         {/* Khâu Lắp ráp */}
                         <div className="space-y-1">
                           <div className="flex justify-between text-[10px]">
-                            <span className="text-slate-600">Lắp ráp (3x+2y ≤ 48h):</span>
-                            <span className={`font-mono font-bold ${okLapRap ? "text-emerald-700" : "text-rose-600"}`}>
+                            <span className="text-slate-400">Lắp ráp (3x+2y ≤ 48h):</span>
+                            <span className={`font-mono font-bold ${okLapRap ? "text-emerald-400" : "text-rose-400"}`}>
                               {usedLapRap} / 48 giờ {okLapRap ? "✓" : "✗ QUÁ TẢI"}
                             </span>
                           </div>
-                          <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                          <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
                             <div
                               className={`h-full transition-all duration-300 ${okLapRap ? "bg-emerald-500" : "bg-rose-500"}`}
                               style={{ width: `${Math.min(100, Math.round((usedLapRap / 48) * 100))}%` }}
@@ -3478,12 +3475,12 @@ export default function MathStepWorkbench({
                         {/* Khâu Hoàn thiện */}
                         <div className="space-y-1">
                           <div className="flex justify-between text-[10px]">
-                            <span className="text-slate-600">Hoàn thiện (x+2y ≤ 32h):</span>
-                            <span className={`font-mono font-bold ${okHoanThien ? "text-emerald-700" : "text-rose-600"}`}>
+                            <span className="text-slate-400">Hoàn thiện (x+2y ≤ 32h):</span>
+                            <span className={`font-mono font-bold ${okHoanThien ? "text-emerald-400" : "text-rose-400"}`}>
                               {usedHoanThien} / 32 giờ {okHoanThien ? "✓" : "✗ QUÁ TẢI"}
                             </span>
                           </div>
-                          <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                          <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
                             <div
                               className={`h-full transition-all duration-300 ${okHoanThien ? "bg-emerald-500" : "bg-rose-500"}`}
                               style={{ width: `${Math.min(100, Math.round((usedHoanThien / 32) * 100))}%` }}
@@ -3493,27 +3490,27 @@ export default function MathStepWorkbench({
                       </div>
 
                       {/* Thẻ KPI Lợi nhuận thời gian thực */}
-                      <div className={`p-3 rounded-xl border space-y-1 ${
+                      <div className={`p-3 rounded-lg border space-y-1 ${
                         isOptimal
-                          ? "bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-400 shadow-md ring-1 ring-amber-400"
+                          ? "bg-amber-950/40 border-amber-500/40 text-amber-300 shadow-md ring-1 ring-amber-500/30"
                           : isFeasible
-                          ? "bg-emerald-50/70 border-emerald-300"
-                          : "bg-rose-50/70 border-rose-300"
+                          ? "bg-slate-950/70 border-slate-800 text-slate-200"
+                          : "bg-rose-950/40 border-rose-500/30 text-rose-300"
                       }`}>
                         <div className="flex justify-between items-center text-xs">
-                          <span className="font-bold text-slate-700">Tiền lãi F(x; y):</span>
+                          <span className="font-bold text-slate-400">Tiền lãi F(x; y):</span>
                           {currentStep >= 4 && (
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              isOptimal ? "bg-amber-500 text-white animate-pulse" : isFeasible ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                              isOptimal ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse" : isFeasible ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-rose-500/20 text-rose-300 border border-rose-500/30"
                             }`}>
                               {isOptimal ? "★ TỐI ƯU GTLN" : isFeasible ? "✓ KHẢ THI" : "✗ VI PHẠM"}
                             </span>
                           )}
                         </div>
-                        <div className="text-lg font-extrabold font-mono text-slate-900">
+                        <div className="text-lg font-bold font-mono text-slate-100">
                           {(totalProfitThousand * 1000).toLocaleString("vi-VN")} đ
                         </div>
-                        <p className="text-[10px] text-slate-600 leading-tight">
+                        <p className="text-[10px] text-slate-400 leading-tight">
                           {isOptimal && currentStep >= 4
                             ? "★ Đạt cực đại tại B(8; 12): 8 bàn & 12 ghế khai thác 100% công suất 48h và 32h!"
                             : isFeasible
@@ -3524,17 +3521,17 @@ export default function MathStepWorkbench({
 
                       {/* Ở Bước 6: Bảng so sánh 4 đỉnh đa giác */}
                       {currentStep >= 5 && (
-                        <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
-                          <span className="text-[10px] font-bold text-slate-700 block">
+                        <div className="p-2.5 bg-slate-950/70 border border-slate-800 rounded-lg space-y-1.5">
+                          <span className="text-[10px] font-bold text-slate-400 block uppercase">
                             So sánh 4 đỉnh đa giác miền nghiệm:
                           </span>
                           <div className="grid grid-cols-2 gap-1 text-[10px] font-mono">
-                            <div className="p-1 bg-white rounded border border-slate-200">O(0; 0) → 0 đ</div>
-                            <div className="p-1 bg-white rounded border border-slate-200">A(0; 16) → 7,2 tr</div>
-                            <div className="p-1 bg-amber-100/80 rounded border border-amber-300 font-bold text-amber-900">
+                            <div className="p-1.5 bg-slate-900 rounded border border-slate-800 text-slate-300">O(0; 0) → 0 đ</div>
+                            <div className="p-1.5 bg-slate-900 rounded border border-slate-800 text-slate-300">A(0; 16) → 7,2 tr</div>
+                            <div className="p-1.5 bg-amber-500/15 rounded border border-amber-500/30 font-bold text-amber-300">
                               B(8; 12) → 10,2 tr ★
                             </div>
-                            <div className="p-1 bg-white rounded border border-slate-200">C(16; 0) → 9,6 tr</div>
+                            <div className="p-1.5 bg-slate-900 rounded border border-slate-800 text-slate-300">C(16; 0) → 9,6 tr</div>
                           </div>
                         </div>
                       )}
@@ -3556,14 +3553,14 @@ export default function MathStepWorkbench({
                 return (
                   <div className="space-y-2.5">
                     {/* Thẻ quan hệ hình học không gian 11 */}
-                    <div className="p-2.5 bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-300 rounded-xl space-y-1">
+                    <div className="p-2.5 bg-slate-950/70 border border-slate-800 rounded-lg space-y-1">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-teal-900">Hình chóp đều S.ABCD:</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-600 text-white">
+                        <span className="font-bold text-slate-200">Hình chóp đều S.ABCD:</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-blue-500/10 border border-blue-500/20 text-blue-300">
                           SGK TOÁN 11
                         </span>
                       </div>
-                      <div className="text-[11px] text-teal-800 space-y-0.5 font-medium">
+                      <div className="text-[11px] text-slate-300 space-y-0.5 font-medium">
                         <div>• Đường cao: <KatexMath math="SH \perp (ABCD)" /></div>
                         <div>• Mặt phẳng đáy: <KatexMath math="(ABCD): y = 0" /></div>
                         <div>• Vectơ pháp tuyến: <KatexMath math="\vec{n} = (0;\, 1;\, 0)" /></div>
@@ -3571,34 +3568,34 @@ export default function MathStepWorkbench({
                     </div>
 
                     {/* Thẻ số liệu đo đạc chuẩn KaTeX làm tròn tối đa 2 chữ số thập phân */}
-                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 text-[11px]">
-                      <span className="font-bold text-slate-800 block text-[10px] uppercase tracking-wide">
+                    <div className="p-2.5 bg-slate-950/70 border border-slate-800 rounded-lg space-y-1.5 text-[11px]">
+                      <span className="font-bold text-slate-400 block text-[10px] uppercase tracking-wide">
                         Số liệu hình học giải tích:
                       </span>
                       <div className="grid grid-cols-2 gap-1.5">
-                        <div className="p-1.5 bg-white rounded border border-slate-200">
-                          <div className="text-[10px] text-slate-500">Chiều cao:</div>
-                          <KatexMath math={`h = ${formatVNFloat(hVal)}\\text{ m}`} className="font-bold text-teal-800" />
+                        <div className="p-1.5 bg-slate-900 rounded border border-slate-800">
+                          <div className="text-[10px] text-slate-400">Chiều cao:</div>
+                          <KatexMath math={`h = ${formatVNFloat(hVal)}\\text{ m}`} className="font-bold text-slate-100 font-mono" />
                         </div>
-                        <div className="p-1.5 bg-white rounded border border-slate-200">
-                          <div className="text-[10px] text-slate-500">Cạnh đáy:</div>
-                          <KatexMath math={`a = ${formatVNFloat(aVal)}\\text{ m}`} className="font-bold text-teal-800" />
+                        <div className="p-1.5 bg-slate-900 rounded border border-slate-800">
+                          <div className="text-[10px] text-slate-400">Cạnh đáy:</div>
+                          <KatexMath math={`a = ${formatVNFloat(aVal)}\\text{ m}`} className="font-bold text-slate-100 font-mono" />
                         </div>
-                        <div className="p-1.5 bg-white rounded border border-slate-200">
-                          <div className="text-[10px] text-slate-500">Diện tích đáy:</div>
-                          <KatexMath math={`S_{đáy} = ${formatVNFloat(baseArea)}\\text{ m}^2`} className="font-bold text-cyan-800" />
+                        <div className="p-1.5 bg-slate-900 rounded border border-slate-800">
+                          <div className="text-[10px] text-slate-400">Diện tích đáy:</div>
+                          <KatexMath math={`S_{đáy} = ${formatVNFloat(baseArea)}\\text{ m}^2`} className="font-bold text-slate-100 font-mono" />
                         </div>
-                        <div className="p-1.5 bg-white rounded border border-slate-200">
-                          <div className="text-[10px] text-slate-500">Thể tích:</div>
-                          <KatexMath math={`V = ${formatVNFloat(volume)}\\text{ m}^3`} className="font-bold text-amber-800" />
+                        <div className="p-1.5 bg-slate-900 rounded border border-slate-800">
+                          <div className="text-[10px] text-slate-400">Thể tích:</div>
+                          <KatexMath math={`V = ${formatVNFloat(volume)}\\text{ m}^3`} className="font-bold text-amber-300 font-mono" />
                         </div>
-                        <div className="p-1.5 bg-white rounded border border-slate-200">
-                          <div className="text-[10px] text-slate-500">Cạnh bên:</div>
-                          <KatexMath math={`SA \approx ${formatVNFloat(edgeLength)}\\text{ m}`} className="font-bold text-slate-800" />
+                        <div className="p-1.5 bg-slate-900 rounded border border-slate-800">
+                          <div className="text-[10px] text-slate-400">Cạnh bên:</div>
+                          <KatexMath math={`SA \approx ${formatVNFloat(edgeLength)}\\text{ m}`} className="font-bold text-slate-100 font-mono" />
                         </div>
-                        <div className="p-1.5 bg-white rounded border border-slate-200">
-                          <div className="text-[10px] text-slate-500">Góc cạnh bên:</div>
-                          <KatexMath math={`\\varphi \approx ${formatVNFloat(slantAngle)}^\\circ`} className="font-bold text-purple-800" />
+                        <div className="p-1.5 bg-slate-900 rounded border border-slate-800">
+                          <div className="text-[10px] text-slate-400">Góc cạnh bên:</div>
+                          <KatexMath math={`\\varphi \approx ${formatVNFloat(slantAngle)}^\\circ`} className="font-bold text-blue-300 font-mono" />
                         </div>
                       </div>
                     </div>
@@ -3654,94 +3651,94 @@ export default function MathStepWorkbench({
                 return (
                   <div className="space-y-2.5">
                     {/* Thẻ định nghĩa chuẩn SGK Toán 11 KNTT */}
-                    <div className="p-2.5 bg-gradient-to-r from-sky-50 to-teal-50 border border-sky-300 rounded-xl space-y-1">
+                    <div className="p-2.5 bg-slate-950/70 border border-slate-800 rounded-lg space-y-1">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-sky-950">Đường tròn lượng giác Oxy:</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-600 text-white">
+                        <span className="font-bold text-slate-200">Đường tròn lượng giác Oxy:</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-blue-500/10 border border-blue-500/20 text-blue-300">
                           SGK TOÁN 11 KNTT
                         </span>
                       </div>
-                      <div className="text-[11px] text-sky-900 space-y-0.5 font-medium">
+                      <div className="text-[11px] text-slate-300 space-y-0.5 font-medium">
                         <div>• Tâm <KatexMath math="O(0;\, 0)" />, Bán kính <KatexMath math="R = 1" />, Gốc <KatexMath math="A(1;\, 0)" /></div>
-                        <div>• <strong className="text-sky-700">Trục Ox (Trục Cosin):</strong> <KatexMath math="x_M = \overline{OH} = \cos \alpha" /></div>
-                        <div>• <strong className="text-rose-700">Trục Oy (Trục Sin):</strong> <KatexMath math="y_M = \overline{OK} = \sin \alpha" /></div>
+                        <div>• <strong className="text-blue-400">Trục Ox (Trục Cosin):</strong> <KatexMath math="x_M = \overline{OH} = \cos \alpha" /></div>
+                        <div>• <strong className="text-rose-400">Trục Oy (Trục Sin):</strong> <KatexMath math="y_M = \overline{OK} = \sin \alpha" /></div>
                       </div>
                     </div>
 
                     {/* Vị trí góc phần tư & quy tắc dấu */}
-                    <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+                    <div className="p-2 bg-slate-950/70 border border-slate-800 rounded-lg flex items-center justify-between text-xs">
                       <div>
-                        <span className="text-[10px] text-slate-500 font-bold block uppercase">Vị trí góc:</span>
-                        <span className="font-bold text-slate-800">{quadName}</span>
+                        <span className="text-[10px] text-slate-400 font-bold block uppercase">Vị trí góc:</span>
+                        <span className="font-bold text-slate-200">{quadName}</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[10px] text-slate-500 font-bold block uppercase">Dấu lượng giác:</span>
-                        <KatexMath math={quadRule} className="font-bold text-teal-800 text-xs" />
+                        <span className="text-[10px] text-slate-400 font-bold block uppercase">Dấu lượng giác:</span>
+                        <KatexMath math={quadRule} className="font-bold text-blue-300 text-xs" />
                       </div>
                     </div>
 
                     {/* 4 Giá trị lượng giác thời gian thực */}
                     <div className="grid grid-cols-2 gap-1.5">
-                      <div className="p-2 bg-sky-50/80 border border-sky-300 rounded-xl">
-                        <div className="flex items-center gap-1 text-[10px] font-bold text-sky-700">
-                          <span className="w-2 h-2 rounded-full bg-sky-500 shadow-sm" />
+                      <div className="p-2 bg-slate-900 border border-slate-800 rounded-lg">
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-blue-400">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                           <span>cos α (Hoành độ):</span>
                         </div>
                         <div className="pt-0.5">
-                          <KatexMath math={`\\cos ${Math.round(angle)}^\\circ = ${cosLatex}`} className="font-bold text-sky-900 text-xs" />
+                          <KatexMath math={`\\cos ${Math.round(angle)}^\\circ = ${cosLatex}`} className="font-bold text-slate-100 font-mono text-xs" />
                         </div>
                       </div>
 
-                      <div className="p-2 bg-rose-50/80 border border-rose-300 rounded-xl">
-                        <div className="flex items-center gap-1 text-[10px] font-bold text-rose-700">
-                          <span className="w-2 h-2 rounded-full bg-rose-500 shadow-sm" />
+                      <div className="p-2 bg-slate-900 border border-slate-800 rounded-lg">
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-rose-400">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                           <span>sin α (Tung độ):</span>
                         </div>
                         <div className="pt-0.5">
-                          <KatexMath math={`\\sin ${Math.round(angle)}^\\circ = ${sinLatex}`} className="font-bold text-rose-900 text-xs" />
+                          <KatexMath math={`\\sin ${Math.round(angle)}^\\circ = ${sinLatex}`} className="font-bold text-slate-100 font-mono text-xs" />
                         </div>
                       </div>
 
-                      <div className="p-2 bg-emerald-50/80 border border-emerald-300 rounded-xl">
-                        <div className="text-[10px] font-bold text-emerald-700">
+                      <div className="p-2 bg-slate-900 border border-slate-800 rounded-lg">
+                        <div className="text-[10px] font-bold text-emerald-400">
                           tan α (Tiếp tuyến x=1):
                         </div>
                         <div className="pt-0.5">
-                          <KatexMath math={`\\tan ${Math.round(angle)}^\\circ = ${tanLatex}`} className="font-bold text-emerald-900 text-xs" />
+                          <KatexMath math={`\\tan ${Math.round(angle)}^\\circ = ${tanLatex}`} className="font-bold text-slate-100 font-mono text-xs" />
                         </div>
                       </div>
 
-                      <div className="p-2 bg-indigo-50/80 border border-indigo-300 rounded-xl">
-                        <div className="text-[10px] font-bold text-indigo-700">
+                      <div className="p-2 bg-slate-900 border border-slate-800 rounded-lg">
+                        <div className="text-[10px] font-bold text-purple-400">
                           cot α (Tiếp tuyến y=1):
                         </div>
                         <div className="pt-0.5">
-                          <KatexMath math={`\\cot ${Math.round(angle)}^\\circ = ${cotLatex}`} className="font-bold text-indigo-900 text-xs" />
+                          <KatexMath math={`\\cot ${Math.round(angle)}^\\circ = ${cotLatex}`} className="font-bold text-slate-100 font-mono text-xs" />
                         </div>
                       </div>
                     </div>
 
                     {/* Kiểm chứng Pythagoras sin² + cos² = 1 */}
-                    <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] flex items-center justify-between">
-                      <span className="text-slate-600 font-medium">Hệ thức cơ bản:</span>
-                      <KatexMath math="\\sin^2 \\alpha + \\cos^2 \\alpha = 1" className="font-bold text-slate-800" />
+                    <div className="p-2 bg-slate-950/70 border border-slate-800 rounded-lg text-[11px] flex items-center justify-between">
+                      <span className="text-slate-400 font-medium">Hệ thức cơ bản:</span>
+                      <KatexMath math="\\sin^2 \\alpha + \\cos^2 \\alpha = 1" className="font-bold text-slate-200" />
                     </div>
                   </div>
                 );
               })()
             ) : (
               // Các module khác
-              <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                <span className="font-semibold text-xs text-slate-700">Trạng thái: Đang tương tác</span>
+              <div className="p-2.5 bg-slate-950/70 border border-slate-800 rounded-lg">
+                <span className="font-semibold text-xs text-slate-300">Trạng thái: Đang tương tác</span>
               </div>
             )}
           </div>
 
           {/* PHẦN 2: NỬA DƯỚI - BẢNG ĐIỀU KHIỂN THANH TRƯỢT (INTERACTIVE CONTROLS) */}
-          <div className="space-y-3 pt-2 border-t border-[#d9e4e2] mt-auto">
+          <div className="space-y-3 pt-2 border-t border-slate-800 mt-auto">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#087e7c] flex items-center gap-1">
-                <SlidersHorizontal className="w-4 h-4 text-[#087e7c]" /> <span>BẢNG ĐIỀU KHIỂN</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                <SlidersHorizontal className="w-3.5 h-3.5 text-blue-400" /> <span>BẢNG ĐIỀU KHIỂN</span>
               </span>
               {moduleId === "linear_programming" && currentStep >= 2 && (
                 <button
@@ -3752,7 +3749,7 @@ export default function MathStepWorkbench({
                     updateParam("F", 48);
                     showToast("Đã khôi phục phương án tối ưu chuẩn SGK B(8; 12)!");
                   }}
-                  className="text-[10px] text-[#087e7c] hover:underline font-bold"
+                  className="text-[10px] text-blue-400 hover:underline font-bold"
                 >
                   Về chuẩn B(8; 12)
                 </button>
@@ -3762,10 +3759,10 @@ export default function MathStepWorkbench({
             {moduleId === "linear_programming" ? (
               currentStep < 2 ? (
                 // Bước 1 & 2: Ẩn thanh trượt
-                <div className="p-3 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-center space-y-1.5 text-slate-500">
-                  <Lock className="w-5 h-5 text-slate-400" />
-                  <div className="font-bold text-xs text-slate-700">Thanh điều khiển đang tạm ẩn</div>
-                  <p className="text-[10px] leading-relaxed">
+                <div className="p-3 bg-slate-950/60 border border-dashed border-slate-800 rounded-lg text-center space-y-1.5 text-slate-500">
+                  <Lock className="w-5 h-5 text-slate-600 mx-auto" />
+                  <div className="font-bold text-xs text-slate-300">Thanh điều khiển đang tạm ẩn</div>
+                  <p className="text-[10px] leading-relaxed text-slate-400">
                     Hoàn thành câu hỏi dự đoán ở Cột trái, sau đó bấm <strong>Bước 3: Thao tác</strong> để mở thanh trượt!
                   </p>
                 </div>
@@ -3773,10 +3770,10 @@ export default function MathStepWorkbench({
                 // Bước 3 trở đi: Hiển thị thanh trượt x, y (và F ở bước 5)
                 <div className="space-y-2.5">
                   {/* Thanh trượt Số lượng bàn x */}
-                  <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                    <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                  <div className="p-2 bg-slate-950/70 border border-slate-800 rounded-lg space-y-1">
+                    <div className="flex justify-between items-center text-xs font-bold text-slate-300">
                       <span>Số lượng bàn (x):</span>
-                      <span className="font-mono text-teal-800 text-xs font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
+                      <span className="font-mono text-blue-400 text-xs font-bold bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
                         {params.x ?? 8} chiếc
                       </span>
                     </div>
@@ -3787,20 +3784,20 @@ export default function MathStepWorkbench({
                       step="1"
                       value={params.x ?? 8}
                       onChange={(e) => updateParam("x", parseInt(e.target.value, 10))}
-                      className="w-full accent-teal-600"
+                      className="w-full accent-blue-500 bg-slate-800"
                     />
-                    <div className="flex justify-between text-[9px] text-slate-400 font-mono">
+                    <div className="flex justify-between text-[9px] text-slate-500 font-mono">
                       <span>0</span>
-                      <span className="font-bold text-teal-700">8 (tối ưu)</span>
+                      <span className="font-bold text-blue-400">8 (tối ưu)</span>
                       <span>16 (tối đa)</span>
                     </div>
                   </div>
 
                   {/* Thanh trượt Số lượng ghế y */}
-                  <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                    <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                  <div className="p-2 bg-slate-950/70 border border-slate-800 rounded-lg space-y-1">
+                    <div className="flex justify-between items-center text-xs font-bold text-slate-300">
                       <span>Số lượng ghế (y):</span>
-                      <span className="font-mono text-teal-800 text-xs font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
+                      <span className="font-mono text-blue-400 text-xs font-bold bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
                         {params.y ?? 12} chiếc
                       </span>
                     </div>
@@ -3811,11 +3808,11 @@ export default function MathStepWorkbench({
                       step="1"
                       value={params.y ?? 12}
                       onChange={(e) => updateParam("y", parseInt(e.target.value, 10))}
-                      className="w-full accent-teal-600"
+                      className="w-full accent-blue-500 bg-slate-800"
                     />
-                    <div className="flex justify-between text-[9px] text-slate-400 font-mono">
+                    <div className="flex justify-between text-[9px] text-slate-500 font-mono">
                       <span>0</span>
-                      <span className="font-bold text-teal-700">12 (tối ưu)</span>
+                      <span className="font-bold text-blue-400">12 (tối ưu)</span>
                       <span>16 (tối đa)</span>
                     </div>
                   </div>
@@ -3831,20 +3828,20 @@ export default function MathStepWorkbench({
                       className={`w-full py-1.5 rounded-lg font-bold text-[11px] transition-all border flex items-center justify-center gap-1 ${
                         counterExampleActive
                           ? "bg-rose-600 text-white border-rose-600 shadow-sm"
-                          : "bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100"
+                          : "bg-rose-950/40 text-rose-300 border-rose-500/30 hover:bg-rose-900/50"
                       }`}
                     >
-                      <Target className="w-3.5 h-3.5 inline mr-1 text-[#087e7c]" />
+                      <Target className="w-3.5 h-3.5 inline mr-1 text-rose-400" />
                       <span>{counterExampleActive ? "Ẩn phản ví dụ P" : "Thử điểm phản ví dụ P(14; 10)"}</span>
                     </button>
                   )}
 
                   {/* Bước 5 trở đi: Thanh trượt đường mức lợi nhuận d_F */}
                   {currentStep >= 4 && (
-                    <div className="p-2 bg-amber-50/60 border border-amber-300/80 rounded-xl space-y-1">
-                      <div className="flex justify-between items-center text-xs font-bold text-amber-900">
+                    <div className="p-2 bg-amber-950/30 border border-amber-500/30 rounded-xl space-y-1">
+                      <div className="flex justify-between items-center text-xs font-bold text-amber-300">
                         <span>Đường mức d_F:</span>
-                        <span className="font-mono text-amber-800 font-bold">
+                        <span className="font-mono text-amber-400 font-bold">
                           {((params.F ?? 48) * 150 * 1000).toLocaleString("vi-VN")} đ
                         </span>
                       </div>
@@ -3855,11 +3852,11 @@ export default function MathStepWorkbench({
                         step="1"
                         value={params.F ?? 48}
                         onChange={(e) => updateParam("F", parseFloat(e.target.value))}
-                        className="w-full accent-amber-500"
+                        className="w-full accent-amber-500 bg-slate-800"
                       />
-                      <div className="flex justify-between text-[9px] text-amber-700/70 font-mono">
+                      <div className="flex justify-between text-[9px] text-amber-400/80 font-mono">
                         <span>0 đ</span>
-                        <span className="font-bold text-amber-900">F_max = 10.200.000 đ</span>
+                        <span className="font-bold text-amber-300">F_max = 10.200.000 đ</span>
                       </div>
                     </div>
                   )}
@@ -3880,13 +3877,13 @@ export default function MathStepWorkbench({
                 )}
                 {moduleId === "spatial_geometry" && !aiCreativeMode && (
                   <div className="space-y-2.5">
-                    <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                    <div className="p-2 bg-slate-950/70 border border-slate-800 rounded-xl space-y-1">
+                      <div className="flex justify-between items-center text-xs font-semibold text-slate-300">
                         <span className="flex items-center gap-1">
                           <span>Chiều cao:</span>
                           <KatexMath math={`h = SH = ${formatVNFloat(params.h || 2.6)}`} />
                         </span>
-                        <span className="font-mono text-teal-800 text-xs font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
+                        <span className="font-mono text-blue-400 text-xs font-bold bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
                           {formatVNFloat(params.h || 2.6)} m
                         </span>
                       </div>
@@ -3897,21 +3894,21 @@ export default function MathStepWorkbench({
                         step="0.1"
                         value={params.h || 2.6}
                         onChange={(e) => updateParam("h", parseFloat(e.target.value))}
-                        className="w-full accent-teal-600"
+                        className="w-full accent-blue-500 bg-slate-800"
                       />
-                      <div className="flex justify-between text-[9px] text-slate-400 font-mono">
+                      <div className="flex justify-between text-[9px] text-slate-500 font-mono">
                         <span>1,2 m</span>
-                        <span className="font-bold text-teal-700">2,6 m (chuẩn)</span>
+                        <span className="font-semibold text-blue-400">2,6 m (chuẩn)</span>
                         <span>4,5 m</span>
                       </div>
                     </div>
 
-                    <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                      <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                    <div className="p-2 bg-slate-950/70 border border-slate-800 rounded-xl space-y-1">
+                      <div className="flex justify-between items-center text-xs font-semibold text-slate-300">
                         <span className="flex items-center gap-1">
-                          <span>Gấp khối <KatexMath math="\leftrightarrow" /> Khai triển:</span>
+                          <span>Gấp khối / Khai triển:</span>
                         </span>
-                        <span className="font-mono text-cyan-800 text-xs font-extrabold bg-cyan-100/70 px-2 py-0.5 rounded border border-cyan-300">
+                        <span className="font-mono text-cyan-400 text-xs font-bold bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
                           {foldPercent}%
                         </span>
                       </div>
@@ -3925,11 +3922,11 @@ export default function MathStepWorkbench({
                           setFoldPercent(val);
                           setIsUnfolded(val < 50);
                         }}
-                        className="w-full accent-cyan-600"
+                        className="w-full accent-cyan-500 bg-slate-800"
                       />
-                      <div className="flex justify-between text-[9px] text-slate-400 font-mono">
+                      <div className="flex justify-between text-[9px] text-slate-500 font-mono">
                         <span>0% (Phẳng)</span>
-                        <span className="font-bold text-cyan-700">100% (Khối 3D)</span>
+                        <span className="font-semibold text-cyan-400">100% (Khối 3D)</span>
                       </div>
                     </div>
                   </div>
@@ -3937,19 +3934,19 @@ export default function MathStepWorkbench({
                 {moduleId === "trigonometry" && (
                   <div className="space-y-3">
                     {/* Header thông số góc và nút tinh chỉnh nhanh */}
-                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                    <div className="p-2.5 bg-slate-950/70 border border-slate-800 rounded-xl space-y-2">
                       <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-slate-800 flex items-center gap-1">
-                          <span>Góc quay:</span>
+                        <span className="font-semibold text-slate-300 flex items-center gap-1">
+                          <span>Góc quay α:</span>
                         </span>
                         <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-teal-800 text-xs font-extrabold bg-teal-100/70 px-2 py-0.5 rounded border border-teal-300">
+                          <span className="font-mono text-blue-400 text-xs font-bold bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
                             {Math.round(params.t || 60)}°
                           </span>
                           <button
                             type="button"
                             onClick={() => updateParam("t", 60)}
-                            className="text-[10px] text-teal-700 hover:underline font-bold"
+                            className="text-[10px] text-blue-400 hover:text-blue-300 hover:underline font-semibold"
                           >
                             Về 60°
                           </button>
@@ -3964,11 +3961,11 @@ export default function MathStepWorkbench({
                         step="1"
                         value={params.t ?? 60}
                         onChange={(e) => updateParam("t", parseFloat(e.target.value))}
-                        className="w-full accent-teal-600 cursor-pointer"
+                        className="w-full accent-blue-500 bg-slate-800 cursor-pointer"
                       />
 
-                      <div className="flex justify-between text-[9px] text-slate-400 font-mono">
-                        <span>0° (Trục Ox)</span>
+                      <div className="flex justify-between text-[9px] text-slate-500 font-mono">
+                        <span>0° (Ox)</span>
                         <span>90° (Oy)</span>
                         <span>180° (-Ox)</span>
                         <span>270° (-Oy)</span>
@@ -3976,32 +3973,32 @@ export default function MathStepWorkbench({
                       </div>
 
                       {/* Nút bấm tinh chỉnh ±1° và ±15° */}
-                      <div className="grid grid-cols-4 gap-1 pt-1 border-t border-slate-200">
+                      <div className="grid grid-cols-4 gap-1 pt-1 border-t border-slate-800">
                         <button
                           type="button"
                           onClick={() => updateParam("t", (((params.t ?? 60) - 15 + 360) % 360))}
-                          className="py-1 px-1.5 bg-white hover:bg-slate-100 rounded border border-slate-200 text-[10px] font-mono text-slate-700 font-bold transition-colors"
+                          className="py-1 px-1.5 bg-slate-900 hover:bg-slate-800 rounded border border-slate-800 text-[10px] font-mono text-slate-300 font-semibold transition-colors"
                         >
                           -15°
                         </button>
                         <button
                           type="button"
                           onClick={() => updateParam("t", (((params.t ?? 60) - 1 + 360) % 360))}
-                          className="py-1 px-1.5 bg-white hover:bg-slate-100 rounded border border-slate-200 text-[10px] font-mono text-slate-700 font-bold transition-colors"
+                          className="py-1 px-1.5 bg-slate-900 hover:bg-slate-800 rounded border border-slate-800 text-[10px] font-mono text-slate-300 font-semibold transition-colors"
                         >
                           -1°
                         </button>
                         <button
                           type="button"
                           onClick={() => updateParam("t", (((params.t ?? 60) + 1) % 360))}
-                          className="py-1 px-1.5 bg-white hover:bg-slate-100 rounded border border-slate-200 text-[10px] font-mono text-slate-700 font-bold transition-colors"
+                          className="py-1 px-1.5 bg-slate-900 hover:bg-slate-800 rounded border border-slate-800 text-[10px] font-mono text-slate-300 font-semibold transition-colors"
                         >
                           +1°
                         </button>
                         <button
                           type="button"
                           onClick={() => updateParam("t", (((params.t ?? 60) + 15) % 360))}
-                          className="py-1 px-1.5 bg-white hover:bg-slate-100 rounded border border-slate-200 text-[10px] font-mono text-slate-700 font-bold transition-colors"
+                          className="py-1 px-1.5 bg-slate-900 hover:bg-slate-800 rounded border border-slate-800 text-[10px] font-mono text-slate-300 font-semibold transition-colors"
                         >
                           +15°
                         </button>
@@ -4010,7 +4007,7 @@ export default function MathStepWorkbench({
 
                     {/* Lưới chọn nhanh các góc đặc biệt SGK Toán 11 */}
                     <div className="space-y-1.5">
-                      <span className="text-[10px] font-bold text-slate-700 block uppercase tracking-wide">
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wide">
                         Góc đặc biệt SGK (Nam châm hút):
                       </span>
                       <div className="grid grid-cols-3 gap-1">
@@ -4041,8 +4038,8 @@ export default function MathStepWorkbench({
                               onClick={() => updateParam("t", item.deg)}
                               className={`py-1 px-1.5 text-[9px] rounded font-mono font-medium transition-all ${
                                 isActive
-                                  ? "bg-teal-600 text-white font-bold shadow-sm ring-1 ring-teal-500"
-                                  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200"
+                                  ? "bg-blue-600 text-white font-bold shadow-xs ring-1 ring-blue-500"
+                                  : "bg-slate-900/80 hover:bg-slate-800 text-slate-400 border border-slate-800"
                               }`}
                             >
                               {item.label}
@@ -4098,7 +4095,7 @@ export default function MathStepWorkbench({
       {/* MODAL XEM CHI TIẾT ĐỀ BÀI VÀ BỐI CẢNH SGK */}
       {problemDetailModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-slate-900 border border-slate-800 text-slate-100 rounded-xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden">
+          <div className="bg-slate-900 border border-slate-800 text-slate-100 rounded-xl shadow-2xl max-w-2xl w-[calc(100vw-32px)] max-h-[85vh] flex flex-col overflow-hidden">
             {/* Header */}
             <div className="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-950/80">
               <div className="flex items-center gap-2.5 min-w-0">
@@ -4137,8 +4134,8 @@ export default function MathStepWorkbench({
                   <FileText className="w-3.5 h-3.5 text-blue-400" />
                   <span>Toàn văn đề bài & Bối cảnh thực tế</span>
                 </span>
-                <div className="p-3.5 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-200 text-sm leading-relaxed whitespace-pre-line font-serif italic">
-                  {activeProblem.context}
+                <div className="p-3.5 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-200 text-sm leading-relaxed whitespace-pre-line font-serif italic break-words">
+                  <MathFormattedText text={activeProblem.context} />
                 </div>
               </div>
 
@@ -4148,8 +4145,8 @@ export default function MathStepWorkbench({
                   <Target className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Mục tiêu toán học & Câu hỏi giải quyết</span>
                 </span>
-                <div className="p-3 rounded-lg bg-emerald-950/30 border border-emerald-500/30 text-emerald-300 font-medium">
-                  {activeProblem.objectiveText}
+                <div className="p-3 rounded-lg bg-emerald-950/30 border border-emerald-500/30 text-emerald-300 font-medium break-words">
+                  <MathFormattedText text={activeProblem.objectiveText} />
                 </div>
               </div>
 
@@ -4160,22 +4157,30 @@ export default function MathStepWorkbench({
                     Bảng số liệu & Hệ điều kiện ràng buộc
                   </span>
                   <div className="overflow-x-auto rounded-lg border border-slate-800 bg-slate-950/60">
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-xs table-fixed">
                       <thead className="bg-slate-900 border-b border-slate-800 text-[11px] text-slate-400 font-mono">
                         <tr>
-                          <th className="p-2.5">{activeProblem.matrixHeaders[0] || "Hạng mục"}</th>
-                          <th className="p-2.5">{activeProblem.matrixHeaders[1] || "Thông số 1"}</th>
-                          <th className="p-2.5">{activeProblem.matrixHeaders[2] || "Thông số 2"}</th>
-                          <th className="p-2.5">{activeProblem.matrixHeaders[3] || "Giới hạn / Ràng buộc"}</th>
+                          <th className="p-2.5 w-[28%]">{activeProblem.matrixHeaders[0] || "Hạng mục"}</th>
+                          <th className="p-2.5 w-[22%]">{activeProblem.matrixHeaders[1] || "Kích thước"}</th>
+                          <th className="p-2.5 w-[22%]">{activeProblem.matrixHeaders[2] || "Mô tả"}</th>
+                          <th className="p-2.5 w-[28%]">{activeProblem.matrixHeaders[3] || "Quy ước / Ràng buộc"}</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-800/80 font-mono text-[11.5px]">
+                      <tbody className="divide-y divide-slate-800/80 font-mono text-[11px]">
                         {activeProblem.matrixRows.map((row, idx) => (
                           <tr key={idx} className="hover:bg-slate-800/40">
-                            <td className="p-2.5 font-sans font-medium text-slate-300">{row.label}</td>
-                            <td className="p-2.5 text-slate-400">{row.col1 || "—"}</td>
-                            <td className="p-2.5 text-slate-400">{row.col2 || "—"}</td>
-                            <td className="p-2.5 font-bold text-emerald-400">{row.limit || "—"}</td>
+                            <td className="p-2.5 font-sans font-medium text-slate-300 break-words">
+                              <MathFormattedText text={row.label} />
+                            </td>
+                            <td className="p-2.5 text-slate-300 break-words">
+                              <MathFormattedText text={row.col1 || "—"} />
+                            </td>
+                            <td className="p-2.5 text-slate-400 break-words">
+                              <MathFormattedText text={row.col2 || "—"} />
+                            </td>
+                            <td className="p-2.5 font-bold text-emerald-400 break-words">
+                              <MathFormattedText text={row.limit || "—"} />
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -4186,9 +4191,9 @@ export default function MathStepWorkbench({
 
               {/* 4. Kết luận tối ưu / Hướng giải quyết */}
               {activeProblem.optimalSummary && (
-                <div className="p-3 rounded-lg bg-blue-950/20 border border-blue-500/20 text-slate-300 text-xs">
+                <div className="p-3 rounded-lg bg-blue-950/20 border border-blue-500/20 text-slate-300 text-xs break-words">
                   <strong className="text-blue-400 block mb-1">Quy luật / Kết quả tối ưu:</strong>
-                  <span>{activeProblem.optimalSummary}</span>
+                  <MathFormattedText text={activeProblem.optimalSummary} />
                 </div>
               )}
             </div>
@@ -4203,7 +4208,7 @@ export default function MathStepWorkbench({
                   );
                   showToast("Đã sao chép đề bài vào clipboard.");
                 }}
-                className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Copy className="w-3.5 h-3.5" />
                 <span>Sao chép đề</span>
@@ -4217,7 +4222,7 @@ export default function MathStepWorkbench({
                       setProblemDetailModalOpen(false);
                       onAskTutor(`Em muốn thảo luận về đề bài: "${activeProblem.title}". Bối cảnh: ${activeProblem.context}. Yêu cầu: ${activeProblem.objectiveText}. Thầy/Cô gợi mở giúp em hướng tiếp cận đầu tiên.`);
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Bot className="w-3.5 h-3.5" />
                     <span>Hỏi trợ lý Socratic về đề này</span>
@@ -4238,18 +4243,18 @@ export default function MathStepWorkbench({
 
       {/* 5. MODAL SỔ KHÁM PHÁ & LƯU VẾT HỌC TẬP (EVIDENCE MODAL) */}
       {evidenceModalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#08232999] backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-2xl p-5 shadow-2xl border border-[#d9e4e2] flex flex-col max-h-[85vh] text-xs">
-            <div className="flex justify-between items-center pb-3 border-b border-[#d9e4e2]">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-xl p-5 shadow-2xl flex flex-col max-h-[85vh] text-xs text-slate-200">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-slate-600" />
-                <h3 className="font-bold text-sm text-[#152f35]">
+                <BookOpen className="w-4 h-4 text-blue-400" />
+                <h3 className="font-bold text-sm text-slate-100">
                   Sổ khám phá & Dấu vết học tập ({evidenceHistory.length})
                 </h3>
               </div>
               <button
                 onClick={() => setEvidenceModalOpen(false)}
-                className="text-gray-400 hover:text-gray-700 font-bold text-base"
+                className="text-slate-400 hover:text-slate-100 font-bold text-base cursor-pointer"
               >
                 ✕
               </button>
@@ -4257,22 +4262,22 @@ export default function MathStepWorkbench({
 
             <div className="flex-1 overflow-y-auto py-3 space-y-2">
               {evidenceHistory.length === 0 ? (
-                <p className="text-center py-6 text-gray-400">
+                <p className="text-center py-6 text-slate-500">
                   Chưa có bằng chứng nào. Hãy hoàn thành các bước trên mô phỏng để tự động lưu vết!
                 </p>
               ) : (
                 evidenceHistory.map((rec, i) => (
                   <div
                     key={i}
-                    className="p-3 bg-[#f3f6f5] border border-[#d9e4e2] rounded-xl space-y-1"
+                    className="p-3 bg-slate-950/70 border border-slate-800 rounded-lg space-y-1"
                   >
-                    <div className="flex justify-between items-center font-bold text-[#087e7c]">
+                    <div className="flex justify-between items-center font-bold text-blue-400">
                       <span>{rec.stepName}</span>
-                      <span className="text-[10px] text-gray-400 font-mono font-normal">
+                      <span className="text-[10px] text-slate-500 font-mono font-normal">
                         {rec.completedAt}
                       </span>
                     </div>
-                    <p className="text-gray-800 leading-relaxed">{rec.summary}</p>
+                    <p className="text-slate-300 leading-relaxed">{rec.summary}</p>
                   </div>
                 ))
               )}
@@ -4287,12 +4292,12 @@ export default function MathStepWorkbench({
               style={{ display: "none" }}
             />
 
-            <div className="pt-3 border-t border-[#d9e4e2] flex items-center justify-between gap-2">
+            <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={handleExportEvidenceJson}
-                  className="px-3 py-1.5 rounded-lg border border-[#d9e4e2] bg-[#f8faf9] text-[#152f35] font-bold text-[11px] hover:bg-[#e2f1ec] flex items-center gap-1 transition-colors"
+                  className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-semibold text-[11px] hover:bg-slate-750 flex items-center gap-1 transition-colors cursor-pointer"
                   title="Tải toàn bộ bằng chứng về máy dưới dạng JSON"
                 >
                   <Download className="w-3.5 h-3.5 inline mr-1" /> Xuất JSON
@@ -4300,7 +4305,7 @@ export default function MathStepWorkbench({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-3 py-1.5 rounded-lg border border-[#d9e4e2] bg-[#f8faf9] text-[#152f35] font-bold text-[11px] hover:bg-[#e2f1ec] flex items-center gap-1 transition-colors"
+                  className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-semibold text-[11px] hover:bg-slate-750 flex items-center gap-1 transition-colors cursor-pointer"
                   title="Nhập file JSON để khôi phục tiến trình"
                 >
                   <Upload className="w-3.5 h-3.5 inline mr-1" /> Nhập JSON
@@ -4309,7 +4314,7 @@ export default function MathStepWorkbench({
 
               <button
                 onClick={() => setEvidenceModalOpen(false)}
-                className="px-4 py-1.5 bg-[#087e7c] text-white rounded-lg font-bold hover:bg-[#066563]"
+                className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold transition-colors cursor-pointer"
               >
                 Đóng sổ khám phá
               </button>
