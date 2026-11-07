@@ -11,6 +11,7 @@ import MathGraphVisualizer from "./components/MathGraphVisualizer";
 import MathStepWorkbench from "./components/MathStepWorkbench";
 import TeacherDashboard from "./components/TeacherDashboard";
 import ResearchMethodologyHub from "./components/ResearchMethodologyHub";
+import AccountSettingsModal, { CustomAiConfig } from "./components/AccountSettingsModal";
 import { generateSmartSocraticResponse } from "./lib/smartSocratic";
 import { getAllStations, removeVietnameseAccents, StationItem } from "./lib/stationCatalogData";
 import {
@@ -25,6 +26,7 @@ import {
   Sparkles,
   Eye,
   EyeOff,
+  Cpu,
 } from "lucide-react";
 
 export type SubsystemId = "student" | "teacher" | "research";
@@ -233,6 +235,11 @@ function HomeContent() {
   const [loginNotice, setLoginNotice] = useState("");
   const [loginBusy, setLoginBusy] = useState(false);
 
+  // User Profile & Custom AI Key Modal state
+  const [accountModalOpen, setAccountModalOpen] = useState(false);
+  const [accountModalTab, setAccountModalTab] = useState<"profile" | "ai">("profile");
+  const [customAiConfig, setCustomAiConfig] = useState<CustomAiConfig | null>(null);
+
   const allStations = useMemo(() => getAllStations(), []);
 
   // Filter stations for the catalog view
@@ -275,6 +282,19 @@ function HomeContent() {
     return () => { ignore = true; };
   }, []);
 
+  // Nạp cấu hình Custom AI Key từ localStorage nếu có
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("mathstep:custom_ai_config");
+      if (stored) {
+        const parsed = JSON.parse(stored) as CustomAiConfig;
+        if (parsed?.apiKey) {
+          setCustomAiConfig(parsed);
+        }
+      }
+    } catch {}
+  }, []);
+
   // Auto-scroll chat
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -315,7 +335,8 @@ function HomeContent() {
     setError("");
 
     try {
-      if (session?.authenticated) {
+      const hasCustomKey = Boolean(customAiConfig?.apiKey && customAiConfig.apiKey.trim().length > 10);
+      if (session?.authenticated || hasCustomKey) {
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -325,6 +346,7 @@ function HomeContent() {
             mode: "guided_learning",
             learning_context: { module: moduleId, learning_stage: stage },
             hint_level: 1,
+            custom_ai: hasCustomKey ? customAiConfig : undefined,
           }),
         });
         const data = await response.json();
@@ -515,15 +537,50 @@ function HomeContent() {
             <span className="text-[10px] text-gray-400">...</span>
           ) : session?.authenticated ? (
             <div className="flex items-center gap-2 bg-[#133d41] py-1 px-2.5 rounded-xl border border-[#2a595f] shadow-sm">
-              <span className="w-7 h-7 rounded-full bg-[#087e7c] text-[#adf0d6] font-black text-xs flex items-center justify-center shadow-xs">
-                {(session.name || session.email || "M").slice(0, 1).toUpperCase()}
-              </span>
-              <div className="flex flex-col text-left leading-tight hidden sm:flex">
-                <span className="text-xs font-bold text-white line-clamp-1 max-w-[140px]">
-                  {session.name || session.email?.split("@")[0] || "Học viên"}
+              <button
+                type="button"
+                onClick={() => {
+                  setAccountModalTab("profile");
+                  setAccountModalOpen(true);
+                }}
+                className="flex items-center gap-2 text-left hover:opacity-90 transition-opacity"
+                title="Xem và chỉnh sửa hồ sơ học sinh (Họ tên, Khối lớp, Trường, Mục tiêu)"
+              >
+                <span className="w-7 h-7 rounded-full bg-[#087e7c] text-[#adf0d6] font-black text-xs flex items-center justify-center shadow-xs">
+                  {(session.name || session.email || "M").slice(0, 1).toUpperCase()}
                 </span>
-                <span className="text-[9px] text-[#adf0d6] font-medium">Đã đăng nhập</span>
-              </div>
+                <div className="flex flex-col text-left leading-tight hidden sm:flex">
+                  <span className="text-xs font-bold text-white line-clamp-1 max-w-[130px]">
+                    {session.name || session.email?.split("@")[0] || "Học viên"}
+                  </span>
+                  <span className="text-[9px] text-[#adf0d6] font-medium flex items-center gap-1">
+                    <span>Hồ sơ & Lớp</span>
+                  </span>
+                </div>
+              </button>
+
+              {/* Nút Cấu hình AI Model */}
+              <button
+                type="button"
+                onClick={() => {
+                  setAccountModalTab("ai");
+                  setAccountModalOpen(true);
+                }}
+                className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-colors flex items-center gap-1 ${
+                  customAiConfig?.apiKey
+                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30"
+                    : "bg-white/10 text-gray-300 border-white/15 hover:bg-white/20 hover:text-white"
+                }`}
+                title="Cấu hình Model AI & API Key riêng (Gemini 2.5, GPT-4o, DeepSeek R1)"
+              >
+                <Cpu className="w-3 h-3 text-[#adf0d6]" />
+                <span className="hidden md:inline">
+                  {customAiConfig?.model
+                    ? customAiConfig.model.replace("gemini-", "").replace("gpt-", "").replace("deepseek-", "")
+                    : "Cài AI"}
+                </span>
+              </button>
+
               <button
                 onClick={() => void logout()}
                 className="text-[11px] text-gray-300 hover:text-rose-300 font-medium underline ml-1"
@@ -533,12 +590,32 @@ function HomeContent() {
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => setAuthModalOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20"
-            >
-              Đăng nhập
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setAccountModalTab("ai");
+                  setAccountModalOpen(true);
+                }}
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1.5 ${
+                  customAiConfig?.apiKey
+                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30"
+                    : "bg-white/10 hover:bg-white/20 text-gray-200 border-white/20"
+                }`}
+                title="Cấu hình API Key riêng (Gemini 2.5, GPT-4o, DeepSeek R1)"
+              >
+                <Cpu className="w-3.5 h-3.5 text-[#adf0d6]" />
+                <span className="hidden sm:inline">
+                  {customAiConfig?.model ? customAiConfig.model : "Nhập API Key"}
+                </span>
+              </button>
+              <button
+                onClick={() => setAuthModalOpen(true)}
+                className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20"
+              >
+                Đăng nhập
+              </button>
+            </div>
           )}
         </div>
       </header>
@@ -953,15 +1030,53 @@ function HomeContent() {
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setTutorOpen(false)}
-                className="w-8 h-8 rounded-xl bg-white border border-[#d9e4e2] text-gray-500 hover:text-black hover:bg-gray-50 flex items-center justify-center font-bold text-sm"
-                title="Đóng trợ lý"
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAccountModalTab("ai");
+                    setAccountModalOpen(true);
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl border border-teal-200 bg-teal-50 hover:bg-teal-100 text-[#087e7c] font-bold text-[11px] flex items-center gap-1.5 shadow-xs transition-colors"
+                  title="Cấu hình Model AI & API Key riêng (Gemini, OpenAI, DeepSeek)"
+                >
+                  <Cpu className="w-3.5 h-3.5 text-[#087e7c]" />
+                  <span className="max-w-[120px] truncate">
+                    {customAiConfig?.model || "Cấu hình AI"}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTutorOpen(false)}
+                  className="w-8 h-8 rounded-xl bg-white border border-[#d9e4e2] text-gray-500 hover:text-black hover:bg-gray-50 flex items-center justify-center font-bold text-sm"
+                  title="Đóng trợ lý"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
+
+            {/* Banner trạng thái Model AI đang kích hoạt */}
+            {customAiConfig?.apiKey && (
+              <div className="px-4 py-1.5 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between text-[11px] text-emerald-800">
+                <div className="flex items-center gap-1.5 truncate">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                  <span className="truncate">
+                    Model: <strong>{customAiConfig.model}</strong> ({customAiConfig.provider.toUpperCase()})
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAccountModalTab("ai");
+                    setAccountModalOpen(true);
+                  }}
+                  className="text-emerald-700 hover:text-emerald-900 underline font-semibold text-[10px] shrink-0 ml-2"
+                >
+                  Đổi model
+                </button>
+              </div>
+            )}
 
             {/* Conversation Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -1214,6 +1329,20 @@ function HomeContent() {
           </div>
         </div>
       )}
+
+      {/* 7. ACCOUNT & CUSTOM AI SETTINGS MODAL */}
+      <AccountSettingsModal
+        isOpen={accountModalOpen}
+        onClose={() => setAccountModalOpen(false)}
+        initialTab={accountModalTab}
+        currentSession={session}
+        onProfileUpdated={(updatedName) => {
+          setSession((prev) => (prev ? { ...prev, name: updatedName } : { authenticated: true, name: updatedName, email: null }));
+        }}
+        onAiConfigUpdated={(cfg) => {
+          setCustomAiConfig(cfg);
+        }}
+      />
 
       {/* FOOTER */}
       <footer className="bg-[#0b2329] text-gray-400 text-xs py-6 px-4 md:px-8 border-t border-[#284048] mt-auto">
