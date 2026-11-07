@@ -31,7 +31,17 @@ export function clearAuthCookies(response: NextResponse) {
   }
 }
 
-export async function getSupabaseUser(accessToken: string) {
+export type SupabaseUser = {
+  id: string;
+  email?: string;
+  email_confirmed_at?: string | null;
+  confirmed_at?: string | null;
+  app_metadata?: { provider?: string; providers?: string[]; role?: string };
+  user_metadata?: { full_name?: string; name?: string };
+  role?: string;
+};
+
+export async function getSupabaseUser(accessToken: string): Promise<SupabaseUser | null> {
   const { url, anonKey } = getSupabaseConfig();
   const response = await fetch(`${url}/auth/v1/user`, {
     headers: { apikey: anonKey, Authorization: `Bearer ${accessToken}` },
@@ -40,7 +50,7 @@ export async function getSupabaseUser(accessToken: string) {
   });
   if (response.status === 401 || response.status === 403) return null;
   if (!response.ok) throw new Error("Supabase Auth request failed.");
-  return await response.json() as { id: string; email?: string; user_metadata?: { full_name?: string; name?: string } };
+  return await response.json() as SupabaseUser;
 }
 
 export async function refreshSupabaseSession(refreshToken: string): Promise<SupabaseTokens | null> {

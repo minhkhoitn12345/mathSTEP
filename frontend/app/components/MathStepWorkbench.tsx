@@ -1158,8 +1158,6 @@ export default function MathStepWorkbench({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animId: number;
-
     const render = () => {
       const W = canvas.width;
       const H = canvas.height;
@@ -1889,11 +1887,9 @@ export default function MathStepWorkbench({
         }
       }
 
-      animId = requestAnimationFrame(render);
     };
 
     render();
-    return () => cancelAnimationFrame(animId);
   }, [moduleId, stationId, meta.is3D, camera, params, constraints, showIntegerPoints, invertFilling, counterExampleActive, isUnfolded, currentStep]);
 
   // Pointer Dragging Interaction

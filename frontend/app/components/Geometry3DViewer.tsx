@@ -338,8 +338,10 @@ export default function Geometry3DViewer({ scene, onAskTutor, className = "" }: 
       {/* 2. WebGL 3D Canvas */}
       <div className="flex-1 w-full h-full">
         <Canvas
+          frameloop={autoRotate ? "always" : "demand"}
+          dpr={[1, 1.5]}
           camera={{ position: [5.2, 4.5, 6.2], fov: 45 }}
-          gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}
+          gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: "high-performance" }}
         >
           <color attach="background" args={["#f8fafc"]} />
           <SceneController autoRotate={autoRotate} />

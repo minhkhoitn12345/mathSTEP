@@ -396,6 +396,27 @@ function DynamicPyramidMeshAndEdges({
     []
   );
 
+  const altitudeMat = useMemo(
+    () =>
+      new THREE.LineDashedMaterial({
+        color: 0xf43f5e, // Rose-500
+        dashSize: 0.15,
+        gapSize: 0.12,
+      }),
+    []
+  );
+
+  const mnMat = useMemo(
+    () =>
+      new THREE.LineDashedMaterial({
+        color: 0x84cc16, // Lime-500
+        dashSize: 0.2,
+        gapSize: 0.12,
+        linewidth: isTeacherMode ? 3.5 : 2,
+      }),
+    [isTeacherMode]
+  );
+
   // Tạo BufferGeometries cho các mặt để phủ chất liệu Kính Mờ Frosted Glass
   const faceGeometries = useMemo(() => {
     const baseGeo = new THREE.BufferGeometry();
@@ -449,13 +470,47 @@ function DynamicPyramidMeshAndEdges({
     return { baseGeo, sabGeo, sbcGeo, scdGeo, sdaGeo };
   }, [baseA, baseB, baseC, baseD, currentFaces]);
 
-  // Cập nhật Cạnh Thấy / Cạnh Khuất và Ký hiệu góc vuông mỗi khung hình (60fps)
+  // Giải phóng bộ nhớ GPU khi unmount hoặc đổi hình
+  useEffect(() => {
+    const group = linesGroupRef.current;
+    return () => {
+      if (group) {
+        group.traverse((obj) => {
+          if (obj instanceof THREE.Line || obj instanceof THREE.Mesh) {
+            obj.geometry?.dispose();
+          }
+        });
+        group.clear();
+      }
+      Object.values(faceGeometries).forEach((geo) => geo.dispose());
+    };
+  }, [faceGeometries]);
+
+  const lastCamPosRef = useRef(new THREE.Vector3());
+  const lastUpdateRef = useRef<number>(0);
+
+  // Cập nhật Cạnh Thấy / Cạnh Khuất và Ký hiệu góc vuông có kiểm soát bộ nhớ chống đơ/văng
   useFrame(() => {
     if (!linesGroupRef.current) return;
     const group = linesGroupRef.current;
-    group.clear();
-
     const camPos = camera.position;
+
+    // Giảm tải render: Nếu camera không di chuyển và chưa đủ 150ms thì bỏ qua
+    const distSq = camPos.distanceToSquared(lastCamPosRef.current);
+    const now = performance.now();
+    if (distSq < 0.0002 && now - lastUpdateRef.current < 150 && group.children.length > 0) {
+      return;
+    }
+    lastCamPosRef.current.copy(camPos);
+    lastUpdateRef.current = now;
+
+    // THU HỒI BỘ NHỚ VRAM TRIỆT ĐỂ: Giải phóng geometry cũ trước khi vẽ mới
+    group.traverse((obj) => {
+      if (obj instanceof THREE.Line || obj instanceof THREE.Mesh) {
+        obj.geometry?.dispose();
+      }
+    });
+    group.clear();
 
     const computeNormal = (p1: THREE.Vector3, p2: THREE.Vector3, p3: THREE.Vector3) => {
       const v1 = new THREE.Vector3().subVectors(p2, p1);
@@ -544,11 +599,6 @@ function DynamicPyramidMeshAndEdges({
     // Đường cao SH vuông góc đáy: Nét đứt màu đỏ cam
     const foot = new THREE.Vector3(apex.x, 0, apex.z);
     const altitudeGeo = new THREE.BufferGeometry().setFromPoints([apex, foot]);
-    const altitudeMat = new THREE.LineDashedMaterial({
-      color: 0xf43f5e, // Rose-500
-      dashSize: 0.15,
-      gapSize: 0.12,
-    });
     const altLine = new THREE.Line(altitudeGeo, altitudeMat);
     altLine.computeLineDistances();
     group.add(altLine);
@@ -569,12 +619,6 @@ function DynamicPyramidMeshAndEdges({
     // Thiết diện cắt qua đoạn MN (Trung điểm SA và Điểm tỉ số 2:1 trên SB)
     if (showSectionPlane && pointM && pointN) {
       const mnGeo = new THREE.BufferGeometry().setFromPoints([pointM, pointN]);
-      const mnMat = new THREE.LineDashedMaterial({
-        color: 0x84cc16, // Lime-500
-        dashSize: 0.2,
-        gapSize: 0.12,
-        linewidth: isTeacherMode ? 3.5 : 2,
-      });
       const mnLine = new THREE.Line(mnGeo, mnMat);
       mnLine.computeLineDistances();
       group.add(mnLine);
@@ -1220,7 +1264,8 @@ export default function Stereometry3DCanvas({
       {/* WebGL 3D Canvas */}
       <Canvas
         camera={{ position: [4.5, 3.5, 5.0], fov: 45 }}
-        gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}
+        dpr={[1, 1.5]}
+        gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: "high-performance" }}
         className="w-full h-full cursor-grab active:cursor-grabbing"
       >
         {/* Studio Three-Point Lighting */}

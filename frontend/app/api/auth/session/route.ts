@@ -17,14 +17,18 @@ export async function GET(request: NextRequest) {
     const metadata = user.user_metadata ?? {};
     const userName = metadata.full_name ?? metadata.name ?? null;
     const userEmail = user.email ?? null;
+    const isEmailVerified = Boolean(user.email_confirmed_at || user.confirmed_at || user.app_metadata?.provider === "google");
     const response = NextResponse.json({
       authenticated: true,
       name: userName,
       email: userEmail,
+      email_verified: isEmailVerified,
+      provider: user.app_metadata?.provider || "email",
       user: {
         id: user.id,
         name: userName,
         email: userEmail,
+        email_verified: isEmailVerified,
       },
     }, { headers: { "Cache-Control": "private, no-store" } });
     if (refreshed) setAuthCookies(response, refreshed);

@@ -31,6 +31,9 @@ import {
   CheckCircle2,
   ArrowRight,
   Activity,
+  Mail,
+  RotateCcw,
+  AlertCircle,
 } from "lucide-react";
 
 export type SubsystemId = "student" | "teacher" | "research";
@@ -57,7 +60,14 @@ export type ChatMessage = {
   validation?: { status: string; result: boolean | number | null; explanation: string } | null;
 };
 
-type Session = { authenticated: boolean; name: string | null; email: string | null };
+type Session = {
+  authenticated: boolean;
+  name: string | null;
+  email: string | null;
+  email_verified?: boolean;
+  role?: string;
+  provider?: string;
+};
 
 function normalizeMathDelimiters(content: string): string {
   if (!content) return "";
@@ -662,7 +672,18 @@ function HomeContent() {
   const [session, setSession] = useState<Session | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [authMode, setAuthMode] = useState<"login" | "signup" | "verify_email">("login");
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string>("");
+  const [resendCooldown, setResendCooldown] = useState<number>(0);
+
+  // Bộ đếm thời gian chờ gửi lại email xác thực
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -702,7 +723,13 @@ function HomeContent() {
         if (data && data.authenticated) {
           const userName = data.user?.name ?? data.name ?? null;
           const userEmail = data.user?.email ?? data.email ?? null;
-          setSession({ authenticated: true, name: userName, email: userEmail });
+          setSession({
+            authenticated: true,
+            name: userName,
+            email: userEmail,
+            email_verified: Boolean(data.email_verified ?? true),
+            provider: data.provider || "email",
+          });
         } else {
           setSession({ authenticated: false, name: null, email: null });
         }
@@ -782,6 +809,22 @@ function HomeContent() {
 
     try {
       const hasCustomKey = Boolean(customAiConfig?.apiKey && customAiConfig.apiKey.trim().length > 10);
+
+      // GIỚI HẠN QUYỀN TRUY CẬP CHO KHÁCH (GUEST ACCESS CONTROL)
+      // Cho phép học thử 5 câu hỏi/ngày. Sau 5 câu yêu cầu đăng ký và xác minh email.
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const guestKey = `mathstep:guest_usage_${todayStr}`;
+      const currentGuestUsage = typeof window !== "undefined" ? parseInt(localStorage.getItem(guestKey) || "0", 10) : 0;
+
+      if (!session?.authenticated && !hasCustomKey && currentGuestUsage >= 5) {
+        setPendingVerificationEmail("");
+        setAuthMode("signup");
+        setLoginNotice("Em đã hoàn thành 5 lượt tương tác học thử hôm nay. Hãy đăng ký tài khoản và xác minh email để mở khóa học tập không giới hạn cùng Trợ lý Socratic TES!");
+        setAuthModalOpen(true);
+        setBusy(false);
+        return;
+      }
+
       if (session?.authenticated || hasCustomKey) {
         const response = await fetch("/api/chat", {
           method: "POST",
@@ -822,6 +865,13 @@ function HomeContent() {
         hintLevel: fallback.hintLevel,
       };
       setMessages((prev) => [...prev, fallbackReply]);
+      // Cập nhật số lượt học thử của khách
+      if (!session?.authenticated && !hasCustomKey && typeof window !== "undefined") {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const guestKey = `mathstep:guest_usage_${todayStr}`;
+        const cur = parseInt(localStorage.getItem(guestKey) || "0", 10);
+        localStorage.setItem(guestKey, String(cur + 1));
+      }
     } catch {
       const fallback = generateSmartSocraticResponse(textToSend, moduleId, stage, 1);
       setMessages((prev) => [
@@ -845,6 +895,32 @@ function HomeContent() {
     void handleSendTutorMessage(promptText);
   };
 
+  const handleResendVerificationEmail = async () => {
+    if (resendCooldown > 0) return;
+    const emailToResend = pendingVerificationEmail || loginEmail || session?.email;
+    if (!emailToResend) {
+      setLoginError("Không tìm thấy địa chỉ email để gửi lại.");
+      return;
+    }
+    try {
+      setLoginBusy(true);
+      setLoginError("");
+      const res = await fetch("/api/auth/resend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailToResend }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail?.message || "Chưa gửi lại được email.");
+      setLoginNotice(`Đã gửi lại liên kết kích hoạt tới ${emailToResend}! Vui lòng kiểm tra hộp thư.`);
+      setResendCooldown(60);
+    } catch (err: unknown) {
+      setLoginError(err instanceof Error ? err.message : "Đã xảy ra lỗi.");
+    } finally {
+      setLoginBusy(false);
+    }
+  };
+
   const login = async (e: FormEvent) => {
     e.preventDefault();
     setLoginError("");
@@ -862,18 +938,44 @@ function HomeContent() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail?.message || "Đăng nhập không thành công.");
+      if (!res.ok) {
+        // Kiểm tra nếu lỗi do chưa xác nhận email
+        if (data.detail?.code === "EMAIL_NOT_CONFIRMED" || data.detail?.message?.includes("xác nhận")) {
+          setPendingVerificationEmail(loginEmail);
+          setAuthMode("verify_email");
+          setLoginNotice("Email của bạn chưa được xác thực. Vui lòng kiểm tra hộp thư hoặc nhấn 'Gửi lại email xác thực'.");
+          return;
+        }
+        throw new Error(data.detail?.message || "Đăng nhập không thành công.");
+      }
+
+      // Khi đăng ký thủ công: BẮT BUỘC yêu cầu xác thực email nếu backend yêu cầu
+      if (authMode === "signup") {
+        if (data.confirmation_required) {
+          setPendingVerificationEmail(loginEmail);
+          setAuthMode("verify_email");
+          setLoginNotice("Đăng ký thành công! Chúng tôi đã gửi một liên kết xác thực tới email của bạn. Vui lòng kiểm tra hộp thư để kích hoạt tài khoản.");
+          return;
+        }
+      }
+
       // Tải lại phiên người dùng mới nhất từ server
       const sessionRes = await fetch("/api/auth/session");
       const sessionData = await sessionRes.json().catch(() => null);
       if (sessionData && sessionData.authenticated) {
         const userName = sessionData.user?.name ?? sessionData.name ?? displayName ?? null;
         const userEmail = sessionData.user?.email ?? sessionData.email ?? loginEmail ?? null;
-        setSession({ authenticated: true, name: userName, email: userEmail });
+        setSession({
+          authenticated: true,
+          name: userName,
+          email: userEmail,
+          email_verified: Boolean(sessionData.email_verified ?? true),
+          provider: sessionData.provider ?? "email",
+        });
+        setAuthModalOpen(false);
       } else {
-        setSession({ authenticated: true, name: displayName || loginEmail, email: loginEmail });
+        throw new Error("Không thể khởi tạo phiên làm việc.");
       }
-      setAuthModalOpen(false);
     } catch (err: unknown) {
       setLoginError(err instanceof Error ? err.message : "Đã xảy ra lỗi.");
     } finally {
@@ -889,9 +991,9 @@ function HomeContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f3f6f5] text-[#152f35] font-sans">
+    <div className="min-h-screen flex flex-col bg-[#fbf9f5] text-[#102026] font-sans selection:bg-[#c25e3e20] selection:text-[#a94c2d]">
       {/* 1. TOP NAVIGATION BAR */}
-      <header className="sticky top-0 z-40 bg-[#0b2329] text-white border-b border-[#284048] px-4 md:px-8 h-16 flex items-center justify-between gap-4 shadow-md">
+      <header className="sticky top-0 z-40 bg-[#0e1c20] text-white border-b border-[#1f343b] px-4 md:px-8 h-16 flex items-center justify-between gap-4 shadow-xs">
         <div className="flex items-center gap-3">
           <Link
             href="/"
@@ -899,20 +1001,20 @@ function HomeContent() {
               setViewMode("home");
               setSubsystem("student");
             }}
-            className="flex items-center gap-2 text-white no-underline group"
+            className="flex items-center gap-2.5 text-white no-underline group"
           >
-            <span className="w-8 h-8 rounded-xl bg-[#087e7c] text-[#adf0d6] font-black text-lg flex items-center justify-center border border-[#16827d] group-hover:scale-105 transition-transform">
+            <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#c25e3e] to-[#a34426] text-[#fff6f0] font-serif italic font-bold text-lg flex items-center justify-center border border-[#d87c5e]/40 shadow-xs group-hover:scale-105 transition-transform">
               m
             </span>
             <div className="leading-tight">
-              <strong className="text-sm tracking-wider font-extrabold block">MATHSTEP</strong>
-              <span className="text-[10px] text-gray-300 tracking-widest hidden sm:inline">HỌC LIỆU 3D TOÁN THPT</span>
+              <strong className="font-serif text-sm tracking-wider font-bold block text-white">MATHSTEP</strong>
+              <span className="text-[10px] text-[#93a8b0] tracking-widest hidden sm:inline font-sans">HỌC LIỆU TOÁN HỌC 3D</span>
             </div>
           </Link>
         </div>
 
         {/* 3 PHÂN HỆ CHÍNH KHKT NAVIGATION TABS */}
-        <nav className="flex items-center gap-1 bg-[#133d41] p-1 rounded-2xl border border-[#2a595f]">
+        <nav className="flex items-center gap-1 bg-[#182e36] p-1 rounded-2xl border border-[#25424d]">
           <button
             type="button"
             onClick={() => {
@@ -921,11 +1023,11 @@ function HomeContent() {
             }}
             className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
               subsystem === "student" && viewMode === "home"
-                ? "bg-[#087e7c] text-white shadow-sm"
+                ? "bg-[#c25e3e] text-white shadow-xs"
                 : "text-gray-300 hover:text-white hover:bg-white/10"
             }`}
           >
-            <Layers className="w-4 h-4 text-emerald-500" />
+            <Layers className="w-4 h-4 text-[#e89b78]" />
             <span className="hidden md:inline">48 Trạm học</span>
           </button>
           <button
@@ -936,11 +1038,11 @@ function HomeContent() {
             }}
             className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
               subsystem === "student" && viewMode === "lab"
-                ? "bg-[#087e7c] text-white shadow-sm"
+                ? "bg-[#c25e3e] text-white shadow-xs"
                 : "text-gray-300 hover:text-white hover:bg-white/10"
             }`}
           >
-            <Compass className="w-4 h-4 text-blue-500" />
+            <Compass className="w-4 h-4 text-amber-400" />
             <span className="hidden md:inline">Phòng thực hành</span>
           </button>
           <button
@@ -952,11 +1054,11 @@ function HomeContent() {
             }}
             className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
               subsystem === "teacher"
-                ? "bg-[#087e7c] text-white shadow-sm"
+                ? "bg-[#c25e3e] text-white shadow-xs"
                 : "text-gray-300 hover:text-white hover:bg-white/10"
             }`}
           >
-            <GraduationCap className="w-4 h-4 text-slate-400" />
+            <GraduationCap className="w-4 h-4 text-emerald-400" />
             <span className="hidden md:inline">Giáo viên</span>
           </button>
           <button
@@ -968,11 +1070,11 @@ function HomeContent() {
             }}
             className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all ${
               subsystem === "research"
-                ? "bg-[#087e7c] text-white shadow-sm"
+                ? "bg-[#c25e3e] text-white shadow-xs"
                 : "text-gray-300 hover:text-white hover:bg-white/10"
             }`}
           >
-            <FileText className="w-4 h-4 text-slate-400" />
+            <FileText className="w-4 h-4 text-sky-400" />
             <span className="hidden md:inline">Cơ sở KHKT</span>
           </button>
         </nav>
@@ -1066,23 +1168,45 @@ function HomeContent() {
         </div>
       </header>
 
+      {/* BANNER CẢNH BÁO XÁC THỰC EMAIL (KHI ĐĂNG KÝ THỦ CÔNG MÀ CHƯA XÁC MINH) */}
+      {session?.authenticated && session.email_verified === false && (
+        <div className="bg-[#fef8ee] border-b border-[#f3d4a6] text-[#78350f] px-4 md:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shadow-xs">
+          <div className="flex items-center gap-2 max-w-3xl">
+            <AlertCircle className="w-4 h-4 text-[#c25e3e] shrink-0" />
+            <span>
+              <strong>Tài khoản chưa xác thực email:</strong> Hãy kiểm tra hộp thư của bạn ({session.email}) và bấm vào liên kết xác nhận để mở khóa đầy đủ tính năng đồng bộ và AI nâng cao.
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={loginBusy || resendCooldown > 0}
+              onClick={handleResendVerificationEmail}
+              className="px-3 py-1 bg-[#c25e3e] hover:bg-[#a94c2d] disabled:opacity-50 text-white rounded-lg font-bold text-[11px] transition-colors cursor-pointer"
+            >
+              {resendCooldown > 0 ? `Gửi lại sau (${resendCooldown}s)` : "Gửi lại email xác thực"}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 2. MAIN WORKSPACE AREA */}
       <main className="flex-1 flex flex-col">
         {/* SUB-SYSTEM 1: STUDENT HOME PORTAL (CATALOG & HERO) */}
         {subsystem === "student" && viewMode === "home" && (
           <div className="flex-1 space-y-8 pb-12">
-            {/* HERO BANNER MATCHING index (2).html */}
-            <section className="bg-gradient-to-b from-[#0b2329] to-[#081a1f] text-[#eff8f5] px-4 md:px-8 py-12 md:py-16 relative overflow-hidden border-b border-[#284048]">
+            {/* HERO BANNER - ATELIER SCHOLARLY THEME */}
+            <section className="bg-gradient-to-b from-[#0e1c20] via-[#142830] to-[#18343e] text-[#f5f8f7] px-4 md:px-8 py-12 md:py-16 relative overflow-hidden border-b border-[#25424d]">
               <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8 md:gap-12 items-center">
                 <div className="space-y-4">
-                  <span className="text-xs font-extrabold uppercase tracking-widest text-[#adf0d6] block">
+                  <span className="text-xs font-extrabold uppercase tracking-widest text-[#e89b78] block font-sans">
                     Phòng học tương tác · Toán THPT Lớp 10 — 12
                   </span>
-                  <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+                  <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.18]">
                     Chạm vào mô hình.<br />
-                    <span className="text-[#adf0d6]">Tự tìm ra quy luật.</span>
+                    <span className="font-serif italic font-normal text-[#e89b78]">Tự tìm ra quy luật.</span>
                   </h1>
-                  <p className="text-gray-300 text-sm md:text-base leading-relaxed max-w-xl">
+                  <p className="text-[#c1d3d8] text-sm md:text-base leading-relaxed max-w-xl font-sans">
                     Kéo một điểm. Xoay một góc nhìn. Thử một giả thuyết. Khám phá toán học bằng chính những điều em quan sát, kiểm chứng và tự đúc kết quy luật.
                   </p>
 
@@ -1092,9 +1216,9 @@ function HomeContent() {
                         const el = document.getElementById("modules-section");
                         el?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="px-5 py-3 rounded-2xl bg-[#adf0d6] hover:bg-[#86efc3] text-[#0b2329] font-black text-xs md:text-sm shadow-lg transition-transform active:scale-95 flex items-center gap-2 cursor-pointer"
+                      className="px-5 py-3 rounded-2xl bg-[#c25e3e] hover:bg-[#a94c2d] text-white font-bold text-xs md:text-sm shadow-lg shadow-[#c25e3e]/20 transition-transform active:scale-95 flex items-center gap-2 cursor-pointer"
                     >
-                      <SlidersHorizontal className="w-4 h-4 text-[#0b2329]" />
+                      <SlidersHorizontal className="w-4 h-4 text-white" />
                       <span>7 Module Thí Nghiệm Động ↓</span>
                     </button>
                     <button
@@ -1764,22 +1888,26 @@ function HomeContent() {
         />
       )}
 
-      {/* 6. AUTH LOGIN / SIGNUP MODAL */}
+      {/* 6. AUTH LOGIN / SIGNUP / EMAIL VERIFICATION MODAL */}
       {authModalOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setAuthModalOpen(false);
           }}
         >
-          <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-[#d9e4e2] space-y-4">
-            <div className="flex justify-between items-center pb-2 border-b">
+          <div className="bg-[#fdfbf7] w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-[#e8e2d8] space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-[#e8e2d8]">
               <div>
-                <span className="text-[10px] font-bold text-[#087e7c] uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-[#c25e3e] uppercase tracking-wider font-sans">
                   MATHSTEP TÀI KHOẢN
                 </span>
-                <h3 className="text-base font-bold text-[#152f35]">
-                  {authMode === "login" ? "Đăng nhập tài khoản" : "Đăng ký tài khoản"}
+                <h3 className="text-base font-serif font-bold text-[#102026]">
+                  {authMode === "login"
+                    ? "Đăng nhập tài khoản"
+                    : authMode === "signup"
+                    ? "Đăng ký tài khoản"
+                    : "Xác thực hộp thư"}
                 </h3>
               </div>
               <button
@@ -1791,122 +1919,175 @@ function HomeContent() {
               </button>
             </div>
 
-            <form onSubmit={login} className="space-y-3 text-xs">
-              {authMode === "signup" && (
-                <div>
-                  <label className="font-bold block mb-1">Họ và tên</label>
-                  <input
-                    type="text"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    required
-                    className="w-full p-2 border border-[#bed0cd] rounded-lg text-xs"
-                  />
+            {authMode === "verify_email" ? (
+              <div className="space-y-4 py-1 text-center">
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-[#faf2ee] text-[#c25e3e] border border-[#f5dacf] flex items-center justify-center shadow-xs">
+                  <Mail className="w-7 h-7 text-[#c25e3e]" />
                 </div>
-              )}
-              <div>
-                <label className="font-bold block mb-1">Email</label>
-                <input
-                  type="email"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  required
-                  className="w-full p-2 border border-[#bed0cd] rounded-lg text-xs"
-                />
-              </div>
-              <div>
-                <label className="font-bold block mb-1">Mật khẩu</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    required
-                    className="w-full p-2 pr-9 border border-[#bed0cd] rounded-lg text-xs"
-                  />
+                <div className="space-y-2">
+                  <h4 className="font-serif font-bold text-base text-[#102026]">
+                    Yêu cầu Xác thực Email
+                  </h4>
+                  <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
+                    Một email chứa liên kết kích hoạt tài khoản đã được gửi đến:
+                  </p>
+                  <div className="font-mono font-bold text-xs text-[#102026] bg-[#f2ece2] py-1.5 px-3 rounded-lg border border-[#ded5c7] inline-block max-w-full truncate">
+                    {pendingVerificationEmail || loginEmail}
+                  </div>
+                  <p className="text-[11px] text-gray-500 leading-relaxed pt-1">
+                    Vui lòng mở hộp thư của bạn (kiểm tra cả thư mục <em>Spam / Thư rác / Quảng cáo</em>) và nhấn vào liên kết xác nhận để kích hoạt đầy đủ quyền truy cập.
+                  </p>
+                </div>
+
+                {loginError && <p className="text-[11px] text-red-600 font-medium">{loginError}</p>}
+                {loginNotice && <p className="text-[11px] text-emerald-700 font-medium">{loginNotice}</p>}
+
+                <div className="pt-2 space-y-2">
                   <button
                     type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600"
-                    title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                    disabled={loginBusy || resendCooldown > 0}
+                    onClick={handleResendVerificationEmail}
+                    className="w-full py-2.5 bg-[#c25e3e] hover:bg-[#a94c2d] disabled:opacity-50 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                   >
-                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    <RotateCcw className={`w-3.5 h-3.5 ${loginBusy ? "animate-spin" : ""}`} />
+                    <span>
+                      {resendCooldown > 0 ? `Gửi lại sau (${resendCooldown}s)` : "Gửi lại email xác thực"}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode("login");
+                      setLoginError("");
+                      setLoginNotice("Hãy đăng nhập sau khi em đã xác nhận qua liên kết trong email.");
+                    }}
+                    className="w-full py-2 bg-white hover:bg-[#f6f2ea] text-[#102026] rounded-xl font-bold text-xs border border-[#e8e2d8] transition-colors cursor-pointer"
+                  >
+                    Tôi đã xác thực xong → Đăng nhập
                   </button>
                 </div>
               </div>
+            ) : (
+              <>
+                <form onSubmit={login} className="space-y-3 text-xs">
+                  {authMode === "signup" && (
+                    <div>
+                      <label className="font-bold block mb-1 text-[#102026]">Họ và tên</label>
+                      <input
+                        type="text"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        required
+                        className="w-full p-2 border border-[#d8d0c2] bg-white rounded-lg text-xs outline-none focus:border-[#c25e3e]"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <label className="font-bold block mb-1 text-[#102026]">Email</label>
+                    <input
+                      type="email"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      required
+                      className="w-full p-2 border border-[#d8d0c2] bg-white rounded-lg text-xs outline-none focus:border-[#c25e3e]"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold block mb-1 text-[#102026]">Mật khẩu</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        required
+                        className="w-full p-2 pr-9 border border-[#d8d0c2] bg-white rounded-lg text-xs outline-none focus:border-[#c25e3e]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600"
+                        title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                      >
+                        {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
 
-              {loginError && <p className="text-[10px] text-red-600 font-medium">{loginError}</p>}
-              {loginNotice && <p className="text-[10px] text-emerald-600 font-medium">{loginNotice}</p>}
+                  {loginError && <p className="text-[11px] text-red-600 font-medium">{loginError}</p>}
+                  {loginNotice && <p className="text-[11px] text-emerald-700 font-medium">{loginNotice}</p>}
 
-              <button
-                type="submit"
-                disabled={loginBusy}
-                className="w-full py-2 bg-[#087e7c] text-white font-bold rounded-xl hover:bg-[#066563] transition-colors disabled:opacity-50"
-              >
-                {loginBusy ? "Đang xử lý..." : authMode === "login" ? "Đăng nhập" : "Tạo tài khoản"}
-              </button>
-            </form>
+                  <button
+                    type="submit"
+                    disabled={loginBusy}
+                    className="w-full py-2.5 bg-[#c25e3e] hover:bg-[#a94c2d] text-white font-bold rounded-xl transition-colors disabled:opacity-50 shadow-xs cursor-pointer"
+                  >
+                    {loginBusy ? "Đang xử lý..." : authMode === "login" ? "Đăng nhập" : "Tạo tài khoản"}
+                  </button>
+                </form>
 
-            {/* Phân cách HOẶC */}
-            <div className="relative my-2">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-white px-2.5 text-gray-400 text-[11px] font-medium">
-                  hoặc
-                </span>
-              </div>
-            </div>
+                {/* Phân cách HOẶC */}
+                <div className="relative my-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-[#e8e2d8]" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-[#fdfbf7] px-2.5 text-gray-400 text-[11px] font-medium font-serif italic">
+                      hoặc
+                    </span>
+                  </div>
+                </div>
 
-            {/* Nút Tiếp tục bằng Google */}
-            <a
-              href="/api/auth/google"
-              className="w-full py-2.5 px-4 border border-gray-300 hover:border-gray-400 rounded-xl font-bold text-xs text-gray-700 bg-white hover:bg-gray-50 transition-all flex items-center justify-center gap-2.5 shadow-xs text-center"
-            >
-              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  fill="#4285F4"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                />
-              </svg>
-              <span>Tiếp tục bằng Google</span>
-            </a>
-
-            <div className="pt-2 border-t text-center space-y-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthMode(authMode === "login" ? "signup" : "login");
-                  setLoginError("");
-                  setLoginNotice("");
-                }}
-                className="text-xs text-[#087e7c] font-bold hover:underline"
-              >
-                {authMode === "login" ? "Chưa có tài khoản? Đăng ký ngay" : "Đã có tài khoản? Đăng nhập"}
-              </button>
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setAuthModalOpen(false)}
-                  className="text-[11px] text-gray-500 hover:text-black"
+                {/* Nút Tiếp tục bằng Google */}
+                <a
+                  href="/api/auth/google"
+                  className="w-full py-2.5 px-4 border border-[#d8d0c2] hover:border-gray-400 rounded-xl font-bold text-xs text-gray-700 bg-white hover:bg-gray-50 transition-all flex items-center justify-center gap-2.5 shadow-xs text-center"
                 >
-                  Tiếp tục trải nghiệm mà không cần tài khoản
-                </button>
-              </div>
-            </div>
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      fill="#4285F4"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                    />
+                  </svg>
+                  <span>Tiếp tục bằng Google</span>
+                </a>
+
+                <div className="pt-2 border-t border-[#e8e2d8] text-center space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthMode(authMode === "login" ? "signup" : "login");
+                      setLoginError("");
+                      setLoginNotice("");
+                    }}
+                    className="text-xs text-[#c25e3e] font-bold hover:underline cursor-pointer"
+                  >
+                    {authMode === "login" ? "Chưa có tài khoản? Đăng ký ngay" : "Đã có tài khoản? Đăng nhập"}
+                  </button>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setAuthModalOpen(false)}
+                      className="text-[11px] text-gray-500 hover:text-black cursor-pointer"
+                    >
+                      Tiếp tục trải nghiệm mà không cần tài khoản
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

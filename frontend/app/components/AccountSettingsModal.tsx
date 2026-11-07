@@ -34,7 +34,7 @@ interface AccountSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: "profile" | "ai";
-  currentSession: { authenticated: boolean; name: string | null; email: string | null } | null;
+  currentSession: { authenticated: boolean; name: string | null; email: string | null; email_verified?: boolean } | null;
   onProfileUpdated?: (name: string) => void;
   onAiConfigUpdated?: (config: CustomAiConfig | null) => void;
 }
@@ -351,9 +351,15 @@ export default function AccountSettingsModal({
                       {name || "Học sinh MathSTEP"}
                     </strong>
                     {currentSession?.authenticated && (
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
-                        ✓ Đã xác thực
-                      </span>
+                      currentSession.email_verified !== false ? (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                          ✓ Đã xác thực email
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[10px]">
+                          ⚠️ Chưa xác thực email
+                        </span>
+                      )
                     )}
                   </div>
                   <div className="text-[11px] text-gray-500 truncate">
