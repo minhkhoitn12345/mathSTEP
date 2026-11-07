@@ -27,6 +27,10 @@ import {
   Eye,
   EyeOff,
   Cpu,
+  SlidersHorizontal,
+  CheckCircle2,
+  ArrowRight,
+  Activity,
 } from "lucide-react";
 
 export type SubsystemId = "student" | "teacher" | "research";
@@ -123,6 +127,431 @@ function StationCardArt({ grade, is3D, stationId }: { grade: number; is3D: boole
   );
 }
 
+interface CoreModuleCard {
+  id: ModuleId;
+  moduleNumber: string;
+  defaultStationId: string;
+  grade: number;
+  is3D: boolean;
+  title: string;
+  source: string;
+  tag: string;
+  goal: string;
+  features: string[];
+  borderHover: string;
+}
+
+const CORE_7_MODULES: CoreModuleCard[] = [
+  {
+    id: "linear_programming",
+    moduleNumber: "01",
+    defaultStationId: "10.03",
+    grade: 10,
+    is3D: false,
+    title: "Hệ Bất Phương Trình & Quy Hoạch Tuyến Tính",
+    source: "SGK Toán 10 KNTT · Bài 3 & 4 (Trang 22-31)",
+    tag: "Toán 10 · 2D Oxy · GeoGebra LP",
+    goal: "Khám phá miền nghiệm đa giác lồi, trượt đường mức F(x, y) = ux + vy song song, tự động bắt dính đỉnh tối ưu và lưới điểm nguyên x, y ∈ ℕ.",
+    features: [
+      "Tính đa giác miền nghiệm tự động bằng thuật toán Convex Hull & Clipping",
+      "Thanh trượt đường mức k tịnh tiến song song, tự bắt dính đỉnh tối ưu B(8; 12)",
+      "Chế độ khóa điểm nguyên x, y ∈ ℕ cho bài toán tối ưu xưởng mộc thực tế",
+      "Hộp công cụ [+ Thêm bất phương trình] tự do tùy biến tham số a, b, c",
+    ],
+    borderHover: "hover:border-emerald-500",
+  },
+  {
+    id: "spatial_geometry",
+    moduleNumber: "02",
+    defaultStationId: "11.06",
+    grade: 11,
+    is3D: true,
+    title: "Hình Học Không Gian 3D & Dựng Hình Đa Diện",
+    source: "SGK Hình Học 11 KNTT · Bài 10, 11, 12 (Trang 70-88)",
+    tag: "Toán 11 · 3D Không Gian · AI 3D Parser",
+    goal: "Dựng hình chóp tứ giác, kéo đỉnh S điều chỉnh chiều cao h và độ nghiêng, xoay 360°, thuật toán tự phân biệt cạnh thấy / khuất, mặt phẳng cắt thiết diện (P).",
+    features: [
+      "Kéo đỉnh S tự do thay đổi chiều cao h (1.2m - 4.5m) và độ nghiêng tâm đáy",
+      "Thuật toán Back-face Culling tự động hiển thị nét liền (thấy) / nét đứt (khuất)",
+      "Mặt phẳng cắt thiết diện (P) trượt mượt mà qua các cạnh của khối đa diện",
+      "Tích hợp AI Natural Language to 3D Geometry Parser dựng hình từ đề bài tự nhiên",
+    ],
+    borderHover: "hover:border-cyan-500",
+  },
+  {
+    id: "trigonometry",
+    moduleNumber: "03",
+    defaultStationId: "11.01",
+    grade: 11,
+    is3D: false,
+    title: "Lượng Giác & Đường Tròn Đơn Vị Động (Split-View)",
+    source: "SGK Toán 11 KNTT · Bài 1 & 2 (Trang 5-20)",
+    tag: "Toán 11 · 2D Split-View · Sóng thời gian thực",
+    goal: "Đồng bộ kép: Điểm M quay trên đường tròn đơn vị R=1 gióng tia chiếu liên tục sang đồ thị sóng sin/cos; khảo sát họ sóng y = A sin(ωx + φ) + d.",
+    features: [
+      "Đồng bộ thời gian thực giữa điểm quay M trên đường tròn R=1 và sóng đồ thị",
+      "Tia chiếu gióng trực tiếp từ hình chiếu Ox, Oy sang đồ thị hàm số",
+      "Thanh trượt biên độ A, tần số góc ω, pha ban đầu φ, dịch trục d",
+      "Thẻ giá trị trực tiếp sin, cos, tan, cot kèm kiểm chứng Pythagoras sin² + cos² = 1",
+    ],
+    borderHover: "hover:border-indigo-500",
+  },
+  {
+    id: "functions",
+    moduleNumber: "04",
+    defaultStationId: "12.01",
+    grade: 12,
+    is3D: false,
+    title: "Khảo Sát Hàm Số & Bảng Biến Thiên 2 Chiều Động",
+    source: "SGK Toán 12 KNTT · Chương 1 Bài 1, 2, 3 (Trang 6-25)",
+    tag: "Toán 12 · Giải Tích 2D · BBT 2 chiều",
+    goal: "Khảo sát hàm bậc 3, bậc 4, phân thức với thanh trượt hệ số a, b, c, d; tương tác 2 chiều giữa đồ thị và bảng biến thiên; đường thẳng y = m đếm số nghiệm.",
+    features: [
+      "Hỗ trợ 3 dạng hàm chuẩn: Bậc ba, trùng phương và phân thức bậc nhất/bậc nhất",
+      "Bảng biến thiên 2 chiều tương tác: Hover dòng nào sáng đồ thị vùng đó",
+      "Thanh trượt đường thẳng y = m tự động đếm số nghiệm và hiện tọa độ giao điểm",
+      "Tiếp tuyến động tại tiếp điểm M(x₀, y₀) với hệ số góc k = f'(x₀)",
+    ],
+    borderHover: "hover:border-amber-500",
+  },
+  {
+    id: "calculus",
+    moduleNumber: "05",
+    defaultStationId: "12.08",
+    grade: 12,
+    is3D: true,
+    title: "Tích Phân Riemann & Khối Tròn Xoay 3D (Disk Method)",
+    source: "SGK Toán 12 KNTT · Chương 4 Bài 12 & 13 (Trang 18-28)",
+    tag: "Toán 12 · 2D + 3D · Tổng Riemann & Khối xoay",
+    goal: "Xấp xỉ diện tích hình phẳng bằng n dải chữ nhật Riemann (n=2...100, Δ → 0); quay lát cắt quanh Ox với góc θ=0°...360° tạo khối tròn xoay 3D.",
+    features: [
+      "Thanh trượt n dải chữ nhật (2 đến 100): Trực quan hóa sai số diện tích tiến về 0",
+      "Tùy chọn quy tắc xấp xỉ: Điểm đầu trái (Left), trung điểm (Midpoint), điểm đầu phải (Right)",
+      "Mô hình khối tròn xoay 3D với thanh trượt góc quay θ từ 0° đến 360°",
+      "Lát cắt đĩa tròn (Disk Method) hiển thị từng phân tố vi phân thể tích dV = π f(x)² dx",
+    ],
+    borderHover: "hover:border-emerald-500",
+  },
+  {
+    id: "probability",
+    moduleNumber: "06",
+    defaultStationId: "12.12",
+    grade: 12,
+    is3D: false,
+    title: "Xác Suất Hộp Bi, Sơ Đồ Cây & Công Thức Bayes",
+    source: "SGK Toán 12 KNTT · Chương 6 Bài 18 & 19 (Trang 70-85)",
+    tag: "Toán 12 · Xác Suất · Bayes & Cây 2 tầng",
+    goal: "Mô phỏng 2 hộp bi (Đỏ / Xanh) với sơ đồ cây 2 tầng động; tính xác suất toàn phần và xác suất hậu nghiệm Bayes P(Hộp 1 | Đỏ); mô phỏng gieo xúc xắc luật số lớn.",
+    features: [
+      "Thanh trượt số bi đỏ, bi xanh trong 2 hộp với cập nhật trực tiếp xác suất phân nhánh",
+      "Sơ đồ cây động 2 tầng tự động tính tích xác suất từng nhánh",
+      "Công thức Bayes tính xác suất hậu nghiệm P(Hộp 1 | Đỏ) với phân tích tử và mẫu",
+      "Chế độ mô phỏng thực nghiệm gieo xúc xắc 1000 lần kiểm chứng Quy luật số lớn",
+    ],
+    borderHover: "hover:border-rose-500",
+  },
+  {
+    id: "conics_and_solids",
+    moduleNumber: "07",
+    defaultStationId: "11.07",
+    grade: 10,
+    is3D: true,
+    title: "Cắt Mặt Nón Conic & Khai Triển Khối Đa Diện",
+    source: "Toán 10 Chuyên Đề Conic & Toán 11 KNTT Bài 12 (Trang 48-88)",
+    tag: "Toán 10-11 · 3D Conic · Khai triển đa diện",
+    goal: "Mặt nón đôi 3D cắt bởi mặt phẳng nghiêng góc β (Elip, Parabol, Hypebol); kiểm chứng tính chất tiêu điểm MF₁ + MF₂ = 2a; thanh trượt gấp/mở đa diện 100% → 0%.",
+    features: [
+      "Mô hình 3D mặt nón tròn xoay hai tầng với thanh trượt góc nghiêng mặt phẳng cắt β (10° - 90°)",
+      "Tự động nhận diện thiết diện: Đường tròn, Elip, Parabol hay Hypebol kèm định lý Dandelin",
+      "Đồ thị 2D chính tắc với tiêu điểm F₁, F₂ và kiểm chứng tổng khoảng cách MF₁ + MF₂ = 2a",
+      "Mô hình khai triển phẳng ↔ gấp khối đa diện với thanh trượt gập mượt mà từ 0% đến 100%",
+    ],
+    borderHover: "hover:border-fuchsia-500",
+  },
+];
+
+function ModuleCardArt({ moduleId }: { moduleId: ModuleId }) {
+  switch (moduleId) {
+    case "linear_programming":
+      return (
+        <svg viewBox="0 0 380 150" className="w-full h-full block" aria-hidden="true">
+          <defs>
+            <linearGradient id="lp-bg" x1="0" y1="0" x2="1" y2="1">
+              <stop stopColor="#0d3b38" />
+              <stop offset="1" stopColor="#082226" />
+            </linearGradient>
+            <linearGradient id="poly-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop stopColor="#10b981" stopOpacity="0.45" />
+              <stop offset="1" stopColor="#059669" stopOpacity="0.15" />
+            </linearGradient>
+          </defs>
+          <rect width="380" height="150" fill="url(#lp-bg)" />
+          <g stroke="#1d4d48" strokeWidth="0.8" opacity="0.5">
+            {[40, 80, 120, 160, 200, 240, 280, 320, 360].map((x) => (
+              <line key={`x-${x}`} x1={x} y1={0} x2={x} y2={150} />
+            ))}
+            {[25, 55, 85, 115, 145].map((y) => (
+              <line key={`y-${y}`} x1={0} y1={y} x2={380} y2={y} />
+            ))}
+          </g>
+          <line x1="50" y1="130" x2="350" y2="130" stroke="#6ee7b7" strokeWidth="1.5" />
+          <line x1="70" y1="140" x2="70" y2="15" stroke="#6ee7b7" strokeWidth="1.5" />
+          <text x="340" y="142" fill="#6ee7b7" fontSize="10" fontWeight="bold">x</text>
+          <text x="58" y="25" fill="#6ee7b7" fontSize="10" fontWeight="bold">y</text>
+          <polygon points="70,130 70,55 190,40 270,130" fill="url(#poly-grad)" stroke="#34d399" strokeWidth="2" />
+          <line x1="90" y1="140" x2="280" y2="20" stroke="#f59e0b" strokeWidth="2" strokeDasharray="5,4" />
+          <text x="282" y="24" fill="#fbbf24" fontSize="9" fontWeight="bold">d_k: ux + vy = k</text>
+          <circle cx="190" cy="40" r="5" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+          <circle cx="190" cy="40" r="10" fill="none" stroke="#34d399" strokeWidth="1" strokeDasharray="2,2" />
+          <text x="200" y="38" fill="#a7f3d0" fontSize="11" fontWeight="bold">B(8; 12) Tối ưu</text>
+          <g fill="#6ee7b7" opacity="0.6">
+            <circle cx="110" cy="100" r="2" />
+            <circle cx="150" cy="100" r="2" />
+            <circle cx="190" cy="100" r="2" />
+            <circle cx="150" cy="70" r="2" />
+            <circle cx="110" cy="70" r="2" />
+          </g>
+        </svg>
+      );
+
+    case "spatial_geometry":
+      return (
+        <svg viewBox="0 0 380 150" className="w-full h-full block" aria-hidden="true">
+          <defs>
+            <linearGradient id="geom-bg" x1="0" y1="0" x2="1" y2="1">
+              <stop stopColor="#0a2533" />
+              <stop offset="1" stopColor="#05141c" />
+            </linearGradient>
+            <linearGradient id="sect-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop stopColor="#06b6d4" stopOpacity="0.5" />
+              <stop offset="1" stopColor="#3b82f6" stopOpacity="0.2" />
+            </linearGradient>
+          </defs>
+          <rect width="380" height="150" fill="url(#geom-bg)" />
+          <g stroke="#164e63" strokeWidth="0.8" opacity="0.4">
+            <line x1="30" y1="125" x2="350" y2="125" />
+            <line x1="60" y1="140" x2="320" y2="110" />
+          </g>
+          <polygon points="120,135 260,135 300,105 160,105" fill="#083344" stroke="#06b6d4" strokeWidth="1.5" />
+          <line x1="160" y1="105" x2="120" y2="135" stroke="#22d3ee" strokeWidth="1.5" />
+          <line x1="160" y1="105" x2="300" y2="105" stroke="#22d3ee" strokeWidth="1.2" strokeDasharray="4,4" />
+          <line x1="210" y1="20" x2="210" y2="120" stroke="#f43f5e" strokeWidth="1.8" strokeDasharray="4,3" />
+          <circle cx="210" cy="120" r="3" fill="#f43f5e" />
+          <text x="215" y="75" fill="#fda4af" fontSize="9" fontWeight="bold">h = SH</text>
+          <polygon points="175,70 240,65 255,95 190,100" fill="url(#sect-grad)" stroke="#38bdf8" strokeWidth="1.5" />
+          <text x="260" y="80" fill="#7dd3fc" fontSize="9" fontWeight="bold">Thiết diện (P)</text>
+          <line x1="210" y1="20" x2="120" y2="135" stroke="#38bdf8" strokeWidth="2" />
+          <line x1="210" y1="20" x2="260" y2="135" stroke="#38bdf8" strokeWidth="2" />
+          <line x1="210" y1="20" x2="300" y2="105" stroke="#38bdf8" strokeWidth="2" />
+          <line x1="210" y1="20" x2="160" y2="105" stroke="#38bdf8" strokeWidth="1.2" strokeDasharray="4,4" />
+          <circle cx="210" cy="20" r="5" fill="#38bdf8" stroke="#ffffff" strokeWidth="2" />
+          <text x="210" y="14" fill="#ffffff" fontSize="12" fontWeight="bold" textAnchor="middle">S</text>
+        </svg>
+      );
+
+    case "trigonometry":
+      return (
+        <svg viewBox="0 0 380 150" className="w-full h-full block" aria-hidden="true">
+          <defs>
+            <linearGradient id="trig-bg" x1="0" y1="0" x2="1" y2="1">
+              <stop stopColor="#1e1b4b" />
+              <stop offset="1" stopColor="#0f172a" />
+            </linearGradient>
+          </defs>
+          <rect width="380" height="150" fill="url(#trig-bg)" />
+          <g transform="translate(100, 75)">
+            <circle cx="0" cy="0" r="50" fill="#312e81" fillOpacity="0.3" stroke="#818cf8" strokeWidth="1.5" />
+            <line x1="-65" y1="0" x2="65" y2="0" stroke="#6366f1" strokeWidth="1" />
+            <line x1="0" y1="-65" x2="0" y2="65" stroke="#6366f1" strokeWidth="1" />
+            <text x="58" y="-4" fill="#c7d2fe" fontSize="8">x</text>
+            <text x="4" y="-56" fill="#c7d2fe" fontSize="8">y</text>
+            <line x1="0" y1="0" x2="28.6" y2="-40.9" stroke="#fbbf24" strokeWidth="2" />
+            <circle cx="28.6" cy="-40.9" r="4.5" fill="#f59e0b" stroke="#ffffff" strokeWidth="1.5" />
+            <line x1="28.6" y1="-40.9" x2="28.6" y2="0" stroke="#ec4899" strokeWidth="1.2" strokeDasharray="3,3" />
+            <line x1="28.6" y1="-40.9" x2="0" y2="-40.9" stroke="#06b6d4" strokeWidth="1.2" strokeDasharray="3,3" />
+            <text x="32" y="-42" fill="#fde68a" fontSize="9" fontWeight="bold">M(cos α; sin α)</text>
+          </g>
+          <line x1="128.6" y1="34.1" x2="210" y2="34.1" stroke="#ec4899" strokeWidth="1.2" strokeDasharray="3,3" />
+          <g transform="translate(210, 75)">
+            <line x1="0" y1="0" x2="155" y2="0" stroke="#6366f1" strokeWidth="1" />
+            <path
+              d="M0 0 C 25 -50, 45 -50, 70 0 C 95 50, 115 50, 140 0"
+              fill="none"
+              stroke="#a855f7"
+              strokeWidth="2.5"
+            />
+            <circle cx="21.5" cy="-40.9" r="4.5" fill="#ec4899" stroke="#ffffff" strokeWidth="1.5" />
+            <text x="50" y="-45" fill="#e9d5ff" fontSize="9" fontWeight="bold">y = sin(x)</text>
+          </g>
+        </svg>
+      );
+
+    case "functions":
+      return (
+        <svg viewBox="0 0 380 150" className="w-full h-full block" aria-hidden="true">
+          <defs>
+            <linearGradient id="func-bg" x1="0" y1="0" x2="1" y2="1">
+              <stop stopColor="#311e08" />
+              <stop offset="1" stopColor="#1a0f03" />
+            </linearGradient>
+          </defs>
+          <rect width="380" height="150" fill="url(#func-bg)" />
+          <line x1="40" y1="80" x2="340" y2="80" stroke="#b45309" strokeWidth="1.2" />
+          <line x1="180" y1="135" x2="180" y2="15" stroke="#b45309" strokeWidth="1.2" />
+          <path
+            d="M 60 135 C 100 135, 120 30, 145 35 C 170 40, 190 125, 215 125 C 240 125, 260 20, 300 20"
+            fill="none"
+            stroke="#f59e0b"
+            strokeWidth="2.5"
+          />
+          <line x1="50" y1="70" x2="330" y2="70" stroke="#38bdf8" strokeWidth="1.8" strokeDasharray="4,4" />
+          <text x="332" y="73" fill="#38bdf8" fontSize="9" fontWeight="bold">y = m</text>
+          <circle cx="127" cy="70" r="4" fill="#38bdf8" stroke="#ffffff" strokeWidth="1" />
+          <circle cx="180" cy="70" r="4" fill="#38bdf8" stroke="#ffffff" strokeWidth="1" />
+          <circle cx="233" cy="70" r="4" fill="#38bdf8" stroke="#ffffff" strokeWidth="1" />
+          <circle cx="145" cy="35" r="4" fill="#ef4444" stroke="#ffffff" strokeWidth="1.5" />
+          <text x="145" y="24" fill="#fca5a5" fontSize="8" fontWeight="bold" textAnchor="middle">Cực đại (-1; 2)</text>
+          <circle cx="215" cy="125" r="4" fill="#10b981" stroke="#ffffff" strokeWidth="1.5" />
+          <text x="215" y="142" fill="#86efac" fontSize="8" fontWeight="bold" textAnchor="middle">Cực tiểu (1; -2)</text>
+        </svg>
+      );
+
+    case "calculus":
+      return (
+        <svg viewBox="0 0 380 150" className="w-full h-full block" aria-hidden="true">
+          <defs>
+            <linearGradient id="calc-bg" x1="0" y1="0" x2="1" y2="1">
+              <stop stopColor="#06382b" />
+              <stop offset="1" stopColor="#031e17" />
+            </linearGradient>
+            <linearGradient id="rect-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop stopColor="#10b981" stopOpacity="0.8" />
+              <stop offset="1" stopColor="#047857" stopOpacity="0.4" />
+            </linearGradient>
+          </defs>
+          <rect width="380" height="150" fill="url(#calc-bg)" />
+          <line x1="40" y1="120" x2="340" y2="120" stroke="#059669" strokeWidth="1.2" />
+          <line x1="60" y1="135" x2="60" y2="15" stroke="#059669" strokeWidth="1.2" />
+          {[
+            { x: 80, w: 22, h: 25 },
+            { x: 102, w: 22, h: 42 },
+            { x: 124, w: 22, h: 62 },
+            { x: 146, w: 22, h: 80 },
+            { x: 168, w: 22, h: 92 },
+            { x: 190, w: 22, h: 96 },
+            { x: 212, w: 22, h: 88 },
+          ].map((r, i) => (
+            <rect
+              key={i}
+              x={r.x}
+              y={120 - r.h}
+              width={r.w}
+              height={r.h}
+              fill="url(#rect-grad)"
+              stroke="#34d399"
+              strokeWidth="0.8"
+            />
+          ))}
+          <path
+            d="M 60 120 Q 180 0, 260 120"
+            fill="none"
+            stroke="#fbbf24"
+            strokeWidth="2.5"
+          />
+          <g transform="translate(300, 75)">
+            <ellipse cx="0" cy="0" rx="35" ry="45" fill="#047857" fillOpacity="0.4" stroke="#34d399" strokeWidth="1.5" />
+            <ellipse cx="0" cy="0" rx="15" ry="45" fill="none" stroke="#6ee7b7" strokeWidth="1" strokeDasharray="3,3" />
+            <text x="0" y="55" fill="#a7f3d0" fontSize="9" fontWeight="bold" textAnchor="middle">V = π ∫ f(x)² dx</text>
+          </g>
+          <text x="145" y="135" fill="#a7f3d0" fontSize="9" fontWeight="bold">Tổng Riemann: n dải, Δ → 0</text>
+        </svg>
+      );
+
+    case "probability":
+      return (
+        <svg viewBox="0 0 380 150" className="w-full h-full block" aria-hidden="true">
+          <defs>
+            <linearGradient id="prob-bg" x1="0" y1="0" x2="1" y2="1">
+              <stop stopColor="#3b071e" />
+              <stop offset="1" stopColor="#1e0410" />
+            </linearGradient>
+          </defs>
+          <rect width="380" height="150" fill="url(#prob-bg)" />
+          <circle cx="50" cy="75" r="7" fill="#f43f5e" stroke="#ffffff" strokeWidth="1.5" />
+          <text x="50" y="93" fill="#fecdd3" fontSize="8" fontWeight="bold" textAnchor="middle">Gốc Ω</text>
+          <line x1="57" y1="75" x2="140" y2="40" stroke="#fb7185" strokeWidth="2" />
+          <line x1="57" y1="75" x2="140" y2="110" stroke="#fb7185" strokeWidth="2" />
+          <text x="90" y="50" fill="#fca5a5" fontSize="8" fontWeight="bold">P(H₁)=0.5</text>
+          <text x="90" y="105" fill="#fca5a5" fontSize="8" fontWeight="bold">P(H₂)=0.5</text>
+          <circle cx="140" cy="40" r="6" fill="#e11d48" stroke="#ffffff" strokeWidth="1.5" />
+          <text x="140" y="28" fill="#fda4af" fontSize="9" fontWeight="bold" textAnchor="middle">Hộp 1</text>
+          <circle cx="140" cy="110" r="6" fill="#e11d48" stroke="#ffffff" strokeWidth="1.5" />
+          <text x="140" y="128" fill="#fda4af" fontSize="9" fontWeight="bold" textAnchor="middle">Hộp 2</text>
+          <line x1="146" y1="40" x2="230" y2="20" stroke="#ef4444" strokeWidth="1.8" />
+          <line x1="146" y1="40" x2="230" y2="55" stroke="#3b82f6" strokeWidth="1.8" />
+          <circle cx="230" cy="20" r="5" fill="#ef4444" />
+          <text x="238" y="23" fill="#fca5a5" fontSize="8" fontWeight="bold">Đỏ: 3/5</text>
+          <circle cx="230" cy="55" r="5" fill="#3b82f6" />
+          <text x="238" y="58" fill="#93c5fd" fontSize="8" fontWeight="bold">Xanh: 2/5</text>
+          <line x1="146" y1="110" x2="230" y2="95" stroke="#ef4444" strokeWidth="1.8" />
+          <line x1="146" y1="110" x2="230" y2="130" stroke="#3b82f6" strokeWidth="1.8" />
+          <circle cx="230" cy="95" r="5" fill="#ef4444" />
+          <text x="238" y="98" fill="#fca5a5" fontSize="8" fontWeight="bold">Đỏ: 2/6</text>
+          <circle cx="230" cy="130" r="5" fill="#3b82f6" />
+          <text x="238" y="133" fill="#93c5fd" fontSize="8" fontWeight="bold">Xanh: 4/6</text>
+          <g transform="translate(300, 75)">
+            <rect x="-25" y="-35" width="95" height="70" rx="8" fill="#881337" stroke="#f43f5e" strokeWidth="1" />
+            <text x="22" y="-18" fill="#fecdd3" fontSize="8" fontWeight="bold" textAnchor="middle">CÔNG THỨC BAYES</text>
+            <text x="22" y="2" fill="#ffffff" fontSize="9" fontWeight="bold" textAnchor="middle">P(H₁ | Đỏ)</text>
+            <text x="22" y="20" fill="#fca5a5" fontSize="11" fontWeight="bold" textAnchor="middle">9/14 ≈ 64.3%</text>
+          </g>
+        </svg>
+      );
+
+    case "conics_and_solids":
+      return (
+        <svg viewBox="0 0 380 150" className="w-full h-full block" aria-hidden="true">
+          <defs>
+            <linearGradient id="conic-bg" x1="0" y1="0" x2="1" y2="1">
+              <stop stopColor="#2e1065" />
+              <stop offset="1" stopColor="#170733" />
+            </linearGradient>
+            <linearGradient id="plane-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop stopColor="#a855f7" stopOpacity="0.5" />
+              <stop offset="1" stopColor="#ec4899" stopOpacity="0.2" />
+            </linearGradient>
+          </defs>
+          <rect width="380" height="150" fill="url(#conic-bg)" />
+          <g transform="translate(110, 75)">
+            <polygon points="0,0 -45,-60 45,-60" fill="#4c1d95" fillOpacity="0.4" stroke="#c084fc" strokeWidth="1.5" />
+            <ellipse cx="0" cy="-60" rx="45" ry="12" fill="#581c87" fillOpacity="0.5" stroke="#a855f7" strokeWidth="1.2" />
+            <polygon points="0,0 -45,60 45,60" fill="#4c1d95" fillOpacity="0.4" stroke="#c084fc" strokeWidth="1.5" />
+            <ellipse cx="0" cy="60" rx="45" ry="12" fill="#581c87" fillOpacity="0.5" stroke="#a855f7" strokeWidth="1.2" />
+            <polygon points="-55,-25 35,-55 55,-35 -35,-5" fill="url(#plane-grad)" stroke="#f472b6" strokeWidth="1.5" />
+            <ellipse cx="-2" cy="-30" rx="28" ry="10" transform="rotate(-18 -2 -30)" fill="#ec4899" fillOpacity="0.5" stroke="#ffffff" strokeWidth="1.5" />
+            <text x="35" y="-20" fill="#f472b6" fontSize="9" fontWeight="bold">Thiết diện: Elip (β &gt; α)</text>
+          </g>
+          <g transform="translate(280, 75)">
+            <line x1="-65" y1="0" x2="65" y2="0" stroke="#7e22ce" strokeWidth="1" />
+            <line x1="0" y1="-50" x2="0" y2="50" stroke="#7e22ce" strokeWidth="1" />
+            <ellipse cx="0" cy="0" rx="55" ry="32" fill="none" stroke="#d8b4fe" strokeWidth="2" />
+            <circle cx="-35" cy="0" r="3.5" fill="#f43f5e" />
+            <text x="-35" y="12" fill="#fda4af" fontSize="8" fontWeight="bold" textAnchor="middle">F₁</text>
+            <circle cx="35" cy="0" r="3.5" fill="#f43f5e" />
+            <text x="35" y="12" fill="#fda4af" fontSize="8" fontWeight="bold" textAnchor="middle">F₂</text>
+            <circle cx="20" cy="-30" r="4.5" fill="#facc15" stroke="#ffffff" strokeWidth="1.5" />
+            <line x1="-35" y1="0" x2="20" y2="-30" stroke="#facc15" strokeWidth="1" strokeDasharray="2,2" />
+            <line x1="35" y1="0" x2="20" y2="-30" stroke="#facc15" strokeWidth="1" strokeDasharray="2,2" />
+            <text x="0" y="44" fill="#fef08a" fontSize="8" fontWeight="bold" textAnchor="middle">MF₁ + MF₂ = 2a</text>
+          </g>
+        </svg>
+      );
+
+    default:
+      return null;
+  }
+}
+
 function HomeContent() {
   const searchParams = useSearchParams();
   const urlStation = searchParams.get("station");
@@ -213,6 +642,13 @@ function HomeContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGrade, setSelectedGrade] = useState<number>(0);
   const [selectedType, setSelectedType] = useState<"all" | "3d" | "2d">("all");
+
+  // Core 7 Modules filtering state
+  const [selectedModuleGrade, setSelectedModuleGrade] = useState<number>(0);
+  const filteredCoreModules = useMemo(() => {
+    if (selectedModuleGrade === 0) return CORE_7_MODULES;
+    return CORE_7_MODULES.filter((m) => m.grade === selectedModuleGrade);
+  }, [selectedModuleGrade]);
 
   // Chat state
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -321,6 +757,16 @@ function HomeContent() {
     setSubsystem("student");
     setCurrentStep(stepNum - 1);
     syncUrl(st.id, stepNum, null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleOpenModuleInLab = (mod: CoreModuleCard, stepNum = 1) => {
+    setStationId(mod.defaultStationId);
+    setModuleId(mod.id);
+    setViewMode("lab");
+    setSubsystem("student");
+    setCurrentStep(stepNum - 1);
+    syncUrl(mod.defaultStationId, stepNum, null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -643,25 +1089,27 @@ function HomeContent() {
                   <div className="flex flex-wrap items-center gap-3 pt-2">
                     <button
                       onClick={() => {
-                        const el = document.getElementById("catalog-section");
+                        const el = document.getElementById("modules-section");
                         el?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="px-5 py-3 rounded-2xl bg-[#adf0d6] hover:bg-[#86efc3] text-[#0b2329] font-black text-xs md:text-sm shadow-lg transition-transform active:scale-95"
+                      className="px-5 py-3 rounded-2xl bg-[#adf0d6] hover:bg-[#86efc3] text-[#0b2329] font-black text-xs md:text-sm shadow-lg transition-transform active:scale-95 flex items-center gap-2 cursor-pointer"
                     >
-                      Chọn trạm khám phá ↓
+                      <SlidersHorizontal className="w-4 h-4 text-[#0b2329]" />
+                      <span>7 Module Thí Nghiệm Động ↓</span>
                     </button>
                     <button
                       onClick={() => {
-                        setViewMode("lab");
-                        setSubsystem("student");
+                        const el = document.getElementById("catalog-section");
+                        el?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="px-4 py-3 rounded-2xl bg-[#133d41] hover:bg-[#1a4f54] text-white font-bold text-xs md:text-sm border border-[#2a595f] transition-all"
+                      className="px-4 py-3 rounded-2xl bg-[#133d41] hover:bg-[#1a4f54] text-white font-bold text-xs md:text-sm border border-[#2a595f] transition-all flex items-center gap-1.5 cursor-pointer"
                     >
-                      Vào học trạm ({stationId}) →
+                      <Layers className="w-4 h-4 text-emerald-400" />
+                      <span>48 Trạm chuyên đề ↓</span>
                     </button>
                     <button
                       onClick={() => setVisualizerOpen(true)}
-                      className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs md:text-sm border border-white/20 transition-all"
+                      className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs md:text-sm border border-white/20 transition-all cursor-pointer"
                     >
                       Mô hình Oxy & 3D
                     </button>
@@ -670,11 +1118,15 @@ function HomeContent() {
                   {/* STATS ROW */}
                   <div className="flex items-center gap-8 pt-4 border-t border-[#1d3d43]">
                     <div>
+                      <strong className="text-2xl font-black text-[#adf0d6] block">7</strong>
+                      <small className="text-xs text-gray-400">module GeoGebra động</small>
+                    </div>
+                    <div>
                       <strong className="text-2xl font-black text-white block">48</strong>
                       <small className="text-xs text-gray-400">trạm học tương tác</small>
                     </div>
                     <div>
-                      <strong className="text-2xl font-black text-[#adf0d6] block">2D + 3D</strong>
+                      <strong className="text-2xl font-black text-teal-300 block">2D + 3D</strong>
                       <small className="text-xs text-gray-400">thấy và kiểm chứng</small>
                     </div>
                     <div>
@@ -713,6 +1165,135 @@ function HomeContent() {
                     </text>
                   </svg>
                 </div>
+              </div>
+            </section>
+
+            {/* SECTION: 7 MODULE THÍ NGHIỆM TOÁN HỌC ĐỘNG (GEOGEBRA & DESMOS ENGINE) */}
+            <section id="modules-section" className="max-w-6xl mx-auto px-4 md:px-8 space-y-6 pt-4">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#d9e4e2] pb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                    <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#087e7c]">
+                      ĐỘNG CƠ THÍ NGHIỆM TOÁN HỌC ĐỘNG · GEOGEBRA &amp; DESMOS 60FPS
+                    </span>
+                  </div>
+                  <h2 className="text-xl md:text-3xl font-extrabold text-[#152f35] mt-1">
+                    7 Module Thí Nghiệm Toán Học Tương Tác
+                  </h2>
+                  <p className="text-xs md:text-sm text-gray-600 mt-1 max-w-3xl leading-relaxed">
+                    Mỗi module là một phòng thí nghiệm toán học động chuyên sâu chuẩn SGK Kết nối tri thức. Học sinh được tự do điều chỉnh thanh trượt tham số (Sliders), thêm biến số, thay đổi hàm số và quan sát đồ thị biến đổi tức thời, đồng thời được Trợ lý Socratic TES đồng hành qua quy trình nhận thức 8 bước chuẩn nghiên cứu KHKT.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300 flex items-center gap-1.5 shadow-xs">
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>Đầy đủ 7 Module Chuẩn SGK</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Module Filter Chips */}
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-[#d9e4e2] shadow-xs">
+                <div className="flex flex-wrap gap-1.5 text-xs font-bold">
+                  {[
+                    { id: 0, label: "Tất cả 7 Module (7)" },
+                    { id: 10, label: "Lớp 10 (2 Module)" },
+                    { id: 11, label: "Lớp 11 (2 Module)" },
+                    { id: 12, label: "Lớp 12 (3 Module)" },
+                  ].map((g) => (
+                    <button
+                      key={g.id}
+                      onClick={() => setSelectedModuleGrade(g.id)}
+                      className={`px-3 py-1.5 rounded-xl transition-all ${
+                        selectedModuleGrade === g.id
+                          ? "bg-[#087e7c] text-white shadow-xs"
+                          : "bg-[#f8faf9] text-gray-700 hover:bg-[#edf6f3] border border-[#d9e4e2]"
+                      }`}
+                    >
+                      {g.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="text-[11px] text-gray-500 italic hidden sm:flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Bố cục chuẩn 3 cột: Đề bài 8 bước ↔ Canvas tương tác ↔ Bảng điều khiển tham số</span>
+                </div>
+              </div>
+
+              {/* Grid 7 Module Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredCoreModules.map((mod) => (
+                  <article
+                    key={mod.id}
+                    className={`bg-white rounded-2xl border-2 border-[#d9e4e2] ${mod.borderHover} overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between group`}
+                  >
+                    <div>
+                      {/* Visual SVG Card Art */}
+                      <div className="h-40 relative overflow-hidden bg-slate-900">
+                        <ModuleCardArt moduleId={mod.id} />
+                        {/* Top Badges */}
+                        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                          <span className="bg-black/75 backdrop-blur-md text-white px-2 py-0.5 rounded-lg text-[10px] font-black font-mono shadow-xs border border-white/20">
+                            MODULE {mod.moduleNumber}
+                          </span>
+                          <span className="bg-emerald-600/90 backdrop-blur-md text-white px-2 py-0.5 rounded-lg text-[10px] font-bold">
+                            LỚP {mod.grade}
+                          </span>
+                        </div>
+                        <span className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-md text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-lg text-[10px] font-bold">
+                          {mod.is3D ? "KHÔNG GIAN 3D" : "MẶT PHẲNG 2D"}
+                        </span>
+                      </div>
+
+                      {/* Card Content */}
+                      <div className="p-4 space-y-2.5">
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className="font-extrabold text-[#087e7c] uppercase tracking-wider">
+                            {mod.tag}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            60fps Dynamic
+                          </span>
+                        </div>
+
+                        <h3 className="font-bold text-sm text-[#152f35] leading-snug group-hover:text-[#087e7c] transition-colors">
+                          {mod.title}
+                        </h3>
+
+                        <p className="text-gray-600 text-xs line-clamp-2 leading-relaxed">
+                          {mod.goal}
+                        </p>
+
+                        {/* Feature Highlights */}
+                        <ul className="space-y-1 pt-1.5 border-t border-gray-100 text-[11px] text-gray-700">
+                          {mod.features.slice(0, 3).map((feat, i) => (
+                            <li key={i} className="flex items-start gap-1.5 line-clamp-1">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                              <span className="line-clamp-1">{feat}</span>
+                            </li>
+                          ))}
+                        </ul>
+
+                        <div className="text-[10px] text-gray-500 italic pt-1 border-t border-gray-100 flex items-center justify-between">
+                          <span>{mod.source}</span>
+                          <span className="text-emerald-700 font-bold font-mono">Trạm {mod.defaultStationId}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-4 pt-0">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenModuleInLab(mod)}
+                        className="w-full py-2.5 bg-gradient-to-r from-[#087e7c] to-[#0d9488] hover:from-[#066563] hover:to-[#0f766e] text-white rounded-xl font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 group-hover:shadow-lg active:scale-98 cursor-pointer"
+                      >
+                        <span>Vào phòng thực hành Module {mod.moduleNumber}</span>
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    </div>
+                  </article>
+                ))}
               </div>
             </section>
 

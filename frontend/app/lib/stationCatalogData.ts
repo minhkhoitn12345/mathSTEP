@@ -323,8 +323,8 @@ export const STATION_CATALOG: StationItem[] = [
   {
     "id": "11.07",
     "source": "KNTT tập 1 Bài 12, tr.84",
-    "title": "Khai triển phẳng ↔ Gấp khối đa diện & Góc nhị diện",
-    "simulation": "3D: Bản lề xoay 4 mặt bên hình chóp trải phẳng ra Oxy; đo góc nhị diện giữa mặt bên và mặt đáy.",
+    "title": "Khai triển phẳng ↔ Gấp khối đa diện & Góc giữa hai mặt phẳng",
+    "simulation": "3D: Bản lề xoay 4 mặt bên hình chóp trải phẳng ra Oxy; đo góc giữa mặt bên và mặt đáy.",
     "goal": "Liên kết trực quan giữa hình khai triển 2D và khối không gian 3D; hiểu bản chất góc giữa hai mặt phẳng.",
     "priority": "A",
     "grade": 11,

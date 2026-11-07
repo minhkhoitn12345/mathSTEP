@@ -18,6 +18,9 @@ import {
 } from "../lib/geometrySolver";
 import { ParsedGeometrySolid } from "../lib/geometryParserPrompt";
 import TrigonometricCircleCanvas, { SPECIAL_ANGLES } from "./TrigonometricCircleCanvas";
+import DynamicLinearProgrammingLab from "./dynamic-math/DynamicLinearProgrammingLab";
+import DynamicSpatialGeometryLab from "./dynamic-math/DynamicSpatialGeometryLab";
+import DynamicTrigonometryLab from "./dynamic-math/DynamicTrigonometryLab";
 import DynamicFunctionsLab from "./dynamic-math/DynamicFunctionsLab";
 import DynamicCalculusLab from "./dynamic-math/DynamicCalculusLab";
 import DynamicProbabilityLab from "./dynamic-math/DynamicProbabilityLab";
@@ -226,7 +229,7 @@ const REAL_WORLD_PROBLEMS: Record<string, RealWorldProblem> = {
     title: "KHAI TRIỂN PHẲNG ↔ GẤP KHỐI ĐA DIỆN",
     source: "SGK Hình học 11 KNTT Bài 12, Trang 84-88",
     context: "Kỹ thuật cắt may bạt che và gấp khối đa diện: 4 mặt tam giác bên SAB, SBC, SCD, SDA của hình chóp được xoay bản lề quanh 4 cạnh đáy để trải phẳng hoàn toàn trên mặt đất.",
-    objectiveText: "Quan sát góc nhị diện giữa mặt bên và mặt đáy khi kéo thanh trượt từ 100% về 0%.",
+    objectiveText: "Quan sát góc giữa mặt bên và mặt đáy khi kéo thanh trượt từ 100% về 0%.",
     matrixHeaders: ["Trạng thái", "Thao tác", "Mục tiêu sư phạm"],
     matrixRows: [
       { label: "Gấp khối 100%", col1: "Khối chóp 3D", col2: "4 đỉnh S chụm tại đỉnh chung", limit: "Quan sát hình học không gian" },
@@ -245,6 +248,135 @@ const REAL_WORLD_PROBLEMS: Record<string, RealWorldProblem> = {
       { label: "Tung độ Oy", col1: "sin α", col2: "Đoạn hình chiếu trên trục tung", limit: "Mang dấu dương ở góc phần tư I, II" },
     ],
     optimalSummary: "Bản chất hình học của lượng giác: Tọa độ điểm ngọn của cung trên đường tròn đơn vị.",
+  },
+  "12.01": {
+    title: "KHẢO SÁT BIẾN THIÊN HÀM SỐ & TỐI ƯU HÓA CHI PHÍ",
+    source: "SGK Toán 12 KNTT Chương 1 Bài 1 & 2, Trang 5-20",
+    context: "Khảo sát hàm bậc ba y = ax³ + bx² + cx + d và hàm phân thức y = (ax + b)/(cx + d). Khám phá mối liên hệ giữa dấu đạo hàm f'(x) với tính đồng biến, nghịch biến, xác định tọa độ các điểm cực trị, phương trình tiếp tuyến tại tiếp điểm M và số giao điểm với đường thẳng y = m.",
+    objectiveText: "Kéo các tham số a, b, c, d và m để quan sát bảng biến thiên 2 chiều biến đổi đồng bộ theo thời gian thực và đếm số nghiệm.",
+    matrixHeaders: ["Đại lượng", "Công thức / Giá trị", "Ý nghĩa hình học"],
+    matrixRows: [
+      { label: "Đạo hàm f'(x)", col1: "f'(x) = 3ax² + 2bx + c", col2: "Dấu f'(x) quyết định đồng biến / nghịch biến", limit: "f'(x) = 0 cho hoành độ cực trị" },
+      { label: "Đường thẳng y = m", col1: "y = m (đường song song Ox)", col2: "Tương giao đồ thị tìm số nghiệm", limit: "Tự động đổi màu điểm giao" },
+      { label: "Bảng biến thiên", col1: "2 chiều tương tác", col2: "Hover dòng nào sáng đồ thị vùng đó", limit: "Cực đại, cực tiểu, vô cực" },
+    ],
+    optimalSummary: "Bảng biến thiên động 2 chiều liên kết trực tiếp với hình dạng đồ thị và phương trình f'(x) = 0.",
+  },
+  "12.08": {
+    title: "TÍCH PHÂN RIEMANN & THỂ TÍCH KHỐI TRÒN XOAY 3D",
+    source: "SGK Toán 12 KNTT Chương 4 Bài 12 & 13, Trang 18-28",
+    context: "Bài toán xấp xỉ diện tích hình phẳng giới hạn bởi đường cong y = f(x) trên đoạn [a, b] bằng tổng tích phân Riemann với n dải chữ nhật (n chạy từ 2 đến 100). Sau đó quay hình phẳng này quanh trục hoành Ox với góc quay θ từ 0° đến 360° để tạo khối tròn xoay 3D và tính thể tích theo phương pháp lát cắt đĩa tròn (Disk Method).",
+    objectiveText: "Kéo số dải n để quan sát sai số Δ tiến về 0, và kéo góc quay θ để quan sát thể tích khối tròn xoay 3D hình thành.",
+    matrixHeaders: ["Thành phần", "Công thức vi phân", "Ý nghĩa trực quan"],
+    matrixRows: [
+      { label: "Tổng Riemann", col1: "S_n = Σ f(x_i) Δx", col2: "Xấp xỉ tổng diện tích n dải chữ nhật", limit: "n càng lớn, sai số càng nhỏ" },
+      { label: "Tích phân xác định", col1: "∫[a→b] f(x) dx", col2: "Giới hạn diện tích chính xác", limit: "Tô màu miền diện tích" },
+      { label: "Khối tròn xoay 3D", col1: "V = π ∫[a→b] f(x)² dx", col2: "Quay lát cắt đĩa quanh Ox (0° - 360°)", limit: "Dựng mesh 3D chiếu sáng" },
+    ],
+    optimalSummary: "Diện tích chính xác là giới hạn của tổng Riemann khi n → ∞; thể tích là tích phân các lát cắt tròn.",
+  },
+  "12.12": {
+    title: "XÁC SUẤT CÓ ĐIỀU KIỆN, SƠ ĐỒ CÂY & CÔNG THỨC BAYES",
+    source: "SGK Toán 12 KNTT Chương 6 Bài 18 & 19, Trang 70-85",
+    context: "Thực nghiệm mô hình 2 hộp bi (hoặc xét nghiệm y tế chẩn đoán xác suất). Hộp 1 có R1 bi đỏ và B1 bi xanh; Hộp 2 có R2 bi đỏ và B2 bi xanh. Chọn ngẫu nhiên một hộp với xác suất p1 và p2, sau đó rút 1 viên bi. Tính xác suất để rút được bi đỏ P(Đỏ) và tính xác suất hậu nghiệm P(Hộp 1 | Đỏ) bằng công thức Bayes.",
+    objectiveText: "Thay đổi số bi đỏ/xanh ở 2 hộp bằng thanh trượt để quan sát sơ đồ cây 2 tầng cập nhật tức thời xác suất toàn phần và xác suất Bayes.",
+    matrixHeaders: ["Đại lượng", "Công thức xác suất", "Giá trị tính toán"],
+    matrixRows: [
+      { label: "Xác suất toàn phần", col1: "P(Đỏ) = P(H1)·P(Đ|H1) + P(H2)·P(Đ|H2)", col2: "Tổng xác suất của 2 nhánh dẫn tới bi đỏ", limit: "Cập nhật thời gian thực" },
+      { label: "Công thức Bayes", col1: "P(H1|Đỏ) = [P(H1)·P(Đ|H1)] / P(Đỏ)", col2: "Xác suất hậu nghiệm khi biết trước kết quả", limit: "Tỉ số nhánh 1 trên tổng" },
+      { label: "Luật số lớn", col1: "Gieo xúc xắc N lần", col2: "Tần suất thực nghiệm tiến dần về 1/6", limit: "Biểu đồ đường hội tụ" },
+    ],
+    optimalSummary: "Công thức Bayes suy ngược nguyên nhân từ kết quả quan sát; sơ đồ cây trực quan hóa các nhánh biến cố.",
+  },
+  linear_programming: {
+    title: "TỐI ƯU HÓA LỢI NHUẬN XƯỞNG MỘC",
+    source: "SGK Toán 10 KNTT Bài 4, Trang 26-29",
+    context: "Một xưởng mộc sản xuất x chiếc bàn và y chiếc ghế (x, y ∈ ℕ). Khâu lắp ráp có tối đa 24 giờ công (mỗi bàn cần 1.5h, mỗi ghế cần 1h => 3x + 2y ≤ 48). Khâu hoàn thiện có tối đa 32 giờ công (mỗi bàn cần 1h, mỗi ghế cần 2h => x + 2y ≤ 32). Mỗi chiếc bàn mang lại tiền lãi 600 nghìn đồng, mỗi chiếc ghế mang lại tiền lãi 450 nghìn đồng.",
+    objectiveText: "Xác định kế hoạch sản xuất (x; y) để tổng tiền lãi F(x; y) = 600x + 450y đạt giá trị lớn nhất.",
+    matrixHeaders: ["Công đoạn", "1 Bàn (x)", "1 Ghế (y)", "Quỹ thời gian tối đa"],
+    matrixRows: [
+      { label: "Khâu Lắp ráp", col1: "1.5 giờ", col2: "1.0 giờ", limit: "24 giờ (3x + 2y ≤ 48)" },
+      { label: "Khâu Hoàn thiện", col1: "1.0 giờ", col2: "2.0 giờ", limit: "32 giờ (x + 2y ≤ 32)" },
+      { label: "Lợi nhuận", col1: "600.000 đ", col2: "450.000 đ", limit: "F = 600x + 450y (nghìn đồng)" },
+    ],
+    optimalSummary: "Phương án tối ưu: Đỉnh B(8; 12) => Sản xuất 8 bàn và 12 ghế => Lợi nhuận cực đại 10.200.000 đ.",
+  },
+  spatial_geometry: {
+    title: "THIẾT KẾ MÁI CHE THÁP CANH S.ABCD",
+    source: "SGK Hình học 11 KNTT Bài 11, Trang 78-83",
+    context: "Thiết kế mô hình mái che sân trường hình chóp tứ giác đều S.ABCD. Đáy ABCD là hình vuông cạnh a = 3 m. Chiều cao thẳng đứng SH = h thay đổi từ 1.5 m đến 4.0 m để tối ưu khả năng thoát nước mưa và diện tích bạt che.",
+    objectiveText: "Quan sát phối cảnh 3D; phân biệt quy ước cạnh thấy (nét liền) và cạnh khuất (nét đứt) khi xoay mô hình.",
+    matrixHeaders: ["Bộ phận", "Kích thước", "Quy ước biểu diễn"],
+    matrixRows: [
+      { label: "Đáy ABCD", col1: "3.0 m x 3.0 m", col2: "Hình vuông nằm ngang", limit: "Các cạnh nhìn thấy hoặc khuất" },
+      { label: "Chiều cao SH", col1: "1.5 - 4.0 m", col2: "SH ⊥ (ABCD)", limit: "Nét đứt màu đỏ hồng (cạnh khuất)" },
+      { label: "Thể tích V", col1: "V = (1/3) a² h", col2: "Dung tích không gian mái", limit: "Tự động tính theo thời gian thực" },
+    ],
+    optimalSummary: "Thuật toán Back-face Culling tự động chuyển nét đứt cho các cạnh khuất khi xoay camera.",
+  },
+  trigonometry: {
+    title: "CHUYỂN ĐỘNG TRÒN ĐỀU & ĐƯỜNG TRÒN LƯỢNG GIÁC",
+    source: "SGK Toán 11 KNTT Bài 1, Trang 5-16",
+    context: "Mô phỏng vị trí của tay máy tự động hoặc vệ tinh viễn thông chuyển động tròn đều trên đường tròn lượng giác đơn vị bán kính R = 1. Góc quay α thay đổi liên tục từ 0° đến 360°.",
+    objectiveText: "Liên hệ trực quan tọa độ điểm M(cos α; sin α) với các giá trị lượng giác.",
+    matrixHeaders: ["Đại lượng", "Giá trị hình học", "Ý nghĩa"],
+    matrixRows: [
+      { label: "Hoành độ Ox", col1: "cos α", col2: "Đoạn hình chiếu trên trục hoành", limit: "Mang dấu âm ở góc phần tư II, III" },
+      { label: "Tung độ Oy", col1: "sin α", col2: "Đoạn hình chiếu trên trục tung", limit: "Mang dấu dương ở góc phần tư I, II" },
+    ],
+    optimalSummary: "Bản chất hình học của lượng giác: Tọa độ điểm ngọn của cung trên đường tròn đơn vị.",
+  },
+  functions: {
+    title: "KHẢO SÁT BIẾN THIÊN HÀM SỐ & TỐI ƯU HÓA CHI PHÍ",
+    source: "SGK Toán 12 KNTT Chương 1 Bài 1 & 2, Trang 5-20",
+    context: "Khảo sát hàm bậc ba y = ax³ + bx² + cx + d và hàm phân thức y = (ax + b)/(cx + d). Khám phá mối liên hệ giữa dấu đạo hàm f'(x) với tính đồng biến, nghịch biến, xác định tọa độ các điểm cực trị, phương trình tiếp tuyến tại tiếp điểm M và số giao điểm với đường thẳng y = m.",
+    objectiveText: "Kéo các tham số a, b, c, d và m để quan sát bảng biến thiên 2 chiều biến đổi đồng bộ theo thời gian thực và đếm số nghiệm.",
+    matrixHeaders: ["Đại lượng", "Công thức / Giá trị", "Ý nghĩa hình học"],
+    matrixRows: [
+      { label: "Đạo hàm f'(x)", col1: "f'(x) = 3ax² + 2bx + c", col2: "Dấu f'(x) quyết định đồng biến / nghịch biến", limit: "f'(x) = 0 cho hoành độ cực trị" },
+      { label: "Đường thẳng y = m", col1: "y = m (đường song song Ox)", col2: "Tương giao đồ thị tìm số nghiệm", limit: "Tự động đổi màu điểm giao" },
+      { label: "Bảng biến thiên", col1: "2 chiều tương tác", col2: "Hover dòng nào sáng đồ thị vùng đó", limit: "Cực đại, cực tiểu, vô cực" },
+    ],
+    optimalSummary: "Bảng biến thiên động 2 chiều liên kết trực tiếp với hình dạng đồ thị và phương trình f'(x) = 0.",
+  },
+  calculus: {
+    title: "TÍCH PHÂN RIEMANN & THỂ TÍCH KHỐI TRÒN XOAY 3D",
+    source: "SGK Toán 12 KNTT Chương 4 Bài 12 & 13, Trang 18-28",
+    context: "Bài toán xấp xỉ diện tích hình phẳng giới hạn bởi đường cong y = f(x) trên đoạn [a, b] bằng tổng tích phân Riemann với n dải chữ nhật (n chạy từ 2 đến 100). Sau đó quay hình phẳng này quanh trục hoành Ox với góc quay θ từ 0° đến 360° để tạo khối tròn xoay 3D và tính thể tích theo phương pháp lát cắt đĩa tròn (Disk Method).",
+    objectiveText: "Kéo số dải n để quan sát sai số Δ tiến về 0, và kéo góc quay θ để quan sát thể tích khối tròn xoay 3D hình thành.",
+    matrixHeaders: ["Thành phần", "Công thức vi phân", "Ý nghĩa trực quan"],
+    matrixRows: [
+      { label: "Tổng Riemann", col1: "S_n = Σ f(x_i) Δx", col2: "Xấp xỉ tổng diện tích n dải chữ nhật", limit: "n càng lớn, sai số càng nhỏ" },
+      { label: "Tích phân xác định", col1: "∫[a→b] f(x) dx", col2: "Giới hạn diện tích chính xác", limit: "Tô màu miền diện tích" },
+      { label: "Khối tròn xoay 3D", col1: "V = π ∫[a→b] f(x)² dx", col2: "Quay lát cắt đĩa quanh Ox (0° - 360°)", limit: "Dựng mesh 3D chiếu sáng" },
+    ],
+    optimalSummary: "Diện tích chính xác là giới hạn của tổng Riemann khi n → ∞; thể tích là tích phân các lát cắt tròn.",
+  },
+  probability: {
+    title: "XÁC SUẤT CÓ ĐIỀU KIỆN, SƠ ĐỒ CÂY & CÔNG THỨC BAYES",
+    source: "SGK Toán 12 KNTT Chương 6 Bài 18 & 19, Trang 70-85",
+    context: "Thực nghiệm mô hình 2 hộp bi (hoặc xét nghiệm y tế chẩn đoán xác suất). Hộp 1 có R1 bi đỏ và B1 bi xanh; Hộp 2 có R2 bi đỏ và B2 bi xanh. Chọn ngẫu nhiên một hộp với xác suất p1 và p2, sau đó rút 1 viên bi. Tính xác suất để rút được bi đỏ P(Đỏ) và tính xác suất hậu nghiệm P(Hộp 1 | Đỏ) bằng công thức Bayes.",
+    objectiveText: "Thay đổi số bi đỏ/xanh ở 2 hộp bằng thanh trượt để quan sát sơ đồ cây 2 tầng cập nhật tức thời xác suất toàn phần và xác suất Bayes.",
+    matrixHeaders: ["Đại lượng", "Công thức xác suất", "Giá trị tính toán"],
+    matrixRows: [
+      { label: "Xác suất toàn phần", col1: "P(Đỏ) = P(H1)·P(Đ|H1) + P(H2)·P(Đ|H2)", col2: "Tổng xác suất của 2 nhánh dẫn tới bi đỏ", limit: "Cập nhật thời gian thực" },
+      { label: "Công thức Bayes", col1: "P(H1|Đỏ) = [P(H1)·P(Đ|H1)] / P(Đỏ)", col2: "Xác suất hậu nghiệm khi biết trước kết quả", limit: "Tỉ số nhánh 1 trên tổng" },
+      { label: "Luật số lớn", col1: "Gieo xúc xắc N lần", col2: "Tần suất thực nghiệm tiến dần về 1/6", limit: "Biểu đồ đường hội tụ" },
+    ],
+    optimalSummary: "Công thức Bayes suy ngược nguyên nhân từ kết quả quan sát; sơ đồ cây trực quan hóa các nhánh biến cố.",
+  },
+  conics_and_solids: {
+    title: "KHAI TRIỂN PHẲNG ↔ GẤP KHỐI ĐA DIỆN & CẮT NÓN CONIC",
+    source: "SGK Hình học 11 KNTT Bài 12 & Toán 10 Chuyên đề Conic",
+    context: "Kỹ thuật cắt may bạt che và gấp khối đa diện: 4 mặt tam giác bên SAB, SBC, SCD, SDA của hình chóp được xoay bản lề quanh 4 cạnh đáy để trải phẳng hoàn toàn trên mặt đất. Đồng thời mô phỏng giao tuyến cắt mặt nón tròn xoay hai tầng sinh ra ba đường conic chuẩn (Elip, Parabol, Hypebol).",
+    objectiveText: "Quan sát góc giữa mặt bên và mặt phẳng đáy khi kéo thanh trượt từ 100% về 0% và kiểm chứng tính chất tiêu cự MF₁ + MF₂ = 2a.",
+    matrixHeaders: ["Trạng thái", "Thao tác", "Mục tiêu sư phạm"],
+    matrixRows: [
+      { label: "Gấp khối 100%", col1: "Khối chóp 3D", col2: "4 đỉnh S chụm tại đỉnh chung", limit: "Quan sát hình học không gian" },
+      { label: "Khai triển 0%", col1: "Bản vẽ phẳng 2D", col2: "4 đỉnh S trải ra 4 hướng", limit: "Tính diện tích toàn phần chính xác" },
+      { label: "Mặt nón Conic", col1: "Cắt mặt nón góc β", col2: "Sinh Elip, Parabol, Hypebol", limit: "Định lý Dandelin" },
+    ],
+    optimalSummary: "Liên kết trực quan giữa bản vẽ kỹ thuật 2D và mô hình vật lý 3D trong không gian.",
   },
 };
 
@@ -648,6 +780,9 @@ export default function MathStepWorkbench({
     if (stationId && REAL_WORLD_PROBLEMS[stationId]) {
       return REAL_WORLD_PROBLEMS[stationId];
     }
+    if (moduleId && REAL_WORLD_PROBLEMS[moduleId]) {
+      return REAL_WORLD_PROBLEMS[moduleId];
+    }
     return {
       title: currentStation?.title || meta.title || "BÀI TOÁN KHÁM PHÁ TOÁN HỌC",
       source: currentStation?.source || meta.source || "SGK Toán THPT · Bộ Kết nối tri thức",
@@ -670,7 +805,7 @@ export default function MathStepWorkbench({
       ],
       optimalSummary: currentStation?.goal || meta.goal,
     };
-  }, [stationId, currentStation, meta]);
+  }, [stationId, currentStation, meta, moduleId]);
 
   // --- Step Progression State ---
   const [currentStep, setCurrentStep] = useState<number>(typeof initialStep === "number" && initialStep >= 0 && initialStep <= 7 ? initialStep : 0);
@@ -736,6 +871,9 @@ export default function MathStepWorkbench({
 
   // --- Math Simulation Parameters (Synchronized Sliders & Number inputs) ---
   const [params, setParams] = useState<Record<string, number>>(() => getDefaultParams(moduleId));
+
+  // --- Mode: Bài học SGK (8 bước) vs Phòng Lab Động GeoGebra ---
+  const [labMode, setLabMode] = useState<"sgk" | "dynamic">("sgk");
 
   // --- Natural Language to 3D Geometry Parser (Tự do / Sáng tạo Module 2 & Module 7) ---
   const [aiCreativeMode, setAiCreativeMode] = useState<boolean>(false);
@@ -3042,40 +3180,58 @@ export default function MathStepWorkbench({
                   <span className="hidden sm:inline">Mở đề chi tiết</span>
                 </button>
               )}
-              {meta.is3D && (
-                <div className="flex items-center bg-[#e2ecea] p-0.5 rounded-lg border border-[#c4dad6]">
+              <div className="flex items-center bg-[#e2ecea] p-0.5 rounded-lg border border-[#c4dad6]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLabMode("sgk");
+                    setAiCreativeMode(false);
+                    showToast("Đã chuyển sang Bài học SGK (8 bước).");
+                  }}
+                  className={`px-2 py-0.5 rounded-md text-[10.5px] font-bold transition-all flex items-center gap-1 ${
+                    labMode === "sgk" && !aiCreativeMode
+                      ? "bg-white text-[#087e7c] shadow-xs"
+                      : "text-[#536d73] hover:text-[#152f35]"
+                  }`}
+                >
+                  <BookOpen className="w-3 h-3" />
+                  <span className="hidden sm:inline">Bài học SGK</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLabMode("dynamic");
+                    setAiCreativeMode(false);
+                    showToast("Đã chuyển sang Phòng Lab Động GeoGebra 60fps.");
+                  }}
+                  className={`px-2 py-0.5 rounded-md text-[10.5px] font-bold transition-all flex items-center gap-1 ${
+                    labMode === "dynamic"
+                      ? "bg-gradient-to-r from-[#087e7c] to-[#0f9488] text-white shadow-xs"
+                      : "text-[#536d73] hover:text-[#152f35]"
+                  }`}
+                >
+                  <SlidersHorizontal className="w-3 h-3 text-emerald-300" />
+                  <span>Lab Động GeoGebra</span>
+                </button>
+                {meta.is3D && (
                   <button
                     type="button"
                     onClick={() => {
-                      setAiCreativeMode(false);
-                      showToast("Đã chuyển sang Bài học SGK (8 bước).");
-                    }}
-                    className={`px-2 py-0.5 rounded-md text-[10.5px] font-bold transition-all flex items-center gap-1 ${
-                      !aiCreativeMode
-                        ? "bg-white text-[#087e7c] shadow-xs"
-                        : "text-[#536d73] hover:text-[#152f35]"
-                    }`}
-                  >
-                    <BookOpen className="w-3 h-3" />
-                    <span className="hidden sm:inline">Bài học SGK</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
+                      setLabMode("sgk");
                       setAiCreativeMode(true);
                       showToast("Đã chuyển sang Tự do / Sáng tạo (AI Dựng hình 3D).");
                     }}
                     className={`px-2 py-0.5 rounded-md text-[10.5px] font-bold transition-all flex items-center gap-1 ${
                       aiCreativeMode
-                        ? "bg-gradient-to-r from-[#087e7c] to-[#0f9488] text-white shadow-xs"
+                        ? "bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-xs"
                         : "text-[#536d73] hover:text-[#152f35]"
                     }`}
                   >
                     <Wand2 className="w-3 h-3 text-amber-300" />
-                    <span>Tự do / Sáng tạo</span>
+                    <span className="hidden md:inline">AI Dựng hình</span>
                   </button>
-                </div>
-              )}
+                )}
+              </div>
               {meta.is3D && (
                 <button
                   type="button"
@@ -3123,7 +3279,49 @@ export default function MathStepWorkbench({
 
           {/* Khung Canvas giải phóng toàn bộ chiều cao từ trên xuống dưới */}
           <div className="flex-1 relative flex items-center justify-center bg-[#edf3f2] overflow-hidden min-h-[480px] h-full">
-            {meta.is3D ? (
+            {labMode === "dynamic" ? (
+              moduleId === "linear_programming" ? (
+                <div className="w-full h-full overflow-y-auto p-4 flex items-center justify-center">
+                  <DynamicLinearProgrammingLab />
+                </div>
+              ) : moduleId === "spatial_geometry" ? (
+                <div className="w-full h-full overflow-y-auto p-4 flex items-center justify-center">
+                  <DynamicSpatialGeometryLab />
+                </div>
+              ) : moduleId === "trigonometry" ? (
+                <div className="w-full h-full overflow-y-auto p-4 flex items-center justify-center">
+                  <DynamicTrigonometryLab />
+                </div>
+              ) : moduleId === "functions" ? (
+                <div className="w-full h-full overflow-y-auto p-4 flex items-center justify-center">
+                  <DynamicFunctionsLab />
+                </div>
+              ) : moduleId === "calculus" ? (
+                <div className="w-full h-full overflow-y-auto p-4 flex items-center justify-center">
+                  <DynamicCalculusLab />
+                </div>
+              ) : moduleId === "probability" ? (
+                <div className="w-full h-full overflow-y-auto p-4 flex items-center justify-center">
+                  <DynamicProbabilityLab />
+                </div>
+              ) : moduleId === "conics_and_solids" ? (
+                <div className="w-full h-full overflow-y-auto p-4 flex items-center justify-center">
+                  <DynamicConicsLab />
+                </div>
+              ) : (
+                <canvas
+                  ref={canvasRef}
+                  width={700}
+                  height={450}
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  onPointerCancel={handlePointerUp}
+                  onWheel={handleWheel}
+                  className="w-full h-full block cursor-grab active:cursor-grabbing touch-none"
+                />
+              )
+            ) : meta.is3D ? (
               aiCreativeMode ? (
                 <Geometry3DViewer
                   scene={parsedAiScene}
@@ -3891,7 +4089,8 @@ export default function MathStepWorkbench({
                   </div>
                 )}
                 {/* Hộp công cụ quản lý Tham số Động (GeoGebra Parameter Dock) */}
-                {(moduleId === "functions" ||
+                {(labMode === "dynamic" ||
+                  moduleId === "functions" ||
                   moduleId === "calculus" ||
                   moduleId === "probability" ||
                   moduleId === "conics_and_solids") && (
