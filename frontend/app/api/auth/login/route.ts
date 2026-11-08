@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isJsonRequest, isSameOrigin, jsonError } from "@/lib/security";
+import { isJsonRequest, isSameOrigin, jsonError, isValidEmail, isValidPassword } from "@/lib/security";
 import { getSupabaseConfig, setAuthCookies } from "@/lib/supabase";
 import { checkRateLimit, getClientIp, RATE_LIMIT_RULES } from "@/lib/rateLimit";
 import { sanitizeUserText } from "@/lib/xssSanitizer";
@@ -51,13 +51,15 @@ export async function POST(request: NextRequest) {
     return jsonError("CAPTCHA_FAILED", captchaResult.reason || "Xác thực phép toán chưa đúng.", 400);
   }
 
-  // 3. XSS SANITIZATION
-  const cleanEmail = sanitizeUserText(body.email).toLowerCase();
-  const password = typeof body.password === "string" ? body.password : "";
-
-  if (!cleanEmail || !password || password.length > 256) {
-    return jsonError("INVALID_REQUEST", "Vui lòng nhập email và mật khẩu hợp lệ.", 400);
+  // 3. SCHEMA VALIDATION & XSS SANITIZATION
+  if (!isValidEmail(body.email)) {
+    return jsonError("INVALID_EMAIL", "Định dạng email không hợp lệ.", 400);
   }
+  if (!isValidPassword(body.password)) {
+    return jsonError("INVALID_PASSWORD", "Mật khẩu phải từ 6 đến 256 ký tự.", 400);
+  }
+  const cleanEmail = sanitizeUserText(body.email).toLowerCase();
+  const password = body.password;
 
   try {
     const { url, anonKey } = getSupabaseConfig();

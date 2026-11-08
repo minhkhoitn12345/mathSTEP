@@ -56,9 +56,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const rawText = await request.text();
-    if (rawText.length > 32_000) {
+    // Budget & DoS Protection: Giới hạn tối đa 12.000 ký tự cho mỗi lượt hỏi đáp Socratic
+    if (rawText.length > 12_000) {
       return responseWithSessionCookies(
-        jsonError("REQUEST_TOO_LARGE", "Tin nhắn vượt quá giới hạn cho phép.", 413),
+        jsonError("REQUEST_TOO_LARGE", "Nội dung câu hỏi quá dài (tối đa 12.000 ký tự).", 413),
         refreshed
       );
     }
@@ -191,6 +192,7 @@ export async function POST(request: NextRequest) {
               { role: "user", content: userPrompt },
             ],
             temperature: 0.3,
+            max_tokens: 2048,
           }),
           signal: AbortSignal.timeout(45_000),
         });

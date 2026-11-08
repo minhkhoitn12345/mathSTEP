@@ -14,7 +14,9 @@ import {
   Trash2,
   SlidersHorizontal,
   Settings,
+  Download,
 } from "lucide-react";
+import { downloadBackupFile } from "../lib/useStationStorage";
 
 export interface CustomAiConfig {
   provider: "gemini" | "openai" | "deepseek";
@@ -446,6 +448,18 @@ export default function AccountSettingsModal({
                 <Save className="w-4 h-4" />
                 <span>{profileSaving ? "Đang lưu thông tin..." : "Lưu thay đổi hồ sơ"}</span>
               </button>
+
+              {/* Data Backup & Export (Item 17 Audit) */}
+              <div className="pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => downloadBackupFile()}
+                  className="w-full py-2 px-3 border border-slate-700/80 bg-slate-950/60 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Sao lưu tiến trình học tập (Tải file JSON)</span>
+                </button>
+              </div>
             </form>
           )}
 

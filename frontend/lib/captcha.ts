@@ -3,7 +3,12 @@
 
 import crypto from "crypto";
 
-const CAPTCHA_SECRET = process.env.CAPTCHA_SECRET || "mathstep-secret-captcha-key-2026";
+// Phân tách bí mật môi trường: Trong Production bắt buộc dùng biến môi trường hoặc tự sinh secret 256-bit ngẫu nhiên
+const CAPTCHA_SECRET =
+  process.env.CAPTCHA_SECRET ||
+  (process.env.NODE_ENV === "production"
+    ? crypto.randomBytes(32).toString("hex")
+    : "mathstep-secret-captcha-key-dev-2026");
 const CAPTCHA_TTL_SECONDS = 300; // Hiệu lực trong 5 phút
 
 // Bộ nhớ chống tấn công Replay (Single-use token cache)

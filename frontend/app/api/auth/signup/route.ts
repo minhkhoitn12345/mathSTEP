@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isJsonRequest, isSameOrigin, jsonError } from "@/lib/security";
+import { isJsonRequest, isSameOrigin, jsonError, isValidEmail, isValidPassword } from "@/lib/security";
 import { getSupabaseConfig, setAuthCookies } from "@/lib/supabase";
 import { checkRateLimit, getClientIp, RATE_LIMIT_RULES } from "@/lib/rateLimit";
 import { sanitizeUserText } from "@/lib/xssSanitizer";
@@ -52,13 +52,19 @@ export async function POST(request: NextRequest) {
     return jsonError("CAPTCHA_FAILED", captchaResult.reason || "Kết quả tính nhẩm chưa chính xác. Vui lòng thử lại.", 400);
   }
 
-  // 3. XSS SANITIZATION
+  // 3. SCHEMA VALIDATION & XSS SANITIZATION
+  if (!isValidEmail(body.email)) {
+    return jsonError("INVALID_EMAIL", "Định dạng email không hợp lệ.", 400);
+  }
+  if (!isValidPassword(body.password)) {
+    return jsonError("INVALID_PASSWORD", "Mật khẩu phải từ 6 đến 256 ký tự.", 400);
+  }
   const cleanEmail = sanitizeUserText(body.email).toLowerCase();
   const cleanName = sanitizeUserText(body.name).slice(0, 100);
-  const password = typeof body.password === "string" ? body.password : "";
+  const password = body.password;
 
-  if (!cleanEmail || !cleanName || password.length < 6 || password.length > 256) {
-    return jsonError("INVALID_REQUEST", "Vui lòng nhập họ tên và mật khẩu có ít nhất 6 ký tự.", 400);
+  if (!cleanName.trim()) {
+    return jsonError("INVALID_NAME", "Vui lòng nhập họ và tên của em.", 400);
   }
 
   try {

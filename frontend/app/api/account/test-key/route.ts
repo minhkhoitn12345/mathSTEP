@@ -80,10 +80,11 @@ export async function POST(request: NextRequest) {
     }
 
     return jsonError("UNSUPPORTED_PROVIDER", "Nhà cung cấp chưa được hỗ trợ.", 400);
-  } catch (err: unknown) {
+  } catch {
+    // Bảo mật: Không trả về raw error message / stack trace cho phía client
     return jsonError(
       "TEST_FAILED",
-      err instanceof Error ? err.message : "Không thể kiểm tra API key.",
+      "Không thể kết nối đến máy chủ AI. Vui lòng kiểm tra lại kết nối mạng hoặc tính hợp lệ của API Key.",
       500
     );
   }

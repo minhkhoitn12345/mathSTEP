@@ -180,3 +180,54 @@ export function getAllSavedStudentLogs(): StationSavedState[] {
   }
   return results;
 }
+
+/**
+ * Xuất toàn bộ dữ liệu học tập ra file JSON để sao lưu dự phòng (Backup)
+ */
+export function exportStudentProgressJson(): string {
+  if (typeof window === "undefined") return "{}";
+  const allData: Record<string, unknown> = {
+    exportDate: new Date().toISOString(),
+    version: "mathstep-backup-v1",
+    profile: null,
+    stations: {},
+  };
+
+  try {
+    const rawProfile = localStorage.getItem("mathstep:user_profile");
+    if (rawProfile) allData.profile = JSON.parse(rawProfile);
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(STORAGE_PREFIX)) {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          try {
+            (allData.stations as Record<string, unknown>)[key] = JSON.parse(raw);
+          } catch {}
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Không thể xuất dữ liệu sao lưu:", err);
+  }
+
+  return JSON.stringify(allData, null, 2);
+}
+
+/**
+ * Tải file sao lưu JSON về máy tính của học sinh (Client-side Backup Download)
+ */
+export function downloadBackupFile(): void {
+  if (typeof window === "undefined") return;
+  const jsonContent = exportStudentProgressJson();
+  const blob = new Blob([jsonContent], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `MathSTEP_SaoLuu_${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}

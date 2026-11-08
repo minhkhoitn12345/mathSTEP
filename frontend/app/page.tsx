@@ -577,6 +577,7 @@ function HomeContent() {
   const [accountModalTab, setAccountModalTab] = useState<"profile" | "ai">("profile");
   const [customAiConfig, setCustomAiConfig] = useState<CustomAiConfig | null>(null);
   const [chatHistoryOpen, setChatHistoryOpen] = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
 
   const allStations = useMemo(() => getAllStations(), []);
 
@@ -1706,6 +1707,78 @@ function HomeContent() {
         session={session}
       />
 
+      {/* 9. PRIVACY POLICY & TERMS MODAL */}
+      {termsModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setTermsModalOpen(false)}
+        >
+          <div 
+            className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden text-slate-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/90">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                <h3 className="font-semibold text-white text-base">Chính sách bảo mật & Điều khoản Sử dụng</h3>
+              </div>
+              <button 
+                onClick={() => setTermsModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                aria-label="Đóng"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-6 space-y-4 overflow-y-auto text-sm leading-relaxed text-slate-300">
+              <section>
+                <h4 className="font-semibold text-white mb-1.5 flex items-center gap-2">
+                  <span className="text-blue-400">1.</span> Tuân thủ Chuẩn GDPT 2018
+                </h4>
+                <p className="text-slate-400 text-xs">
+                  Nền tảng MathSTEP được xây dựng chuyên biệt nhằm phục vụ học sinh và giáo viên THPT (lớp 10, 11, 12). Mọi nội dung bài toán, trạm tương tác mô phỏng 2D/3D và phân tích phương pháp đều bám sát định hướng phát triển năng lực của Chương trình Giáo dục Phổ thông 2018.
+                </p>
+              </section>
+
+              <section>
+                <h4 className="font-semibold text-white mb-1.5 flex items-center gap-2">
+                  <span className="text-emerald-400">2.</span> Bảo vệ quyền riêng tư & dữ liệu người học
+                </h4>
+                <p className="text-slate-400 text-xs">
+                  Hệ thống cam kết tuyệt đối <strong>không thương mại hóa hoặc chuyển giao</strong> thông tin học sinh, nhật ký hỏi đáp hay tiến độ bài tập cho bất kỳ bên thứ ba nào. Mật khẩu người dùng được bảo vệ bằng cơ chế băm mật mã chuẩn ngành.
+                </p>
+              </section>
+
+              <section>
+                <h4 className="font-semibold text-white mb-1.5 flex items-center gap-2">
+                  <span className="text-amber-400">3.</span> Bảo mật Khóa API cá nhân (BYOK)
+                </h4>
+                <p className="text-slate-400 text-xs">
+                  Khi người dùng cấu hình khóa API riêng (Gemini / OpenAI / DeepSeek), khóa chỉ được lưu an toàn trong thiết bị cục bộ hoặc vault phiên được mã hóa, chỉ dùng để gọi trực tiếp các mô hình AI phục vụ học tập theo lệnh của người dùng.
+                </p>
+              </section>
+
+              <section>
+                <h4 className="font-semibold text-white mb-1.5 flex items-center gap-2">
+                  <span className="text-purple-400">4.</span> Quyền tự chủ dữ liệu & Sao lưu độc lập
+                </h4>
+                <p className="text-slate-400 text-xs">
+                  Học sinh và giáo viên có toàn quyền kiểm soát dữ liệu: tra cứu lịch sử hội thoại, xóa dữ liệu đã lưu hoặc tải về toàn bộ tiến trình học tập dưới dạng tệp tin JSON độc lập bất cứ lúc nào trong bảng Cài đặt tài khoản.
+                </p>
+              </section>
+            </div>
+            <div className="px-6 py-3.5 border-t border-slate-800 bg-slate-950 flex justify-end">
+              <button
+                onClick={() => setTermsModalOpen(false)}
+                className="px-4 py-2 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+              >
+                Tôi đã hiểu và Đồng ý
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* FOOTER */}
       <footer className="bg-slate-950 text-slate-400 text-xs py-6 px-4 md:px-8 border-t border-slate-800 mt-auto">
         <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
@@ -1720,6 +1793,13 @@ function HomeContent() {
             <span>Chương trình GDPT 2018</span>
             <span>Toán 10 - 11 - 12</span>
             <span>Bộ SGK Kết nối tri thức</span>
+            <button
+              type="button"
+              onClick={() => setTermsModalOpen(true)}
+              className="text-slate-400 hover:text-blue-400 underline underline-offset-2 transition-colors cursor-pointer"
+            >
+              Chính sách bảo mật & Điều khoản
+            </button>
           </div>
         </div>
       </footer>
