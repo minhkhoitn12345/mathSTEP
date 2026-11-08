@@ -13,7 +13,7 @@ import PlatformHeader from "./components/PlatformHeader";
 import SocraticChatDrawer from "./components/SocraticChatDrawer";
 import { generateSmartSocraticResponse } from "./lib/smartSocratic";
 import { getAllStations, removeVietnameseAccents, StationItem } from "./lib/stationCatalogData";
-import { CORE_7_MODULES, CoreModuleCard } from "./lib/modulesCatalogData";
+import { CORE_7_MODULES } from "./lib/modulesCatalogData";
 import {
   Layers,
   Search,
@@ -882,9 +882,9 @@ function HomeContent() {
 
       {/* BANNER CẢNH BÁO XÁC THỰC EMAIL (KHI ĐĂNG KÝ THỦ CÔNG MÀ CHƯA XÁC MINH) */}
       {session?.authenticated && session.email_verified === false && (
-        <div className="bg-[#fef8ee] border-b border-[#f3d4a6] text-[#78350f] px-4 md:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shadow-xs">
+        <div className="bg-amber-950/40 border-b border-amber-800/60 text-amber-200 px-4 md:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shadow-xs">
           <div className="flex items-center gap-2 max-w-3xl">
-            <AlertCircle className="w-4 h-4 text-[#c25e3e] shrink-0" />
+            <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
             <span>
               <strong>Tài khoản chưa xác thực email:</strong> Hãy kiểm tra hộp thư của bạn ({session.email}) và bấm vào liên kết xác nhận để mở khóa đầy đủ tính năng đồng bộ và AI nâng cao.
             </span>
@@ -894,7 +894,7 @@ function HomeContent() {
               type="button"
               disabled={loginBusy || resendCooldown > 0}
               onClick={handleResendVerificationEmail}
-              className="px-3 py-1 bg-[#c25e3e] hover:bg-[#a94c2d] disabled:opacity-50 text-white rounded-lg font-bold text-[11px] transition-colors cursor-pointer"
+              className="px-3 py-1 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white rounded-lg font-medium text-[11px] transition-colors cursor-pointer"
             >
               {resendCooldown > 0 ? `Gửi lại sau (${resendCooldown}s)` : "Gửi lại email xác thực"}
             </button>
@@ -1123,24 +1123,24 @@ function HomeContent() {
 
             {/* 48 STATIONS CATALOG SECTION */}
             <section id="catalog-section" className="max-w-6xl mx-auto px-4 md:px-8 space-y-6">
-              <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#d9e4e2] pb-4">
+              <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-800 pb-4">
                 <div>
-                  <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#087e7c] block">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-400 block">
                     CHỌN MỘT ĐIỀU EM MUỐN HIỂU
                   </span>
-                  <h2 className="text-xl md:text-3xl font-extrabold text-[#152f35] mt-1">
+                  <h2 className="text-xl md:text-2xl font-semibold text-slate-100 mt-1">
                     Mỗi trạm, một hành trình khám phá mới.
                   </h2>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-[#eef6f3] text-[#087e7c] text-xs font-bold border border-[#d9e4e2]">
+                <span className="px-2.5 py-1 rounded-md bg-slate-900 text-slate-300 text-xs font-medium border border-slate-800">
                   {filteredStations.length} trạm hiển thị
                 </span>
               </div>
 
               {/* FILTERS & SEARCH BAR */}
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-[#d9e4e2] shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 p-3 rounded-xl border border-slate-800/80">
                 {/* Grade chips */}
-                <div className="flex flex-wrap gap-1.5 text-xs font-bold">
+                <div className="flex flex-wrap gap-1.5 text-xs font-medium">
                   {[
                     { id: 0, label: "Tất cả (48)" },
                     { id: 10, label: "Lớp 10 (16)" },
@@ -1150,10 +1150,10 @@ function HomeContent() {
                     <button
                       key={g.id}
                       onClick={() => setSelectedGrade(g.id)}
-                      className={`px-3 py-1.5 rounded-xl transition-all ${
+                      className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                         selectedGrade === g.id
-                          ? "bg-[#087e7c] text-white shadow-xs"
-                          : "bg-[#f8faf9] text-gray-700 hover:bg-[#edf6f3] border border-[#d9e4e2]"
+                          ? "bg-blue-600 text-white font-semibold shadow-xs"
+                          : "bg-slate-950/60 text-slate-400 hover:text-slate-200 border border-slate-800"
                       }`}
                     >
                       {g.label}
@@ -1169,9 +1169,9 @@ function HomeContent() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Tìm bài (ví dụ: quy hoạch tuyến tính, hình chóp, conic...)"
-                      className="w-full pl-8 pr-3 py-1.5 bg-[#f8faf9] border border-[#bed0cd] rounded-xl text-xs focus:outline-none focus:border-[#087e7c]"
+                      className="w-full pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
                     />
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs flex items-center">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs flex items-center">
                       <Search className="w-3.5 h-3.5" />
                     </span>
                   </div>
@@ -1179,7 +1179,7 @@ function HomeContent() {
                   <select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value as "all" | "3d" | "2d")}
-                    className="p-1.5 bg-[#f8faf9] border border-[#bed0cd] rounded-xl text-xs font-medium focus:outline-none focus:border-[#087e7c]"
+                    className="p-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs font-medium text-slate-300 focus:outline-none focus:border-blue-500"
                   >
                     <option value="all">Mọi mô hình</option>
                     <option value="3d">Không gian 3D</option>
@@ -1190,76 +1190,78 @@ function HomeContent() {
 
               {/* PHÂN VÙNG 1: CÁC TRẠM NGHIÊN CỨU TRỌNG TÂM (ĐÃ THẨM ĐỊNH TOÁN HỌC 100%) */}
               <div className="space-y-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-3.5 bg-gradient-to-r from-emerald-900/10 via-teal-900/5 to-transparent border-l-4 border-emerald-600 rounded-r-xl">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-3 bg-slate-900/90 border border-slate-800 border-l-4 border-l-blue-500 rounded-r-xl rounded-l-md">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                      <h3 className="text-sm font-extrabold text-[#152f35] uppercase tracking-wide">
+                      <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                      <h3 className="text-xs font-semibold text-slate-200 uppercase tracking-wide">
                         CHUYÊN ĐỀ NGHIÊN CỨU TRỌNG TÂM (ĐÃ THẨM ĐỊNH TOÁN HỌC & SƯ PHẠM 100%)
                       </h3>
                     </div>
-                    <p className="text-xs text-gray-600 mt-0.5">
+                    <p className="text-[11px] text-slate-400 mt-0.5">
                       Phục vụ báo cáo dự thi KHKT: Đầy đủ bối cảnh đề bài thực tế, ma trận số liệu và bảng điều khiển đồng bộ 100% với Canvas.
                     </p>
                   </div>
-                  <span className="px-3 py-1 bg-emerald-100 text-emerald-800 font-extrabold text-xs rounded-full border border-emerald-300 shrink-0">
+                  <span className="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium text-xs rounded-md shrink-0">
                     5 Trạm Cốt Lõi Hoàn Hảo
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredStations.filter((st) => st.isValidated).map((st) => (
                     <article
                       key={st.id}
-                      className="bg-white rounded-2xl border-2 border-emerald-500/60 overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between"
+                      className="bg-slate-900/90 rounded-xl border border-slate-800/80 overflow-hidden hover:border-slate-700 transition-all duration-150 flex flex-col justify-between group"
                     >
                       <div>
                         {/* Visual SVG Card Art */}
-                        <Link href={`/stations/${st.id}`} className="block h-36 relative overflow-hidden bg-[#eef7f3] cursor-pointer">
+                        <Link href={`/stations/${st.id}`} className="block h-36 relative overflow-hidden bg-slate-950 cursor-pointer">
                           <StationCardArt grade={st.grade} is3D={st.is3D} stationId={st.id} />
-                          <span className="absolute top-2.5 left-2.5 bg-emerald-800 text-white px-2 py-0.5 rounded-lg text-[10px] font-black font-mono shadow-xs border border-emerald-600">
-                            {st.id} · LỚP {st.grade}
-                          </span>
-                          <span className="absolute top-2.5 right-2.5 bg-emerald-600 text-white px-2 py-0.5 rounded-lg text-[10px] font-bold">
-                            {st.is3D ? "KHÔNG GIAN 3D" : "HÌNH HỌC 2D"}
-                          </span>
+                          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                            <span className="bg-slate-900/90 text-slate-200 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border border-slate-800 font-mono">
+                              {st.id} · Lớp {st.grade}
+                            </span>
+                            <span className="bg-slate-900/80 text-blue-300 border border-slate-800 px-2 py-0.5 rounded-md text-[11px] font-medium">
+                              {st.is3D ? "Không gian 3D" : "Mặt phẳng 2D"}
+                            </span>
+                          </div>
                         </Link>
 
                         {/* Card Content */}
                         <div className="p-4 space-y-2">
-                          <div className="flex items-center justify-between text-[10px]">
-                            <span className="font-extrabold text-emerald-700 uppercase tracking-wider">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-semibold text-blue-400">
                               {st.badge || "Trọng tâm KHKT"}
                             </span>
-                            <span className="px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            <span className="text-[11px] font-medium text-emerald-400 flex items-center gap-1">
                               ✓ Đã kiểm chứng 100%
                             </span>
                           </div>
 
-                          <h3 className="font-bold text-sm text-[#152f35] line-clamp-2 leading-snug">
-                            <Link href={`/stations/${st.id}`} className="hover:text-emerald-700 transition-colors">
+                          <h3 className="font-semibold text-sm text-slate-100 leading-snug group-hover:text-blue-400 transition-colors">
+                            <Link href={`/stations/${st.id}`}>
                               {st.title}
                             </Link>
                           </h3>
 
-                          <p className="text-gray-600 text-xs line-clamp-2 leading-relaxed">
+                          <p className="text-slate-400 text-xs line-clamp-2 leading-relaxed">
                             {st.simulation}
                           </p>
 
-                          <div className="text-[10px] text-gray-500 italic pt-1 border-t border-gray-100 flex items-center justify-between">
-                            <span>{st.source}</span>
-                            <span className="text-emerald-700 font-bold">Khớp SGK</span>
+                          <div className="text-[10px] text-slate-500 font-mono pt-1 border-t border-slate-800/80 flex items-center justify-between">
+                            <span className="truncate max-w-[190px]">{st.source}</span>
+                            <span className="text-blue-400 font-medium">Khớp SGK</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="p-4 pt-0">
+                      <div className="p-3.5 pt-0">
                         <Link
                           href={`/stations/${st.id}`}
-                          className="w-full py-2.5 bg-gradient-to-r from-[#087e7c] to-[#0d9488] hover:from-[#066563] hover:to-[#0f766e] text-white rounded-xl font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                          className="w-full py-2 bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-slate-700 hover:border-blue-500"
                         >
                           <span>Vào phòng thực hành chuẩn</span>
-                          <span>↗</span>
+                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
                     </article>
@@ -1268,71 +1270,74 @@ function HomeContent() {
               </div>
 
               {/* PHÂN VÙNG 2: KHUNG KIẾN TRÚC MỞ RỘNG (ĐANG HOÀN THIỆN THEO ĐỀ CƯƠNG) */}
-              <div className="space-y-4 pt-6 border-t border-gray-200">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-3 bg-amber-50/70 border-l-4 border-amber-500 rounded-r-xl">
+              <div className="space-y-4 pt-4 border-t border-slate-800">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-3 bg-slate-900/50 border border-slate-800 border-l-4 border-l-slate-700 rounded-r-xl rounded-l-md">
                   <div>
-                    <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wide flex items-center gap-1.5">
-                      <FlaskConical className="w-4 h-4 text-amber-600 inline mr-1" />
+                    <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wide flex items-center gap-1.5">
+                      <FlaskConical className="w-3.5 h-3.5 text-slate-400 inline mr-1" />
                       <span>KHUNG KIẾN TRÚC MỞ RỘNG (LỘ TRÌNH ĐỀ CƯƠNG DÀI HẠN)</span>
                     </h3>
-                    <p className="text-[11px] text-amber-800 mt-0.5">
+                    <p className="text-[11px] text-slate-400 mt-0.5">
                       Nhóm tác giả cam kết liêm chính khoa học: Chỉ mở công khai các trạm đã được thẩm định toán học 100%. Các trạm dưới đây đang trong lộ trình chuẩn hóa dữ liệu thực nghiệm sư phạm.
                     </p>
                   </div>
-                  <span className="px-2.5 py-0.5 bg-amber-200 text-amber-900 font-bold text-[11px] rounded-full shrink-0">
+                  <span className="px-2 py-0.5 bg-slate-800 text-slate-400 font-medium text-[11px] rounded-md border border-slate-700 shrink-0">
                     Lộ trình mở rộng
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 opacity-75 hover:opacity-100 transition-opacity">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-70 hover:opacity-95 transition-opacity">
                   {filteredStations.filter((st) => !st.isValidated).map((st) => (
                     <article
                       key={st.id}
-                      className="bg-white rounded-2xl border border-dashed border-gray-300 overflow-hidden shadow-xs flex flex-col justify-between"
+                      className="bg-slate-900/40 rounded-xl border border-slate-800/60 overflow-hidden flex flex-col justify-between"
                     >
                       <div>
                         {/* Visual SVG Card Art */}
-                        <div className="h-32 relative overflow-hidden bg-gray-50 grayscale opacity-80">
+                        <div className="h-32 relative overflow-hidden bg-slate-950/80 grayscale opacity-70">
                           <StationCardArt grade={st.grade} is3D={st.is3D} stationId={st.id} />
-                          <span className="absolute top-2.5 left-2.5 bg-gray-700 text-white px-2 py-0.5 rounded-lg text-[10px] font-mono">
-                            {st.id} · LỚP {st.grade}
-                          </span>
-                          <span className="absolute top-2.5 right-2.5 bg-amber-600 text-white px-2 py-0.5 rounded-lg text-[10px] font-bold">
+                          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                            <span className="bg-slate-900/90 text-slate-300 px-2 py-0.5 rounded-md text-[10px] font-mono border border-slate-800">
+                              {st.id} · Lớp {st.grade}
+                            </span>
+                          </div>
+                          <span className="absolute top-2.5 right-2.5 bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded-md text-[10px] font-medium">
                             Lộ trình mở rộng
                           </span>
                         </div>
 
                         {/* Card Content */}
-                        <div className="p-4 space-y-2">
+                        <div className="p-3.5 space-y-1.5">
                           <div className="flex items-center justify-between text-[10px]">
-                            <span className="font-bold text-amber-800">
+                            <span className="font-medium text-slate-400">
                               Đang chuẩn hóa dữ liệu
                             </span>
                           </div>
 
-                          <h3 className="font-bold text-xs text-gray-700 line-clamp-1">
+                          <h3 className="font-semibold text-xs text-slate-300 line-clamp-1">
                             {st.title}
                           </h3>
 
-                          <p className="text-gray-400 text-[11px] line-clamp-2">
+                          <p className="text-slate-400 text-[11px] line-clamp-2 leading-relaxed">
                             {st.simulation}
                           </p>
 
-                          <div className="text-[10px] text-gray-400 italic pt-1 border-t border-gray-100">
+                          <div className="text-[10px] text-slate-400 font-mono italic pt-1 border-t border-slate-800/60">
                             {st.source}
                           </div>
                         </div>
                       </div>
 
-                      <div className="p-4 pt-0">
+                      <div className="p-3.5 pt-0">
                         <button
                           type="button"
                           onClick={() => {
                             alert("Trạm này đang trong giai đoạn chuẩn hóa dữ liệu thực nghiệm sư phạm theo lộ trình dài hạn của đề cương. Nhóm nghiên cứu chỉ mở công khai các trạm đã được kiểm chứng tính đúng toán học 100%. Kính mời thầy cô và các bạn trải nghiệm 5 Trạm Trọng tâm phía trên!");
                           }}
-                          className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl font-bold text-xs border border-slate-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                          className="w-full py-1.5 bg-slate-950 text-slate-400 hover:text-slate-200 rounded-lg font-medium text-xs border border-slate-800 hover:border-slate-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                         >
-                          <span className="flex items-center justify-center gap-1.5"><Lock className="w-3.5 h-3.5" /><span>Đang hoàn thiện theo đề cương</span></span>
+                          <Lock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Đang hoàn thiện theo đề cương</span>
                         </button>
                       </div>
                     </article>
@@ -1369,7 +1374,7 @@ function HomeContent() {
 
         {/* SUB-SYSTEM 2: TEACHER DASHBOARD & PRESENTATION */}
         {subsystem === "teacher" && (
-          <div className="flex-1 overflow-y-auto bg-[#f8faf9] p-3 md:p-6">
+          <div className="flex-1 overflow-y-auto bg-[#0B0F17] p-3 md:p-6 text-slate-100">
             <TeacherDashboard
               onLaunchStation={(stId) => {
                 const found = allStations.find((s) => s.id === stId);
@@ -1390,7 +1395,7 @@ function HomeContent() {
 
         {/* SUB-SYSTEM 3: RESEARCH & METHODOLOGY HUB */}
         {subsystem === "research" && (
-          <div className="flex-1 overflow-y-auto bg-[#f8faf9] p-3 md:p-6">
+          <div className="flex-1 overflow-y-auto bg-[#0B0F17] p-3 md:p-6 text-slate-100">
             <ResearchMethodologyHub />
           </div>
         )}
@@ -1685,16 +1690,16 @@ function HomeContent() {
       />
 
       {/* FOOTER */}
-      <footer className="bg-[#0b2329] text-gray-400 text-xs py-6 px-4 md:px-8 border-t border-[#284048] mt-auto">
+      <footer className="bg-slate-950 text-slate-400 text-xs py-6 px-4 md:px-8 border-t border-slate-800 mt-auto">
         <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="w-5 h-5 rounded bg-[#087e7c] text-white font-bold text-[10px] flex items-center justify-center">
+            <span className="w-5 h-5 rounded bg-blue-600 text-white font-bold text-[10px] flex items-center justify-center font-mono">
               m
             </span>
-            <span className="text-white font-bold">MathSTEP</span>
-            <span>· Học bằng thao tác, hiểu bằng lập luận</span>
+            <span className="text-slate-200 font-semibold">MathSTEP</span>
+            <span className="text-slate-400">· Học bằng thao tác, hiểu bằng lập luận</span>
           </div>
-          <div className="flex items-center gap-4 text-[11px]">
+          <div className="flex items-center gap-4 text-[11px] text-slate-500">
             <span>Chương trình GDPT 2018</span>
             <span>Toán 10 - 11 - 12</span>
             <span>Bộ SGK Kết nối tri thức</span>
