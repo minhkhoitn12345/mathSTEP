@@ -582,6 +582,21 @@ function HomeContent() {
 
   const allStations = useMemo(() => getAllStations(), []);
 
+  // Cuộn mượt mà quay lại section đầu trang (Hero Section) khi nhấn Logo
+  const handleNavigateHome = useCallback(() => {
+    setActiveSection("stations");
+    if (subsystem !== "student" || viewMode !== "home") {
+      setSubsystem("student");
+      setViewMode("home");
+      syncUrl(null, null, "student");
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 100);
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [subsystem, viewMode, syncUrl]);
+
   // Cuộn trang mượt mà tới danh mục trạm học
   const handleNavigateStations = useCallback(() => {
     setActiveSection("stations");
@@ -938,6 +953,7 @@ function HomeContent() {
             syncUrl(null, null, sub === "student" ? null : sub);
           }
         }}
+        onNavigateHome={handleNavigateHome}
         onNavigateStations={handleNavigateStations}
         onNavigateModules={handleNavigateModules}
         session={session}
@@ -991,7 +1007,7 @@ function HomeContent() {
         {subsystem === "student" && viewMode === "home" && (
           <div className="flex-1 space-y-8 pb-12">
             {/* HERO BANNER - SCHOLARLY DESKTOP SHELL */}
-            <section className="bg-slate-950 text-slate-100 px-4 md:px-8 py-10 md:py-14 relative overflow-hidden border-b border-slate-800">
+            <section id="hero-section" className="bg-slate-950 text-slate-100 px-4 md:px-8 py-10 md:py-14 relative overflow-hidden border-b border-slate-800 scroll-mt-16">
               <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] gap-8 md:gap-12 items-center">
                 <div className="space-y-4">
                   {/* 1. Eyebrow Badge Pill */}

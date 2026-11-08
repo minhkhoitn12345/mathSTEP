@@ -21,6 +21,7 @@ interface PlatformHeaderProps {
   viewMode?: ViewMode;
   activeSection?: "stations" | "modules";
   onSelectSubsystem: (sub: SubsystemId, view?: ViewMode) => void;
+  onNavigateHome?: () => void;
   onNavigateStations?: () => void;
   onNavigateModules?: () => void;
   session: SessionData | null;
@@ -38,6 +39,7 @@ export default function PlatformHeader({
   subsystem,
   activeSection,
   onSelectSubsystem,
+  onNavigateHome,
   onNavigateStations,
   onNavigateModules,
   session,
@@ -79,20 +81,33 @@ export default function PlatformHeader({
   );
 
   return (
-    <header className="h-13 border-b border-slate-800/80 bg-slate-950/95 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between sticky top-0 z-40 select-none">
-      {/* Brand Logo */}
+    <header className="sticky top-0 z-50 w-full h-13 bg-[#0B132B]/80 backdrop-blur-md border-b border-white/10 px-3 sm:px-6 flex items-center justify-between select-none">
+      {/* Brand Logo & Name: Nhấn để quay lại section đầu tiên */}
       <div className="flex items-center gap-2.5">
         <Link
           href="/"
-          onClick={() => onSelectSubsystem("student", "home")}
-          className="flex items-center gap-2.5 text-white no-underline group"
+          onClick={(e) => {
+            e.preventDefault();
+            if (onNavigateHome) {
+              onNavigateHome();
+            } else {
+              onSelectSubsystem("student", "home");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+          }}
+          className="flex items-center gap-2.5 text-white no-underline group cursor-pointer"
+          title="Quay lại đầu trang MathSTEP"
         >
           <span className="w-7 h-7 rounded-lg bg-blue-600 text-white font-mono font-bold text-sm flex items-center justify-center shadow-xs group-hover:bg-blue-500 transition-colors">
             M
           </span>
           <div className="leading-tight">
-            <strong className="font-sans text-xs tracking-wide font-bold block text-slate-100 group-hover:text-white transition-colors">MATHSTEP</strong>
-            <span className="text-[10px] text-slate-400 font-sans hidden sm:inline">Học liệu số Toán THPT</span>
+            <strong className="font-sans text-xs tracking-wide font-bold block text-slate-100 group-hover:text-white transition-colors">
+              MATHSTEP
+            </strong>
+            <span className="text-[10px] text-slate-400 font-sans hidden sm:inline">
+              Học liệu số Toán THPT
+            </span>
           </div>
         </Link>
       </div>
@@ -202,7 +217,7 @@ export default function PlatformHeader({
             {/* 2. CẤU TRÚC NỘI DUNG BÊN TRONG DROPDOWN MENU */}
             {userMenuOpen && (
               <div
-                className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-24px)] rounded-2xl bg-[#0B132B] border border-slate-800 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-150 ease-out origin-top-right text-xs select-none backdrop-blur-md"
+                className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-24px)] rounded-2xl bg-[#0B132B] border border-white/10 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-150 ease-out origin-top-right text-xs select-none backdrop-blur-md"
                 role="menu"
               >
                 {/* PHẦN HEADER MENU: Avatar lớn hơn, tên đầy đủ, email / vai trò */}
