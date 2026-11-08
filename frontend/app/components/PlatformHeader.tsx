@@ -33,7 +33,6 @@ interface PlatformHeaderProps {
 
 export default function PlatformHeader({
   subsystem,
-  viewMode: _viewMode,
   onSelectSubsystem,
   session,
   sessionLoading,

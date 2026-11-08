@@ -17,7 +17,6 @@ import { generateSmartSocraticResponse } from "./lib/smartSocratic";
 import { getAllStations, removeVietnameseAccents, StationItem } from "./lib/stationCatalogData";
 import { CORE_7_MODULES } from "./lib/modulesCatalogData";
 import {
-  Layers,
   Search,
   FlaskConical,
   Lock,
@@ -930,59 +929,75 @@ function HomeContent() {
           <div className="flex-1 space-y-8 pb-12">
             {/* HERO BANNER - SCHOLARLY DESKTOP SHELL */}
             <section className="bg-slate-950 text-slate-100 px-4 md:px-8 py-10 md:py-14 relative overflow-hidden border-b border-slate-800">
-              <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8 md:gap-12 items-center">
-                <div className="space-y-3.5">
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-blue-400 block">
-                    Phòng học tương tác · Toán THPT Lớp 10 — 12
-                  </span>
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-[1.2] text-slate-100">
-                    Chạm vào mô hình.<br />
-                    <span className="italic font-serif text-blue-400 font-normal">Tự tìm ra quy luật.</span>
+              <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] gap-8 md:gap-12 items-center">
+                <div className="space-y-4">
+                  {/* 1. Eyebrow Badge Pill */}
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium w-fit">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                    <span>Học liệu số Toán THPT · Lớp 10 - 12</span>
+                  </div>
+
+                  {/* 2. Main Heading */}
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-bold tracking-tight leading-[1.25] text-white">
+                    Khám phá bản chất Toán học<br />
+                    <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent not-italic font-bold">
+                      qua mô hình tương tác trực quan.
+                    </span>
                   </h1>
-                  <p className="text-slate-300 text-xs md:text-sm leading-relaxed max-w-xl font-sans">
-                    Kéo một điểm. Xoay một góc nhìn. Thử một giả thuyết. Khám phá toán học bằng chính những điều em quan sát, kiểm chứng và tự đúc kết quy luật.
+
+                  {/* 3. Description */}
+                  <p className="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed max-w-xl font-sans">
+                    Nền tảng mô phỏng hình học và giải tích không gian trực quan. Giúp người học tự thao tác, thay đổi tham số để hiểu sâu bản chất quy luật toán học thay vì ghi nhớ công thức máy móc.
                   </p>
 
-                  <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                  {/* 4. Call To Action Buttons */}
+                  <div className="flex flex-wrap items-center gap-3 pt-1">
                     <button
+                      type="button"
                       onClick={() => {
-                        const el = document.getElementById("modules-section");
-                        el?.scrollIntoView({ behavior: "smooth" });
+                        const firstStation = allStations[0];
+                        if (firstStation) {
+                          handleOpenStationInLab(firstStation, 1);
+                        } else {
+                          setViewMode("lab");
+                          setSubsystem("student");
+                        }
                       }}
-                      className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
+                      className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs sm:text-sm transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-md shadow-blue-900/20 active:scale-[0.98]"
                     >
-                      <SlidersHorizontal className="w-3.5 h-3.5 text-white" />
-                      <span>7 Module Thí Nghiệm Động ↓</span>
+                      <span>Vào phòng thực hành</span>
+                      <ArrowRight className="w-4 h-4 text-white" />
                     </button>
+
                     <button
+                      type="button"
                       onClick={() => {
                         const el = document.getElementById("catalog-section");
                         el?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="px-3.5 py-2 rounded-md bg-slate-900 hover:bg-slate-850 text-slate-200 font-medium text-xs border border-slate-800 transition-colors flex items-center gap-1.5 cursor-pointer"
+                      className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 hover:text-white font-medium text-xs sm:text-sm border border-white/10 transition-all duration-200 flex items-center gap-2 cursor-pointer active:scale-[0.98]"
                     >
-                      <Layers className="w-3.5 h-3.5 text-blue-400" />
-                      <span>48 Trạm chuyên đề ↓</span>
+                      <span>Xem các trạm học</span>
                     </button>
                   </div>
 
-                  {/* STATS ROW */}
-                  <div className="flex items-center gap-6 pt-3 border-t border-slate-800/80">
+                  {/* 5. Metrics / Social Proof */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-4 border-t border-slate-800/80">
                     <div>
-                      <strong className="text-xl font-mono font-bold text-blue-400 block">7</strong>
-                      <small className="text-[11px] text-slate-400 font-sans">module GeoGebra động</small>
+                      <div className="text-xl sm:text-2xl font-mono font-bold text-white">7</div>
+                      <div className="text-xs text-slate-400 mt-0.5">Module GeoGebra động</div>
                     </div>
                     <div>
-                      <strong className="text-xl font-mono font-bold text-slate-100 block">48</strong>
-                      <small className="text-[11px] text-slate-400 font-sans">trạm học tương tác</small>
+                      <div className="text-xl sm:text-2xl font-mono font-bold text-white">48</div>
+                      <div className="text-xs text-slate-400 mt-0.5">Trạm học tương tác</div>
                     </div>
                     <div>
-                      <strong className="text-xl font-mono font-bold text-emerald-400 block">2D + 3D</strong>
-                      <small className="text-[11px] text-slate-400 font-sans">mô phỏng 60fps</small>
+                      <div className="text-xl sm:text-2xl font-mono font-bold text-white">2D & 3D</div>
+                      <div className="text-xs text-slate-400 mt-0.5">Mô hình trực quan</div>
                     </div>
                     <div>
-                      <strong className="text-xl font-mono font-bold text-slate-100 block">Socratic</strong>
-                      <small className="text-[11px] text-slate-400 font-sans">phương pháp gợi mở</small>
+                      <div className="text-xl sm:text-2xl font-mono font-bold text-blue-400">Socratic AI</div>
+                      <div className="text-xs text-slate-400 mt-0.5">Gợi mở tư duy</div>
                     </div>
                   </div>
                 </div>
