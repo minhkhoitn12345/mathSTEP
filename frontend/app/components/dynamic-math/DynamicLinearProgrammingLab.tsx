@@ -1,9 +1,13 @@
 "use client";
 
 import React, { useState, useMemo, useRef } from "react";
-import { Plus, Trash2, Eye, EyeOff, Target, SlidersHorizontal, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, Target, SlidersHorizontal, CheckCircle2, Compass, Layers, Sparkles } from "lucide-react";
 import { formatVNFloat } from "../KatexMath";
 import { useDynamicMathStore } from "./useDynamicMathStore";
+import { SingleInequalityLab } from "@/app/components/optimath/SingleInequalityLab";
+import { SystemInequalityLab } from "@/app/components/optimath/SystemInequalityLab/SystemInequalityLab";
+import { OptimizationLab } from "@/app/components/optimath/OptimizationLab/OptimizationLab";
+import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
 
 export interface LinearConstraint {
   id: string;
@@ -25,6 +29,7 @@ const DEFAULT_CONSTRAINTS: LinearConstraint[] = [
 
 export default function DynamicLinearProgrammingLab() {
   const { params, setParamVal } = useDynamicMathStore();
+  const [labTab, setLabTab] = useState<"quick" | "single_7step" | "system_7step" | "optimization_7step">("quick");
 
   // Constraints state
   const [constraints, setConstraints] = useState<LinearConstraint[]>(DEFAULT_CONSTRAINTS);
@@ -218,8 +223,123 @@ export default function DynamicLinearProgrammingLab() {
     .map((p) => `${toScreenX(p.x)},${toScreenY(p.y)}`)
     .join(" ");
 
+  if (labTab === "single_7step") {
+    return (
+      <div className="w-full flex flex-col gap-3">
+        <div className="flex items-center justify-between p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs">
+          <div className="flex items-center gap-2">
+            <OptiMascot expression="happy" size={24} animate={false} />
+            <span className="font-bold text-white">Phòng thí nghiệm 1 Bất phương trình (Chuẩn SGK)</span>
+          </div>
+          <button
+            onClick={() => setLabTab("quick")}
+            className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg font-medium transition cursor-pointer"
+          >
+            ← Trở lại Mô hình Oxy
+          </button>
+        </div>
+        <SingleInequalityLab onBackToHome={() => setLabTab("quick")} />
+      </div>
+    );
+  }
+
+  if (labTab === "system_7step") {
+    return (
+      <div className="w-full flex flex-col gap-3">
+        <div className="flex items-center justify-between p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs">
+          <div className="flex items-center gap-2">
+            <OptiMascot expression="happy" size={24} animate={false} />
+            <span className="font-bold text-white">Phòng thí nghiệm Hệ Bất phương trình (Đa giác & Giao điểm)</span>
+          </div>
+          <button
+            onClick={() => setLabTab("quick")}
+            className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg font-medium transition cursor-pointer"
+          >
+            ← Trở lại Mô hình Oxy
+          </button>
+        </div>
+        <SystemInequalityLab onBackToHome={() => setLabTab("quick")} />
+      </div>
+    );
+  }
+
+  if (labTab === "optimization_7step") {
+    return (
+      <div className="w-full flex flex-col gap-3">
+        <div className="flex items-center justify-between p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs">
+          <div className="flex items-center gap-2">
+            <OptiMascot expression="cheering" size={24} animate={false} />
+            <span className="font-bold text-white">Mô hình hóa & Tối ưu hóa Tuyến tính (Quy hoạch tuyến tính)</span>
+          </div>
+          <button
+            onClick={() => setLabTab("quick")}
+            className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg font-medium transition cursor-pointer"
+          >
+            ← Trở lại Mô hình Oxy
+          </button>
+        </div>
+        <OptimizationLab onBackToHome={() => setLabTab("quick")} />
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+    <div className="w-full flex flex-col gap-4">
+      {/* Thanh chuyển chế độ phòng học Optimath */}
+      <div className="w-full flex flex-wrap items-center justify-between gap-2.5 p-2.5 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xs">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 flex items-center justify-center shrink-0">
+            <OptiMascot expression="happy" size={28} animate={false} />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+              <span>Phòng Thí Nghiệm Optimath</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 font-semibold border border-blue-500/30">
+                Native 60fps
+              </span>
+            </h4>
+            <p className="text-[10px] text-slate-400 hidden sm:block">
+              Chọn phân hệ thực hành chuyên sâu theo chuẩn SGK GDPT 2018
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+          <button
+            onClick={() => setLabTab("quick")}
+            className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+              labTab === "quick"
+                ? "bg-blue-600 text-white font-bold shadow-xs"
+                : "text-slate-400 hover:text-white hover:bg-slate-900"
+            }`}
+          >
+            Mô hình 2D Tự do
+          </button>
+          <button
+            onClick={() => setLabTab("single_7step")}
+            className="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-emerald-300 hover:bg-emerald-950/40 transition-all cursor-pointer flex items-center gap-1"
+          >
+            <Compass className="w-3.5 h-3.5 text-emerald-400" />
+            <span>1 BPT (7 Bước)</span>
+          </button>
+          <button
+            onClick={() => setLabTab("system_7step")}
+            className="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-amber-300 hover:bg-amber-950/40 transition-all cursor-pointer flex items-center gap-1"
+          >
+            <Layers className="w-3.5 h-3.5 text-amber-400" />
+            <span>Hệ BPT (Đa giác)</span>
+          </button>
+          <button
+            onClick={() => setLabTab("optimization_7step")}
+            className="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-purple-300 hover:bg-purple-950/40 transition-all cursor-pointer flex items-center gap-1"
+          >
+            <Target className="w-3.5 h-3.5 text-purple-400" />
+            <span>Tối Ưu Tuyến Tính</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
       {/* Cột trái: Khung Canvas GeoGebra 2D tương tác */}
       <div className="lg:col-span-8 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center">
         {/* Thanh công cụ phụ trợ trên đồ thị */}
@@ -710,6 +830,7 @@ export default function DynamicLinearProgrammingLab() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

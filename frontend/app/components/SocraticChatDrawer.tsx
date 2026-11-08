@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { GraduationCap, ArrowRight, X } from "lucide-react";
+import { OptiMascot } from "./optimath/mascot/OptiMascot";
 
 export type ChatMessage = {
   id: string;
@@ -105,11 +106,13 @@ export default function SocraticChatDrawer({
       <aside className="w-full sm:w-[420px] md:w-[460px] bg-slate-950 border-l border-slate-800 flex flex-col h-full shadow-2xl animate-in slide-in-from-right duration-200">
         {/* Header */}
         <div className="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="w-2 h-2 rounded-full bg-blue-500" />
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="shrink-0">
+              <OptiMascot expression={busy ? "thinking" : "happy"} size={36} animate={true} />
+            </div>
             <div className="min-w-0">
               <h3 className="text-xs font-bold text-slate-100 flex items-center gap-1.5 truncate">
-                <span>Trợ lý gợi mở Socratic</span>
+                <span>Trợ lý Opti Socratic</span>
                 {stationId && (
                   <span className="px-1.5 py-0.2 rounded bg-blue-900/60 text-blue-300 font-mono text-[10px]">
                     {stationId}
@@ -139,8 +142,8 @@ export default function SocraticChatDrawer({
               className={`flex gap-2.5 ${item.role === "assistant" ? "items-start" : "items-start justify-end"}`}
             >
               {item.role === "assistant" && (
-                <div className="w-6 h-6 rounded-md bg-blue-900/60 text-blue-300 border border-blue-700/60 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 shadow-xs">
-                  <GraduationCap className="w-3.5 h-3.5" />
+                <div className="w-7 h-7 rounded-lg bg-blue-950/80 text-blue-300 border border-blue-700/50 flex items-center justify-center shrink-0 mt-0.5 shadow-xs overflow-hidden p-0.5">
+                  <OptiMascot expression="happy" size={24} animate={false} />
                 </div>
               )}
               <div className="max-w-[85%] space-y-1 text-xs min-w-0">

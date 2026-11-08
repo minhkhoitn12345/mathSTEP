@@ -2,8 +2,9 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Compass, GraduationCap, Settings, User, ChevronDown, LogOut, History } from "lucide-react";
+import { Compass, GraduationCap, Settings, User, ChevronDown, LogOut, History, Sparkles } from "lucide-react";
 import { CustomAiConfig } from "./AccountSettingsModal";
+import { OptiMascot } from "./optimath/mascot/OptiMascot";
 
 export type SubsystemId = "student" | "teacher" | "research";
 export type ViewMode = "home" | "lab";
@@ -183,7 +184,22 @@ export default function PlatformHeader({
       </nav>
 
       {/* USER MENU & AUTH */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2 sm:gap-2.5">
+        {/* Nút truy cập nhanh Optimath Lab kèm Linh vật Opti */}
+        <Link
+          href="/optimath"
+          className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 hover:border-blue-400 text-blue-300 hover:text-white text-xs font-semibold transition-all duration-150 cursor-pointer shadow-xs active:scale-95 group"
+          title="Mở phòng thí nghiệm Toán học tương tác OPTIMATH LAB"
+        >
+          <div className="w-5 h-5 flex items-center justify-center shrink-0">
+            <OptiMascot expression="happy" size={22} animate={false} />
+          </div>
+          <span className="hidden sm:inline font-bold tracking-tight">Optimath Lab</span>
+          <span className="px-1 py-0.2 rounded text-[9px] font-extrabold bg-blue-500/30 text-blue-200 hidden md:inline">
+            7 Bước
+          </span>
+        </Link>
+
         {sessionLoading ? (
           <span className="text-[10px] text-slate-500 font-mono">...</span>
         ) : session?.authenticated ? (
