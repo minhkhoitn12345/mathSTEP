@@ -9,6 +9,7 @@ import MathStepWorkbench from "./components/MathStepWorkbench";
 import TeacherDashboard from "./components/TeacherDashboard";
 import ResearchMethodologyHub from "./components/ResearchMethodologyHub";
 import AccountSettingsModal, { CustomAiConfig } from "./components/AccountSettingsModal";
+import ChatHistoryModal from "./components/ChatHistoryModal";
 import PlatformHeader from "./components/PlatformHeader";
 import SocraticChatDrawer from "./components/SocraticChatDrawer";
 import { generateSmartSocraticResponse } from "./lib/smartSocratic";
@@ -575,6 +576,7 @@ function HomeContent() {
   const [accountModalOpen, setAccountModalOpen] = useState(false);
   const [accountModalTab, setAccountModalTab] = useState<"profile" | "ai">("profile");
   const [customAiConfig, setCustomAiConfig] = useState<CustomAiConfig | null>(null);
+  const [chatHistoryOpen, setChatHistoryOpen] = useState(false);
 
   const allStations = useMemo(() => getAllStations(), []);
 
@@ -877,6 +879,7 @@ function HomeContent() {
           setAccountModalTab(tab);
           setAccountModalOpen(true);
         }}
+        onOpenChatHistory={() => setChatHistoryOpen(true)}
         onOpenAuthModal={() => setAuthModalOpen(true)}
         onLogout={() => void logout()}
       />
@@ -1694,6 +1697,13 @@ function HomeContent() {
         onAiConfigUpdated={(cfg) => {
           setCustomAiConfig(cfg);
         }}
+      />
+
+      {/* 8. CHAT HISTORY MODAL */}
+      <ChatHistoryModal
+        isOpen={chatHistoryOpen}
+        onClose={() => setChatHistoryOpen(false)}
+        session={session}
       />
 
       {/* FOOTER */}

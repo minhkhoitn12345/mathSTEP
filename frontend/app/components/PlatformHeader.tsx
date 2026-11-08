@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Layers, Compass, GraduationCap, FileText, Settings, User, ChevronDown, LogOut } from "lucide-react";
+import { Layers, Compass, GraduationCap, FileText, Settings, User, ChevronDown, LogOut, History } from "lucide-react";
 import { CustomAiConfig } from "./AccountSettingsModal";
 
 export type SubsystemId = "student" | "teacher" | "research";
@@ -24,6 +24,7 @@ interface PlatformHeaderProps {
   sessionLoading: boolean;
   customAiConfig: CustomAiConfig | null;
   onOpenAccountModal: (tab: "profile" | "ai") => void;
+  onOpenChatHistory?: () => void;
   onOpenAuthModal: () => void;
   onLogout: () => void;
 }
@@ -36,6 +37,7 @@ export default function PlatformHeader({
   sessionLoading,
   customAiConfig,
   onOpenAccountModal,
+  onOpenChatHistory,
   onOpenAuthModal,
   onLogout,
 }: PlatformHeaderProps) {
@@ -143,95 +145,149 @@ export default function PlatformHeader({
           <span className="text-[10px] text-slate-500 font-mono">...</span>
         ) : session?.authenticated ? (
           <div className="relative" ref={userMenuRef}>
-            {/* Nút bấm vào Tên người dùng */}
+            {/* 1. NÚT KÍCH HOẠT (TRIGGER BUTTON TRÊN HEADER) */}
             <button
               type="button"
               onClick={() => setUserMenuOpen((prev) => !prev)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-200 hover:bg-slate-850 hover:border-slate-700 text-xs transition-colors cursor-pointer group"
-              title="Tài khoản học tập (nhấn để mở Cài đặt & Đăng xuất)"
+              className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1.5 rounded-full sm:rounded-xl bg-slate-900/90 border border-slate-800 text-slate-200 hover:bg-slate-800 hover:border-slate-700 active:scale-[0.98] transition-all duration-150 cursor-pointer shadow-xs group"
+              title="Tài khoản học tập (nhấn để mở menu)"
+              aria-expanded={userMenuOpen}
+              aria-haspopup="true"
             >
-              <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-mono font-bold text-[10px] flex items-center justify-center shrink-0 shadow-xs">
+              {/* Avatar vòng tròn chữ cái đầu */}
+              <span className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 shadow-xs ring-1 ring-blue-400/30 group-hover:ring-blue-400/60 transition-all">
                 {(session.name || session.email || "M").slice(0, 1).toUpperCase()}
               </span>
-              <span className="text-xs font-semibold text-slate-200 max-w-[120px] truncate">
+
+              {/* Tên người dùng (Responsive: ẩn trên mobile nhỏ, hiện từ sm+) */}
+              <span className="text-xs font-semibold text-slate-200 max-w-[130px] truncate hidden sm:inline group-hover:text-white transition-colors">
                 {session.name || session.email?.split("@")[0] || "Học viên"}
               </span>
-              {session.role && (
-                <span
-                  className={`px-1.5 py-0.2 rounded font-mono text-[9px] font-bold uppercase hidden sm:inline-block ${
-                    session.role === "teacher"
-                      ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                      : session.role === "admin"
-                      ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                      : session.role === "researcher"
-                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                      : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
-                  }`}
-                >
-                  {session.role === "teacher"
-                    ? "GV"
-                    : session.role === "admin"
-                    ? "Admin"
-                    : session.role === "researcher"
-                    ? "NCKH"
-                    : "HS"}
-                </span>
-              )}
+
+              {/* Icon mũi tên xuống (ChevronDown) với animation xoay mượt mà */}
               <ChevronDown
-                className={`w-3.5 h-3.5 text-slate-400 group-hover:text-slate-200 transition-transform duration-150 ${
+                className={`w-3.5 h-3.5 text-slate-400 group-hover:text-slate-200 transition-transform duration-200 ease-out ${
                   userMenuOpen ? "rotate-180 text-blue-400" : ""
                 }`}
               />
             </button>
 
-            {/* Menu thả xuống khi nhấn vào tên */}
+            {/* 2. CẤU TRÚC NỘI DUNG BÊN TRONG DROPDOWN MENU */}
             {userMenuOpen && (
-              <div className="absolute right-0 mt-1.5 w-56 rounded-xl bg-slate-900 border border-slate-800 shadow-2xl py-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150 text-xs">
-                {/* Thông tin tài khoản */}
-                <div className="px-3.5 py-2.5 border-b border-slate-800/80 mb-1 bg-slate-950/40">
-                  <div className="font-bold text-slate-100 truncate text-xs">
-                    {session.name || "Học viên MathSTEP"}
+              <div
+                className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-24px)] rounded-2xl bg-[#0B132B] border border-slate-800 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-150 ease-out origin-top-right text-xs select-none backdrop-blur-md"
+                role="menu"
+              >
+                {/* PHẦN HEADER MENU: Avatar lớn hơn, tên đầy đủ, email / vai trò */}
+                <div className="px-3.5 py-3 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-mono font-bold text-base flex items-center justify-center shrink-0 shadow-md ring-2 ring-blue-500/20">
+                    {(session.name || session.email || "M").slice(0, 1).toUpperCase()}
                   </div>
-                  <div className="text-[11px] text-slate-400 truncate mt-0.5">
-                    {session.email || "Tài khoản học tập"}
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold text-white text-xs truncate">
+                      {session.name || "Học viên MathSTEP"}
+                    </div>
+                    <div className="text-[11px] text-slate-400 truncate mt-0.5">
+                      {session.email || "Tài khoản học tập"}
+                    </div>
+                    <div className="mt-1">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase inline-block ${
+                          session.role === "teacher"
+                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                            : session.role === "admin"
+                            ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                            : session.role === "researcher"
+                            ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                            : "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                        }`}
+                      >
+                        {session.role === "teacher"
+                          ? "Giáo viên"
+                          : session.role === "admin"
+                          ? "Quản trị viên"
+                          : session.role === "researcher"
+                          ? "Nghiên cứu KHKT"
+                          : "Học sinh THPT"}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Nút 1: Cài đặt */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUserMenuOpen(false);
-                    onOpenAccountModal("ai");
-                  }}
-                  className="w-full px-3.5 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors flex items-center gap-2.5 cursor-pointer"
-                >
-                  <Settings className="w-4 h-4 text-blue-400 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <span className="font-semibold block text-slate-200">Cài đặt</span>
-                    <span className="text-[10px] text-slate-400 block truncate">
-                      {customAiConfig?.model
-                        ? `AI: ${customAiConfig.model.replace("gemini-", "").replace("gpt-", "").replace("deepseek-", "")}`
-                        : "Hồ sơ & Cấu hình AI"}
-                    </span>
-                  </div>
-                </button>
+                {/* Đường kẻ phân cách (Divider) */}
+                <div className="my-1 border-t border-slate-800/80" />
 
-                {/* Phân cách */}
-                <div className="my-1 border-t border-slate-800" />
+                {/* DANH SÁCH CÁC MỤC CHỨC NĂNG */}
+                <div className="px-1.5 py-0.5 space-y-0.5">
+                  {/* Mục 1: Lịch sử trò chuyện */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      onOpenChatHistory?.();
+                    }}
+                    className="w-full px-3 py-2 rounded-xl text-left text-slate-300 hover:text-white hover:bg-slate-800/80 transition-all duration-150 flex items-center gap-3 cursor-pointer group"
+                    role="menuitem"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-sky-950/60 text-sky-400 border border-sky-800/40 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                      <History className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-semibold block text-slate-200 group-hover:text-white">
+                        Lịch sử trò chuyện
+                      </span>
+                      <span className="text-[10px] text-slate-400 block truncate">
+                        Xem lại các đoạn chat Socratic AI
+                      </span>
+                    </div>
+                  </button>
 
-                {/* Nút 2: Đăng xuất */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUserMenuOpen(false);
-                    onLogout();
-                  }}
-                  className="w-full px-3.5 py-2 text-left text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 transition-colors flex items-center gap-2.5 cursor-pointer"
-                >
-                  <LogOut className="w-4 h-4 text-rose-400 shrink-0" />
-                  <span className="font-semibold">Đăng xuất</span>
-                </button>
+                  {/* Mục 2: Cài đặt */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      onOpenAccountModal("ai");
+                    }}
+                    className="w-full px-3 py-2 rounded-xl text-left text-slate-300 hover:text-white hover:bg-slate-800/80 transition-all duration-150 flex items-center gap-3 cursor-pointer group"
+                    role="menuitem"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-blue-950/60 text-blue-400 border border-blue-800/40 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                      <Settings className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-semibold block text-slate-200 group-hover:text-white">
+                        Cài đặt
+                      </span>
+                      <span className="text-[10px] text-slate-400 block truncate">
+                        {customAiConfig?.model
+                          ? `Model: ${customAiConfig.model.replace("gemini-", "").replace("gpt-", "").replace("deepseek-", "")}`
+                          : "Cấu hình API Key & Model AI"}
+                      </span>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Đường kẻ phân cách (Divider) */}
+                <div className="my-1 border-t border-slate-800/80" />
+
+                {/* MỤC HÀNH ĐỘNG: ĐĂNG XUẤT */}
+                <div className="px-1.5 py-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      onLogout();
+                    }}
+                    className="w-full px-3 py-2 rounded-xl text-left text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 active:bg-rose-950/60 transition-all duration-150 flex items-center gap-3 cursor-pointer group"
+                    role="menuitem"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-rose-950/50 text-rose-400 border border-rose-800/40 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                      <LogOut className="w-3.5 h-3.5 text-rose-400" />
+                    </div>
+                    <span className="font-semibold">Đăng xuất</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
