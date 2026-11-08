@@ -284,36 +284,36 @@ export default function AccountSettingsModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden text-xs">
+      <div className="bg-slate-900 text-slate-100 w-full max-w-xl rounded-2xl shadow-2xl border border-slate-800 flex flex-col max-h-[92vh] overflow-hidden text-xs">
         {/* Header */}
-        <header className="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
+        <header className="px-5 py-4 border-b border-slate-800 bg-slate-950/70 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-xl bg-blue-950/60 text-blue-400 border border-blue-800/60 flex items-center justify-center font-bold">
               <User className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">Cài đặt Hệ thống & Hồ sơ</h2>
-              <p className="text-[11px] text-slate-500">
+              <h2 className="text-sm font-bold text-white">Cài đặt Hệ thống & Hồ sơ</h2>
+              <p className="text-[11px] text-slate-400">
                 Quản lý thông tin học tập và cấu hình mô hình trợ lý sư phạm Socratic
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center"
+            className="w-7 h-7 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white font-bold flex items-center justify-center transition-colors cursor-pointer"
           >
             ✕
           </button>
         </header>
 
         {/* Tab navigation */}
-        <div className="flex border-b border-slate-200 bg-white px-5 gap-4 shrink-0 text-xs font-bold">
+        <div className="flex border-b border-slate-800 bg-slate-950/40 px-5 gap-4 shrink-0 text-xs font-bold">
           <button
             onClick={() => setActiveTab("profile")}
-            className={`py-3 border-b-2 flex items-center gap-1.5 transition-colors ${
+            className={`py-3 border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
               activeTab === "profile"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-slate-500 hover:text-slate-800"
+                ? "border-blue-500 text-blue-400"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
             <User className="w-3.5 h-3.5" />
@@ -321,13 +321,13 @@ export default function AccountSettingsModal({
           </button>
           <button
             onClick={() => setActiveTab("ai")}
-            className={`py-3 border-b-2 flex items-center gap-1.5 transition-colors ${
+            className={`py-3 border-b-2 flex items-center gap-1.5 transition-colors cursor-pointer ${
               activeTab === "ai"
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-slate-500 hover:text-slate-800"
+                ? "border-blue-500 text-blue-400"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
-            <Settings className="w-3.5 h-3.5 text-slate-500" />
+            <Settings className="w-3.5 h-3.5" />
             <span>Cấu hình Trợ lý học tập</span>
             {apiKey.trim() && (
               <span className="w-2 h-2 rounded-full bg-emerald-500" title="Đã có API key" />
@@ -341,28 +341,28 @@ export default function AccountSettingsModal({
           {activeTab === "profile" && (
             <form onSubmit={handleSaveProfile} className="space-y-3.5">
               {/* Avatar + Email Info Box */}
-              <div className="flex items-center gap-3.5 p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <div className="flex items-center gap-3.5 p-3 bg-slate-950/60 rounded-xl border border-slate-800">
                 <div className="w-12 h-12 rounded-full bg-blue-600 text-white font-black text-lg flex items-center justify-center shadow-xs shrink-0">
                   {(name || currentSession?.email || "M").slice(0, 1).toUpperCase()}
                 </div>
                 <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-2">
-                    <strong className="text-sm text-slate-900 truncate block">
+                    <strong className="text-sm text-white font-bold truncate block">
                       {name || "Học sinh MathSTEP"}
                     </strong>
                     {currentSession?.authenticated && (
                       currentSession.email_verified !== false ? (
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-800/60 font-bold text-[10px]">
                           ✓ Đã xác thực email
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[10px]">
+                        <span className="px-2 py-0.5 rounded-full bg-amber-950/60 text-amber-300 border border-amber-800/60 font-bold text-[10px]">
                           ⚠️ Chưa xác thực email
                         </span>
                       )
                     )}
                   </div>
-                  <div className="text-[11px] text-slate-500 truncate">
+                  <div className="text-[11px] text-slate-400 truncate">
                     {currentSession?.email || "Chưa đăng nhập (lưu cục bộ)"}
                   </div>
                 </div>
@@ -370,69 +370,69 @@ export default function AccountSettingsModal({
 
               {/* Full Name */}
               <div>
-                <label className="font-semibold text-slate-800 block mb-1">Họ và tên của em</label>
+                <label className="font-semibold text-slate-200 block mb-1">Họ và tên của em</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ví dụ: Nguyễn Minh Khôi"
                   required
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500 bg-white"
+                  className="w-full p-2.5 border border-slate-700/80 rounded-xl text-xs focus:outline-none focus:border-blue-500 bg-slate-950 text-white placeholder-slate-500"
                 />
               </div>
 
               {/* Grade */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-slate-800 block mb-1">Khối lớp THPT</label>
+                  <label className="font-semibold text-slate-200 block mb-1">Khối lớp THPT</label>
                   <select
                     value={grade}
                     onChange={(e) => setGrade(Number(e.target.value))}
-                    className="w-full p-2.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500 bg-white"
+                    className="w-full p-2.5 border border-slate-700/80 rounded-xl text-xs focus:outline-none focus:border-blue-500 bg-slate-950 text-white cursor-pointer"
                   >
-                    <option value={10}>Lớp 10 (Chương trình GDPT 2018)</option>
-                    <option value={11}>Lớp 11 (Chương trình GDPT 2018)</option>
-                    <option value={12}>Lớp 12 (Chương trình GDPT 2018)</option>
+                    <option value={10} className="bg-slate-900 text-white">Lớp 10 (Chương trình GDPT 2018)</option>
+                    <option value={11} className="bg-slate-900 text-white">Lớp 11 (Chương trình GDPT 2018)</option>
+                    <option value={12} className="bg-slate-900 text-white">Lớp 12 (Chương trình GDPT 2018)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="font-semibold text-slate-800 block mb-1">Trường THPT</label>
+                  <label className="font-semibold text-slate-200 block mb-1">Trường THPT</label>
                   <input
                     type="text"
                     value={school}
                     onChange={(e) => setSchool(e.target.value)}
                     placeholder="Ví dụ: THPT Chuyên, THPT Chu Văn An..."
-                    className="w-full p-2.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500 bg-white"
+                    className="w-full p-2.5 border border-slate-700/80 rounded-xl text-xs focus:outline-none focus:border-blue-500 bg-slate-950 text-white placeholder-slate-500"
                   />
                 </div>
               </div>
 
               {/* Learning Target */}
               <div>
-                <label className="font-semibold text-slate-800 block mb-1">Mục tiêu học tập ưu tiên</label>
+                <label className="font-semibold text-slate-200 block mb-1">Mục tiêu học tập ưu tiên</label>
                 <select
                   value={target}
                   onChange={(e) => setTarget(e.target.value)}
-                  className="w-full p-2.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500 bg-white"
+                  className="w-full p-2.5 border border-slate-700/80 rounded-xl text-xs focus:outline-none focus:border-blue-500 bg-slate-950 text-white cursor-pointer"
                 >
-                  <option value="Nghiên cứu KHKT & GDPT 2018">Nghiên cứu KHKT & Khám phá Sư phạm 2018</option>
-                  <option value="Ôn thi Tốt nghiệp THPT">Ôn thi Tốt nghiệp THPT & Đại học</option>
-                  <option value="Thi Đánh giá Năng lực (ĐHQG / ĐGTD)">Thi Đánh giá Năng lực (ĐHQG / ĐGTD Bách Khoa)</option>
-                  <option value="Bồi dưỡng Học sinh giỏi Toán">Bồi dưỡng Học sinh giỏi Toán THPT</option>
+                  <option value="Nghiên cứu KHKT & GDPT 2018" className="bg-slate-900 text-white">Nghiên cứu KHKT & Khám phá Sư phạm 2018</option>
+                  <option value="Ôn thi Tốt nghiệp THPT" className="bg-slate-900 text-white">Ôn thi Tốt nghiệp THPT & Đại học</option>
+                  <option value="Thi Đánh giá Năng lực (ĐHQG / ĐGTD)" className="bg-slate-900 text-white">Thi Đánh giá Năng lực (ĐHQG / ĐGTD Bách Khoa)</option>
+                  <option value="Bồi dưỡng Học sinh giỏi Toán" className="bg-slate-900 text-white">Bồi dưỡng Học sinh giỏi Toán THPT</option>
                 </select>
               </div>
 
               {/* Status alerts */}
               {profileNotice && (
-                <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <div className="p-2.5 bg-emerald-950/50 border border-emerald-500/40 text-emerald-300 rounded-xl flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>{profileNotice}</span>
                 </div>
               )}
               {profileError && (
-                <div className="p-2.5 bg-red-50 border border-red-200 text-red-800 rounded-xl flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                <div className="p-2.5 bg-rose-950/50 border border-rose-500/40 text-rose-300 rounded-xl flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
                   <span>{profileError}</span>
                 </div>
               )}
@@ -441,7 +441,7 @@ export default function AccountSettingsModal({
               <button
                 type="submit"
                 disabled={profileSaving}
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 <Save className="w-4 h-4" />
                 <span>{profileSaving ? "Đang lưu thông tin..." : "Lưu thay đổi hồ sơ"}</span>
@@ -456,33 +456,35 @@ export default function AccountSettingsModal({
               <div
                 className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${
                   apiKey.trim()
-                    ? "bg-amber-50/80 border-amber-300 text-amber-950"
-                    : "bg-slate-50 border-slate-200 text-slate-800"
+                    ? "bg-amber-950/30 border-amber-500/40 text-amber-200"
+                    : "bg-slate-950/60 border-slate-800 text-slate-300"
                 }`}
               >
                 <div className="flex items-center gap-2.5">
                   <div
                     className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                      apiKey.trim() ? "bg-amber-200 text-amber-900" : "bg-slate-200 text-slate-700"
+                      apiKey.trim()
+                        ? "bg-amber-900/60 text-amber-300 border border-amber-700/50"
+                        : "bg-slate-800 text-slate-400"
                     }`}
                   >
                     <SlidersHorizontal className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-gray-500 block">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">
                       Model AI đang hoạt động:
                     </span>
-                    <strong className="text-xs">
+                    <strong className="text-xs text-white">
                       {apiKey.trim() ? `${selectedModel} (${provider.toUpperCase()})` : "Mô hình Socratic TES tích hợp"}
                     </strong>
                   </div>
                 </div>
                 {apiKey.trim() ? (
-                  <span className="px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 font-extrabold text-[10px]">
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-extrabold text-[10px]">
                     ★ Model Cao Cấp
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold text-[10px]">
+                  <span className="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-bold text-[10px]">
                     Mặc định
                   </span>
                 )}
@@ -490,7 +492,7 @@ export default function AccountSettingsModal({
 
               {/* Provider Selection */}
               <div>
-                <label className="font-semibold text-slate-800 block mb-1.5">
+                <label className="font-semibold text-slate-200 block mb-1.5">
                   1. Chọn Nhà cung cấp AI (Provider)
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -499,12 +501,12 @@ export default function AccountSettingsModal({
                     onClick={() => handleSelectProvider("gemini")}
                     className={`p-2.5 rounded-xl border font-semibold text-center transition-all cursor-pointer ${
                       provider === "gemini"
-                        ? "border-blue-600 bg-blue-50/60 text-blue-700 ring-1 ring-blue-600"
-                        : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
+                        ? "border-blue-500 bg-blue-950/40 text-blue-300 ring-1 ring-blue-500"
+                        : "border-slate-800 bg-slate-950/60 hover:bg-slate-850 text-slate-300"
                     }`}
                   >
-                    Google Gemini
-                    <span className="block text-[10px] text-emerald-600 font-normal">Miễn phí key</span>
+                    <span className="block font-bold">Google Gemini</span>
+                    <span className="block text-[10px] text-emerald-400 font-normal">Miễn phí key</span>
                   </button>
 
                   <button
@@ -512,12 +514,12 @@ export default function AccountSettingsModal({
                     onClick={() => handleSelectProvider("openai")}
                     className={`p-2.5 rounded-xl border font-semibold text-center transition-all cursor-pointer ${
                       provider === "openai"
-                        ? "border-blue-600 bg-blue-50/60 text-blue-700 ring-1 ring-blue-600"
-                        : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
+                        ? "border-blue-500 bg-blue-950/40 text-blue-300 ring-1 ring-blue-500"
+                        : "border-slate-800 bg-slate-950/60 hover:bg-slate-850 text-slate-300"
                     }`}
                   >
-                    OpenAI
-                    <span className="block text-[10px] text-slate-500 font-normal">GPT-4o / mini</span>
+                    <span className="block font-bold">OpenAI</span>
+                    <span className="block text-[10px] text-slate-400 font-normal">GPT-4o / mini</span>
                   </button>
 
                   <button
@@ -525,19 +527,19 @@ export default function AccountSettingsModal({
                     onClick={() => handleSelectProvider("deepseek")}
                     className={`p-2.5 rounded-xl border font-semibold text-center transition-all cursor-pointer ${
                       provider === "deepseek"
-                        ? "border-blue-600 bg-blue-50/60 text-blue-700 ring-1 ring-blue-600"
-                        : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
+                        ? "border-blue-500 bg-blue-950/40 text-blue-300 ring-1 ring-blue-500"
+                        : "border-slate-800 bg-slate-950/60 hover:bg-slate-850 text-slate-300"
                     }`}
                   >
-                    DeepSeek
-                    <span className="block text-[10px] text-blue-600 font-normal">R1 Toán học</span>
+                    <span className="block font-bold">DeepSeek</span>
+                    <span className="block text-[10px] text-sky-400 font-normal">R1 Toán học</span>
                   </button>
                 </div>
               </div>
 
               {/* Model Selection */}
               <div>
-                <label className="font-semibold text-slate-800 block mb-1.5">
+                <label className="font-semibold text-slate-200 block mb-1.5">
                   2. Chọn phiên bản Model chuyên sâu
                 </label>
                 <div className="space-y-1.5">
@@ -546,8 +548,8 @@ export default function AccountSettingsModal({
                       key={opt.id}
                       className={`p-2.5 rounded-xl border flex items-start gap-2.5 cursor-pointer transition-all ${
                         selectedModel === opt.id
-                          ? "border-blue-600 bg-blue-50/40"
-                          : "border-slate-200 hover:bg-slate-50"
+                          ? "border-blue-500/90 bg-blue-950/30 text-white"
+                          : "border-slate-800 bg-slate-950/40 hover:bg-slate-850 text-slate-300"
                       }`}
                     >
                       <input
@@ -559,18 +561,18 @@ export default function AccountSettingsModal({
                           setSelectedModel(opt.id);
                           setTestResult(null);
                         }}
-                        className="mt-0.5 accent-blue-600"
+                        className="mt-0.5 accent-blue-500"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <strong className="text-xs text-slate-800">{opt.label}</strong>
+                          <strong className="text-xs font-bold text-slate-100">{opt.label}</strong>
                           {opt.isRecommended && (
-                            <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold text-[9px]">
+                            <span className="px-1.5 py-0.2 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/60 font-bold text-[9px]">
                               Khuyên dùng
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-slate-500 leading-tight mt-0.5">{opt.desc}</p>
+                        <p className="text-[11px] text-slate-400 leading-tight mt-0.5">{opt.desc}</p>
                       </div>
                     </label>
                   ))}
@@ -580,8 +582,8 @@ export default function AccountSettingsModal({
               {/* API Key Input */}
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <label className="font-semibold text-slate-800 flex items-center gap-1.5">
-                    <Key className="w-3.5 h-3.5 text-slate-500" />
+                  <label className="font-semibold text-slate-200 flex items-center gap-1.5">
+                    <Key className="w-3.5 h-3.5 text-slate-400" />
                     <span>3. Nhập {provider.toUpperCase()} API Key</span>
                   </label>
                   {provider === "gemini" && (
@@ -589,7 +591,7 @@ export default function AccountSettingsModal({
                       href="https://aistudio.google.com/app/apikey"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[11px] text-blue-600 hover:underline flex items-center gap-1 font-medium"
+                      className="text-[11px] text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1 font-medium"
                     >
                       <span>Lấy key Gemini miễn phí</span>
                       <ExternalLink className="w-3 h-3" />
@@ -600,7 +602,7 @@ export default function AccountSettingsModal({
                       href="https://platform.openai.com/api-keys"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[11px] text-blue-600 hover:underline flex items-center gap-1 font-medium"
+                      className="text-[11px] text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1 font-medium"
                     >
                       <span>Lấy key OpenAI</span>
                       <ExternalLink className="w-3 h-3" />
@@ -623,20 +625,20 @@ export default function AccountSettingsModal({
                         ? "Dán API Key sk-..."
                         : "Dán DeepSeek API Key..."
                     }
-                    className="w-full p-2.5 pr-10 border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-blue-500 bg-white"
+                    className="w-full p-2.5 pr-10 border border-slate-700/80 rounded-xl text-xs font-mono focus:outline-none focus:border-blue-500 bg-slate-950 text-white placeholder-slate-500"
                   />
                   <button
                     type="button"
                     onClick={() => setShowApiKey((v) => !v)}
-                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-700 cursor-pointer"
+                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-200 cursor-pointer"
                     title={showApiKey ? "Ẩn key" : "Hiện key"}
                   >
                     {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
 
-                <div className="flex items-center gap-1.5 mt-1 text-[10px] text-slate-500">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <div className="flex items-center gap-1.5 mt-1.5 text-[10px] text-slate-400">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   <span>Key được lưu bảo mật trong trình duyệt, chỉ dùng để gọi AI trong phiên học của em.</span>
                 </div>
               </div>
@@ -646,14 +648,14 @@ export default function AccountSettingsModal({
                 <div
                   className={`p-2.5 rounded-xl border flex items-center gap-2 ${
                     testResult.ok
-                      ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                      : "bg-red-50 border-red-200 text-red-800"
+                      ? "bg-emerald-950/50 border-emerald-500/40 text-emerald-300"
+                      : "bg-rose-950/50 border-rose-500/40 text-rose-300"
                   }`}
                 >
                   {testResult.ok ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                   ) : (
-                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
                   )}
                   <span>{testResult.message}</span>
                 </div>
@@ -661,19 +663,19 @@ export default function AccountSettingsModal({
 
               {/* Action Success Alert */}
               {aiNotice && (
-                <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <div className="p-2.5 bg-emerald-950/50 border border-emerald-500/40 text-emerald-300 rounded-xl flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>{aiNotice}</span>
                 </div>
               )}
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+              <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={handleTestKey}
                   disabled={testingKey || !apiKey.trim()}
-                  className="py-2.5 px-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs transition-colors disabled:opacity-40 cursor-pointer"
+                  className="py-2.5 px-3.5 rounded-xl border border-slate-700 bg-slate-850 hover:bg-slate-800 text-slate-200 font-medium text-xs transition-colors disabled:opacity-40 cursor-pointer"
                 >
                   {testingKey ? "Đang thử..." : "Kiểm tra kết nối"}
                 </button>
@@ -692,7 +694,7 @@ export default function AccountSettingsModal({
                   <button
                     type="button"
                     onClick={handleClearAiConfig}
-                    className="p-2.5 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-700 transition-colors"
+                    className="p-2.5 rounded-xl border border-rose-800/60 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 transition-colors cursor-pointer"
                     title="Xóa key và dùng mô hình mặc định"
                   >
                     <Trash2 className="w-4 h-4" />

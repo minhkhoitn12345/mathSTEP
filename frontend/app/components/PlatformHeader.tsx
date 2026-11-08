@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Layers, Compass, GraduationCap, FileText, Settings, User } from "lucide-react";
+import { Layers, Compass, GraduationCap, FileText, Settings, User, ChevronDown, LogOut } from "lucide-react";
 import { CustomAiConfig } from "./AccountSettingsModal";
 
 export type SubsystemId = "student" | "teacher" | "research";
@@ -39,6 +39,30 @@ export default function PlatformHeader({
   onOpenAuthModal,
   onLogout,
 }: PlatformHeaderProps) {
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Đóng dropdown khi nhấn ra ngoài hoặc nhấn phím Escape
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setUserMenuOpen(false);
+      }
+    }
+    if (userMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [userMenuOpen]);
   return (
     <header className="h-13 border-b border-slate-800/80 bg-slate-950/95 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between sticky top-0 z-40 select-none">
       {/* Brand Logo */}
@@ -118,22 +142,23 @@ export default function PlatformHeader({
         {sessionLoading ? (
           <span className="text-[10px] text-slate-500 font-mono">...</span>
         ) : session?.authenticated ? (
-          <div className="flex items-center gap-1.5">
+          <div className="relative" ref={userMenuRef}>
+            {/* Nút bấm vào Tên người dùng */}
             <button
               type="button"
-              onClick={() => onOpenAccountModal("profile")}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-200 hover:bg-slate-850 text-xs transition-colors cursor-pointer"
-              title="Hồ sơ học sinh"
+              onClick={() => setUserMenuOpen((prev) => !prev)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-200 hover:bg-slate-850 hover:border-slate-700 text-xs transition-colors cursor-pointer group"
+              title="Tài khoản học tập (nhấn để mở Cài đặt & Đăng xuất)"
             >
-              <span className="w-5 h-5 rounded bg-blue-600 text-white font-mono font-bold text-[10px] flex items-center justify-center">
+              <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-mono font-bold text-[10px] flex items-center justify-center shrink-0 shadow-xs">
                 {(session.name || session.email || "M").slice(0, 1).toUpperCase()}
               </span>
-              <span className="text-xs font-medium text-slate-200 line-clamp-1 max-w-[100px] hidden sm:inline">
+              <span className="text-xs font-semibold text-slate-200 max-w-[120px] truncate">
                 {session.name || session.email?.split("@")[0] || "Học viên"}
               </span>
               {session.role && (
                 <span
-                  className={`px-1.5 py-0.2 rounded font-mono text-[9px] font-bold uppercase hidden md:inline-block ${
+                  className={`px-1.5 py-0.2 rounded font-mono text-[9px] font-bold uppercase hidden sm:inline-block ${
                     session.role === "teacher"
                       ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                       : session.role === "admin"
@@ -152,47 +177,70 @@ export default function PlatformHeader({
                     : "HS"}
                 </span>
               )}
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-slate-400 group-hover:text-slate-200 transition-transform duration-150 ${
+                  userMenuOpen ? "rotate-180 text-blue-400" : ""
+                }`}
+              />
             </button>
 
-            {/* Nút Cài đặt hệ thống */}
-            <button
-              type="button"
-              onClick={() => onOpenAccountModal("ai")}
-              className="px-2.5 py-1 rounded-md text-xs font-medium border border-slate-800 bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-slate-100 transition-colors flex items-center gap-1.5 cursor-pointer"
-              title="Cài đặt hệ thống & Cấu hình trợ lý"
-            >
-              <Settings className="w-3.5 h-3.5 text-slate-400" />
-              <span className="hidden md:inline">
-                {customAiConfig?.model
-                  ? customAiConfig.model.replace("gemini-", "").replace("gpt-", "").replace("deepseek-", "")
-                  : "Cài đặt"}
-              </span>
-            </button>
+            {/* Menu thả xuống khi nhấn vào tên */}
+            {userMenuOpen && (
+              <div className="absolute right-0 mt-1.5 w-56 rounded-xl bg-slate-900 border border-slate-800 shadow-2xl py-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150 text-xs">
+                {/* Thông tin tài khoản */}
+                <div className="px-3.5 py-2.5 border-b border-slate-800/80 mb-1 bg-slate-950/40">
+                  <div className="font-bold text-slate-100 truncate text-xs">
+                    {session.name || "Học viên MathSTEP"}
+                  </div>
+                  <div className="text-[11px] text-slate-400 truncate mt-0.5">
+                    {session.email || "Tài khoản học tập"}
+                  </div>
+                </div>
 
-            <button
-              onClick={onLogout}
-              className="text-xs text-slate-400 hover:text-rose-400 font-medium px-2 py-1 transition-colors cursor-pointer"
-              title="Đăng xuất tài khoản"
-            >
-              Thoát
-            </button>
+                {/* Nút 1: Cài đặt */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    onOpenAccountModal("ai");
+                  }}
+                  className="w-full px-3.5 py-2 text-left text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors flex items-center gap-2.5 cursor-pointer"
+                >
+                  <Settings className="w-4 h-4 text-blue-400 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <span className="font-semibold block text-slate-200">Cài đặt</span>
+                    <span className="text-[10px] text-slate-400 block truncate">
+                      {customAiConfig?.model
+                        ? `AI: ${customAiConfig.model.replace("gemini-", "").replace("gpt-", "").replace("deepseek-", "")}`
+                        : "Hồ sơ & Cấu hình AI"}
+                    </span>
+                  </div>
+                </button>
+
+                {/* Phân cách */}
+                <div className="my-1 border-t border-slate-800" />
+
+                {/* Nút 2: Đăng xuất */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    onLogout();
+                  }}
+                  className="w-full px-3.5 py-2 text-left text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 transition-colors flex items-center gap-2.5 cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span className="font-semibold">Đăng xuất</span>
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => onOpenAccountModal("ai")}
-              className="px-2.5 py-1 rounded-md text-xs font-medium border border-slate-800 bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-slate-100 transition-colors flex items-center gap-1.5 cursor-pointer"
-              title="Cài đặt hệ thống & API Key"
-            >
-              <Settings className="w-3.5 h-3.5 text-slate-400" />
-              <span className="hidden sm:inline">Cài đặt</span>
-            </button>
-
-            <button
-              type="button"
               onClick={onOpenAuthModal}
-              className="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs transition-colors flex items-center gap-1 shadow-xs cursor-pointer"
+              className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
               <User className="w-3.5 h-3.5" />
               <span>Đăng nhập</span>
