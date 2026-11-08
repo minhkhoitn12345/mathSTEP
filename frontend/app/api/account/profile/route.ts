@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
     const user = await res.json();
     const meta = user.user_metadata || {};
-    const role = extractUserRole(user);
+    const role = extractUserRole(user, request);
 
     const profile = {
       id: user.id,
@@ -97,7 +97,7 @@ export async function PUT(request: NextRequest) {
 
     const updatedUser = await updateRes.json();
     const meta = updatedUser.user_metadata || {};
-    const role = extractUserRole(updatedUser);
+    const role = extractUserRole(updatedUser, request);
 
     const profile = {
       id: updatedUser.id,

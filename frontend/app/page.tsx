@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import MathGraphVisualizer from "./components/MathGraphVisualizer";
 import MathStepWorkbench from "./components/MathStepWorkbench";
 import TeacherDashboard from "./components/TeacherDashboard";
+import TeacherAccessGuard from "./components/TeacherAccessGuard";
 import ResearchMethodologyHub from "./components/ResearchMethodologyHub";
 import AccountSettingsModal, { CustomAiConfig } from "./components/AccountSettingsModal";
 import ChatHistoryModal from "./components/ChatHistoryModal";
@@ -605,15 +606,17 @@ function HomeContent() {
         if (data && data.authenticated) {
           const userName = data.user?.name ?? data.name ?? null;
           const userEmail = data.user?.email ?? data.email ?? null;
+          const userRole = data.role ?? data.user?.role ?? "student";
           setSession({
             authenticated: true,
             name: userName,
             email: userEmail,
+            role: userRole,
             email_verified: Boolean(data.email_verified ?? true),
             provider: data.provider || "email",
           });
         } else {
-          setSession({ authenticated: false, name: null, email: null });
+          setSession({ authenticated: false, name: null, email: null, role: "guest" });
         }
       } catch {
         if (!ignore) {
@@ -835,10 +838,12 @@ function HomeContent() {
       if (sessionData && sessionData.authenticated) {
         const userName = sessionData.user?.name ?? sessionData.name ?? displayName ?? null;
         const userEmail = sessionData.user?.email ?? sessionData.email ?? loginEmail ?? null;
+        const userRole = sessionData.role ?? sessionData.user?.role ?? "student";
         setSession({
           authenticated: true,
           name: userName,
           email: userEmail,
+          role: userRole,
           email_verified: Boolean(sessionData.email_verified ?? true),
           provider: sessionData.provider ?? "email",
         });
@@ -881,6 +886,17 @@ function HomeContent() {
           setAccountModalOpen(true);
         }}
         onOpenChatHistory={() => setChatHistoryOpen(true)}
+        onOpenTeacherVerification={() => {
+          setSubsystem("teacher");
+        }}
+        onSwitchToStudentView={async () => {
+          try {
+            await fetch("/api/account/verify-teacher", { method: "DELETE" });
+          } catch {}
+          setSession((prev) => (prev ? { ...prev, role: "student" } : null));
+          setSubsystem("student");
+          setViewMode("home");
+        }}
         onOpenAuthModal={() => setAuthModalOpen(true)}
         onLogout={() => void logout()}
       />
@@ -1363,6 +1379,7 @@ function HomeContent() {
               moduleId={moduleId}
               stationId={stationId}
               initialStep={currentStep}
+              userRole={session?.role || "guest"}
               onStepChange={(stepNum) => {
                 setCurrentStep(stepNum - 1);
                 syncUrl(stationId, stepNum, null);
@@ -1380,24 +1397,53 @@ function HomeContent() {
           </div>
         )}
 
-        {/* SUB-SYSTEM 2: TEACHER DASHBOARD & PRESENTATION */}
+        {/* SUB-SYSTEM 2: TEACHER DASHBOARD & ACCESS GUARD */}
         {subsystem === "teacher" && (
           <div className="flex-1 overflow-y-auto bg-[#0B0F17] p-3 md:p-6 text-slate-100">
-            <TeacherDashboard
-              onLaunchStation={(stId) => {
-                const found = allStations.find((s) => s.id === stId);
-                if (found) {
-                  setStationId(found.id);
-                  setModuleId(found.moduleId);
+            {session?.role === "teacher" || session?.role === "admin" ? (
+              <TeacherDashboard
+                onLaunchStation={(stId) => {
+                  const found = allStations.find((s) => s.id === stId);
+                  if (found) {
+                    setStationId(found.id);
+                    setModuleId(found.moduleId);
+                    setViewMode("lab");
+                    setSubsystem("student");
+                  }
+                }}
+                onOpenWorkbench={() => {
                   setViewMode("lab");
                   setSubsystem("student");
-                }
-              }}
-              onOpenWorkbench={() => {
-                setViewMode("lab");
-                setSubsystem("student");
-              }}
-            />
+                }}
+              />
+            ) : (
+              <TeacherAccessGuard
+                currentRole={session?.role || "guest"}
+                isAuthenticated={Boolean(session?.authenticated)}
+                onBackToStudent={() => {
+                  setSubsystem("student");
+                  setViewMode("home");
+                  syncUrl(null, null, null);
+                }}
+                onUpgradeSuccess={async () => {
+                  try {
+                    const res = await fetch("/api/auth/session");
+                    const data = await res.json();
+                    if (data && data.authenticated) {
+                      setSession({
+                        authenticated: true,
+                        name: data.user?.name ?? data.name ?? null,
+                        email: data.user?.email ?? data.email ?? null,
+                        role: data.role || data.user?.role || "teacher",
+                        email_verified: Boolean(data.email_verified ?? true),
+                        provider: data.provider || "email",
+                      });
+                    }
+                  } catch {}
+                }}
+                onRequireLogin={() => setAuthModalOpen(true)}
+              />
+            )}
           </div>
         )}
 
@@ -1694,6 +1740,9 @@ function HomeContent() {
         currentSession={session}
         onProfileUpdated={(updatedName) => {
           setSession((prev) => (prev ? { ...prev, name: updatedName } : { authenticated: true, name: updatedName, email: null }));
+        }}
+        onRoleUpdated={(newRole) => {
+          setSession((prev) => (prev ? { ...prev, role: newRole } : null));
         }}
         onAiConfigUpdated={(cfg) => {
           setCustomAiConfig(cfg);

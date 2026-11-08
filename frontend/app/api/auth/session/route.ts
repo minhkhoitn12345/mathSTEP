@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     const isEmailVerified = Boolean(
       user.email_confirmed_at || user.confirmed_at || user.app_metadata?.provider === "google"
     );
-    const role = extractUserRole(user);
+    const role = extractUserRole(user, request);
 
     const response = NextResponse.json(
       {

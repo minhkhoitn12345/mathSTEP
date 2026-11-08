@@ -15,6 +15,7 @@ import {
   SlidersHorizontal,
   Settings,
   Download,
+  GraduationCap,
 } from "lucide-react";
 import { downloadBackupFile } from "../lib/useStationStorage";
 
@@ -36,8 +37,15 @@ interface AccountSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: "profile" | "ai";
-  currentSession: { authenticated: boolean; name: string | null; email: string | null; email_verified?: boolean } | null;
+  currentSession: {
+    authenticated: boolean;
+    name: string | null;
+    email: string | null;
+    role?: string;
+    email_verified?: boolean;
+  } | null;
   onProfileUpdated?: (name: string) => void;
+  onRoleUpdated?: (role: string) => void;
   onAiConfigUpdated?: (config: CustomAiConfig | null) => void;
 }
 
@@ -97,6 +105,7 @@ export default function AccountSettingsModal({
   initialTab = "profile",
   currentSession,
   onProfileUpdated,
+  onRoleUpdated,
   onAiConfigUpdated,
 }: AccountSettingsModalProps) {
   const [activeTab, setActiveTab] = useState<"profile" | "ai">(initialTab);
@@ -109,6 +118,11 @@ export default function AccountSettingsModal({
   const [profileSaving, setProfileSaving] = useState<boolean>(false);
   const [profileNotice, setProfileNotice] = useState<string>("");
   const [profileError, setProfileError] = useState<string>("");
+
+  // Teacher Verification States
+  const [teacherCode, setTeacherCode] = useState("");
+  const [verifyingTeacher, setVerifyingTeacher] = useState(false);
+  const [teacherVerifyMsg, setTeacherVerifyMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   // AI Config Form States
   const [provider, setProvider] = useState<"gemini" | "openai" | "deepseek">("gemini");
@@ -202,6 +216,48 @@ export default function AccountSettingsModal({
       setProfileError(err instanceof Error ? err.message : "Đã xảy ra lỗi khi lưu.");
     } finally {
       setProfileSaving(false);
+    }
+  };
+
+  // Xác thực quyền Giáo viên
+  const handleVerifyTeacher = async () => {
+    if (!teacherCode.trim()) {
+      setTeacherVerifyMsg({ ok: false, text: "Vui lòng nhập Mã xác thực Sư phạm." });
+      return;
+    }
+    setVerifyingTeacher(true);
+    setTeacherVerifyMsg(null);
+    try {
+      const res = await fetch("/api/account/verify-teacher", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teacherCode: teacherCode.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.detail?.message || data?.message || "Mã xác thực không hợp lệ.");
+      }
+      setTeacherVerifyMsg({ ok: true, text: data.message || "Đã kích hoạt quyền Giáo viên thành công!" });
+      onRoleUpdated?.("teacher");
+    } catch (err: unknown) {
+      setTeacherVerifyMsg({ ok: false, text: err instanceof Error ? err.message : "Đã xảy ra lỗi khi xác thực." });
+    } finally {
+      setVerifyingTeacher(false);
+    }
+  };
+
+  // Chuyển về góc nhìn Học sinh
+  const handleSwitchToStudent = async () => {
+    setVerifyingTeacher(true);
+    setTeacherVerifyMsg(null);
+    try {
+      await fetch("/api/account/verify-teacher", { method: "DELETE" });
+      setTeacherVerifyMsg({ ok: true, text: "Đã chuyển đổi thành công về góc nhìn Học sinh." });
+      onRoleUpdated?.("student");
+    } catch {
+      setTeacherVerifyMsg({ ok: false, text: "Không thể chuyển đổi lúc này." });
+    } finally {
+      setVerifyingTeacher(false);
     }
   };
 
@@ -348,10 +404,19 @@ export default function AccountSettingsModal({
                   {(name || currentSession?.email || "M").slice(0, 1).toUpperCase()}
                 </div>
                 <div className="space-y-0.5 min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <strong className="text-sm text-white font-bold truncate block">
-                      {name || "Học sinh MathSTEP"}
+                      {name || (currentSession?.role === "teacher" ? "Giáo viên MathSTEP" : "Học sinh MathSTEP")}
                     </strong>
+                    <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] border ${
+                      currentSession?.role === "teacher"
+                        ? "bg-amber-950/60 text-amber-300 border-amber-800/60"
+                        : currentSession?.role === "admin"
+                        ? "bg-purple-950/60 text-purple-300 border-purple-800/60"
+                        : "bg-blue-950/60 text-blue-300 border-blue-800/60"
+                    }`}>
+                      {currentSession?.role === "teacher" ? "👨‍🏫 Giáo viên THPT" : currentSession?.role === "admin" ? "⚡ Quản trị viên" : "🎓 Học sinh THPT"}
+                    </span>
                     {currentSession?.authenticated && (
                       currentSession.email_verified !== false ? (
                         <span className="px-2 py-0.5 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-800/60 font-bold text-[10px]">
@@ -448,6 +513,74 @@ export default function AccountSettingsModal({
                 <Save className="w-4 h-4" />
                 <span>{profileSaving ? "Đang lưu thông tin..." : "Lưu thay đổi hồ sơ"}</span>
               </button>
+
+              {/* Phân quyền Vai trò Sư phạm (Giáo viên / Học sinh) */}
+              <div className="pt-3 border-t border-slate-800 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                    <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Xác thực Quyền Giáo viên</span>
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    currentSession?.role === "teacher"
+                      ? "bg-amber-950/60 text-amber-300 border-amber-800/60"
+                      : "bg-blue-950/60 text-blue-300 border-blue-800/60"
+                  }`}>
+                    {currentSession?.role === "teacher" ? "👨‍🏫 Giáo viên THPT" : "🎓 Học sinh THPT"}
+                  </span>
+                </div>
+
+                {currentSession?.role === "teacher" ? (
+                  <div className="p-3 bg-amber-950/30 border border-amber-500/30 rounded-xl space-y-2 text-xs text-amber-200">
+                    <p className="text-[11px] text-amber-300/90 leading-relaxed">
+                      Tài khoản của thầy/cô đã được mở khóa toàn bộ phân hệ Giáo viên (Kế hoạch bài dạy 55 phút, Ma trận chẩn đoán ngộ nhận và Chế độ trình chiếu 1.5x trên lớp).
+                    </p>
+                    <button
+                      type="button"
+                      disabled={verifyingTeacher}
+                      onClick={handleSwitchToStudent}
+                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium transition-colors border border-slate-700 cursor-pointer"
+                    >
+                      {verifyingTeacher ? "Đang chuyển..." : "Chuyển sang góc nhìn Học sinh"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-2 text-xs text-slate-300">
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      Thầy/cô giảng dạy THPT có thể kích hoạt quyền Giáo viên bằng Mã định danh Sư phạm được cấp:
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={teacherCode}
+                        onChange={(e) => setTeacherCode(e.target.value)}
+                        placeholder="Mã Sư phạm (vd: MATHSTEP-GV-2026)"
+                        disabled={verifyingTeacher}
+                        className="flex-1 p-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 font-mono focus:outline-none focus:border-amber-500"
+                      />
+                      <button
+                        type="button"
+                        disabled={verifyingTeacher}
+                        onClick={handleVerifyTeacher}
+                        className="px-3 py-2 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition-colors shrink-0 cursor-pointer"
+                      >
+                        {verifyingTeacher ? "Kiểm tra..." : "Kích hoạt"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {teacherVerifyMsg && (
+                  <div className={`p-2 rounded-lg text-xs flex items-center gap-2 border ${
+                    teacherVerifyMsg.ok
+                      ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
+                      : "bg-rose-950/40 border-rose-500/40 text-rose-300"
+                  }`}>
+                    {teacherVerifyMsg.ok ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
+                    <span>{teacherVerifyMsg.text}</span>
+                  </div>
+                )}
+              </div>
 
               {/* Data Backup & Export (Item 17 Audit) */}
               <div className="pt-2 border-t border-slate-800">

@@ -99,6 +99,7 @@ interface MathStepWorkbenchProps {
   stationId?: string;
   initialStep?: number;
   initialMode?: "sgk" | "dynamic";
+  userRole?: string;
   onAskTutor?: (question: string) => void;
   onStepChange?: (stepNumber: number, stepTitle: string) => void;
   onSelectStation?: (station: StationItem) => void;
@@ -761,6 +762,7 @@ export default function MathStepWorkbench({
   stationId,
   initialStep = 0,
   initialMode = "sgk",
+  userRole = "student",
   onAskTutor,
   onStepChange,
   onSelectStation,
@@ -851,7 +853,14 @@ export default function MathStepWorkbench({
 
   const [evidenceModalOpen, setEvidenceModalOpen] = useState<boolean>(false);
   const [problemDetailModalOpen, setProblemDetailModalOpen] = useState<boolean>(false);
+  const canUseTeacherMode = userRole === "teacher" || userRole === "admin";
   const [isTeacherMode, setIsTeacherMode] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!canUseTeacherMode && isTeacherMode) {
+      setIsTeacherMode(false);
+    }
+  }, [canUseTeacherMode, isTeacherMode]);
   const [activeMobileTab, setActiveMobileTab] = useState<"task" | "scene" | "controls">("scene");
   const [isFullscreenScene, setIsFullscreenScene] = useState<boolean>(false);
   const [worksheetModalOpen, setWorksheetModalOpen] = useState<boolean>(false);
@@ -2283,33 +2292,36 @@ export default function MathStepWorkbench({
           </button>
 
           {/* Nút gạt Header: [Chế độ Trình chiếu (GV)] ↔ [Chế độ Thực hành (HS)] */}
-          <button
-            type="button"
-            onClick={() => {
-              setIsTeacherMode((prev) => {
-                const next = !prev;
-                if (next) {
-                  setShowLeftPanel(false);
-                  setShowRightPanel(false);
-                  showToast("Đã bật Chế độ Trình chiếu (GV): Phóng to 1.5x, toàn màn hình Canvas.");
-                } else {
-                  setShowLeftPanel(true);
-                  setShowRightPanel(true);
-                  showToast("Đã chuyển sang Chế độ Thực hành (HS): 8 bước nhận thức chuẩn.");
-                }
-                return next;
-              });
-            }}
-            title={isTeacherMode ? "Chế độ Giáo viên (Nhấp đổi về Học sinh)" : "Chế độ Học sinh (Nhấp đổi sang Giáo viên)"}
-            className={`p-1.5 sm:px-2 sm:py-1 rounded-md border text-xs font-medium flex items-center gap-1.5 transition-colors ${
-              isTeacherMode
-                ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                : "bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
-            }`}
-          >
-            <GraduationCap className={`w-3.5 h-3.5 ${isTeacherMode ? "text-amber-400" : "text-slate-400"}`} />
-            <span className="hidden md:inline">{isTeacherMode ? "GV" : "HS"}</span>
-          </button>
+          {/* Nút Chế độ Giáo viên / Học sinh (CHỈ HIỂN THỊ KHI ĐƯỢC PHÂN QUYỀN GIÁO VIÊN / ADMIN) */}
+          {canUseTeacherMode && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsTeacherMode((prev) => {
+                  const next = !prev;
+                  if (next) {
+                    setShowLeftPanel(false);
+                    setShowRightPanel(false);
+                    showToast("Đã bật Chế độ Trình chiếu (GV): Phóng to 1.5x, toàn màn hình Canvas.");
+                  } else {
+                    setShowLeftPanel(true);
+                    setShowRightPanel(true);
+                    showToast("Đã chuyển sang Chế độ Thực hành (HS): 8 bước nhận thức chuẩn.");
+                  }
+                  return next;
+                });
+              }}
+              title={isTeacherMode ? "Chế độ Giáo viên (Nhấp đổi về Học sinh)" : "Chế độ Học sinh (Nhấp đổi sang Giáo viên)"}
+              className={`p-1.5 sm:px-2 sm:py-1 rounded-md border text-xs font-medium flex items-center gap-1.5 transition-colors ${
+                isTeacherMode
+                  ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                  : "bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+              }`}
+            >
+              <GraduationCap className={`w-3.5 h-3.5 ${isTeacherMode ? "text-amber-400" : "text-slate-400"}`} />
+              <span className="hidden md:inline">{isTeacherMode ? "GV" : "HS"}</span>
+            </button>
+          )}
 
           {/* 3-Dots More Options Menu */}
           <div className="relative">
@@ -2323,24 +2335,26 @@ export default function MathStepWorkbench({
 
             {moreMenuOpen && (
               <div className="absolute right-0 top-full mt-1.5 w-56 bg-slate-900 rounded-xl shadow-2xl border border-slate-800 p-1.5 z-50 flex flex-col gap-1 text-xs text-slate-200 animate-in fade-in slide-in-from-top-2">
-                <button
-                  onClick={() => {
-                    setIsTeacherMode((v) => !v);
-                    setMoreMenuOpen(false);
-                    showToast(!isTeacherMode ? "Đã bật Chế độ Giáo viên: Tự do chọn bước trình chiếu." : "Đã chuyển về Chế độ Học sinh.");
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800 flex items-center justify-between text-slate-200 transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
-                    <span className="font-medium">Chế độ dạy học</span>
-                  </span>
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                    isTeacherMode ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-slate-800 text-slate-400"
-                  }`}>
-                    {isTeacherMode ? "BẬT" : "TẮT"}
-                  </span>
-                </button>
+                {canUseTeacherMode && (
+                  <button
+                    onClick={() => {
+                      setIsTeacherMode((v) => !v);
+                      setMoreMenuOpen(false);
+                      showToast(!isTeacherMode ? "Đã bật Chế độ Giáo viên: Tự do chọn bước trình chiếu." : "Đã chuyển về Chế độ Học sinh.");
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800 flex items-center justify-between text-slate-200 transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="font-medium">Chế độ dạy học</span>
+                    </span>
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                      isTeacherMode ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-slate-800 text-slate-400"
+                    }`}>
+                      {isTeacherMode ? "BẬT" : "TẮT"}
+                    </span>
+                  </button>
+                )}
 
                 <button
                   onClick={() => {
@@ -2424,6 +2438,10 @@ export default function MathStepWorkbench({
             <button
               key={name}
               onClick={() => {
+                if (!canUseTeacherMode && idx > currentStep + 1) {
+                  showToast(`Em hãy hoàn thành bước "${STEP_NAMES[currentStep]}" trước khi chuyển tiếp nhé!`);
+                  return;
+                }
                 setCurrentStep(idx);
                 if (onStepChange) onStepChange(idx + 1, name);
               }}

@@ -55,19 +55,27 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 };
 
 /**
- * Trích xuất vai trò an toàn từ metadata người dùng
+ * Trích xuất vai trò an toàn từ metadata người dùng và phiên xác thực giáo viên
  * TUYỆT ĐỐI KHÔNG tin cậy role gửi từ form request body của client
  */
-export function extractUserRole(user: SupabaseUser | null): UserRole {
+export function extractUserRole(user: SupabaseUser | null, request?: NextRequest): UserRole {
   if (!user) return "guest";
 
-  // 1. Kiểm tra app_metadata (chỉ Supabase Admin Service Key mới sửa được)
+  // 1. Kiểm tra cookie xác thực giáo viên hợp lệ
+  if (request) {
+    const teacherCookie = request.cookies.get("mathstep_teacher_role")?.value;
+    if (teacherCookie === "teacher") {
+      return "teacher";
+    }
+  }
+
+  // 2. Kiểm tra app_metadata (chỉ Supabase Admin Service Key mới sửa được)
   const appRole = user.app_metadata?.role as string | undefined;
   if (appRole && ["student", "teacher", "researcher", "admin"].includes(appRole)) {
     return appRole as UserRole;
   }
 
-  // 2. Kiểm tra email quản trị viên đặc biệt hoặc giáo viên trường (Bảo mật: TUYỆT ĐỐI không đọc role từ user_metadata)
+  // 3. Kiểm tra email quản trị viên đặc biệt hoặc giáo viên trường (Bảo mật: TUYỆT ĐỐI không đọc role từ user_metadata)
   const email = user.email?.toLowerCase() || "";
   if (email.endsWith("@admin.mathstep.edu.vn") || email === "admin@mathstep.vn") {
     return "admin";
@@ -114,7 +122,7 @@ export async function enforcePermission(
     }
   }
 
-  const role = extractUserRole(user);
+  const role = extractUserRole(user, request);
 
   // Kiểm tra quyền
   if (!hasPermission(role, requiredPermission)) {

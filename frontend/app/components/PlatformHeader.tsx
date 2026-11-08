@@ -25,6 +25,8 @@ interface PlatformHeaderProps {
   customAiConfig: CustomAiConfig | null;
   onOpenAccountModal: (tab: "profile" | "ai") => void;
   onOpenChatHistory?: () => void;
+  onOpenTeacherVerification?: () => void;
+  onSwitchToStudentView?: () => void;
   onOpenAuthModal: () => void;
   onLogout: () => void;
 }
@@ -38,6 +40,8 @@ export default function PlatformHeader({
   customAiConfig,
   onOpenAccountModal,
   onOpenChatHistory,
+  onOpenTeacherVerification,
+  onSwitchToStudentView,
   onOpenAuthModal,
   onLogout,
 }: PlatformHeaderProps) {
@@ -117,12 +121,22 @@ export default function PlatformHeader({
           onClick={() => onSelectSubsystem("teacher", "home")}
           className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
             subsystem === "teacher"
-              ? "bg-blue-600 text-white shadow-xs font-semibold"
+              ? "bg-amber-600 text-white shadow-xs font-semibold"
               : "text-slate-400 hover:text-slate-200"
           }`}
+          title={
+            session?.role === "teacher" || session?.role === "admin"
+              ? "Phân hệ Giảng dạy & Chẩn đoán Sư phạm"
+              : "Phân hệ Giáo viên (Yêu cầu xác thực Sư phạm)"
+          }
         >
-          <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
+          <GraduationCap className={`w-3.5 h-3.5 ${subsystem === "teacher" ? "text-white" : "text-amber-400"}`} />
           <span className="hidden md:inline">Giáo viên</span>
+          {!(session?.role === "teacher" || session?.role === "admin") && (
+            <span className="text-[9px] px-1 py-0.2 rounded bg-slate-800 text-amber-400/90 font-mono font-semibold border border-slate-700/80">
+              GV
+            </span>
+          )}
         </button>
 
         <button
@@ -266,6 +280,53 @@ export default function PlatformHeader({
                       </span>
                     </div>
                   </button>
+
+                  {/* Mục 3: Chuyển đổi vai trò Giáo viên / Học sinh */}
+                  {session.role === "teacher" ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        onSwitchToStudentView?.();
+                      }}
+                      className="w-full px-3 py-2 rounded-xl text-left text-blue-300 hover:text-white hover:bg-blue-950/40 transition-all duration-150 flex items-center gap-3 cursor-pointer group"
+                      role="menuitem"
+                    >
+                      <div className="w-7 h-7 rounded-lg bg-blue-950/60 text-blue-400 border border-blue-800/40 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        <Compass className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-semibold block text-slate-200 group-hover:text-blue-300">
+                          Góc nhìn Học sinh
+                        </span>
+                        <span className="text-[10px] text-slate-400 block truncate">
+                          Trải nghiệm lộ trình học sinh
+                        </span>
+                      </div>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        onOpenTeacherVerification?.();
+                      }}
+                      className="w-full px-3 py-2 rounded-xl text-left text-amber-300 hover:text-white hover:bg-amber-950/40 transition-all duration-150 flex items-center gap-3 cursor-pointer group"
+                      role="menuitem"
+                    >
+                      <div className="w-7 h-7 rounded-lg bg-amber-950/60 text-amber-400 border border-amber-800/40 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        <GraduationCap className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-semibold block text-slate-200 group-hover:text-amber-300">
+                          Kích hoạt quyền Giáo viên
+                        </span>
+                        <span className="text-[10px] text-slate-400 block truncate">
+                          Mở khóa Kế hoạch bài dạy & Ma trận
+                        </span>
+                      </div>
+                    </button>
+                  )}
                 </div>
 
                 {/* Đường kẻ phân cách (Divider) */}
