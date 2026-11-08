@@ -3,6 +3,40 @@
 import React, { useMemo } from "react";
 import katex from "katex";
 
+// Tự động chuẩn hóa khoảng trắng quanh công thức LaTeX để chống dính chữ tiếng Việt
+export function normalizeMathDelimiters(content: string): string {
+  if (!content) return "";
+  let text = content;
+  // Chuẩn hóa \[ ... \] thành $$ ... $$
+  text = text.replace(/\\\[([\s\S]+?)\\\]/g, (_match, expr: string) => `\n$$\n${expr.trim()}\n$$\n`);
+  // Chuẩn hóa \( ... \) thành $ ... $
+  text = text.replace(/\\\(([\s\S]+?)\\\)/g, (_match, expr: string) => `$${expr.trim()}$`);
+  // Chuẩn hóa \begin{...} \end{...}
+  text = text.replace(
+    /(?<!\$)\s*(\\begin\{(cases|aligned|matrix|pmatrix|bmatrix)\}[\s\S]+?\\end\{\2\})\s*(?!\$)/g,
+    (_match, block: string) => `\n$$\n${block.trim()}\n$$\n`
+  );
+  text = text.replace(/(?<!\$)\$\s+([^\$\n]+?)\s+\$(?!\$)/g, "$$$1$$");
+
+  // ĐẢM BẢO KHOẢNG TRẮNG XUNG QUANH CÔNG THỨC LATEX KHÔNG BỊ DÍNH VÀO TỪ TIẾNG VIỆT (UNICODE FULL COVERAGE)
+  // Thêm khoảng trắng trước $ nếu có ký tự chữ cái/chữ số tiếng Việt đứng trước
+  text = text.replace(/([\p{L}\p{N}])\$(?!\$)/gu, "$1 $");
+  // Thêm khoảng trắng sau $ nếu có ký tự chữ cái/chữ số tiếng Việt đứng sau
+  text = text.replace(/(\$[^\$\n]+?\$)([\p{L}\p{N}])/gu, "$1 $2");
+
+  // Xử lý an toàn các ký hiệu toán bên trong khối $...$ và $$...$$
+  text = text.replace(/(\$\$[\s\S]+?\$\$|\$[^\$\n]+?\$)/g, (mathBlock) => {
+    let m = mathBlock;
+    m = m.replace(/([A-Za-z0-9])\s*\\left\(/g, "$1\\,\\left(");
+    m = m.replace(/([A-Za-z0-9])\s*\(/g, "$1\\,(");
+    m = m.replace(/([A-Za-z0-9\)])\s*\\perp\s*([A-Za-z0-9\(])/g, "$1\\,\\perp\\,$2");
+    m = m.replace(/(\d+),(\d+)/g, "$1{,}$2");
+    return m;
+  });
+
+  return text;
+}
+
 export function sanitizeLatex(raw: string): string {
   if (!raw) return "";
   let s = raw;
@@ -23,7 +57,8 @@ export function sanitizeLatex(raw: string): string {
   // Tự động thêm khoảng trắng LaTeX giữa biến/tên điểm và dấu mở ngoặc (VD: N( -> N\,()
   s = s.replace(/([A-Za-z0-9])\s*\\left\(/g, "$1\\,\\left(");
   s = s.replace(/([A-Za-z0-9])\s*\(/g, "$1\\,(");
-  // Đảm bảo quan hệ vuông góc \perp có khoảng cách thoáng
+  // Đảm bảo quan hệ vuông góc \perp có khoảng cách thoáng tự nhiên (VD: SH \perp (ABCD) -> SH\,\perp\,(ABCD))
+  s = s.replace(/([A-Za-z0-9\)])\s*\\perp\s*([A-Za-z0-9\(])/g, "$1\\,\\perp\\,$2");
   s = s.replace(/([^\s])\\perp([^\s])/g, "$1 \\perp $2");
   return s;
 }
@@ -45,10 +80,14 @@ export function formatVNNumber(num: number, digits = 2): string {
     return num.toString();
   }
   const rounded = Number(num.toFixed(digits));
-  return rounded.toFixed(digits).replace(".", "{,}");
+  return rounded.toFixed(digits).replace(".", ",");
 }
 
 export function formatVNFloat(num: number, digits = 2): string {
+  return num.toFixed(digits).replace(".", ",");
+}
+
+export function formatVNFloatLatex(num: number, digits = 2): string {
   return num.toFixed(digits).replace(".", "{,}");
 }
 
@@ -60,13 +99,20 @@ interface KatexMathProps {
 
 export default function KatexMath({ math, display = false, className = "" }: KatexMathProps) {
   const html = useMemo(() => renderKatex(math, display), [math, display]);
-  return <span className={`inline-block mx-0.5 ${className}`} dangerouslySetInnerHTML={{ __html: html }} />;
+  return (
+    <span
+      className={`inline-flex items-baseline mx-1 align-baseline ${className}`}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
 }
 
 export function MathFormattedText({ text, className = "" }: { text?: string; className?: string }) {
   if (!text) return null;
+  // Chuẩn hóa khoảng trắng quanh ký hiệu $ trước khi phân tách để chữ không bị dính sát vào công thức
+  const normalized = normalizeMathDelimiters(text);
   // Regex phân tách các biểu thức LaTeX kẹp giữa $...$ hoặc $$...$$
-  const parts = text.split(/(\$\$[\s\S]+?\$\$|\$[^\$\n]+?\$)/g);
+  const parts = normalized.split(/(\$\$[\s\S]+?\$\$|\$[^\$\n]+?\$)/g);
   return (
     <span className={className}>
       {parts.map((part, i) => {

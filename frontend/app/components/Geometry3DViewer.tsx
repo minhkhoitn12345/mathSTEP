@@ -46,7 +46,7 @@ function MathOxyzAxes({ size = 5 }: { size?: number }) {
         <coneGeometry args={[coneR, coneH, 16]} />
         <meshStandardMaterial color="#ef4444" roughness={0.3} />
       </mesh>
-      <Html position={[size + 0.3, 0, 0]} center>
+      <Html position={[size + 0.3, 0, 0]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
         <span className="text-[10px] font-bold text-red-600 bg-white/90 px-1 rounded shadow-sm">x</span>
       </Html>
 
@@ -59,7 +59,7 @@ function MathOxyzAxes({ size = 5 }: { size?: number }) {
         <coneGeometry args={[coneR, coneH, 16]} />
         <meshStandardMaterial color="#3b82f6" roughness={0.3} />
       </mesh>
-      <Html position={[0, size + 0.3, 0]} center>
+      <Html position={[0, size + 0.3, 0]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
         <span className="text-[10px] font-bold text-blue-600 bg-white/90 px-1 rounded shadow-sm">z</span>
       </Html>
 
@@ -72,7 +72,7 @@ function MathOxyzAxes({ size = 5 }: { size?: number }) {
         <coneGeometry args={[coneR, coneH, 16]} />
         <meshStandardMaterial color="#10b981" roughness={0.3} />
       </mesh>
-      <Html position={[0, 0, -size - 0.3]} center>
+      <Html position={[0, 0, -size - 0.3]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
         <span className="text-[10px] font-bold text-emerald-600 bg-white/90 px-1 rounded shadow-sm">y</span>
       </Html>
     </group>
@@ -450,7 +450,7 @@ export default function Geometry3DViewer({ scene, onAskTutor, className = "" }: 
                 </mesh>
 
                 {/* Nhãn Billboard luôn quay về camera */}
-                <Html position={[0, 0.18, 0]} center>
+                <Html position={[0, 0.18, 0]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
                   <div
                     className={`px-1.5 py-0.5 rounded-md font-bold text-xs select-none shadow-sm flex items-center gap-1 ${
                       p.isApex

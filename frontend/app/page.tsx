@@ -1,32 +1,26 @@
 "use client";
 
 import React, { FormEvent, useEffect, useMemo, useRef, useState, useCallback } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
 import MathGraphVisualizer from "./components/MathGraphVisualizer";
 import MathStepWorkbench from "./components/MathStepWorkbench";
 import TeacherDashboard from "./components/TeacherDashboard";
 import ResearchMethodologyHub from "./components/ResearchMethodologyHub";
 import AccountSettingsModal, { CustomAiConfig } from "./components/AccountSettingsModal";
+import PlatformHeader from "./components/PlatformHeader";
+import SocraticChatDrawer from "./components/SocraticChatDrawer";
 import { generateSmartSocraticResponse } from "./lib/smartSocratic";
 import { getAllStations, removeVietnameseAccents, StationItem } from "./lib/stationCatalogData";
+import { CORE_7_MODULES, CoreModuleCard } from "./lib/modulesCatalogData";
 import {
   Layers,
-  Compass,
-  GraduationCap,
-  FileText,
   Search,
   FlaskConical,
   Lock,
   Bot,
-  Sparkles,
   Eye,
   EyeOff,
-  Cpu,
   SlidersHorizontal,
   CheckCircle2,
   ArrowRight,
@@ -34,6 +28,8 @@ import {
   Mail,
   RotateCcw,
   AlertCircle,
+  Calculator,
+  RefreshCw,
 } from "lucide-react";
 
 export type SubsystemId = "student" | "teacher" | "research";
@@ -68,43 +64,6 @@ type Session = {
   role?: string;
   provider?: string;
 };
-
-function normalizeMathDelimiters(content: string): string {
-  if (!content) return "";
-  let text = content;
-  text = text.replace(/\\\[([\s\S]+?)\\\]/g, (_match, expr: string) => `\n$$\n${expr.trim()}\n$$\n`);
-  text = text.replace(/\\\(([\s\S]+?)\\\)/g, (_match, expr: string) => `$${expr.trim()}$`);
-  text = text.replace(/(?<!\$)\s*(\\begin\{(cases|aligned|matrix|pmatrix|bmatrix)\}[\s\S]+?\\end\{\2\})\s*(?!\$)/g, (_match, block: string) => {
-    return `\n$$\n${block.trim()}\n$$\n`;
-  });
-  text = text.replace(/(?<!\$)\$\s+([^\$\n]+?)\s+\$(?!\$)/g, "$$$1$$");
-
-  // ĐẢM BẢO KHOẢNG TRẮNG XUNG QUANH CÔNG THỨC LATEX KHÔNG BỊ DÍNH VÀO TỪ:
-  // 1. Chèn dấu cách trước ký hiệu $ nếu đứng liền sau chữ/số (VD: "điểm$M$" -> "điểm $M$")
-  text = text.replace(/([a-zA-ZÀ-ỹ0-9_])\$(?!\$)/g, "$1 $");
-  // 2. Chèn dấu cách sau ký hiệu $ đóng nếu đứng liền trước chữ/số (VD: "$M$thuộc" -> "$M$ thuộc")
-  text = text.replace(/(\$[^\$\n]+?\$)([a-zA-ZÀ-ỹ0-9_])/g, "$1 $2");
-  // 3. Tách biến số dính vào dấu ngoặc trong công thức (VD: "N(" -> "N\,(")
-  text = text.replace(/([A-Z])\s*\\left\(/g, "$1\\,\\left(");
-  text = text.replace(/([A-Z])\s*\(/g, "$1\\,(");
-
-  return text;
-}
-
-function MathMessage({ content }: { content: string }) {
-  const normalized = useMemo(() => normalizeMathDelimiters(content), [content]);
-  return (
-    <div className="overflow-x-auto max-w-full break-words">
-      <ReactMarkdown
-        remarkPlugins={[remarkMath]}
-        rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: false }]]}
-      >
-        {normalized}
-      </ReactMarkdown>
-    </div>
-  );
-}
-
 
 function StationCardArt({ grade, is3D, stationId }: { grade: number; is3D: boolean; stationId: string }) {
   const bgGrad = grade === 10 ? "#d5ede4" : grade === 11 ? "#d9e6f3" : "#e9e6d6";
@@ -148,149 +107,6 @@ function StationCardArt({ grade, is3D, stationId }: { grade: number; is3D: boole
     </svg>
   );
 }
-
-interface CoreModuleCard {
-  id: ModuleId;
-  moduleNumber: string;
-  defaultStationId: string;
-  grade: number;
-  is3D: boolean;
-  title: string;
-  source: string;
-  tag: string;
-  goal: string;
-  features: string[];
-  borderHover: string;
-}
-
-const CORE_7_MODULES: CoreModuleCard[] = [
-  {
-    id: "linear_programming",
-    moduleNumber: "01",
-    defaultStationId: "10.03",
-    grade: 10,
-    is3D: false,
-    title: "Hệ Bất Phương Trình & Quy Hoạch Tuyến Tính",
-    source: "SGK Toán 10 KNTT · Bài 3 & 4 (Trang 22-31)",
-    tag: "Toán 10 · 2D Oxy · GeoGebra LP",
-    goal: "Khám phá miền nghiệm đa giác lồi, trượt đường mức F(x, y) = ux + vy song song, tự động bắt dính đỉnh tối ưu và lưới điểm nguyên x, y ∈ ℕ.",
-    features: [
-      "Tính đa giác miền nghiệm tự động bằng thuật toán Convex Hull & Clipping",
-      "Thanh trượt đường mức k tịnh tiến song song, tự bắt dính đỉnh tối ưu B(8; 12)",
-      "Chế độ khóa điểm nguyên x, y ∈ ℕ cho bài toán tối ưu xưởng mộc thực tế",
-      "Hộp công cụ [+ Thêm bất phương trình] tự do tùy biến tham số a, b, c",
-    ],
-    borderHover: "hover:border-emerald-500",
-  },
-  {
-    id: "spatial_geometry",
-    moduleNumber: "02",
-    defaultStationId: "11.06",
-    grade: 11,
-    is3D: true,
-    title: "Hình Học Không Gian 3D & Dựng Hình Đa Diện",
-    source: "SGK Hình Học 11 KNTT · Bài 10, 11, 12 (Trang 70-88)",
-    tag: "Toán 11 · 3D Không Gian · AI 3D Parser",
-    goal: "Dựng hình chóp tứ giác, kéo đỉnh S điều chỉnh chiều cao h và độ nghiêng, xoay 360°, thuật toán tự phân biệt cạnh thấy / khuất, mặt phẳng cắt thiết diện (P).",
-    features: [
-      "Kéo đỉnh S tự do thay đổi chiều cao h (1.2m - 4.5m) và độ nghiêng tâm đáy",
-      "Thuật toán Back-face Culling tự động hiển thị nét liền (thấy) / nét đứt (khuất)",
-      "Mặt phẳng cắt thiết diện (P) trượt mượt mà qua các cạnh của khối đa diện",
-      "Tích hợp AI Natural Language to 3D Geometry Parser dựng hình từ đề bài tự nhiên",
-    ],
-    borderHover: "hover:border-cyan-500",
-  },
-  {
-    id: "trigonometry",
-    moduleNumber: "03",
-    defaultStationId: "11.01",
-    grade: 11,
-    is3D: false,
-    title: "Lượng Giác & Đường Tròn Đơn Vị Động (Split-View)",
-    source: "SGK Toán 11 KNTT · Bài 1 & 2 (Trang 5-20)",
-    tag: "Toán 11 · 2D Split-View · Sóng thời gian thực",
-    goal: "Đồng bộ kép: Điểm M quay trên đường tròn đơn vị R=1 gióng tia chiếu liên tục sang đồ thị sóng sin/cos; khảo sát họ sóng y = A sin(ωx + φ) + d.",
-    features: [
-      "Đồng bộ thời gian thực giữa điểm quay M trên đường tròn R=1 và sóng đồ thị",
-      "Tia chiếu gióng trực tiếp từ hình chiếu Ox, Oy sang đồ thị hàm số",
-      "Thanh trượt biên độ A, tần số góc ω, pha ban đầu φ, dịch trục d",
-      "Thẻ giá trị trực tiếp sin, cos, tan, cot kèm kiểm chứng Pythagoras sin² + cos² = 1",
-    ],
-    borderHover: "hover:border-indigo-500",
-  },
-  {
-    id: "functions",
-    moduleNumber: "04",
-    defaultStationId: "12.01",
-    grade: 12,
-    is3D: false,
-    title: "Khảo Sát Hàm Số & Bảng Biến Thiên 2 Chiều Động",
-    source: "SGK Toán 12 KNTT · Chương 1 Bài 1, 2, 3 (Trang 6-25)",
-    tag: "Toán 12 · Giải Tích 2D · BBT 2 chiều",
-    goal: "Khảo sát hàm bậc 3, bậc 4, phân thức với thanh trượt hệ số a, b, c, d; tương tác 2 chiều giữa đồ thị và bảng biến thiên; đường thẳng y = m đếm số nghiệm.",
-    features: [
-      "Hỗ trợ 3 dạng hàm chuẩn: Bậc ba, trùng phương và phân thức bậc nhất/bậc nhất",
-      "Bảng biến thiên 2 chiều tương tác: Hover dòng nào sáng đồ thị vùng đó",
-      "Thanh trượt đường thẳng y = m tự động đếm số nghiệm và hiện tọa độ giao điểm",
-      "Tiếp tuyến động tại tiếp điểm M(x₀, y₀) với hệ số góc k = f'(x₀)",
-    ],
-    borderHover: "hover:border-amber-500",
-  },
-  {
-    id: "calculus",
-    moduleNumber: "05",
-    defaultStationId: "12.08",
-    grade: 12,
-    is3D: true,
-    title: "Tích Phân Riemann & Khối Tròn Xoay 3D (Disk Method)",
-    source: "SGK Toán 12 KNTT · Chương 4 Bài 12 & 13 (Trang 18-28)",
-    tag: "Toán 12 · 2D + 3D · Tổng Riemann & Khối xoay",
-    goal: "Xấp xỉ diện tích hình phẳng bằng n dải chữ nhật Riemann (n=2...100, Δ → 0); quay lát cắt quanh Ox với góc θ=0°...360° tạo khối tròn xoay 3D.",
-    features: [
-      "Thanh trượt n dải chữ nhật (2 đến 100): Trực quan hóa sai số diện tích tiến về 0",
-      "Tùy chọn quy tắc xấp xỉ: Điểm đầu trái (Left), trung điểm (Midpoint), điểm đầu phải (Right)",
-      "Mô hình khối tròn xoay 3D với thanh trượt góc quay θ từ 0° đến 360°",
-      "Lát cắt đĩa tròn (Disk Method) hiển thị từng phân tố vi phân thể tích dV = π f(x)² dx",
-    ],
-    borderHover: "hover:border-emerald-500",
-  },
-  {
-    id: "probability",
-    moduleNumber: "06",
-    defaultStationId: "12.12",
-    grade: 12,
-    is3D: false,
-    title: "Xác Suất Hộp Bi, Sơ Đồ Cây & Công Thức Bayes",
-    source: "SGK Toán 12 KNTT · Chương 6 Bài 18 & 19 (Trang 70-85)",
-    tag: "Toán 12 · Xác Suất · Bayes & Cây 2 tầng",
-    goal: "Mô phỏng 2 hộp bi (Đỏ / Xanh) với sơ đồ cây 2 tầng động; tính xác suất toàn phần và xác suất hậu nghiệm Bayes P(Hộp 1 | Đỏ); mô phỏng gieo xúc xắc luật số lớn.",
-    features: [
-      "Thanh trượt số bi đỏ, bi xanh trong 2 hộp với cập nhật trực tiếp xác suất phân nhánh",
-      "Sơ đồ cây động 2 tầng tự động tính tích xác suất từng nhánh",
-      "Công thức Bayes tính xác suất hậu nghiệm P(Hộp 1 | Đỏ) với phân tích tử và mẫu",
-      "Chế độ mô phỏng thực nghiệm gieo xúc xắc 1000 lần kiểm chứng Quy luật số lớn",
-    ],
-    borderHover: "hover:border-rose-500",
-  },
-  {
-    id: "conics_and_solids",
-    moduleNumber: "07",
-    defaultStationId: "11.07",
-    grade: 10,
-    is3D: true,
-    title: "Cắt Mặt Nón Conic & Khai Triển Khối Đa Diện",
-    source: "Toán 10 Chuyên Đề Conic & Toán 11 KNTT Bài 12 (Trang 48-88)",
-    tag: "Toán 10-11 · 3D Conic · Khai triển đa diện",
-    goal: "Mặt nón đôi 3D cắt bởi mặt phẳng nghiêng góc β (Elip, Parabol, Hypebol); kiểm chứng tính chất tiêu điểm MF₁ + MF₂ = 2a; thanh trượt gấp/mở đa diện 100% → 0%.",
-    features: [
-      "Mô hình 3D mặt nón tròn xoay hai tầng với thanh trượt góc nghiêng mặt phẳng cắt β (10° - 90°)",
-      "Tự động nhận diện thiết diện: Đường tròn, Elip, Parabol hay Hypebol kèm định lý Dandelin",
-      "Đồ thị 2D chính tắc với tiêu điểm F₁, F₂ và kiểm chứng tổng khoảng cách MF₁ + MF₂ = 2a",
-      "Mô hình khai triển phẳng ↔ gấp khối đa diện với thanh trượt gập mượt mà từ 0% đến 100%",
-    ],
-    borderHover: "hover:border-fuchsia-500",
-  },
-];
 
 function ModuleCardArt({ moduleId }: { moduleId: ModuleId }) {
   switch (moduleId) {
@@ -597,21 +413,20 @@ function HomeContent() {
   const [stationId, setStationId] = useState<string>(initialStation);
   const [currentStep, setCurrentStep] = useState<number>(initialStepNumber);
 
-  // Đồng bộ trạng thái vào URL search params (URL-Driven Routing)
-  const syncUrl = useCallback((newStationId: string | null, newStep: number | null, newTab: string | null) => {
+  // Đồng bộ trạng thái vào URL chuẩn mực (URL-Driven Clean Routing)
+  const syncUrl = useCallback((newStationId: string | null, newStep: number | null, newTab: string | null, newModuleId?: string | null) => {
     if (typeof window === "undefined") return;
-    const params = new URLSearchParams();
     if (newStationId) {
-      params.set("station", newStationId);
-      if (typeof newStep === "number" && newStep >= 1) {
-        params.set("step", newStep.toString());
-      }
+      const stepQuery = typeof newStep === "number" && newStep >= 1 ? `?step=${newStep}` : "";
+      window.history.pushState(null, "", `/stations/${newStationId}${stepQuery}`);
+    } else if (newModuleId) {
+      const stepQuery = typeof newStep === "number" && newStep >= 1 ? `?step=${newStep}` : "";
+      window.history.pushState(null, "", `/modules/${newModuleId}${stepQuery}`);
     } else if (newTab && newTab !== "catalog") {
-      params.set("tab", newTab);
+      window.history.pushState(null, "", `/?tab=${newTab}`);
+    } else {
+      window.history.pushState(null, "", "/");
     }
-    const queryString = params.toString();
-    const newUrl = queryString ? "/?" + queryString : "/";
-    window.history.replaceState(null, "", newUrl);
   }, []);
 
   // Lắng nghe thay đổi searchParams khi người dùng nhấn Back/Forward
@@ -641,6 +456,13 @@ function HomeContent() {
     } else {
       setSubsystem("student");
       setViewMode("home");
+    }
+
+    const authCode = searchParams.get("code");
+    if (authCode) {
+      // Tự động chuyển hướng hoàn tất đăng nhập Google OAuth
+      window.location.replace(`/auth/callback${window.location.search}`);
+      return;
     }
 
     const authErrorParam = searchParams.get("auth_error");
@@ -714,6 +536,37 @@ function HomeContent() {
   const [loginError, setLoginError] = useState("");
   const [loginNotice, setLoginNotice] = useState("");
   const [loginBusy, setLoginBusy] = useState(false);
+
+  // Math Captcha state chống spam bot
+  const [captchaQuestion, setCaptchaQuestion] = useState<string>("");
+  const [captchaToken, setCaptchaToken] = useState<string>("");
+  const [captchaAnswer, setCaptchaAnswer] = useState<string>("");
+  const [captchaLoading, setCaptchaLoading] = useState<boolean>(false);
+
+  const loadCaptcha = useCallback(async () => {
+    setCaptchaLoading(true);
+    try {
+      const res = await fetch("/api/auth/captcha");
+      if (res.ok) {
+        const data = await res.json();
+        const q = data.question || data.challenge?.question || "";
+        const t = data.token || data.challenge?.token || "";
+        setCaptchaQuestion(q);
+        setCaptchaToken(t);
+        setCaptchaAnswer("");
+      }
+    } catch (e) {
+      console.error("[Math Captcha Error]:", e);
+    } finally {
+      setCaptchaLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (authModalOpen && (authMode === "login" || authMode === "signup")) {
+      loadCaptcha();
+    }
+  }, [authModalOpen, authMode, loadCaptcha]);
 
   // User Profile & Custom AI Key Modal state
   const [accountModalOpen, setAccountModalOpen] = useState(false);
@@ -816,7 +669,7 @@ function HomeContent() {
     setViewMode("lab");
     setSubsystem("student");
     setCurrentStep(stepNum - 1);
-    syncUrl(mod.defaultStationId, stepNum, null);
+    syncUrl(null, stepNum, null, mod.id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -958,10 +811,14 @@ function HomeContent() {
           email: loginEmail,
           password: loginPassword,
           name: authMode === "signup" ? displayName : undefined,
+          captchaAnswer: captchaAnswer.trim(),
+          captchaToken,
         }),
       });
       const data = await res.json();
       if (!res.ok) {
+        // Tải lại captcha mới khi thất bại
+        loadCaptcha();
         // Kiểm tra nếu lỗi do chưa xác nhận email
         if (data.detail?.code === "EMAIL_NOT_CONFIRMED" || data.detail?.message?.includes("xác nhận")) {
           setPendingVerificationEmail(loginEmail);
@@ -1015,168 +872,27 @@ function HomeContent() {
 
   return (
     <div className="min-h-screen max-w-full overflow-x-hidden flex flex-col bg-[#090D16] text-slate-100 font-sans selection:bg-blue-600/30 selection:text-white">
-      {/* 1. TOP NAVIGATION BAR (DESKTOP APP SHELL HEADER 48px) */}
-      <header className="sticky top-0 z-40 bg-slate-950 text-slate-100 border-b border-slate-800 px-3 md:px-6 h-12 flex items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-2.5">
-          <Link
-            href="/"
-            onClick={() => {
-              setViewMode("home");
-              setSubsystem("student");
-            }}
-            className="flex items-center gap-2 text-white no-underline group"
-          >
-            <span className="w-7 h-7 rounded-md bg-blue-600 text-white font-mono font-bold text-sm flex items-center justify-center shadow-xs group-hover:bg-blue-500 transition-colors">
-              M
-            </span>
-            <div className="leading-tight">
-              <strong className="font-sans text-xs tracking-wider font-bold block text-white">MATHSTEP</strong>
-              <span className="text-[9px] text-slate-400 font-mono hidden sm:inline">HỌC LIỆU TOÁN HỌC 3D</span>
-            </div>
-          </Link>
-        </div>
-
-        {/* 3 PHÂN HỆ CHÍNH KHKT NAVIGATION TABS (SEGMENTED CONTROL) */}
-        <nav className="flex items-center bg-slate-900 p-0.5 rounded-md border border-slate-800 h-8">
-          <button
-            type="button"
-            onClick={() => {
-              setSubsystem("student");
-              setViewMode("home");
-            }}
-            className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition-colors ${
-              subsystem === "student" && viewMode === "home"
-                ? "bg-blue-600 text-white shadow-xs font-semibold"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5 text-blue-400" />
-            <span className="hidden md:inline">48 Trạm học</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setSubsystem("student");
-              setViewMode("lab");
-            }}
-            className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition-colors ${
-              subsystem === "student" && viewMode === "lab"
-                ? "bg-blue-600 text-white shadow-xs font-semibold"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <Compass className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden md:inline">Phòng thực hành</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setSubsystem("teacher");
-              setViewMode("home");
-              syncUrl(null, null, "teacher");
-            }}
-            className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition-colors ${
-              subsystem === "teacher"
-                ? "bg-blue-600 text-white shadow-xs font-semibold"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden md:inline">Giáo viên</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setSubsystem("research");
-              setViewMode("home");
-              syncUrl(null, null, "research");
-            }}
-            className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition-colors ${
-              subsystem === "research"
-                ? "bg-blue-600 text-white shadow-xs font-semibold"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5 text-sky-400" />
-            <span className="hidden md:inline">Cơ sở KHKT</span>
-          </button>
-        </nav>
-
-        {/* USER MENU & AUTH */}
-        <div className="flex items-center gap-1.5">
-          {sessionLoading ? (
-            <span className="text-[10px] text-slate-500 font-mono">...</span>
-          ) : session?.authenticated ? (
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setAccountModalTab("profile");
-                  setAccountModalOpen(true);
-                }}
-                className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-900 border border-slate-800 text-slate-200 hover:bg-slate-850 text-xs transition-colors"
-                title="Hồ sơ học sinh"
-              >
-                <span className="w-5 h-5 rounded bg-blue-600 text-white font-mono font-bold text-[10px] flex items-center justify-center">
-                  {(session.name || session.email || "M").slice(0, 1).toUpperCase()}
-                </span>
-                <span className="text-xs font-medium text-slate-200 line-clamp-1 max-w-[100px] hidden sm:inline">
-                  {session.name || session.email?.split("@")[0] || "Học viên"}
-                </span>
-              </button>
-
-              {/* Nút Cấu hình AI Model */}
-              <button
-                type="button"
-                onClick={() => {
-                  setAccountModalTab("ai");
-                  setAccountModalOpen(true);
-                }}
-                className="px-2 py-1 rounded-md text-[11px] font-mono border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-300 transition-colors flex items-center gap-1"
-                title="Cấu hình Model AI (Gemini 2.5, GPT-4o, DeepSeek R1)"
-              >
-                <Cpu className="w-3 h-3 text-emerald-400" />
-                <span className="hidden md:inline">
-                  {customAiConfig?.model
-                    ? customAiConfig.model.replace("gemini-", "").replace("gpt-", "").replace("deepseek-", "")
-                    : "Cài AI"}
-                </span>
-              </button>
-
-              <button
-                onClick={() => void logout()}
-                className="text-[11px] text-slate-400 hover:text-rose-400 font-medium px-1.5 py-1 transition-colors"
-                title="Đăng xuất tài khoản"
-              >
-                Thoát
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setAccountModalTab("ai");
-                  setAccountModalOpen(true);
-                }}
-                className="px-2 py-1 rounded-md text-[11px] font-mono border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-300 transition-colors flex items-center gap-1"
-                title="Cấu hình API Key riêng (Gemini 2.5, GPT-4o, DeepSeek R1)"
-              >
-                <Cpu className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="hidden sm:inline">
-                  {customAiConfig?.model ? customAiConfig.model : "Nhập API Key"}
-                </span>
-              </button>
-              <button
-                onClick={() => setAuthModalOpen(true)}
-                className="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors"
-              >
-                Đăng nhập
-              </button>
-            </div>
-          )}
-        </div>
-      </header>
+      {/* 1. TOP NAVIGATION BAR (PLATFORM HEADER COMPONENT) */}
+      <PlatformHeader
+        subsystem={subsystem}
+        viewMode={viewMode}
+        onSelectSubsystem={(sub, view = "home") => {
+          setSubsystem(sub);
+          setViewMode(view);
+          if (view === "home") {
+            syncUrl(null, null, sub === "student" ? null : sub);
+          }
+        }}
+        session={session}
+        sessionLoading={sessionLoading}
+        customAiConfig={customAiConfig}
+        onOpenAccountModal={(tab) => {
+          setAccountModalTab(tab);
+          setAccountModalOpen(true);
+        }}
+        onOpenAuthModal={() => setAuthModalOpen(true)}
+        onLogout={() => void logout()}
+      />
 
       {/* BANNER CẢNH BÁO XÁC THỰC EMAIL (KHI ĐĂNG KÝ THỦ CÔNG MÀ CHƯA XÁC MINH) */}
       {session?.authenticated && session.email_verified === false && (
@@ -1711,176 +1427,19 @@ function HomeContent() {
         </button>
       )}
 
-      {/* 4. SLIDE-OUT SOCRATIC AI TUTOR DRAWER (BOUNDED TO MAX 100vw, NEVER OVERFLOWS ON 3D ZOOM) */}
-      {tutorOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden pointer-events-none flex justify-end">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity pointer-events-auto"
-            onClick={() => setTutorOpen(false)}
-          />
-
-          {/* Drawer Panel: strict max-w-[min(380px,100vw)] */}
-          <aside className="relative w-full sm:w-[380px] max-w-[min(380px,100vw)] h-[100dvh] bg-slate-900 text-slate-100 shadow-2xl flex flex-col z-10 border-l border-slate-800 animate-in slide-in-from-right duration-200 pointer-events-auto overflow-hidden">
-            {/* Header */}
-            <div className="h-12 px-3.5 border-b border-slate-800 bg-slate-950 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-7 h-7 rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center justify-center shrink-0">
-                  <Bot className="w-4 h-4" />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-xs text-slate-100 truncate">Trợ lý Socratic TES</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  </div>
-                  <span className="text-[10px] text-slate-400 truncate block">Gợi mở · Không cho đáp án trực tiếp</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAccountModalTab("ai");
-                    setAccountModalOpen(true);
-                  }}
-                  className="px-2 py-1 rounded-md border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[10px] flex items-center gap-1 transition-colors"
-                  title="Cấu hình Model AI (Gemini, OpenAI, DeepSeek)"
-                >
-                  <Cpu className="w-3 h-3 text-emerald-400" />
-                  <span className="max-w-[75px] truncate">
-                    {customAiConfig?.model?.replace("gemini-", "").replace("gpt-", "") || "Model AI"}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTutorOpen(false)}
-                  className="w-7 h-7 rounded-md text-slate-400 hover:text-slate-100 hover:bg-slate-800 flex items-center justify-center transition-colors text-sm"
-                  title="Đóng trợ lý"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            {/* Banner trạng thái Model AI đang kích hoạt */}
-            {customAiConfig?.apiKey && (
-              <div className="px-3.5 py-1.5 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between text-[11px] text-slate-400 shrink-0">
-                <div className="flex items-center gap-1.5 truncate">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                  <span className="truncate font-mono text-[10px]">
-                    {customAiConfig.model} ({customAiConfig.provider.toUpperCase()})
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAccountModalTab("ai");
-                    setAccountModalOpen(true);
-                  }}
-                  className="text-blue-400 hover:text-blue-300 underline font-medium text-[10px] shrink-0 ml-2"
-                >
-                  Đổi
-                </button>
-              </div>
-            )}
-
-            {/* Conversation Messages */}
-            <div className="flex-1 overflow-y-auto p-3.5 space-y-3 font-sans">
-              {messages.map((item) => (
-                <article
-                  key={item.id}
-                  className={`flex gap-2 min-w-0 ${item.role === "user" ? "flex-row-reverse" : "flex-row"}`}
-                >
-                  <div
-                    className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                      item.role === "assistant"
-                        ? "bg-slate-800 text-blue-400 border border-slate-700"
-                        : "bg-blue-600 text-white"
-                    }`}
-                  >
-                    {item.role === "assistant" ? <Bot className="w-3 h-3" /> : (session?.name || "E").slice(0, 1).toUpperCase()}
-                  </div>
-                  <div className="max-w-[85%] space-y-1 text-xs min-w-0">
-                    <div
-                      className={`p-2.5 rounded-lg leading-relaxed text-xs break-words ${
-                        item.role === "assistant"
-                          ? "bg-slate-800/90 text-slate-200 border border-slate-700/80"
-                          : "bg-blue-600 text-white"
-                      }`}
-                    >
-                      <MathMessage content={item.content} />
-                    </div>
-                    {item.nextQuestion && (
-                      <button
-                        onClick={() => void handleSendTutorMessage(item.nextQuestion)}
-                        className="text-[10px] text-blue-400 hover:underline flex items-center gap-1 pl-1 text-left"
-                      >
-                        <span>↳</span>
-                        <span className="line-clamp-2">{item.nextQuestion}</span>
-                      </button>
-                    )}
-                  </div>
-                </article>
-              ))}
-              {busy && (
-                <div className="flex items-center gap-2 text-xs text-slate-400 py-1">
-                  <Bot className="w-3.5 h-3.5 text-blue-400 animate-spin" />
-                  <span className="italic">TES đang phân tích câu trả lời của em...</span>
-                </div>
-              )}
-              <div ref={endRef} />
-            </div>
-
-            {/* Composer */}
-            <div className="p-3 border-t border-slate-800 bg-slate-950 shrink-0 space-y-2">
-              <div className="flex items-center justify-between text-[10px] text-slate-400">
-                <span>Trợ lý Socratic GDPT 2018</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    void handleSendTutorMessage("Em muốn tự suy nghĩ và thử tiếp mà không cần thêm gợi ý.");
-                  }}
-                  className="text-blue-400 hover:underline font-medium flex items-center gap-1"
-                >
-                  <Sparkles className="w-3 h-3 text-blue-400" />
-                  <span>Tự thử tiếp</span>
-                </button>
-              </div>
-
-              {error && <div className="text-[10px] text-rose-400">{error}</div>}
-
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void handleSendTutorMessage();
-                }}
-                className="flex gap-1.5"
-              >
-                <textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      void handleSendTutorMessage();
-                    }
-                  }}
-                  placeholder="Nhập câu trả lời hoặc câu hỏi cho TES..."
-                  rows={2}
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 resize-none min-w-0"
-                />
-                <button
-                  type="submit"
-                  disabled={busy || !input.trim()}
-                  className="px-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white rounded-lg text-xs font-semibold shrink-0 transition-colors cursor-pointer"
-                >
-                  Gửi
-                </button>
-              </form>
-            </div>
-          </aside>
-        </div>
-      )}
+      {/* 4. SLIDE-OUT SOCRATIC AI TUTOR DRAWER */}
+      <SocraticChatDrawer
+        isOpen={tutorOpen}
+        onClose={() => setTutorOpen(false)}
+        messages={messages}
+        busy={busy}
+        error={error}
+        input={input}
+        onInputChange={setInput}
+        onSendMessage={handleSendTutorMessage}
+        sessionName={session?.name}
+        stationId={stationId}
+      />
 
       {/* 5. VISUALIZER MODAL */}
       {visualizerOpen && (
@@ -1981,7 +1540,7 @@ function HomeContent() {
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         required
-                        className="w-full p-2 border border-[#d8d0c2] bg-white rounded-lg text-xs outline-none focus:border-[#c25e3e]"
+                        className="w-full p-2 border border-[#d8d0c2] bg-white text-[#102026] text-slate-900 placeholder:text-gray-400 rounded-lg text-xs outline-none focus:border-[#c25e3e]"
                       />
                     </div>
                   )}
@@ -1992,7 +1551,7 @@ function HomeContent() {
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
                       required
-                      className="w-full p-2 border border-[#d8d0c2] bg-white rounded-lg text-xs outline-none focus:border-[#c25e3e]"
+                      className="w-full p-2 border border-[#d8d0c2] bg-white text-[#102026] text-slate-900 placeholder:text-gray-400 rounded-lg text-xs outline-none focus:border-[#c25e3e]"
                     />
                   </div>
                   <div>
@@ -2003,7 +1562,7 @@ function HomeContent() {
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
                         required
-                        className="w-full p-2 pr-9 border border-[#d8d0c2] bg-white rounded-lg text-xs outline-none focus:border-[#c25e3e]"
+                        className="w-full p-2 pr-9 border border-[#d8d0c2] bg-white text-[#102026] text-slate-900 placeholder:text-gray-400 rounded-lg text-xs outline-none focus:border-[#c25e3e]"
                       />
                       <button
                         type="button"
@@ -2013,6 +1572,40 @@ function HomeContent() {
                       >
                         {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
+                    </div>
+                  </div>
+
+                  {/* Math Captcha chống spam bot */}
+                  <div className="p-2.5 bg-[#f6f2ea] rounded-xl border border-[#e8e2d8] space-y-1.5">
+                    <div className="flex items-center justify-between text-xs text-[#52483e]">
+                      <span className="flex items-center gap-1 font-semibold text-[11px]">
+                        <Calculator className="w-3.5 h-3.5 text-[#c25e3e]" />
+                        <span>Captcha:</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={loadCaptcha}
+                        disabled={captchaLoading}
+                        className="p-1 hover:bg-[#e8e2d8] rounded text-gray-500 hover:text-black transition-colors cursor-pointer"
+                        title="Đổi mã captcha khác"
+                      >
+                        <RefreshCw className={`w-3 h-3 ${captchaLoading ? "animate-spin" : ""}`} />
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="px-3 py-1.5 bg-white border border-[#d8d0c2] rounded-lg font-mono font-bold text-xs text-[#c25e3e] min-w-[90px] text-center select-none shadow-xs">
+                        {captchaQuestion || (captchaLoading ? "..." : "12 + 15 = ?")}
+                      </div>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="off"
+                        placeholder="Nhập đáp số"
+                        value={captchaAnswer}
+                        onChange={(e) => setCaptchaAnswer(e.target.value)}
+                        required
+                        className="flex-1 p-2 border border-[#d8d0c2] bg-white text-[#102026] text-slate-900 placeholder:text-gray-400 rounded-lg text-xs font-mono font-bold outline-none focus:border-[#c25e3e]"
+                      />
                     </div>
                   </div>
 

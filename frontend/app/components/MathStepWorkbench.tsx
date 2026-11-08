@@ -4094,7 +4094,7 @@ export default function MathStepWorkbench({
 
       {/* MODAL XEM CHI TIẾT ĐỀ BÀI VÀ BỐI CẢNH SGK */}
       {problemDetailModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="bg-slate-900 border border-slate-800 text-slate-100 rounded-xl shadow-2xl max-w-2xl w-[calc(100vw-32px)] max-h-[85vh] flex flex-col overflow-hidden">
             {/* Header */}
             <div className="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-950/80">
@@ -4243,7 +4243,7 @@ export default function MathStepWorkbench({
 
       {/* 5. MODAL SỔ KHÁM PHÁ & LƯU VẾT HỌC TẬP (EVIDENCE MODAL) */}
       {evidenceModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-xl p-5 shadow-2xl flex flex-col max-h-[85vh] text-xs text-slate-200">
             <div className="flex justify-between items-center pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2">

@@ -22,6 +22,8 @@ import {
   Move3d,
   Hash,
   Compass as CompassIcon,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 import KatexMath, { formatVNFloat } from "./KatexMath";
 
@@ -117,31 +119,31 @@ function OxyzAxesHelper({
         <meshStandardMaterial color="#f8fafc" roughness={0.2} metalness={0.5} />
       </mesh>
 
-      {/* 6. Nhãn KaTeX 3D Billboard */}
+      {/* 6. Nhãn KaTeX 3D Billboard - Giữ tỉ lệ chuẩn, không phóng to mất kiểm soát */}
       {/* Nhãn Ox */}
-      <Html position={[size + 0.45, 0, 0]} center distanceFactor={9}>
-        <div className="px-2 py-0.5 bg-red-950/90 backdrop-blur-md rounded-md border border-red-500/80 text-red-300 font-bold text-xs shadow-lg select-none pointer-events-none whitespace-nowrap">
+      <Html position={[size + 0.45, 0, 0]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className="px-1.5 py-0.5 bg-red-950/90 backdrop-blur-md rounded border border-red-500/80 text-red-300 font-bold text-[10px] shadow-sm select-none pointer-events-none whitespace-nowrap">
           <KatexMath math="x" />
         </div>
       </Html>
 
       {/* Nhãn Oz (thẳng đứng lên trên) */}
-      <Html position={[0, size + 0.45, 0]} center distanceFactor={9}>
-        <div className="px-2 py-0.5 bg-blue-950/90 backdrop-blur-md rounded-md border border-blue-500/80 text-blue-300 font-bold text-xs shadow-lg select-none pointer-events-none whitespace-nowrap">
+      <Html position={[0, size + 0.45, 0]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className="px-1.5 py-0.5 bg-blue-950/90 backdrop-blur-md rounded border border-blue-500/80 text-blue-300 font-bold text-[10px] shadow-sm select-none pointer-events-none whitespace-nowrap">
           <KatexMath math="z" />
         </div>
       </Html>
 
       {/* Nhãn Oy */}
-      <Html position={[0, 0, -size - 0.45]} center distanceFactor={9}>
-        <div className="px-2 py-0.5 bg-emerald-950/90 backdrop-blur-md rounded-md border border-emerald-500/80 text-emerald-300 font-bold text-xs shadow-lg select-none pointer-events-none whitespace-nowrap">
+      <Html position={[0, 0, -size - 0.45]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className="px-1.5 py-0.5 bg-emerald-950/90 backdrop-blur-md rounded border border-emerald-500/80 text-emerald-300 font-bold text-[10px] shadow-sm select-none pointer-events-none whitespace-nowrap">
           <KatexMath math="y" />
         </div>
       </Html>
 
       {/* Nhãn Gốc O */}
-      <Html position={[-0.3, -0.25, 0.3]} center distanceFactor={9}>
-        <div className="px-2 py-0.5 bg-slate-900/95 backdrop-blur-md rounded-md border border-slate-500 text-slate-100 font-bold text-[11px] shadow-lg select-none pointer-events-none whitespace-nowrap">
+      <Html position={[-0.3, -0.25, 0.3]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className="px-1.5 py-0.5 bg-slate-900/95 backdrop-blur-md rounded border border-slate-600 text-slate-200 font-bold text-[10px] shadow-sm select-none pointer-events-none whitespace-nowrap">
           <KatexMath math={isAtVertexA ? "O \\equiv A(0;\\,0;\\,0)" : "O(0;\\,0;\\,0)"} />
         </div>
       </Html>
@@ -727,33 +729,23 @@ function DynamicPyramidMeshAndEdges({
             <coneGeometry args={[0.065, 0.2, 16]} />
             <meshStandardMaterial color="#f59e0b" roughness={0.3} metalness={0.5} />
           </mesh>
-          <Html position={[0, 1.75, 0]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
-            <div className="px-1.5 py-0.5 bg-slate-900/90 border border-amber-500/60 rounded text-amber-300 font-mono text-[9px] font-bold select-none whitespace-nowrap shadow-sm">
+          <Html position={[0, 1.75, 0]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+            <div className="px-1.5 py-0.5 bg-slate-950/90 border border-amber-500/60 rounded text-amber-300 font-mono text-[9px] font-bold select-none whitespace-nowrap shadow-xs">
               n(0; 1; 0)
             </div>
           </Html>
         </group>
       )}
 
-      {/* 4. Nhãn Ký hiệu Vuông góc SH vuông góc đáy */}
-      {showPerpendicularSymbol && (
-        <Html position={[apex.x + 0.35, 0.15, apex.z + 0.35]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
-          <div className="px-1.5 py-0.5 bg-slate-900/90 border border-rose-500/60 rounded text-rose-300 font-mono text-[9px] font-bold select-none whitespace-nowrap shadow-sm">
-            SH ⟂ đáy
-          </div>
-        </Html>
-      )}
-
       {/* Điểm M (Trung điểm SA) */}
       <group position={pointM}>
         <mesh>
-          <sphereGeometry args={[isTeacherMode ? 0.09 : 0.065, 16, 16]} />
+          <sphereGeometry args={[isTeacherMode ? 0.08 : 0.05, 16, 16]} />
           <meshStandardMaterial color="#10b981" roughness={0.2} metalness={0.6} />
         </mesh>
-        <Html position={[0.15, 0.15, 0]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
-          <div className="px-1.5 py-0.5 bg-slate-900/90 border border-emerald-500/60 rounded-full font-mono text-[9px] font-bold text-emerald-300 select-none whitespace-nowrap flex items-center gap-1 shadow-sm">
-            <span>M</span>
-            {showCoordinates && <span className="text-[8px] text-emerald-400 opacity-80">(1/2 SA)</span>}
+        <Html position={[0.1, 0.1, 0]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+          <div className="w-4 h-4 rounded-full bg-slate-950/90 border border-emerald-500/80 font-mono text-[9px] font-bold text-emerald-300 select-none flex items-center justify-center shadow-xs">
+            M
           </div>
         </Html>
       </group>
@@ -761,21 +753,24 @@ function DynamicPyramidMeshAndEdges({
       {/* Điểm N (Tỉ số 2:1 trên SB) */}
       <group position={pointN}>
         <mesh>
-          <sphereGeometry args={[isTeacherMode ? 0.09 : 0.065, 16, 16]} />
+          <sphereGeometry args={[isTeacherMode ? 0.08 : 0.05, 16, 16]} />
           <meshStandardMaterial color="#a855f7" roughness={0.2} metalness={0.6} />
         </mesh>
-        <Html position={[0.15, 0.15, 0]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
-          <div className="px-1.5 py-0.5 bg-slate-900/90 border border-purple-500/60 rounded-full font-mono text-[9px] font-bold text-purple-300 select-none whitespace-nowrap flex items-center gap-1 shadow-sm">
-            <span>N</span>
-            {showCoordinates && <span className="text-[8px] text-purple-400 opacity-80">(2/3 SB)</span>}
+        <Html position={[0.1, 0.1, 0]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+          <div className="w-4 h-4 rounded-full bg-slate-950/90 border border-purple-500/80 font-mono text-[9px] font-bold text-purple-300 select-none flex items-center justify-center shadow-xs">
+            N
           </div>
         </Html>
       </group>
 
-      {/* 5. Đỉnh Billboard Labels chuẩn gọn gàng không tràn màn hình */}
+      {/* 5. Đỉnh Billboard Labels chuẩn gọn gàng, thoáng đãng không che khuất */}
       {/* Đỉnh S */}
-      <Html position={[apex.x, apex.y + 0.25, apex.z]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
-        <div className="px-1.5 py-0.5 bg-slate-900/90 rounded border border-blue-500/60 text-blue-300 font-mono text-[10px] font-bold select-none whitespace-nowrap shadow-sm">
+      <Html position={[apex.x, apex.y + 0.18, apex.z]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className={`rounded font-mono font-bold select-none whitespace-nowrap shadow-xs ${
+          showCoordinates
+            ? "px-1.5 py-0.5 bg-slate-950/95 border border-blue-500/80 text-blue-300 text-[9px]"
+            : "w-4 h-4 rounded-full bg-slate-950/90 border border-blue-500/80 text-blue-300 text-[9px] flex items-center justify-center"
+        }`}>
           {showCoordinates
             ? originAtVertexA
               ? `S(${formatVNFloat(baseWidth / 2)}; ${formatVNFloat(baseDepth / 2)}; ${formatVNFloat(apex.y)})`
@@ -785,8 +780,12 @@ function DynamicPyramidMeshAndEdges({
       </Html>
 
       {/* Đỉnh A */}
-      <Html position={[baseA.x - 0.2, baseA.y - 0.15, baseA.z + 0.2]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
-        <div className="px-1.5 py-0.5 bg-slate-900/90 rounded border border-slate-700 text-slate-200 font-mono text-[10px] font-bold select-none whitespace-nowrap shadow-sm">
+      <Html position={[baseA.x - 0.12, baseA.y - 0.08, baseA.z + 0.12]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className={`rounded font-mono font-bold select-none whitespace-nowrap shadow-xs ${
+          showCoordinates
+            ? "px-1.5 py-0.5 bg-slate-950/95 border border-slate-700 text-slate-200 text-[9px]"
+            : "w-4 h-4 rounded-full bg-slate-950/90 border border-slate-700 text-slate-200 text-[9px] flex items-center justify-center"
+        }`}>
           {showCoordinates
             ? originAtVertexA
               ? "A(0; 0; 0)"
@@ -796,8 +795,12 @@ function DynamicPyramidMeshAndEdges({
       </Html>
 
       {/* Đỉnh B */}
-      <Html position={[baseB.x + 0.2, baseB.y - 0.15, baseB.z + 0.2]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
-        <div className="px-1.5 py-0.5 bg-slate-900/90 rounded border border-slate-700 text-slate-200 font-mono text-[10px] font-bold select-none whitespace-nowrap shadow-sm">
+      <Html position={[baseB.x + 0.12, baseB.y - 0.08, baseB.z + 0.12]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className={`rounded font-mono font-bold select-none whitespace-nowrap shadow-xs ${
+          showCoordinates
+            ? "px-1.5 py-0.5 bg-slate-950/95 border border-slate-700 text-slate-200 text-[9px]"
+            : "w-4 h-4 rounded-full bg-slate-950/90 border border-slate-700 text-slate-200 text-[9px] flex items-center justify-center"
+        }`}>
           {showCoordinates
             ? originAtVertexA
               ? `B(${formatVNFloat(baseWidth)}; 0; 0)`
@@ -807,8 +810,12 @@ function DynamicPyramidMeshAndEdges({
       </Html>
 
       {/* Đỉnh C */}
-      <Html position={[baseC.x + 0.2, baseC.y - 0.15, baseC.z - 0.2]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
-        <div className="px-1.5 py-0.5 bg-slate-900/90 rounded border border-slate-700 text-slate-200 font-mono text-[10px] font-bold select-none whitespace-nowrap shadow-sm">
+      <Html position={[baseC.x + 0.12, baseC.y - 0.08, baseC.z - 0.12]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className={`rounded font-mono font-bold select-none whitespace-nowrap shadow-xs ${
+          showCoordinates
+            ? "px-1.5 py-0.5 bg-slate-950/95 border border-slate-700 text-slate-200 text-[9px]"
+            : "w-4 h-4 rounded-full bg-slate-950/90 border border-slate-700 text-slate-200 text-[9px] flex items-center justify-center"
+        }`}>
           {showCoordinates
             ? originAtVertexA
               ? `C(${formatVNFloat(baseWidth)}; ${formatVNFloat(baseDepth)}; 0)`
@@ -818,8 +825,12 @@ function DynamicPyramidMeshAndEdges({
       </Html>
 
       {/* Đỉnh D */}
-      <Html position={[baseD.x - 0.2, baseD.y - 0.15, baseD.z - 0.2]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
-        <div className="px-1.5 py-0.5 bg-slate-900/90 rounded border border-slate-700 text-slate-200 font-mono text-[10px] font-bold select-none whitespace-nowrap shadow-sm">
+      <Html position={[baseD.x - 0.12, baseD.y - 0.08, baseD.z - 0.12]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className={`rounded font-mono font-bold select-none whitespace-nowrap shadow-xs ${
+          showCoordinates
+            ? "px-1.5 py-0.5 bg-slate-950/95 border border-slate-700 text-slate-200 text-[9px]"
+            : "w-4 h-4 rounded-full bg-slate-950/90 border border-slate-700 text-slate-200 text-[9px] flex items-center justify-center"
+        }`}>
           {showCoordinates
             ? originAtVertexA
               ? `D(0; ${formatVNFloat(baseDepth)}; 0)`
@@ -829,8 +840,12 @@ function DynamicPyramidMeshAndEdges({
       </Html>
 
       {/* Chân đường cao H */}
-      <Html position={[apex.x, 0.12, apex.z]} center distanceFactor={15} style={{ pointerEvents: "none" }}>
-        <div className="px-1.5 py-0.5 bg-slate-900/90 rounded border border-rose-500/60 text-rose-300 font-mono text-[10px] font-bold select-none whitespace-nowrap shadow-sm">
+      <Html position={[apex.x, 0.08, apex.z]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className={`rounded font-mono font-bold select-none whitespace-nowrap shadow-xs ${
+          showCoordinates
+            ? "px-1.5 py-0.5 bg-slate-950/95 border border-rose-500/80 text-rose-300 text-[9px]"
+            : "w-4 h-4 rounded-full bg-slate-950/90 border border-rose-500/80 text-rose-300 text-[9px] flex items-center justify-center"
+        }`}>
           {showCoordinates
             ? originAtVertexA
               ? `H(${formatVNFloat(baseWidth / 2)}; ${formatVNFloat(baseDepth / 2)}; 0)`
@@ -859,14 +874,15 @@ export default function Stereometry3DCanvas({
   className = "",
 }: Stereometry3DCanvasProps) {
   const [mounted, setMounted] = useState(false);
-  const [showCoordinates, setShowCoordinates] = useState<boolean>(true);
-  const [showNormalVector, setShowNormalVector] = useState<boolean>(true);
-  const [showAxes, setShowAxes] = useState<boolean>(true);
-  const [showFloorGrid, setShowFloorGrid] = useState<boolean>(true);
-  const [showSectionPlane, setShowSectionPlane] = useState<boolean>(true);
+  const [showCoordinates, setShowCoordinates] = useState<boolean>(false);
+  const [showNormalVector, setShowNormalVector] = useState<boolean>(false);
+  const [showAxes, setShowAxes] = useState<boolean>(false);
+  const [showFloorGrid, setShowFloorGrid] = useState<boolean>(false);
+  const [showSectionPlane, setShowSectionPlane] = useState<boolean>(false);
   const [showHiddenEdges, setShowHiddenEdges] = useState<boolean>(true);
   const [originAtVertexA, setOriginAtVertexA] = useState<boolean>(false);
-  const [showHudCard, setShowHudCard] = useState<boolean>(true);
+  const [showHudCard, setShowHudCard] = useState<boolean>(false);
+  const [showSliders, setShowSliders] = useState<boolean>(false);
   const [isFrozenView, setIsFrozenView] = useState<boolean>(false);
   const [freezeNotice, setFreezeNotice] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -1004,8 +1020,8 @@ export default function Stereometry3DCanvas({
       )}
 
       {/* Top Docked Icon Toolbar: Tiêu chuẩn GeoGebra/Blender (Dùng Icon gọn gàng, tránh rối mắt) */}
-      <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
-        <div className="flex items-center gap-1 p-1 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-800 shadow-xl pointer-events-auto">
+      <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between gap-2 pointer-events-none">
+        <div className="flex items-center gap-1 p-1 bg-slate-950/90 backdrop-blur-md rounded-xl border border-slate-800 shadow-xl pointer-events-auto overflow-x-auto no-scrollbar max-w-[calc(100vw-64px)] sm:max-w-none">
           {/* Nhãn hình chóp gọn gàng */}
           <div className="px-2.5 py-1 text-xs font-semibold text-slate-300 flex items-center gap-1.5 border-r border-slate-800 pr-2.5 mr-0.5">
             <span className="w-2 h-2 rounded-full bg-blue-500" />
@@ -1150,18 +1166,28 @@ export default function Stereometry3DCanvas({
 
       {/* Floating HUD Card: BẢNG ĐẠI LƯỢNG HÌNH HỌC (SGK TOÁN 11 & 12 KẾT NỐI TRI THỨC) */}
       {showHudCard && (
-        <div className="absolute top-14 right-3 z-20 w-80 bg-slate-900/95 backdrop-blur-md rounded-xl border border-slate-700/80 p-3 shadow-2xl text-xs text-slate-200 space-y-2 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center justify-between pb-1.5 border-b border-slate-700">
-            <span className="font-bold text-teal-300 text-[11px] uppercase tracking-wide flex items-center gap-1.5">
-              <Compass className="w-3.5 h-3.5 text-teal-400" />
-              <span>ĐẠI LƯỢNG HÌNH HỌC (SGK 11 & 12)</span>
+        <div className="absolute top-12 right-2 sm:right-3 z-20 w-[calc(100vw-24px)] max-w-[290px] sm:w-72 max-h-[55vh] overflow-y-auto no-scrollbar bg-slate-950/92 backdrop-blur-md rounded-xl border border-slate-800 p-2.5 sm:p-3 shadow-2xl text-[10.5px] text-slate-200 space-y-2 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
+            <span className="font-bold text-blue-400 text-[10px] uppercase tracking-wide flex items-center gap-1.5">
+              <Compass className="w-3.5 h-3.5 text-blue-400" />
+              <span>Đại lượng hình học SGK</span>
             </span>
-            <span className="text-[10px] text-slate-400 font-medium">Chuẩn KNTT</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] text-slate-500 font-mono">KNTT</span>
+              <button
+                type="button"
+                onClick={() => setShowHudCard(false)}
+                className="w-5 h-5 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 flex items-center justify-center transition-colors cursor-pointer text-xs"
+                title="Đóng bảng số liệu"
+              >
+                ✕
+              </button>
+            </div>
           </div>
 
           {/* Phương pháp Tọa độ hóa hình học không gian (Toán 12) khi gắn gốc O vào A */}
           {originAtVertexA && (
-            <div className="p-2 bg-amber-950/80 border border-amber-600/70 rounded-lg space-y-1 text-[11px] text-amber-200">
+            <div className="p-2 bg-amber-950/50 border border-amber-600/50 rounded-lg space-y-1 text-[10px] text-amber-200">
               <div className="font-bold text-amber-300 flex items-center gap-1">
                 <MapPin className="w-3 h-3 text-amber-400" />
                 <span>TỌA ĐỘ HÓA TẠI ĐỈNH A (SGK TOÁN 12)</span>
@@ -1177,23 +1203,23 @@ export default function Stereometry3DCanvas({
             </div>
           )}
 
-          <div className="space-y-1.5 text-[11px]">
-            <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
+          <div className="space-y-1 text-[10.5px]">
+            <div className="flex justify-between items-center bg-slate-900/80 p-1.5 rounded border border-slate-800/60">
               <span className="text-slate-400">Chiều cao chóp:</span>
               <KatexMath math={`h = SH = ${formatVNFloat(currentHeight)}\\text{ m}`} className="text-emerald-300 font-semibold" />
             </div>
 
-            <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
+            <div className="flex justify-between items-center bg-slate-900/80 p-1.5 rounded border border-slate-800/60">
               <span className="text-slate-400">Cạnh đáy AB & AD:</span>
               <KatexMath math={`a \\approx ${formatVNFloat(edgeAB)}\\text{ m}`} className="text-cyan-300 font-semibold" />
             </div>
 
-            <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
+            <div className="flex justify-between items-center bg-slate-900/80 p-1.5 rounded border border-slate-800/60">
               <span className="text-slate-400">Diện tích đáy S(ABCD):</span>
               <KatexMath math={`S_{ABCD} \\approx ${formatVNFloat(realBaseArea)}\\text{ m}^2`} className="text-cyan-300 font-semibold" />
             </div>
 
-            <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
+            <div className="flex justify-between items-center bg-slate-900/80 p-1.5 rounded border border-slate-800/60">
               <span className="text-slate-400">Thể tích khối chóp:</span>
               <KatexMath
                 math={`V = \\frac{1}{3} S_{ABCD} \\cdot h \\approx ${formatVNFloat(currentVolume)}\\text{ m}^3`}
@@ -1201,25 +1227,35 @@ export default function Stereometry3DCanvas({
               />
             </div>
 
-            <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
+            <div className="flex justify-between items-center bg-slate-900/80 p-1.5 rounded border border-slate-800/60">
               <span className="text-slate-400">Độ dài cạnh bên SA:</span>
               <KatexMath math={`SA \\approx ${formatVNFloat(edgeSA)}\\text{ m}`} className="text-slate-200" />
             </div>
 
-            <div className="flex justify-between items-center bg-slate-800/60 p-1.5 rounded border border-slate-700/50">
+            <div className="flex justify-between items-center bg-slate-900/80 p-1.5 rounded border border-slate-800/60">
               <span className="text-slate-400">Góc cạnh bên & đáy:</span>
               <KatexMath math={`\\varphi \\approx ${formatVNFloat(slantAngle)}^\\circ`} className="text-purple-300 font-semibold" />
             </div>
           </div>
 
-          <div className="pt-1.5 border-t border-slate-700 text-[10px] space-y-1 text-slate-300">
+          <div className="pt-1.5 border-t border-slate-800 text-[9.5px] space-y-0.5 text-slate-400">
             <div className="flex items-center gap-1.5">
               <span className="text-emerald-400 font-bold">•</span>
               <span>Kéo thả trực tiếp: Click & kéo đỉnh <strong className="text-amber-300">S</strong>, <strong className="text-cyan-300">A, B, D</strong></span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-lime-400 font-bold">•</span>
-              <span>Điểm tỉ số: <strong className="text-lime-300">M</strong> (Trung điểm SA), <strong className="text-purple-300">N</strong> (2/3 SB)</span>
+              <span className="text-purple-400 font-bold">•</span>
+              <span>Điểm tỉ số: <strong className="text-emerald-300">M</strong> (Trung điểm SA), <strong className="text-purple-300">N</strong> (2/3 SB)</span>
+            </div>
+            <div className="pt-1 flex items-center justify-between">
+              <span className="text-[9px] text-slate-500">Chạm xoay 3D</span>
+              <button
+                type="button"
+                onClick={() => setShowHudCard(false)}
+                className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-semibold transition-colors cursor-pointer"
+              >
+                Thu gọn
+              </button>
             </div>
           </div>
         </div>
@@ -1381,50 +1417,79 @@ export default function Stereometry3DCanvas({
         />
       </Canvas>
 
-      {/* Floating Control Sliders (Bottom Left): Khai triển phẳng & Chiều cao H */}
-      <div className="absolute bottom-3 left-3 z-10 flex flex-col gap-2 p-2.5 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-800 shadow-xl max-w-[240px]">
-        {onFoldPercentChange && (
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-[11px]">
-              <span className="font-medium text-slate-300 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Gấp / Mở hình:</span>
+      {/* Floating Control Sliders (Bottom Left): Khai triển phẳng & Chiều cao H (Mặc định thu gọn để màn hình thoáng) */}
+      <div className="absolute bottom-3 left-3 z-10">
+        {!showSliders ? (
+          <button
+            type="button"
+            onClick={() => setShowSliders(true)}
+            title="Mở thanh trượt điều chỉnh thông số hình chóp"
+            className="p-2 sm:px-2.5 sm:py-1.5 bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-slate-100 rounded-xl border border-slate-800 shadow-xl flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
+            <span className="hidden sm:inline text-[11px] font-medium text-slate-300">Thông số</span>
+          </button>
+        ) : (
+          <div className="flex flex-col gap-2 p-2.5 bg-slate-950/95 backdrop-blur-md rounded-xl border border-slate-800 shadow-2xl w-[200px] sm:w-[230px] animate-in fade-in slide-in-from-bottom-2">
+            <div className="flex items-center justify-between pb-1 border-b border-slate-800">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                <SlidersHorizontal className="w-3 h-3 text-emerald-400" />
+                <span>Thông số hình học</span>
               </span>
-              <span className="font-mono text-cyan-400 font-bold">{foldPercent}%</span>
+              <button
+                type="button"
+                onClick={() => setShowSliders(false)}
+                className="w-5 h-5 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 flex items-center justify-center transition-colors cursor-pointer"
+                title="Đóng thanh trượt"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={foldPercent}
-              onChange={(e) => onFoldPercentChange(Number(e.target.value))}
-              className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-            />
-          </div>
-        )}
 
-        {onApexHeightChange && (
-          <div className="flex flex-col gap-1 pt-1.5 border-t border-slate-800/80">
-            <div className="flex items-center justify-between text-[11px]">
-              <span className="font-medium text-slate-300 flex items-center gap-1.5">
-                <Move3d className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Chiều cao h (SH):</span>
-              </span>
-              <span className="font-mono text-emerald-400 font-bold">{formatVNFloat(currentHeight)} m</span>
-            </div>
-            <input
-              type="range"
-              min={1.2}
-              max={5.0}
-              step={0.1}
-              value={currentHeight}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                setApexPos((prev) => new THREE.Vector3(prev.x, val, prev.z));
-                onApexHeightChange(val);
-              }}
-              className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-            />
+            {onFoldPercentChange && (
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-medium text-slate-300 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Gấp / Mở hình:</span>
+                  </span>
+                  <span className="font-mono text-cyan-400 font-bold">{foldPercent}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={foldPercent}
+                  onChange={(e) => onFoldPercentChange(Number(e.target.value))}
+                  className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                />
+              </div>
+            )}
+
+            {onApexHeightChange && (
+              <div className="flex flex-col gap-1 pt-1.5 border-t border-slate-800/80">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-medium text-slate-300 flex items-center gap-1.5">
+                    <Move3d className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Chiều cao h (SH):</span>
+                  </span>
+                  <span className="font-mono text-emerald-400 font-bold">{formatVNFloat(currentHeight)} m</span>
+                </div>
+                <input
+                  type="range"
+                  min={1.2}
+                  max={5.0}
+                  step={0.1}
+                  value={currentHeight}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setApexPos((prev) => new THREE.Vector3(prev.x, val, prev.z));
+                    onApexHeightChange(val);
+                  }}
+                  className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                />
+              </div>
+            )}
           </div>
         )}
       </div>

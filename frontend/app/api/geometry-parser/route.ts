@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isJsonRequest, isSameOrigin, jsonError } from "@/lib/security";
+import { checkRateLimit, RATE_LIMIT_RULES, getClientIp } from "@/lib/rateLimit";
+import { sanitizeUserText } from "@/lib/xssSanitizer";
+import { detectPromptInjection } from "@/lib/promptSecurity";
 import {
   GEOMETRY_PARSER_SYSTEM_PROMPT,
   ParsedGeometrySolid,
@@ -60,6 +63,24 @@ export async function POST(request: NextRequest) {
     return jsonError("INVALID_CONTENT_TYPE", "Yêu cầu phải ở định dạng JSON.", 415);
   }
 
+  // 1. RATE LIMITING: Chống spam request
+  const clientIp = getClientIp(request);
+  const rateLimitStatus = checkRateLimit(clientIp, RATE_LIMIT_RULES.GEOMETRY_PARSER);
+  if (!rateLimitStatus.success) {
+    return NextResponse.json(
+      {
+        detail: {
+          code: "RATE_LIMIT_EXCEEDED",
+          message: `Em thao tác quá nhanh. Vui lòng đợi ${rateLimitStatus.resetSeconds} giây trước khi gửi tiếp.`,
+        },
+      },
+      {
+        status: 429,
+        headers: { "Retry-After": rateLimitStatus.resetSeconds.toString() },
+      }
+    );
+  }
+
   try {
     const body = await request.json().catch(() => null);
     const { prompt, custom_ai } = body || {};
@@ -68,7 +89,14 @@ export async function POST(request: NextRequest) {
       return jsonError("MISSING_PROMPT", "Vui lòng nhập đề bài hình học không gian.", 400);
     }
 
-    const trimmedPrompt = prompt.trim();
+    // 2. XSS & PROMPT INJECTION SANITIZATION
+    const cleanPrompt = sanitizeUserText(prompt).trim();
+    const injectionCheck = detectPromptInjection(cleanPrompt);
+    if (injectionCheck.isMalicious) {
+      return jsonError("PROMPT_INJECTION_DETECTED", "Đề bài chứa ký tự hoặc cấu trúc không hợp lệ.", 400);
+    }
+
+    const trimmedPrompt = cleanPrompt;
     const hasCustomKey = Boolean(
       custom_ai?.apiKey && typeof custom_ai.apiKey === "string" && custom_ai.apiKey.trim().length > 10
     );

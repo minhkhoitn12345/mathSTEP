@@ -1,23 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isJsonRequest, isSameOrigin, jsonError } from "@/lib/security";
 import { getAccessToken, responseWithSessionCookies, type SupabaseTokens } from "@/lib/supabase";
+import { checkRateLimit, getClientIp, RATE_LIMIT_RULES } from "@/lib/rateLimit";
+import { sanitizeUserText } from "@/lib/xssSanitizer";
+import { detectPromptInjection, getSafeSocraticFallback, wrapDefensivePrompt } from "@/lib/promptSecurity";
+import { retrieveMathKnowledge } from "@/lib/mathRagEngine";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const SOCRATIC_SYSTEM_PROMPT = `Bạn là Trợ lý Socratic TES MathSTEP - gia sư toán học tương tác chuyên sâu cho học sinh THPT Việt Nam (Chương trình GDPT 2018).
+const BASE_SOCRATIC_SYSTEM_PROMPT = `Bạn là Trợ lý Socratic TES MathSTEP - gia sư toán học tương tác chuyên sâu cho học sinh THPT Việt Nam (Chương trình GDPT 2018).
 Các nguyên tắc sư phạm bắt buộc:
 1. Phương pháp Socratic: Đặt câu hỏi gợi mở, gợi ý từng bước theo nấc thang tư duy. Tuyệt đối KHÔNG giải hộ bài toán hoặc đưa ra đáp số cuối cùng ngay lập tức.
 2. Chẩn đoán và sửa lỗi: Giúp học sinh tự phát hiện ngộ nhận nhận thức (lỗi chuyển dịch văn bản sang biến số, lỗi trực quan hình không gian, lỗi biến đổi đại số).
-3. Chuẩn hóa công thức Toán học & Quy tắc khoảng trắng:
+3. Bám sát sách giáo khoa Kết nối tri thức: Sử dụng đúng thuật ngữ và phương pháp trong tài liệu RAG được cung cấp.
+4. Chuẩn hóa công thức Toán học & Quy tắc khoảng trắng:
    - Bắt buộc dùng cú pháp KaTeX/LaTeX chuẩn: công thức trong dòng kẹp giữa $...$, công thức khối đặt riêng dòng kẹp giữa $$...$$.
    - QUAN TRỌNG: Luôn chèn đúng 1 dấu cách trước và sau ký hiệu $, ví dụ: "điểm $M(2; 3)$ thuộc" (TUYỆT ĐỐI KHÔNG viết dính liền "điểm$M(2; 3)$thuộc").
    - Bên trong công thức, thêm khoảng trắng nhỏ \\, trước dấu mở ngoặc, ví dụ: $N\\,\\left(\\frac{SN}{SB} = \\frac{2}{3}\\right)$ hoặc $SH \\perp (ABCD)$ để các chữ không bị dính sát vào nhau.
-4. Tôn trọng người học: Ngôn phong sư phạm ân cần, súc tích, khích lệ tinh thần tự khám phá của học sinh.`;
+5. Tôn trọng người học: Ngôn phong sư phạm ân cần, súc tích, khích lệ tinh thần tự khám phá của học sinh.`;
 
 export async function POST(request: NextRequest) {
   if (!isSameOrigin(request)) return jsonError("FORBIDDEN", "Yêu cầu không hợp lệ.", 403);
   if (!isJsonRequest(request)) return jsonError("INVALID_CONTENT_TYPE", "Yêu cầu phải ở định dạng JSON.", 415);
+
+  // 1. BACKEND RATE LIMITING (Phòng chống DoS và spam API AI)
+  const clientIp = getClientIp(request);
+  const rateLimitStatus = checkRateLimit(clientIp, RATE_LIMIT_RULES.CHAT);
+  if (!rateLimitStatus.success) {
+    return NextResponse.json(
+      {
+        detail: {
+          code: "RATE_LIMIT_EXCEEDED",
+          message: `Em thao tác quá nhanh. Vui lòng đợi ${rateLimitStatus.resetSeconds} giây trước khi gửi câu hỏi tiếp theo.`,
+        },
+      },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": rateLimitStatus.resetSeconds.toString(),
+          "Cache-Control": "no-store",
+        },
+      }
+    );
+  }
 
   let session: { token: string | null; refreshed: SupabaseTokens | null } = { token: null, refreshed: null };
   try {
@@ -49,14 +75,54 @@ export async function POST(request: NextRequest) {
     );
 
     if (!token && !hasCustomKey) {
-      return jsonError("UNAUTHORIZED", "Vui lòng đăng nhập hoặc nhập API Key riêng trong Cài đặt để trò chuyện với Trợ lý Socratic TES.", 401);
+      return jsonError(
+        "UNAUTHORIZED",
+        "Vui lòng đăng nhập hoặc nhập API Key riêng trong Cài đặt để trò chuyện với Trợ lý Socratic TES.",
+        401
+      );
     }
 
-    // 1. NẾU NGƯỜI DÙNG CẤU HÌNH API KEY RIÊNG (Gemini, OpenAI, DeepSeek...)
+    // 2. XSS SANITIZATION: Làm sạch tin nhắn đầu vào
+    const rawUserMessage = typeof payload.message === "string" ? payload.message : "";
+    const cleanUserMessage = sanitizeUserText(rawUserMessage);
+
+    // 3. PROMPT INJECTION & JAILBREAK DETECTION: Phòng chống bẻ gãy vai trò Socratic
+    const injectionCheck = detectPromptInjection(cleanUserMessage);
+    if (injectionCheck.isMalicious) {
+      // Chặn ngay lập tức tại middleware, trả về phản hồi sư phạm an toàn
+      return responseWithSessionCookies(
+        NextResponse.json({
+          ok: true,
+          answer: getSafeSocraticFallback(injectionCheck.reason),
+          intent: "security_redirect",
+          model_used: "guardrail_firewall",
+          source: "prompt_security",
+        }),
+        refreshed
+      );
+    }
+
+    // 4. RAG KNOWLEDGE RETRIEVAL: Rút trích tri thức SGK KNTT tương ứng với trạm học
+    const moduleId = payload.learning_context?.module || "spatial_geometry";
+    const stationId = payload.learning_context?.station_id;
+    const learningStage = payload.learning_context?.learning_stage;
+    const ragContext = retrieveMathKnowledge(
+      moduleId,
+      stationId,
+      typeof learningStage === "number" ? learningStage : 0,
+      cleanUserMessage
+    );
+
+    // 5. DEFENSIVE PROMPT WRAPPING: Đóng gói prompt với hàng rào cô lập dữ liệu
+    const { systemPrompt, userPrompt } = wrapDefensivePrompt(
+      BASE_SOCRATIC_SYSTEM_PROMPT,
+      cleanUserMessage,
+      ragContext
+    );
+
+    // 6. XỬ LÝ GỌI MÔ HÌNH VỚI CUSTOM API KEY (Gemini, OpenAI, DeepSeek)
     if (customAi?.apiKey && typeof customAi.apiKey === "string" && customAi.apiKey.trim().length > 10) {
       const key = customAi.apiKey.trim();
-      const userMessage = payload.message || "";
-      const contextDesc = `[Chủ đề: ${payload.learning_context?.module || "Toán THPT"}, Bước học: ${payload.learning_context?.learning_stage || "Khám phá"}]`;
 
       // A. Google Gemini (Gemini 2.5 Flash, Gemini 2.5 Pro...)
       if (customAi.provider === "gemini") {
@@ -67,19 +133,15 @@ export async function POST(request: NextRequest) {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              system_instruction: { parts: [{ text: SOCRATIC_SYSTEM_PROMPT }] },
+              system_instruction: { parts: [{ text: systemPrompt }] },
               contents: [
                 {
                   role: "user",
-                  parts: [
-                    {
-                      text: `${contextDesc}\n\nHọc sinh hỏi/thao tác: ${userMessage}`,
-                    },
-                  ],
+                  parts: [{ text: userPrompt }],
                 },
               ],
               generationConfig: {
-                temperature: 0.4,
+                temperature: 0.3,
                 maxOutputTokens: 2048,
               },
             }),
@@ -97,7 +159,7 @@ export async function POST(request: NextRequest) {
                 answer: answerText,
                 intent: "guided_socratic",
                 model_used: model,
-                source: "custom_gemini",
+                source: "custom_gemini_rag",
               }),
               refreshed
             );
@@ -124,10 +186,10 @@ export async function POST(request: NextRequest) {
           body: JSON.stringify({
             model,
             messages: [
-              { role: "system", content: SOCRATIC_SYSTEM_PROMPT },
-              { role: "user", content: `${contextDesc}\nHọc sinh: ${userMessage}` },
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
             ],
-            temperature: 0.4,
+            temperature: 0.3,
           }),
           signal: AbortSignal.timeout(45_000),
         });
@@ -142,7 +204,7 @@ export async function POST(request: NextRequest) {
                 answer: answerText,
                 intent: "guided_socratic",
                 model_used: model,
-                source: "custom_llm",
+                source: "custom_llm_rag",
               }),
               refreshed
             );
@@ -151,11 +213,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 2. NẾU KHÔNG CÓ CUSTOM API KEY HOẶC CÓ FASTAPI BACKEND
+    // 7. NẾU CÓ DỊCH VỤ FASTAPI BACKEND
     const baseUrl = process.env.FASTAPI_BASE_URL?.replace(/\/$/, "");
     if (!baseUrl) {
       return responseWithSessionCookies(
-        jsonError("FASTAPI_NOT_CONFIGURED", "Chưa cấu hình dịch vụ AI trung tâm. Vui lòng sử dụng API Key cá nhân hoặc chế độ Offline Socratic.", 503),
+        jsonError(
+          "FASTAPI_NOT_CONFIGURED",
+          "Chưa cấu hình dịch vụ AI trung tâm. Vui lòng sử dụng API Key cá nhân trong Cài đặt hoặc trải nghiệm chế độ offline.",
+          503
+        ),
         refreshed
       );
     }
@@ -163,7 +229,11 @@ export async function POST(request: NextRequest) {
     const upstream = await fetch(`${baseUrl}/assistant/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: rawText,
+      body: JSON.stringify({
+        ...payload,
+        message: cleanUserMessage,
+        rag_context: ragContext,
+      }),
       cache: "no-store",
       signal: AbortSignal.timeout(60_000),
     });
