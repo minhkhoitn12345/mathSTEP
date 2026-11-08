@@ -14,12 +14,14 @@ interface ModuleLabWorkbenchClientProps {
   module: CoreModuleCard;
   initialStation: StationItem;
   initialStep?: number;
+  initialMode?: "sgk" | "dynamic";
 }
 
 export default function ModuleLabWorkbenchClient({
   module,
   initialStation,
   initialStep = 0,
+  initialMode = "sgk",
 }: ModuleLabWorkbenchClientProps) {
   const [currentStation, setCurrentStation] = useState<StationItem>(initialStation);
   const [currentStep, setCurrentStep] = useState<number>(initialStep);
@@ -214,6 +216,7 @@ export default function ModuleLabWorkbenchClient({
           moduleId={module.id}
           stationId={currentStation.id}
           initialStep={currentStep}
+          initialMode={initialMode}
           onStepChange={handleStepChange}
           onSelectStation={handleSelectStation}
           onBackToCatalog={() => setCatalogOpen(true)}

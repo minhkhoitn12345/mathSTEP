@@ -31,6 +31,7 @@ import {
   AlertCircle,
   Calculator,
   RefreshCw,
+  BookOpen,
 } from "lucide-react";
 
 export type SubsystemId = "student" | "teacher" | "research";
@@ -1053,7 +1054,7 @@ function HomeContent() {
                   >
                     <div>
                       {/* Visual SVG Card Art */}
-                      <Link href={`/modules/${mod.id}`} className="block h-36 relative overflow-hidden bg-slate-950 cursor-pointer">
+                      <Link href={`/modules/${mod.id}?mode=dynamic`} className="block h-36 relative overflow-hidden bg-slate-950 cursor-pointer">
                         <ModuleCardArt moduleId={mod.id} />
                         {/* Clean minimal Badges */}
                         <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
@@ -1075,7 +1076,7 @@ function HomeContent() {
                         </div>
 
                         <h3 className="font-semibold text-sm text-slate-100 leading-snug group-hover:text-blue-400 transition-colors">
-                          <Link href={`/modules/${mod.id}`}>
+                          <Link href={`/modules/${mod.id}?mode=dynamic`}>
                             {mod.title}
                           </Link>
                         </h3>
@@ -1101,13 +1102,22 @@ function HomeContent() {
                       </div>
                     </div>
 
-                    <div className="p-3.5 pt-0">
+                    <div className="p-3.5 pt-0 flex items-center gap-2">
                       <Link
-                        href={`/modules/${mod.id}`}
-                        className="w-full py-2 bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-slate-700 hover:border-blue-500"
+                        href={`/modules/${mod.id}?mode=dynamic`}
+                        className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                        title="Vào phòng thí nghiệm toán học tương tác GeoGebra"
                       >
-                        <span>Vào phòng thực hành Module {mod.moduleNumber}</span>
-                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                        <SlidersHorizontal className="w-3.5 h-3.5" />
+                        <span>Thí nghiệm động</span>
+                      </Link>
+                      <Link
+                        href={`/modules/${mod.id}?mode=sgk`}
+                        className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 border border-slate-700 cursor-pointer"
+                        title="Làm bài tập hướng dẫn 8 bước theo SGK GDPT 2018"
+                      >
+                        <BookOpen className="w-3.5 h-3.5 text-blue-400" />
+                        <span className="hidden sm:inline">8 bước SGK</span>
                       </Link>
                     </div>
                   </article>

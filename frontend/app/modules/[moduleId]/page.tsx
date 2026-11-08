@@ -5,7 +5,7 @@ import ModuleLabWorkbenchClient from "../../components/ModuleLabWorkbenchClient"
 
 interface PageProps {
   params: Promise<{ moduleId: string }>;
-  searchParams: Promise<{ step?: string; station?: string }>;
+  searchParams: Promise<{ step?: string; station?: string; mode?: string }>;
 }
 
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
@@ -22,17 +22,20 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
 export default async function ModuleDynamicPage({ params, searchParams }: PageProps) {
   const { moduleId } = await params;
-  const { step, station } = await searchParams;
+  const { step, station, mode } = await searchParams;
 
   const resolved = resolveModuleOrStation(moduleId);
   const activeStation = station ? getStationById(station) || resolved.station : resolved.station;
   const stepNumber = step ? Math.max(0, Math.min(7, parseInt(step, 10) - 1)) : 0;
+  // Vào trực tiếp phòng Module -> Mặc định kích hoạt Chế độ Thí nghiệm động GeoGebra
+  const initialMode = mode === "sgk" ? "sgk" : "dynamic";
 
   return (
     <ModuleLabWorkbenchClient
       module={resolved.module}
       initialStation={activeStation}
       initialStep={stepNumber}
+      initialMode={initialMode}
     />
   );
 }

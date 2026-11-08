@@ -26,6 +26,7 @@ import DynamicCalculusLab from "./dynamic-math/DynamicCalculusLab";
 import DynamicProbabilityLab from "./dynamic-math/DynamicProbabilityLab";
 import DynamicConicsLab from "./dynamic-math/DynamicConicsLab";
 import DynamicParameterDock from "./dynamic-math/DynamicParameterDock";
+import { useDynamicMathStore } from "./dynamic-math/useDynamicMathStore";
 import KatexMath, { formatVNFloat, MathFormattedText } from "./KatexMath";
 import {
   MoreVertical,
@@ -97,6 +98,7 @@ interface MathStepWorkbenchProps {
   moduleId: ModuleId;
   stationId?: string;
   initialStep?: number;
+  initialMode?: "sgk" | "dynamic";
   onAskTutor?: (question: string) => void;
   onStepChange?: (stepNumber: number, stepTitle: string) => void;
   onSelectStation?: (station: StationItem) => void;
@@ -758,6 +760,7 @@ export default function MathStepWorkbench({
   moduleId,
   stationId,
   initialStep = 0,
+  initialMode = "sgk",
   onAskTutor,
   onStepChange,
   onSelectStation,
@@ -876,7 +879,19 @@ export default function MathStepWorkbench({
   const [params, setParams] = useState<Record<string, number>>(() => getDefaultParams(moduleId));
 
   // --- Mode: Bài học SGK (8 bước) vs Phòng Lab Động GeoGebra ---
-  const [labMode, setLabMode] = useState<"sgk" | "dynamic">("sgk");
+  const [labMode, setLabMode] = useState<"sgk" | "dynamic">(initialMode);
+
+  // Đồng bộ activeModule với Dynamic Math Store để kích hoạt đúng bộ tham số động
+  const { setActiveModule } = useDynamicMathStore();
+  useEffect(() => {
+    setActiveModule(moduleId);
+  }, [moduleId, setActiveModule]);
+
+  useEffect(() => {
+    if (initialMode) {
+      setLabMode(initialMode);
+    }
+  }, [initialMode]);
 
   // --- Natural Language to 3D Geometry Parser (Tự do / Sáng tạo Module 2 & Module 7) ---
   const [aiCreativeMode, setAiCreativeMode] = useState<boolean>(false);
@@ -3145,21 +3160,22 @@ export default function MathStepWorkbench({
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              <div className="flex items-center bg-slate-900 p-0.5 rounded border border-slate-800">
+              <div className="flex items-center bg-slate-900 p-0.5 rounded-lg border border-slate-700 shadow-inner">
                 <button
                   type="button"
                   onClick={() => {
                     setLabMode("sgk");
                     setAiCreativeMode(false);
-                    showToast("Đã chuyển sang Bài học SGK (8 bước).");
+                    showToast("Đã chuyển sang Bài học SGK (8 bước tư duy).");
                   }}
-                  className={`px-2 py-0.5 rounded text-[10.5px] font-medium transition-colors flex items-center gap-1 ${
+                  className={`px-2.5 py-1 rounded text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                     labMode === "sgk" && !aiCreativeMode
-                      ? "bg-slate-800 text-white shadow-xs"
+                      ? "bg-slate-800 text-white shadow-xs border border-slate-700"
                       : "text-slate-400 hover:text-slate-200"
                   }`}
+                  title="Chế độ học theo 8 bước sư phạm SGK chuẩn GDPT 2018"
                 >
-                  <BookOpen className="w-3 h-3" />
+                  <BookOpen className="w-3.5 h-3.5 text-blue-400" />
                   <span className="hidden sm:inline">Bài học SGK</span>
                 </button>
                 <button
@@ -3167,15 +3183,16 @@ export default function MathStepWorkbench({
                   onClick={() => {
                     setLabMode("dynamic");
                     setAiCreativeMode(false);
-                    showToast("Đã chuyển sang Thí nghiệm động.");
+                    showToast("Đã kích hoạt Chế độ Thí nghiệm động GeoGebra!");
                   }}
-                  className={`px-2 py-0.5 rounded text-[10.5px] font-medium transition-colors flex items-center gap-1 ${
+                  className={`px-2.5 py-1 rounded text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                     labMode === "dynamic"
-                      ? "bg-blue-600 text-white shadow-xs"
+                      ? "bg-blue-600 text-white shadow-sm ring-1 ring-blue-400"
                       : "text-slate-400 hover:text-slate-200"
                   }`}
+                  title="Chế độ thực nghiệm toán học động GeoGebra với thanh trượt tham số"
                 >
-                  <SlidersHorizontal className="w-3 h-3" />
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-white" />
                   <span>Thí nghiệm động</span>
                 </button>
                 {meta.is3D && (
@@ -3184,15 +3201,16 @@ export default function MathStepWorkbench({
                     onClick={() => {
                       setLabMode("sgk");
                       setAiCreativeMode(true);
-                      showToast("Đã chuyển sang Dựng hình 3D.");
+                      showToast("Đã chuyển sang Dựng hình 3D bằng ngôn ngữ tự nhiên.");
                     }}
-                    className={`px-2 py-0.5 rounded text-[10.5px] font-medium transition-colors flex items-center gap-1 ${
+                    className={`px-2.5 py-1 rounded text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                       aiCreativeMode
-                        ? "bg-blue-600 text-white shadow-xs"
+                        ? "bg-blue-600 text-white shadow-sm ring-1 ring-blue-400"
                         : "text-slate-400 hover:text-slate-200"
                     }`}
+                    title="Dựng khối đa diện 3D qua câu lệnh"
                   >
-                    <Compass className="w-3 h-3" />
+                    <Compass className="w-3.5 h-3.5" />
                     <span className="hidden md:inline">Dựng hình 3D</span>
                   </button>
                 )}

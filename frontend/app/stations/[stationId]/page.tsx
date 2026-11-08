@@ -6,7 +6,7 @@ import ModuleLabWorkbenchClient from "../../components/ModuleLabWorkbenchClient"
 
 interface PageProps {
   params: Promise<{ stationId: string }>;
-  searchParams: Promise<{ step?: string }>;
+  searchParams: Promise<{ step?: string; mode?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function StationDirectPage({ params, searchParams }: PageProps) {
   const { stationId } = await params;
-  const { step } = await searchParams;
+  const { step, mode } = await searchParams;
 
   const station = getStationById(stationId);
   if (!station) {
@@ -34,12 +34,14 @@ export default async function StationDirectPage({ params, searchParams }: PagePr
 
   const parentModule = CORE_7_MODULES.find((m) => m.id === station.moduleId) || CORE_7_MODULES[1];
   const stepNumber = step ? Math.max(0, Math.min(7, parseInt(step, 10) - 1)) : 0;
+  const labMode = mode === "dynamic" ? "dynamic" : "sgk";
 
   return (
     <ModuleLabWorkbenchClient
       module={parentModule}
       initialStation={station}
       initialStep={stepNumber}
+      initialMode={labMode}
     />
   );
 }
