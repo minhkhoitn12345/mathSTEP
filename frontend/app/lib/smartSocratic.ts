@@ -132,25 +132,43 @@ export function generateSmartSocraticResponse(
     }
   }
 
-  // 3. Phản hồi chung gợi mở tư duy (Generic Socratic Scaffolding)
+  // 3. Xử lý các câu hỏi giao tiếp cơ bản (Chào hỏi, giới thiệu vai trò)
+  if (/^(chào|hello|hi|xin chào|hey|alo|bạn là ai|giới thiệu|ai đó)/i.test(q)) {
+    return {
+      answer: `Chào em! Thầy là **Trợ lý gợi mở Socratic MathSTEP** — gia sư toán học tương tác đồng hành cùng em trong chương trình GDPT 2018.\n\nThầy có thể giúp em:\n1. Giải thích ý nghĩa hình học và bản chất các công thức Toán THPT (Lớp 10 - 12).\n2. Gợi ý từng bước tư duy thông qua các mô hình mô phỏng tương tác 2D & 3D.\n3. Nhận xét dự đoán và cùng em rút ra quy luật toán học.\n\nEm đang học trạm nào hoặc có chỗ nào cần thầy hỗ trợ gợi mở không?`,
+      intent: "greet",
+      nextQuestion: "Em muốn bắt đầu tìm hiểu trạm nào trước?",
+    };
+  }
+
+  // 4. Xử lý khi học sinh cảm thấy khó, chưa biết bắt đầu
+  if (/không hiểu|chưa hiểu|khó quá|không biết làm|bắt đầu từ đâu|làm sao|làm như thế nào/i.test(q)) {
+    return {
+      answer: `Đừng lo lắng nhé! Bất kỳ bài toán nào cũng có thể tháo gỡ từng bước theo tiến trình sau:\n\n1. **Xác định giả thiết & kết luận:** Đề bài đã cho những số liệu/hình vẽ nào, và yêu cầu chúng ta tìm đại lượng gì?\n2. **Quan sát trực quan:** Em hãy nhìn vào khung mô phỏng bên cạnh và thử di chuyển các điểm hoặc thanh trượt tham số.\n3. **Liên hệ công thức:** Yếu tố nào trên hình thay đổi khi em thao tác?\n\nEm hãy cho thầy biết bước đầu tiên: **Đề bài đang cho những dữ kiện gì** nhé!`,
+      intent: "encourage",
+      nextQuestion: "Dữ kiện đầu tiên của bài toán là gì?",
+    };
+  }
+
+  // 5. Phản hồi chung gợi mở tư duy (Generic Socratic Scaffolding)
   const defaultResponses = [
     {
-      answer: `Câu hỏi rất hay! Để trả lời được câu này, em hãy thử quan sát đồ thị trực quan ở khung vẽ bên cạnh: khi thay đổi tham số, yếu tố nào vẫn giữ nguyên và yếu tố nào thay đổi?`,
-      nextQuestion: "Thử kéo điểm vàng trên mô phỏng xem sao?",
+      answer: `Câu hỏi rất hay! Để trả lời được câu này, em hãy thử quan sát mô hình trực quan ở khung vẽ bên cạnh: khi em thay đổi tham số, yếu tố nào vẫn giữ nguyên và yếu tố nào biến đổi đồng thời?`,
+      nextQuestion: "Thử kéo điểm điều khiển trên mô phỏng xem sao?",
     },
     {
-      answer: `Trong toán học thực nghiệm, việc đặt giả thuyết là bước quan trọng nhất. Em hãy viết suy nghĩ của mình vào ô **Dự đoán** ở Bước 2, rồi chúng ta sẽ cùng kiểm chứng bằng các phép đo trên mô hình nhé!`,
+      answer: `Trong phương pháp toán học thực nghiệm, việc đặt giả thuyết là bước quan trọng nhất. Em hãy viết suy nghĩ của mình vào ô **Dự đoán** ở Bước 2, rồi chúng ta sẽ cùng kiểm chứng bằng các phép đo trên mô hình nhé!`,
       nextQuestion: "Quy luật nào chi phối hiện tượng này?",
     },
     {
-      answer: `Em hãy liên hệ với các định lý trong SGK: bài toán này liên quan trực tiếp đến định nghĩa và tính chất cơ bản. Em có muốn xem gợi ý từng bước (Cấp 1 → Cấp 2 → Cấp 3) không?`,
+      answer: `Em hãy liên hệ với các định nghĩa và định lý cơ bản trong SGK: bài toán này có cấu trúc tương tự bài tập nào em từng gặp? Em hãy thử chia nhỏ bài toán thành 2 bước đơn giản hơn xem sao!`,
       nextQuestion: "Xem gợi ý cấp 1 về định lý liên quan",
     },
   ];
 
   const picked = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
   return {
-    answer: picked.answer,
+    answer: `${picked.answer}\n\n> 💡 *Mẹo:* Hiện em đang dùng bộ gợi mở nội bộ. Để trò chuyện với **AI Socratic thế hệ mới (Gemini/OpenAI)** phân tích sâu theo thời gian thực, em hãy mở **Cài đặt ⚙️** (góc trên bên phải) và dán API Key cá nhân miễn phí vào nhé!`,
     intent: "hint",
     hintLevel,
     nextQuestion: picked.nextQuestion,

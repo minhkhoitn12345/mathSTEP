@@ -71,11 +71,12 @@ export async function POST(request: NextRequest) {
       apiKey?: string;
     } | undefined;
 
+    const serverGeminiKey = (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "").trim();
     const hasCustomKey = Boolean(
       customAi?.apiKey && typeof customAi.apiKey === "string" && customAi.apiKey.trim().length > 10
     );
 
-    if (!token && !hasCustomKey) {
+    if (!token && !hasCustomKey && !serverGeminiKey) {
       return jsonError(
         "UNAUTHORIZED",
         "Vui lòng đăng nhập hoặc cấu hình API Key riêng trong Cài đặt để tiếp tục trao đổi với Trợ lý Socratic.",
@@ -121,13 +122,17 @@ export async function POST(request: NextRequest) {
       ragContext
     );
 
-    // 6. XỬ LÝ GỌI MÔ HÌNH VỚI CUSTOM API KEY (Gemini, OpenAI, DeepSeek)
-    if (customAi?.apiKey && typeof customAi.apiKey === "string" && customAi.apiKey.trim().length > 10) {
-      const key = customAi.apiKey.trim();
+    // 6. XỬ LÝ GỌI MÔ HÌNH VỚI CUSTOM API KEY HOẶC SERVER DEFAULT GEMINI KEY
+    const effectiveApiKey = hasCustomKey ? customAi!.apiKey!.trim() : serverGeminiKey;
+    const effectiveProvider = hasCustomKey ? (customAi?.provider || "gemini") : "gemini";
+    const effectiveModel = hasCustomKey ? (customAi?.model || "gemini-2.5-flash") : "gemini-2.5-flash";
+
+    if (effectiveApiKey && effectiveApiKey.length > 10) {
+      const key = effectiveApiKey;
 
       // A. Google Gemini (Gemini 2.5 Flash, Gemini 2.5 Pro...)
-      if (customAi.provider === "gemini") {
-        const rawModel = customAi.model || "gemini-2.5-flash";
+      if (effectiveProvider === "gemini") {
+        const rawModel = effectiveModel || "gemini-2.5-flash";
         const model = rawModel.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 64) || "gemini-2.5-flash";
         const geminiRes = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,
@@ -143,7 +148,7 @@ export async function POST(request: NextRequest) {
                 },
               ],
               generationConfig: {
-                temperature: 0.3,
+                temperature: 0.4,
                 maxOutputTokens: 2048,
               },
             }),
@@ -161,7 +166,7 @@ export async function POST(request: NextRequest) {
                 answer: answerText,
                 intent: "guided_socratic",
                 model_used: model,
-                source: "custom_gemini_rag",
+                source: hasCustomKey ? "custom_gemini_rag" : "server_gemini_rag",
               }),
               refreshed
             );
@@ -170,14 +175,14 @@ export async function POST(request: NextRequest) {
       }
 
       // B. OpenAI hoặc DeepSeek
-      if (customAi.provider === "openai" || customAi.provider === "deepseek") {
+      if (effectiveProvider === "openai" || effectiveProvider === "deepseek") {
         const baseUrl =
-          customAi.provider === "deepseek"
+          effectiveProvider === "deepseek"
             ? "https://api.deepseek.com/chat/completions"
             : "https://api.openai.com/v1/chat/completions";
         const model =
-          customAi.model ||
-          (customAi.provider === "deepseek" ? "deepseek-chat" : "gpt-4o-mini");
+          effectiveModel ||
+          (effectiveProvider === "deepseek" ? "deepseek-chat" : "gpt-4o-mini");
 
         const upstreamRes = await fetch(baseUrl, {
           method: "POST",
@@ -191,7 +196,7 @@ export async function POST(request: NextRequest) {
               { role: "system", content: systemPrompt },
               { role: "user", content: userPrompt },
             ],
-            temperature: 0.3,
+            temperature: 0.4,
             max_tokens: 2048,
           }),
           signal: AbortSignal.timeout(45_000),
@@ -207,7 +212,7 @@ export async function POST(request: NextRequest) {
                 answer: answerText,
                 intent: "guided_socratic",
                 model_used: model,
-                source: "custom_llm_rag",
+                source: hasCustomKey ? "custom_llm_rag" : "server_llm_rag",
               }),
               refreshed
             );
