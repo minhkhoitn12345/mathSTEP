@@ -137,12 +137,20 @@ export default function ModuleLabWorkbenchClient({
       <header className="h-12 bg-slate-950/95 border-b border-slate-800 px-3 sm:px-4 flex items-center justify-between shrink-0 select-none z-30">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link
-            href="/modules"
+            href="/"
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-slate-100 border border-slate-800 text-xs font-medium transition-colors"
-            title="Quay lại danh mục 7 Module"
+            title="Quay lại Trang chủ"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Danh mục Module</span>
+            <span className="hidden sm:inline">Trang chủ</span>
+          </Link>
+
+          <Link
+            href="/modules"
+            className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-slate-100 border border-slate-800 text-xs font-medium transition-colors"
+            title="Xem danh mục 7 Module"
+          >
+            <span>7 Module</span>
           </Link>
 
           <div className="h-4 w-[1px] bg-slate-800" />

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { FormEvent, useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
 import MathGraphVisualizer from "./components/MathGraphVisualizer";
 import MathStepWorkbench from "./components/MathStepWorkbench";
@@ -391,6 +392,7 @@ function ModuleCardArt({ moduleId }: { moduleId: ModuleId }) {
 }
 
 function HomeContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const urlStation = searchParams.get("station");
   const urlStep = searchParams.get("step");
@@ -453,7 +455,7 @@ function HomeContent() {
     } else if (tabParam === "research") {
       setSubsystem("research");
       setViewMode("home");
-    } else {
+    } else if (tabParam === "catalog") {
       setSubsystem("student");
       setViewMode("home");
     }
@@ -654,23 +656,7 @@ function HomeContent() {
   }, [messages.length]);
 
   const handleOpenStationInLab = (st: StationItem, stepNum = 1) => {
-    setStationId(st.id);
-    setModuleId(st.moduleId);
-    setViewMode("lab");
-    setSubsystem("student");
-    setCurrentStep(stepNum - 1);
-    syncUrl(st.id, stepNum, null);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleOpenModuleInLab = (mod: CoreModuleCard, stepNum = 1) => {
-    setStationId(mod.defaultStationId);
-    setModuleId(mod.id);
-    setViewMode("lab");
-    setSubsystem("student");
-    setCurrentStep(stepNum - 1);
-    syncUrl(null, stepNum, null, mod.id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    router.push(`/stations/${st.id}${stepNum > 1 ? `?step=${stepNum}` : ""}`);
   };
 
   const handleSendTutorMessage = async (customMessage?: string) => {
@@ -1073,7 +1059,7 @@ function HomeContent() {
                   >
                     <div>
                       {/* Visual SVG Card Art */}
-                      <div className="h-36 relative overflow-hidden bg-slate-950">
+                      <Link href={`/modules/${mod.id}`} className="block h-36 relative overflow-hidden bg-slate-950 cursor-pointer">
                         <ModuleCardArt moduleId={mod.id} />
                         {/* Clean minimal Badges */}
                         <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
@@ -1084,7 +1070,7 @@ function HomeContent() {
                             {mod.is3D ? "Không gian 3D" : "Mặt phẳng 2D"}
                           </span>
                         </div>
-                      </div>
+                      </Link>
 
                       {/* Card Content */}
                       <div className="p-4 space-y-2">
@@ -1095,7 +1081,9 @@ function HomeContent() {
                         </div>
 
                         <h3 className="font-semibold text-sm text-slate-100 leading-snug group-hover:text-blue-400 transition-colors">
-                          {mod.title}
+                          <Link href={`/modules/${mod.id}`}>
+                            {mod.title}
+                          </Link>
                         </h3>
 
                         <p className="text-slate-400 text-xs line-clamp-2 leading-relaxed">
@@ -1120,14 +1108,13 @@ function HomeContent() {
                     </div>
 
                     <div className="p-3.5 pt-0">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenModuleInLab(mod)}
+                      <Link
+                        href={`/modules/${mod.id}`}
                         className="w-full py-2 bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-slate-700 hover:border-blue-500"
                       >
                         <span>Vào phòng thực hành Module {mod.moduleNumber}</span>
                         <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                      </button>
+                      </Link>
                     </div>
                   </article>
                 ))}
@@ -1228,7 +1215,7 @@ function HomeContent() {
                     >
                       <div>
                         {/* Visual SVG Card Art */}
-                        <div className="h-36 relative overflow-hidden bg-[#eef7f3]">
+                        <Link href={`/stations/${st.id}`} className="block h-36 relative overflow-hidden bg-[#eef7f3] cursor-pointer">
                           <StationCardArt grade={st.grade} is3D={st.is3D} stationId={st.id} />
                           <span className="absolute top-2.5 left-2.5 bg-emerald-800 text-white px-2 py-0.5 rounded-lg text-[10px] font-black font-mono shadow-xs border border-emerald-600">
                             {st.id} · LỚP {st.grade}
@@ -1236,7 +1223,7 @@ function HomeContent() {
                           <span className="absolute top-2.5 right-2.5 bg-emerald-600 text-white px-2 py-0.5 rounded-lg text-[10px] font-bold">
                             {st.is3D ? "KHÔNG GIAN 3D" : "HÌNH HỌC 2D"}
                           </span>
-                        </div>
+                        </Link>
 
                         {/* Card Content */}
                         <div className="p-4 space-y-2">
@@ -1250,7 +1237,9 @@ function HomeContent() {
                           </div>
 
                           <h3 className="font-bold text-sm text-[#152f35] line-clamp-2 leading-snug">
-                            {st.title}
+                            <Link href={`/stations/${st.id}`} className="hover:text-emerald-700 transition-colors">
+                              {st.title}
+                            </Link>
                           </h3>
 
                           <p className="text-gray-600 text-xs line-clamp-2 leading-relaxed">
@@ -1265,13 +1254,13 @@ function HomeContent() {
                       </div>
 
                       <div className="p-4 pt-0">
-                        <button
-                          onClick={() => handleOpenStationInLab(st)}
-                          className="w-full py-2.5 bg-gradient-to-r from-[#087e7c] to-[#0d9488] hover:from-[#066563] hover:to-[#0f766e] text-white rounded-xl font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+                        <Link
+                          href={`/stations/${st.id}`}
+                          className="w-full py-2.5 bg-gradient-to-r from-[#087e7c] to-[#0d9488] hover:from-[#066563] hover:to-[#0f766e] text-white rounded-xl font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                         >
                           <span>Vào phòng thực hành chuẩn</span>
                           <span>↗</span>
-                        </button>
+                        </Link>
                       </div>
                     </article>
                   ))}
