@@ -1158,9 +1158,9 @@ function HomeContent() {
                   </div>
 
                   {/* 2. Main Heading */}
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-bold tracking-tight leading-[1.25] text-white">
-                    Khám phá bản chất Toán học<br />
-                    <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent not-italic font-bold">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[34px] font-bold tracking-tight leading-snug text-white">
+                    Khám phá bản chất Toán học<br className="hidden sm:inline" />{" "}
+                    <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent not-italic font-bold text-lg sm:text-2xl md:text-[28px] lg:text-[32px] block sm:inline">
                       qua mô hình tương tác trực quan.
                     </span>
                   </h1>
@@ -1216,7 +1216,9 @@ function HomeContent() {
                       <div className="text-xs text-slate-400 mt-0.5">Mô hình trực quan</div>
                     </div>
                     <div>
-                      <div className="text-xl sm:text-2xl font-mono font-bold text-blue-400">Socratic AI</div>
+                      <div className="text-base sm:text-lg font-bold text-blue-400 whitespace-nowrap h-7 sm:h-8 flex items-center">
+                        Socratic AI
+                      </div>
                       <div className="text-xs text-slate-400 mt-0.5">Gợi mở tư duy</div>
                     </div>
                   </div>
