@@ -28,29 +28,37 @@ export async function POST(request: NextRequest) {
     const key = apiKey.trim();
 
     if (provider === "gemini") {
-      const rawModel = typeof model === "string" ? model : "gemini-2.5-flash";
-      const modelName = rawModel.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 64) || "gemini-2.5-flash";
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(key)}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: "Hãy trả lời đúng 2 từ: 'SẴN SÀNG'." }] }],
-            generationConfig: { maxOutputTokens: 20 },
-          }),
-          signal: AbortSignal.timeout(10000),
-        }
+      const rawModel = typeof model === "string" ? model : "gemini-3-flash-preview";
+      const modelName = rawModel.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 64) || "gemini-3-flash-preview";
+      
+      const candidateModels = [modelName, "gemini-3-flash-preview", "gemini-3.5-flash-lite"].filter(
+        (m, idx, arr) => arr.indexOf(m) === idx
       );
-      const data = await res.json();
-      if (!res.ok) {
-        return jsonError(
-          "KEY_INVALID",
-          data.error?.message || "Google API key không hợp lệ hoặc model không khả dụng.",
-          400
-        );
+
+      let lastError = "";
+      for (const m of candidateModels) {
+        try {
+          const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(key)}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: "Hãy trả lời đúng 2 từ: 'SẴN SÀNG'." }] }],
+                generationConfig: { maxOutputTokens: 20 },
+              }),
+              signal: AbortSignal.timeout(10000),
+            }
+          );
+          const data = await res.json();
+          if (res.ok) {
+            return NextResponse.json({ ok: true, message: `Kết nối thành công với Google ${m}!` });
+          } else {
+            lastError = data.error?.message || "Model không khả dụng.";
+          }
+        } catch {}
       }
-      return NextResponse.json({ ok: true, message: `Kết nối thành công với Google ${modelName}!` });
+      return jsonError("KEY_INVALID", lastError || "Google API key không hợp lệ hoặc model không khả dụng.", 400);
     }
 
     if (provider === "openai" || provider === "deepseek") {

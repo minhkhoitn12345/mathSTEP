@@ -55,20 +55,25 @@ const AI_MODEL_OPTIONS: Record<
 > = {
   gemini: [
     {
+      id: "gemini-3-flash-preview",
+      label: "Gemini 3 Flash",
+      desc: "Thế hệ mới nhất từ Google, siêu nhanh, nhận diện câu hỏi Toán THPT cực nhạy.",
+      isRecommended: true,
+    },
+    {
+      id: "gemini-3.5-flash-lite",
+      label: "Gemini 3.5 Flash Lite",
+      desc: "Bản Flash Lite tối ưu tốc độ và độ trễ thấp.",
+    },
+    {
       id: "gemini-2.5-flash",
       label: "Gemini 2.5 Flash",
-      desc: "Siêu nhanh, nhận diện câu hỏi Toán THPT cực nhạy, độ trễ thấp.",
-      isRecommended: true,
+      desc: "Bản flash tiêu chuẩn ổn định.",
     },
     {
       id: "gemini-2.5-pro",
       label: "Gemini 2.5 Pro",
       desc: "Tư duy toán học và logic Socratic chuyên sâu, giải thích chặt chẽ.",
-    },
-    {
-      id: "gemini-1.5-flash",
-      label: "Gemini 1.5 Flash",
-      desc: "Bản flash thế hệ trước, ổn định và nhẹ nhàng.",
     },
   ],
   openai: [
@@ -126,7 +131,7 @@ export default function AccountSettingsModal({
 
   // AI Config Form States
   const [provider, setProvider] = useState<"gemini" | "openai" | "deepseek">("gemini");
-  const [selectedModel, setSelectedModel] = useState<string>("gemini-2.5-flash");
+  const [selectedModel, setSelectedModel] = useState<string>("gemini-3-flash-preview");
   const [apiKey, setApiKey] = useState<string>("");
   const [showApiKey, setShowApiKey] = useState<boolean>(false);
   const [testingKey, setTestingKey] = useState<boolean>(false);

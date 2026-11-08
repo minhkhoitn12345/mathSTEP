@@ -125,52 +125,62 @@ export async function POST(request: NextRequest) {
     // 6. XỬ LÝ GỌI MÔ HÌNH VỚI CUSTOM API KEY HOẶC SERVER DEFAULT GEMINI KEY
     const effectiveApiKey = hasCustomKey ? customAi!.apiKey!.trim() : serverGeminiKey;
     const effectiveProvider = hasCustomKey ? (customAi?.provider || "gemini") : "gemini";
-    const effectiveModel = hasCustomKey ? (customAi?.model || "gemini-2.5-flash") : "gemini-2.5-flash";
+    const effectiveModel = hasCustomKey ? (customAi?.model || "gemini-3-flash-preview") : "gemini-3-flash-preview";
 
     if (effectiveApiKey && effectiveApiKey.length > 10) {
       const key = effectiveApiKey;
 
-      // A. Google Gemini (Gemini 2.5 Flash, Gemini 2.5 Pro...)
+      // A. Google Gemini (Gemini 3 Flash, Gemini 3.5 Flash Lite...)
       if (effectiveProvider === "gemini") {
-        const rawModel = effectiveModel || "gemini-2.5-flash";
-        const model = rawModel.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 64) || "gemini-2.5-flash";
-        const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              system_instruction: { parts: [{ text: systemPrompt }] },
-              contents: [
-                {
-                  role: "user",
-                  parts: [{ text: userPrompt }],
-                },
-              ],
-              generationConfig: {
-                temperature: 0.4,
-                maxOutputTokens: 2048,
-              },
-            }),
-            signal: AbortSignal.timeout(45_000),
-          }
+        const rawModel = effectiveModel || "gemini-3-flash-preview";
+        const model = rawModel.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 64) || "gemini-3-flash-preview";
+        
+        // Tự động fallback sang các model thế hệ mới nếu model cũ bị deprecated
+        const candidateModels = [model, "gemini-3-flash-preview", "gemini-3.5-flash-lite"].filter(
+          (m, idx, arr) => arr.indexOf(m) === idx
         );
 
-        if (geminiRes.ok) {
-          const geminiData = await geminiRes.json();
-          const answerText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (answerText) {
-            return responseWithSessionCookies(
-              NextResponse.json({
-                ok: true,
-                answer: answerText,
-                intent: "guided_socratic",
-                model_used: model,
-                source: hasCustomKey ? "custom_gemini_rag" : "server_gemini_rag",
-              }),
-              refreshed
+        for (const candidateModel of candidateModels) {
+          try {
+            const geminiRes = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/${candidateModel}:generateContent?key=${encodeURIComponent(key)}`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  system_instruction: { parts: [{ text: systemPrompt }] },
+                  contents: [
+                    {
+                      role: "user",
+                      parts: [{ text: userPrompt }],
+                    },
+                  ],
+                  generationConfig: {
+                    temperature: 0.4,
+                    maxOutputTokens: 2048,
+                  },
+                }),
+                signal: AbortSignal.timeout(45_000),
+              }
             );
-          }
+
+            if (geminiRes.ok) {
+              const geminiData = await geminiRes.json();
+              const answerText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (answerText) {
+                return responseWithSessionCookies(
+                  NextResponse.json({
+                    ok: true,
+                    answer: answerText,
+                    intent: "guided_socratic",
+                    model_used: candidateModel,
+                    source: hasCustomKey ? "custom_gemini_rag" : "server_gemini_rag",
+                  }),
+                  refreshed
+                );
+              }
+            }
+          } catch {}
         }
       }
 
