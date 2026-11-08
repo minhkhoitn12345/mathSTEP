@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Layers, Compass, GraduationCap, FileText, Settings, User, ChevronDown, LogOut, History } from "lucide-react";
+import { Compass, GraduationCap, Settings, User, ChevronDown, LogOut, History } from "lucide-react";
 import { CustomAiConfig } from "./AccountSettingsModal";
 
 export type SubsystemId = "student" | "teacher" | "research";
@@ -33,7 +33,7 @@ interface PlatformHeaderProps {
 
 export default function PlatformHeader({
   subsystem,
-  viewMode,
+  viewMode: _viewMode,
   onSelectSubsystem,
   session,
   sessionLoading,
@@ -69,6 +69,10 @@ export default function PlatformHeader({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [userMenuOpen]);
+  const isTeacher = Boolean(
+    session?.authenticated && (session.role === "teacher" || session.role === "admin")
+  );
+
   return (
     <header className="h-13 border-b border-slate-800/80 bg-slate-950/95 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between sticky top-0 z-40 select-none">
       {/* Brand Logo */}
@@ -88,69 +92,48 @@ export default function PlatformHeader({
         </Link>
       </div>
 
-      {/* 3 PHÂN HỆ CHÍNH KHKT NAVIGATION TABS (SEGMENTED CONTROL) */}
-      <nav className="flex items-center bg-slate-900 p-0.5 rounded-md border border-slate-800 h-8">
+      {/* THANH ĐIỀU HƯỚNG TỐI GIẢN (CLEAN & MINIMALIST NAVBAR) */}
+      <nav className="flex items-center gap-6 sm:gap-8">
+        {/* Tab 1: Trạm học */}
         <button
           type="button"
           onClick={() => onSelectSubsystem("student", "home")}
-          className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
-            subsystem === "student" && viewMode === "home"
-              ? "bg-blue-600 text-white shadow-xs font-semibold"
-              : "text-slate-400 hover:text-slate-200"
+          className={`text-sm font-medium px-3 py-1.5 rounded-md transition-colors duration-200 cursor-pointer ${
+            subsystem === "student"
+              ? "text-white bg-white/5 font-semibold"
+              : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
           }`}
         >
-          <Layers className="w-3.5 h-3.5 text-blue-400" />
-          <span className="hidden md:inline">48 Trạm học</span>
+          Trạm học
         </button>
 
-        <button
-          type="button"
-          onClick={() => onSelectSubsystem("student", "lab")}
-          className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
-            subsystem === "student" && viewMode === "lab"
-              ? "bg-blue-600 text-white shadow-xs font-semibold"
-              : "text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <Compass className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="hidden md:inline">Phòng thực hành</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onSelectSubsystem("teacher", "home")}
-          className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
-            subsystem === "teacher"
-              ? "bg-amber-600 text-white shadow-xs font-semibold"
-              : "text-slate-400 hover:text-slate-200"
-          }`}
-          title={
-            session?.role === "teacher" || session?.role === "admin"
-              ? "Phân hệ Giảng dạy & Chẩn đoán Sư phạm"
-              : "Phân hệ Giáo viên (Yêu cầu xác thực Sư phạm)"
-          }
-        >
-          <GraduationCap className={`w-3.5 h-3.5 ${subsystem === "teacher" ? "text-white" : "text-amber-400"}`} />
-          <span className="hidden md:inline">Giáo viên</span>
-          {!(session?.role === "teacher" || session?.role === "admin") && (
-            <span className="text-[9px] px-1 py-0.2 rounded bg-slate-800 text-amber-400/90 font-mono font-semibold border border-slate-700/80">
-              GV
-            </span>
-          )}
-        </button>
-
+        {/* Tab 2: Cơ sở KHKT */}
         <button
           type="button"
           onClick={() => onSelectSubsystem("research", "home")}
-          className={`px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
+          className={`text-sm font-medium px-3 py-1.5 rounded-md transition-colors duration-200 cursor-pointer ${
             subsystem === "research"
-              ? "bg-blue-600 text-white shadow-xs font-semibold"
-              : "text-slate-400 hover:text-slate-200"
+              ? "text-white bg-white/5 font-semibold"
+              : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
           }`}
         >
-          <FileText className="w-3.5 h-3.5 text-sky-400" />
-          <span className="hidden md:inline">Cơ sở KHKT</span>
+          Cơ sở KHKT
         </button>
+
+        {/* Tab 3: Giáo viên (Chỉ hiển thị khi đã đăng nhập và có quyền giáo viên/admin) */}
+        {isTeacher && (
+          <button
+            type="button"
+            onClick={() => onSelectSubsystem("teacher", "home")}
+            className={`text-sm font-medium px-3 py-1.5 rounded-md transition-colors duration-200 cursor-pointer ${
+              subsystem === "teacher"
+                ? "text-white bg-white/5 font-semibold"
+                : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
+            }`}
+          >
+            Giáo viên
+          </button>
+        )}
       </nav>
 
       {/* USER MENU & AUTH */}
