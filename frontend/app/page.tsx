@@ -578,8 +578,68 @@ function HomeContent() {
   const [customAiConfig, setCustomAiConfig] = useState<CustomAiConfig | null>(null);
   const [chatHistoryOpen, setChatHistoryOpen] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<"stations" | "modules">("stations");
 
   const allStations = useMemo(() => getAllStations(), []);
+
+  // Cuộn trang mượt mà tới danh mục trạm học
+  const handleNavigateStations = useCallback(() => {
+    setActiveSection("stations");
+    if (subsystem !== "student" || viewMode !== "home") {
+      setSubsystem("student");
+      setViewMode("home");
+      syncUrl(null, null, "student");
+      setTimeout(() => {
+        const el = document.getElementById("catalog-section");
+        el?.scrollIntoView({ behavior: "smooth" });
+      }, 150);
+    } else {
+      const el = document.getElementById("catalog-section");
+      el?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [subsystem, viewMode, syncUrl]);
+
+  // Cuộn trang mượt mà tới 7 module thí nghiệm động
+  const handleNavigateModules = useCallback(() => {
+    setActiveSection("modules");
+    if (subsystem !== "student" || viewMode !== "home") {
+      setSubsystem("student");
+      setViewMode("home");
+      syncUrl(null, null, "student");
+      setTimeout(() => {
+        const el = document.getElementById("modules-section");
+        el?.scrollIntoView({ behavior: "smooth" });
+      }, 150);
+    } else {
+      const el = document.getElementById("modules-section");
+      el?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [subsystem, viewMode, syncUrl]);
+
+  // Scroll spy để đổi trạng thái active giữa Trạm học và Module
+  useEffect(() => {
+    if (subsystem !== "student" || viewMode !== "home") return;
+
+    const handleScroll = () => {
+      const catalogEl = document.getElementById("catalog-section");
+      const modulesEl = document.getElementById("modules-section");
+      if (!catalogEl || !modulesEl) return;
+
+      const catalogTop = catalogEl.getBoundingClientRect().top;
+      const modulesTop = modulesEl.getBoundingClientRect().top;
+
+      if (catalogTop <= 350) {
+        setActiveSection("stations");
+      } else if (modulesTop <= 350) {
+        setActiveSection("modules");
+      } else {
+        setActiveSection("stations");
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [subsystem, viewMode]);
 
   // Filter stations for the catalog view
   const filteredStations = useMemo(() => {
@@ -870,6 +930,7 @@ function HomeContent() {
       <PlatformHeader
         subsystem={subsystem}
         viewMode={viewMode}
+        activeSection={activeSection}
         onSelectSubsystem={(sub, view = "home") => {
           setSubsystem(sub);
           setViewMode(view);
@@ -877,6 +938,8 @@ function HomeContent() {
             syncUrl(null, null, sub === "student" ? null : sub);
           }
         }}
+        onNavigateStations={handleNavigateStations}
+        onNavigateModules={handleNavigateModules}
         session={session}
         sessionLoading={sessionLoading}
         customAiConfig={customAiConfig}
@@ -1028,7 +1091,7 @@ function HomeContent() {
             </section>
 
             {/* SECTION: 7 MODULE THÍ NGHIỆM TOÁN HỌC ĐỘNG (GEOGEBRA & DESMOS ENGINE) */}
-            <section id="modules-section" className="max-w-6xl mx-auto px-4 md:px-8 space-y-4 pt-2">
+            <section id="modules-section" className="max-w-6xl mx-auto px-4 md:px-8 space-y-4 pt-2 scroll-mt-16">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 border-b border-slate-800 pb-3">
                 <div>
                   <div className="flex items-center gap-2">
@@ -1161,7 +1224,7 @@ function HomeContent() {
             </section>
 
             {/* 48 STATIONS CATALOG SECTION */}
-            <section id="catalog-section" className="max-w-6xl mx-auto px-4 md:px-8 space-y-6">
+            <section id="catalog-section" className="max-w-6xl mx-auto px-4 md:px-8 space-y-6 scroll-mt-16">
               <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-800 pb-4">
                 <div>
                   <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-400 block">

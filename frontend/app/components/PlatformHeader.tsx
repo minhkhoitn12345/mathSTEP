@@ -18,8 +18,11 @@ interface SessionData {
 
 interface PlatformHeaderProps {
   subsystem: SubsystemId;
-  viewMode: ViewMode;
+  viewMode?: ViewMode;
+  activeSection?: "stations" | "modules";
   onSelectSubsystem: (sub: SubsystemId, view?: ViewMode) => void;
+  onNavigateStations?: () => void;
+  onNavigateModules?: () => void;
   session: SessionData | null;
   sessionLoading: boolean;
   customAiConfig: CustomAiConfig | null;
@@ -33,7 +36,10 @@ interface PlatformHeaderProps {
 
 export default function PlatformHeader({
   subsystem,
+  activeSection,
   onSelectSubsystem,
+  onNavigateStations,
+  onNavigateModules,
   session,
   sessionLoading,
   customAiConfig,
@@ -92,13 +98,19 @@ export default function PlatformHeader({
       </div>
 
       {/* THANH ĐIỀU HƯỚNG TỐI GIẢN (CLEAN & MINIMALIST NAVBAR) */}
-      <nav className="flex items-center gap-6 sm:gap-8">
-        {/* Tab 1: Trạm học */}
+      <nav className="flex items-center gap-5 sm:gap-7 md:gap-8">
+        {/* Tab 1: Trạm học (kéo xuống danh mục trạm học) */}
         <button
           type="button"
-          onClick={() => onSelectSubsystem("student", "home")}
+          onClick={() => {
+            if (onNavigateStations) {
+              onNavigateStations();
+            } else {
+              onSelectSubsystem("student", "home");
+            }
+          }}
           className={`text-sm font-medium px-3 py-1.5 rounded-md transition-colors duration-200 cursor-pointer ${
-            subsystem === "student"
+            subsystem === "student" && activeSection !== "modules"
               ? "text-white bg-white/5 font-semibold"
               : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
           }`}
@@ -106,7 +118,26 @@ export default function PlatformHeader({
           Trạm học
         </button>
 
-        {/* Tab 2: Cơ sở KHKT */}
+        {/* Tab 2: Module (kế bên trạm học, kéo xuống 7 module thí nghiệm) */}
+        <button
+          type="button"
+          onClick={() => {
+            if (onNavigateModules) {
+              onNavigateModules();
+            } else {
+              onSelectSubsystem("student", "home");
+            }
+          }}
+          className={`text-sm font-medium px-3 py-1.5 rounded-md transition-colors duration-200 cursor-pointer ${
+            subsystem === "student" && activeSection === "modules"
+              ? "text-white bg-white/5 font-semibold"
+              : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
+          }`}
+        >
+          Module
+        </button>
+
+        {/* Tab 3: Cơ sở KHKT */}
         <button
           type="button"
           onClick={() => onSelectSubsystem("research", "home")}
@@ -119,7 +150,7 @@ export default function PlatformHeader({
           Cơ sở KHKT
         </button>
 
-        {/* Tab 3: Giáo viên (Chỉ hiển thị khi đã đăng nhập và có quyền giáo viên/admin) */}
+        {/* Tab 4: Giáo viên (Chỉ hiển thị khi đã đăng nhập và có quyền giáo viên/admin) */}
         {isTeacher && (
           <button
             type="button"
