@@ -126,9 +126,10 @@ export async function POST(request: NextRequest) {
 
       // A. Google Gemini (Gemini 2.5 Flash, Gemini 2.5 Pro...)
       if (customAi.provider === "gemini") {
-        const model = customAi.model || "gemini-2.5-flash";
+        const rawModel = customAi.model || "gemini-2.5-flash";
+        const model = rawModel.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 64) || "gemini-2.5-flash";
         const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

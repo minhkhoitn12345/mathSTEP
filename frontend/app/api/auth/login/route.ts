@@ -42,12 +42,13 @@ export async function POST(request: NextRequest) {
     return jsonError("INVALID_REQUEST", "Thông tin đăng nhập không hợp lệ.", 400);
   }
 
-  // 2. CAPTCHA VERIFICATION: Chống botnet spam
-  if (body.captchaToken) {
-    const captchaResult = verifyMathCaptcha(body.captchaAnswer, body.captchaToken);
-    if (!captchaResult.valid) {
-      return jsonError("CAPTCHA_FAILED", captchaResult.reason || "Xác thực phép toán chưa đúng.", 400);
-    }
+  // 2. CAPTCHA VERIFICATION: Bắt buộc để chống botnet brute-force mật khẩu
+  if (!body.captchaToken || body.captchaAnswer === undefined || body.captchaAnswer === null || body.captchaAnswer === "") {
+    return jsonError("CAPTCHA_REQUIRED", "Vui lòng nhập kết quả phép tính chống spam.", 400);
+  }
+  const captchaResult = verifyMathCaptcha(body.captchaAnswer, body.captchaToken);
+  if (!captchaResult.valid) {
+    return jsonError("CAPTCHA_FAILED", captchaResult.reason || "Xác thực phép toán chưa đúng.", 400);
   }
 
   // 3. XSS SANITIZATION

@@ -67,14 +67,15 @@ export function extractUserRole(user: SupabaseUser | null): UserRole {
     return appRole as UserRole;
   }
 
-  // 2. Kiểm tra email quản trị viên đặc biệt hoặc giáo viên trường
+  // 2. Kiểm tra email quản trị viên đặc biệt hoặc giáo viên trường (Bảo mật: TUYỆT ĐỐI không đọc role từ user_metadata)
   const email = user.email?.toLowerCase() || "";
   if (email.endsWith("@admin.mathstep.edu.vn") || email === "admin@mathstep.vn") {
     return "admin";
   }
   if (
     email.endsWith("@teacher.mathstep.edu.vn") ||
-    (user.user_metadata as Record<string, unknown> | undefined)?.role === "teacher"
+    email.endsWith("@giaovien.edu.vn") ||
+    user.app_metadata?.role === "teacher"
   ) {
     return "teacher";
   }

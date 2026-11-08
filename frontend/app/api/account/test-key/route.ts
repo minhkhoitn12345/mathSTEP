@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isJsonRequest, isSameOrigin, jsonError } from "@/lib/security";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   if (!isSameOrigin(request)) return jsonError("FORBIDDEN", "Yêu cầu không hợp lệ.", 403);
   if (!isJsonRequest(request)) return jsonError("INVALID_CONTENT_TYPE", "Yêu cầu phải ở định dạng JSON.", 415);
+
+  const clientIp = getClientIp(request);
+  const rateLimitStatus = checkRateLimit(clientIp, { maxRequests: 10, windowSeconds: 60, actionName: "test_key" });
+  if (!rateLimitStatus.success) {
+    return NextResponse.json(
+      { detail: { code: "RATE_LIMIT_EXCEEDED", message: `Thao tác kiểm tra key quá nhanh. Vui lòng đợi ${rateLimitStatus.resetSeconds} giây.` } },
+      { status: 429, headers: { "Retry-After": rateLimitStatus.resetSeconds.toString() } }
+    );
+  }
 
   try {
     const body = await request.json().catch(() => null);
@@ -18,9 +28,10 @@ export async function POST(request: NextRequest) {
     const key = apiKey.trim();
 
     if (provider === "gemini") {
-      const modelName = model || "gemini-2.5-flash";
+      const rawModel = typeof model === "string" ? model : "gemini-2.5-flash";
+      const modelName = rawModel.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 64) || "gemini-2.5-flash";
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(key)}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   SlidersHorizontal,
   BarChart2,
@@ -57,8 +57,8 @@ export default function DynamicCalculusLab() {
   const svgWidth = 520;
   const svgHeight = 360;
 
-  const toScreenX = (wx: number) => ((wx - xMin) / (xMax - xMin)) * svgWidth;
-  const toScreenY = (wy: number) => svgHeight - ((wy - yMin) / (yMax - yMin)) * svgHeight;
+  const toScreenX = useCallback((wx: number) => ((wx - xMin) / (xMax - xMin)) * svgWidth, [xMin, xMax, svgWidth]);
+  const toScreenY = useCallback((wy: number) => svgHeight - ((wy - yMin) / (yMax - yMin)) * svgHeight, [yMin, yMax, svgHeight]);
 
   // Riemann Rectangles data
   const { rectangles, approxSum } = useMemo(() => {
@@ -101,7 +101,7 @@ export default function DynamicCalculusLab() {
       d += `${x === xMin ? "M" : "L"} ${sx.toFixed(1)} ${sy.toFixed(1)} `;
     }
     return d;
-  }, []);
+  }, [toScreenX, toScreenY, xMin, xMax]);
 
   return (
     <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">

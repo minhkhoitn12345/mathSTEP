@@ -75,7 +75,21 @@ export default function ModuleLabWorkbenchClient({
     setError("");
 
     try {
-      // 1. Thử gọi API backend /api/chat
+      // 1. Nạp cấu hình Custom AI Key từ localStorage (nếu có)
+      let customAiConfig: unknown = undefined;
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("mathstep:custom_ai_config");
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed?.apiKey && typeof parsed.apiKey === "string" && parsed.apiKey.trim().length > 10) {
+              customAiConfig = parsed;
+            }
+          }
+        } catch {}
+      }
+
+      // 2. Thử gọi API backend /api/chat
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -89,22 +103,26 @@ export default function ModuleLabWorkbenchClient({
             learning_stage: currentStep,
           },
           hint_level: 1,
+          custom_ai: customAiConfig,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            role: "assistant",
-            content: data.reply || data.content,
-            nextQuestion: data.next_question,
-          },
-        ]);
-        setBusy(false);
-        return;
+        const replyText = data.answer || data.reply || data.content;
+        if (replyText) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: data.message_id || crypto.randomUUID(),
+              role: "assistant",
+              content: replyText,
+              nextQuestion: data.next_action?.payload?.question || data.next_question,
+            },
+          ]);
+          setBusy(false);
+          return;
+        }
       }
     } catch {
       // Fallback về smart Socratic cục bộ nếu offline hoặc backend lỗi

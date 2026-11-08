@@ -76,8 +76,10 @@ export function sanitizePromptInput(input: string): string {
   if (!input || typeof input !== "string") return "";
 
   let cleaned = input;
-  // Loại bỏ các delimiter token LLM
+  // Loại bỏ các delimiter token LLM và thẻ cách ly dữ liệu
   cleaned = cleaned.replace(/\[INST\]|\[\/INST\]|<<SYS>>|<\/s>|<\|im_start\|>|<\|im_end\|>/gi, "");
+  cleaned = cleaned.replace(/<{2,4}\s*(END_)?STUDENT_INPUT\s*>{2,4}/gi, "");
+  cleaned = cleaned.replace(/<<<|>>>/g, "");
   // Khử các tiền tố giả mạo System: hoặc Assistant:
   cleaned = cleaned.replace(/^\s*(system|assistant|admin)\s*:\s*/gim, "");
 

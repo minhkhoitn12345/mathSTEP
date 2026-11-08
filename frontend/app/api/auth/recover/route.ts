@@ -1,12 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isJsonRequest, isSameOrigin, jsonError } from "@/lib/security";
 import { getSupabaseConfig } from "@/lib/supabase";
+import { checkRateLimit, getClientIp, RATE_LIMIT_RULES } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   if (!isSameOrigin(request)) return jsonError("FORBIDDEN", "Yêu cầu không hợp lệ.", 403);
   if (!isJsonRequest(request)) return jsonError("INVALID_CONTENT_TYPE", "Yêu cầu phải ở định dạng JSON.", 415);
+
+  // Rate Limiting chống spam email khôi phục mật khẩu
+  const clientIp = getClientIp(request);
+  const rateLimitStatus = checkRateLimit(clientIp, RATE_LIMIT_RULES.RESEND_EMAIL);
+  if (!rateLimitStatus.success) {
+    return NextResponse.json(
+      { detail: { code: "RATE_LIMIT_EXCEEDED", message: `Em thao tác quá nhanh. Vui lòng đợi ${rateLimitStatus.resetSeconds} giây.` } },
+      { status: 429, headers: { "Retry-After": rateLimitStatus.resetSeconds.toString() } }
+    );
+  }
+
   let body: { email?: unknown };
   try { body = await request.json(); } catch { return jsonError("INVALID_REQUEST", "Email không hợp lệ.", 400); }
   if (typeof body.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {

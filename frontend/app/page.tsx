@@ -1439,13 +1439,13 @@ function HomeContent() {
             if (e.target === e.currentTarget) setAuthModalOpen(false);
           }}
         >
-          <div className="bg-[#fdfbf7] w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-[#e8e2d8] space-y-4">
-            <div className="flex justify-between items-center pb-2 border-b border-[#e8e2d8]">
+          <div className="bg-slate-900 w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-slate-800 space-y-4 text-slate-100">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
               <div>
-                <span className="text-[10px] font-bold text-[#c25e3e] uppercase tracking-wider font-sans">
+                <span className="text-[10px] font-mono font-bold text-blue-400 uppercase tracking-wider">
                   MATHSTEP TÀI KHOẢN
                 </span>
-                <h3 className="text-base font-serif font-bold text-[#102026]">
+                <h3 className="text-base font-bold text-slate-100">
                   {authMode === "login"
                     ? "Đăng nhập tài khoản"
                     : authMode === "signup"
@@ -1456,7 +1456,7 @@ function HomeContent() {
               <button
                 type="button"
                 onClick={() => setAuthModalOpen(false)}
-                className="text-gray-400 hover:text-black font-bold"
+                className="text-slate-400 hover:text-white p-1 rounded transition-colors font-bold text-sm"
               >
                 ✕
               </button>
@@ -1464,33 +1464,33 @@ function HomeContent() {
 
             {authMode === "verify_email" ? (
               <div className="space-y-4 py-1 text-center">
-                <div className="w-14 h-14 mx-auto rounded-2xl bg-[#faf2ee] text-[#c25e3e] border border-[#f5dacf] flex items-center justify-center shadow-xs">
-                  <Mail className="w-7 h-7 text-[#c25e3e]" />
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-blue-950/60 text-blue-400 border border-blue-800/80 flex items-center justify-center shadow-xs">
+                  <Mail className="w-7 h-7 text-blue-400" />
                 </div>
                 <div className="space-y-2">
-                  <h4 className="font-serif font-bold text-base text-[#102026]">
+                  <h4 className="font-bold text-base text-slate-100">
                     Yêu cầu Xác thực Email
                   </h4>
-                  <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
+                  <p className="text-xs text-slate-300 leading-relaxed max-w-xs mx-auto">
                     Một email chứa liên kết kích hoạt tài khoản đã được gửi đến:
                   </p>
-                  <div className="font-mono font-bold text-xs text-[#102026] bg-[#f2ece2] py-1.5 px-3 rounded-lg border border-[#ded5c7] inline-block max-w-full truncate">
+                  <div className="font-mono font-bold text-xs text-blue-300 bg-slate-950 py-1.5 px-3 rounded-lg border border-slate-800 inline-block max-w-full truncate">
                     {pendingVerificationEmail || loginEmail}
                   </div>
-                  <p className="text-[11px] text-gray-500 leading-relaxed pt-1">
-                    Vui lòng mở hộp thư của bạn (kiểm tra cả thư mục <em>Spam / Thư rác / Quảng cáo</em>) và nhấn vào liên kết xác nhận để kích hoạt đầy đủ quyền truy cập.
+                  <p className="text-[11px] text-slate-400 leading-relaxed pt-1">
+                    Vui lòng mở hộp thư của bạn (kiểm tra cả thư mục <em>Spam / Thư rác</em>) và nhấn vào liên kết xác nhận để kích hoạt đầy đủ quyền truy cập.
                   </p>
                 </div>
 
-                {loginError && <p className="text-[11px] text-red-600 font-medium">{loginError}</p>}
-                {loginNotice && <p className="text-[11px] text-emerald-700 font-medium">{loginNotice}</p>}
+                {loginError && <p className="text-[11px] text-rose-400 font-medium bg-rose-950/40 p-2 rounded-lg border border-rose-900/60">{loginError}</p>}
+                {loginNotice && <p className="text-[11px] text-emerald-400 font-medium bg-emerald-950/40 p-2 rounded-lg border border-emerald-900/60">{loginNotice}</p>}
 
                 <div className="pt-2 space-y-2">
                   <button
                     type="button"
                     disabled={loginBusy || resendCooldown > 0}
                     onClick={handleResendVerificationEmail}
-                    className="w-full py-2.5 bg-[#c25e3e] hover:bg-[#a94c2d] disabled:opacity-50 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                   >
                     <RotateCcw className={`w-3.5 h-3.5 ${loginBusy ? "animate-spin" : ""}`} />
                     <span>
@@ -1505,7 +1505,7 @@ function HomeContent() {
                       setLoginError("");
                       setLoginNotice("Hãy đăng nhập sau khi em đã xác nhận qua liên kết trong email.");
                     }}
-                    className="w-full py-2 bg-white hover:bg-[#f6f2ea] text-[#102026] rounded-xl font-bold text-xs border border-[#e8e2d8] transition-colors cursor-pointer"
+                    className="w-full py-2 bg-slate-950 hover:bg-slate-800 text-slate-200 rounded-xl font-bold text-xs border border-slate-800 transition-colors cursor-pointer"
                   >
                     Tôi đã xác thực xong → Đăng nhập
                   </button>
@@ -1516,40 +1516,43 @@ function HomeContent() {
                 <form onSubmit={login} className="space-y-3 text-xs">
                   {authMode === "signup" && (
                     <div>
-                      <label className="font-bold block mb-1 text-[#102026]">Họ và tên</label>
+                      <label className="font-semibold block mb-1 text-slate-300">Họ và tên</label>
                       <input
                         type="text"
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         required
-                        className="w-full p-2 border border-[#d8d0c2] bg-white text-[#102026] text-slate-900 placeholder:text-gray-400 rounded-lg text-xs outline-none focus:border-[#c25e3e]"
+                        placeholder="Nguyễn Văn A"
+                        className="w-full p-2.5 border border-slate-700 bg-slate-950 text-slate-100 placeholder:text-slate-500 rounded-lg text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                       />
                     </div>
                   )}
                   <div>
-                    <label className="font-bold block mb-1 text-[#102026]">Email</label>
+                    <label className="font-semibold block mb-1 text-slate-300">Email</label>
                     <input
                       type="email"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
                       required
-                      className="w-full p-2 border border-[#d8d0c2] bg-white text-[#102026] text-slate-900 placeholder:text-gray-400 rounded-lg text-xs outline-none focus:border-[#c25e3e]"
+                      placeholder="hocsinh@example.com"
+                      className="w-full p-2.5 border border-slate-700 bg-slate-950 text-slate-100 placeholder:text-slate-500 rounded-lg text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="font-bold block mb-1 text-[#102026]">Mật khẩu</label>
+                    <label className="font-semibold block mb-1 text-slate-300">Mật khẩu</label>
                     <div className="relative">
                       <input
                         type={showPassword ? "text" : "password"}
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
                         required
-                        className="w-full p-2 pr-9 border border-[#d8d0c2] bg-white text-[#102026] text-slate-900 placeholder:text-gray-400 rounded-lg text-xs outline-none focus:border-[#c25e3e]"
+                        placeholder="••••••••"
+                        className="w-full p-2.5 pr-9 border border-slate-700 bg-slate-950 text-slate-100 placeholder:text-slate-500 rounded-lg text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword((v) => !v)}
-                        className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600"
+                        className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-200 transition-colors"
                         title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                       >
                         {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -1558,24 +1561,24 @@ function HomeContent() {
                   </div>
 
                   {/* Math Captcha chống spam bot */}
-                  <div className="p-2.5 bg-[#f6f2ea] rounded-xl border border-[#e8e2d8] space-y-1.5">
-                    <div className="flex items-center justify-between text-xs text-[#52483e]">
-                      <span className="flex items-center gap-1 font-semibold text-[11px]">
-                        <Calculator className="w-3.5 h-3.5 text-[#c25e3e]" />
+                  <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-2">
+                    <div className="flex items-center justify-between text-xs text-slate-300">
+                      <span className="flex items-center gap-1.5 font-semibold text-[11px] text-slate-300">
+                        <Calculator className="w-3.5 h-3.5 text-blue-400" />
                         <span>Captcha:</span>
                       </span>
                       <button
                         type="button"
                         onClick={loadCaptcha}
                         disabled={captchaLoading}
-                        className="p-1 hover:bg-[#e8e2d8] rounded text-gray-500 hover:text-black transition-colors cursor-pointer"
+                        className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
                         title="Đổi mã captcha khác"
                       >
                         <RefreshCw className={`w-3 h-3 ${captchaLoading ? "animate-spin" : ""}`} />
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="px-3 py-1.5 bg-white border border-[#d8d0c2] rounded-lg font-mono font-bold text-xs text-[#c25e3e] min-w-[90px] text-center select-none shadow-xs">
+                      <div className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg font-mono font-bold text-xs text-blue-400 min-w-[90px] text-center select-none shadow-inner">
                         {captchaQuestion || (captchaLoading ? "..." : "12 + 15 = ?")}
                       </div>
                       <input
@@ -1586,18 +1589,18 @@ function HomeContent() {
                         value={captchaAnswer}
                         onChange={(e) => setCaptchaAnswer(e.target.value)}
                         required
-                        className="flex-1 p-2 border border-[#d8d0c2] bg-white text-[#102026] text-slate-900 placeholder:text-gray-400 rounded-lg text-xs font-mono font-bold outline-none focus:border-[#c25e3e]"
+                        className="flex-1 p-2 border border-slate-700 bg-slate-900 text-slate-100 placeholder:text-slate-500 rounded-lg text-xs font-mono font-bold outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                       />
                     </div>
                   </div>
 
-                  {loginError && <p className="text-[11px] text-red-600 font-medium">{loginError}</p>}
-                  {loginNotice && <p className="text-[11px] text-emerald-700 font-medium">{loginNotice}</p>}
+                  {loginError && <p className="text-[11px] text-rose-400 font-medium bg-rose-950/40 p-2 rounded-lg border border-rose-900/60">{loginError}</p>}
+                  {loginNotice && <p className="text-[11px] text-emerald-400 font-medium bg-emerald-950/40 p-2 rounded-lg border border-emerald-900/60">{loginNotice}</p>}
 
                   <button
                     type="submit"
                     disabled={loginBusy}
-                    className="w-full py-2.5 bg-[#c25e3e] hover:bg-[#a94c2d] text-white font-bold rounded-xl transition-colors disabled:opacity-50 shadow-xs cursor-pointer"
+                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all disabled:opacity-50 shadow-sm cursor-pointer"
                   >
                     {loginBusy ? "Đang xử lý..." : authMode === "login" ? "Đăng nhập" : "Tạo tài khoản"}
                   </button>
@@ -1606,10 +1609,10 @@ function HomeContent() {
                 {/* Phân cách HOẶC */}
                 <div className="relative my-2">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-[#e8e2d8]" />
+                    <div className="w-full border-t border-slate-800" />
                   </div>
                   <div className="relative flex justify-center text-xs">
-                    <span className="bg-[#fdfbf7] px-2.5 text-gray-400 text-[11px] font-medium font-serif italic">
+                    <span className="bg-slate-900 px-2.5 text-slate-400 text-[11px] font-medium italic">
                       hoặc
                     </span>
                   </div>
@@ -1618,7 +1621,7 @@ function HomeContent() {
                 {/* Nút Tiếp tục bằng Google */}
                 <a
                   href="/api/auth/google"
-                  className="w-full py-2.5 px-4 border border-[#d8d0c2] hover:border-gray-400 rounded-xl font-bold text-xs text-gray-700 bg-white hover:bg-gray-50 transition-all flex items-center justify-center gap-2.5 shadow-xs text-center"
+                  className="w-full py-2.5 px-4 border border-slate-700 hover:border-slate-600 rounded-xl font-semibold text-xs text-slate-200 bg-slate-950 hover:bg-slate-800 transition-all flex items-center justify-center gap-2.5 shadow-sm text-center"
                 >
                   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                     <path
@@ -1641,7 +1644,7 @@ function HomeContent() {
                   <span>Tiếp tục bằng Google</span>
                 </a>
 
-                <div className="pt-2 border-t border-[#e8e2d8] text-center space-y-2">
+                <div className="pt-2 border-t border-slate-800 text-center space-y-2">
                   <button
                     type="button"
                     onClick={() => {
@@ -1649,7 +1652,7 @@ function HomeContent() {
                       setLoginError("");
                       setLoginNotice("");
                     }}
-                    className="text-xs text-[#c25e3e] font-bold hover:underline cursor-pointer"
+                    className="text-xs text-blue-400 font-semibold hover:text-blue-300 hover:underline cursor-pointer transition-colors"
                   >
                     {authMode === "login" ? "Chưa có tài khoản? Đăng ký ngay" : "Đã có tài khoản? Đăng nhập"}
                   </button>
@@ -1657,7 +1660,7 @@ function HomeContent() {
                     <button
                       type="button"
                       onClick={() => setAuthModalOpen(false)}
-                      className="text-[11px] text-gray-500 hover:text-black cursor-pointer"
+                      className="text-[11px] text-slate-400 hover:text-slate-200 cursor-pointer transition-colors"
                     >
                       Tiếp tục trải nghiệm mà không cần tài khoản
                     </button>

@@ -63,6 +63,15 @@ export function sanitizeLatex(raw: string): string {
   return s;
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export function renderKatex(latex: string, displayMode = false): string {
   try {
     const cleaned = sanitizeLatex(latex);
@@ -71,7 +80,7 @@ export function renderKatex(latex: string, displayMode = false): string {
       displayMode,
     });
   } catch {
-    return latex;
+    return `<span class="katex-error font-mono text-xs">${escapeHtml(latex)}</span>`;
   }
 }
 

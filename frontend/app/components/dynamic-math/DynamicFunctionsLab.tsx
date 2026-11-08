@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   SlidersHorizontal,
   Activity,
@@ -33,11 +33,11 @@ export default function DynamicFunctionsLab() {
   const svgHeight = 400;
 
   // Coordinate transforms
-  const toScreenX = (wx: number) => ((wx - xMin) / (xMax - xMin)) * svgWidth;
-  const toScreenY = (wy: number) => svgHeight - ((wy - yMin) / (yMax - yMin)) * svgHeight;
+  const toScreenX = useCallback((wx: number) => ((wx - xMin) / (xMax - xMin)) * svgWidth, [xMin, xMax, svgWidth]);
+  const toScreenY = useCallback((wy: number) => svgHeight - ((wy - yMin) / (yMax - yMin)) * svgHeight, [yMin, yMax, svgHeight]);
 
   // Evaluate function f(x)
-  const evalF = (x: number): number => {
+  const evalF = useCallback((x: number): number => {
     if (fnType === "cubic") {
       // f(x) = a*x^3 + b*x
       return a * Math.pow(x, 3) + b * x;
@@ -49,10 +49,10 @@ export default function DynamicFunctionsLab() {
       if (Math.abs(x - 1) < 0.05) return NaN;
       return (a * x + b) / (x - 1);
     }
-  };
+  }, [fnType, a, b]);
 
   // Evaluate derivative f'(x)
-  const evalFPrime = (x: number): number => {
+  const evalFPrime = useCallback((x: number): number => {
     if (fnType === "cubic") {
       // f'(x) = 3*a*x^2 + b
       return 3 * a * Math.pow(x, 2) + b;
@@ -64,7 +64,7 @@ export default function DynamicFunctionsLab() {
       if (Math.abs(x - 1) < 0.05) return NaN;
       return (-a - b) / Math.pow(x - 1, 2);
     }
-  };
+  }, [fnType, a, b]);
 
   // Critical points where f'(x) = 0
   const criticalPoints = useMemo(() => {
@@ -93,7 +93,7 @@ export default function DynamicFunctionsLab() {
       }
     }
     return pts.sort((p1, p2) => p1.x - p2.x);
-  }, [fnType, a, b]);
+  }, [fnType, a, b, evalF]);
 
   // Intersections of f(x) = m (Equation roots)
   const intersections = useMemo(() => {
@@ -118,7 +118,7 @@ export default function DynamicFunctionsLab() {
       prevX = x;
     }
     return roots;
-  }, [fnType, a, b, m]);
+  }, [evalF, xMin, xMax, m]);
 
   // SVG Curve Path
   const curvePath = useMemo(() => {
@@ -142,7 +142,7 @@ export default function DynamicFunctionsLab() {
       }
     }
     return d;
-  }, [fnType, a, b]);
+  }, [evalF, toScreenX, toScreenY, xMin, xMax, yMin, yMax]);
 
   // Tangent line at x0: y = f'(x0)*(x - x0) + f(x0)
   const tangentData = useMemo(() => {
@@ -162,7 +162,7 @@ export default function DynamicFunctionsLab() {
       p1: { x: xLeft, y: yLeft },
       p2: { x: xRight, y: yRight },
     };
-  }, [fnType, a, b, x0]);
+  }, [evalF, evalFPrime, x0, xMin, xMax]);
 
   return (
     <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">

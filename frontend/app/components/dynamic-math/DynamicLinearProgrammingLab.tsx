@@ -151,7 +151,7 @@ export default function DynamicLinearProgrammingLab() {
       optimalVertex: opt,
       integerFeasiblePoints: intPts,
     };
-  }, [activeConstraints, u, v, lockInteger]);
+  }, [activeConstraints, u, v, lockInteger, xMin, xMax, yMin, yMax]);
 
   // Handle pointer drag on test point M
   const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
