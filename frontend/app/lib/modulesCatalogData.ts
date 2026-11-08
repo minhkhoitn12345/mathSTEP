@@ -21,6 +21,8 @@ export interface CoreModuleCard {
   title: string;
   source: string;
   tag: string;
+  stationCode: string;
+  description: string;
   goal: string;
   features: string[];
   borderHover: string;
@@ -36,8 +38,10 @@ export const CORE_7_MODULES: CoreModuleCard[] = [
     is3D: false,
     title: "Hệ Bất Phương Trình & Quy Hoạch Tuyến Tính",
     source: "SGK Toán 10 KNTT · Bài 3 & 4 (Trang 22-31)",
-    tag: "Toán 10 · 2D Oxy · GeoGebra LP",
-    goal: "Khám phá miền nghiệm đa giác lồi, trượt đường mức F(x, y) = ux + vy song song, tự động bắt dính đỉnh tối ưu và lưới điểm nguyên x, y ∈ ℕ.",
+    tag: "Lớp 10 · 2D",
+    stationCode: "Trạm 10.03",
+    description: "Tô màu miền nghiệm đa giác lồi và trượt đường mức để tìm giá trị tối ưu lớn nhất, nhỏ nhất.",
+    goal: "Tô màu miền nghiệm đa giác lồi và trượt đường mức để tìm giá trị tối ưu lớn nhất, nhỏ nhất.",
     features: [
       "Tính đa giác miền nghiệm tự động bằng thuật toán Convex Hull & Clipping",
       "Thanh trượt đường mức k tịnh tiến song song, tự bắt dính đỉnh tối ưu B(8; 12)",
@@ -53,10 +57,12 @@ export const CORE_7_MODULES: CoreModuleCard[] = [
     defaultStationId: "11.06",
     grade: 11,
     is3D: true,
-    title: "Hình Học Không Gian 3D & Dựng Hình Đa Diện",
+    title: "Hình Học Không Gian & Thiết Diện Đa Diện",
     source: "SGK Hình Học 11 KNTT · Bài 10, 11, 12 (Trang 70-88)",
-    tag: "Toán 11 · 3D Không Gian · AI 3D Parser",
-    goal: "Dựng hình chóp tứ giác, kéo đỉnh S điều chỉnh chiều cao h và độ nghiêng, xoay 360°, thuật toán tự phân biệt cạnh thấy / khuất, mặt phẳng cắt thiết diện (P).",
+    tag: "Lớp 11 · 3D",
+    stationCode: "Trạm 11.06",
+    description: "Xoay khối chóp 360°, tự động nhận diện nét khuất và quan sát mặt phẳng cắt thiết diện.",
+    goal: "Xoay khối chóp 360°, tự động nhận diện nét khuất và quan sát mặt phẳng cắt thiết diện.",
     features: [
       "Kéo đỉnh S tự do thay đổi chiều cao h (1.2m - 4.5m) và độ nghiêng tâm đáy",
       "Thuật toán Back-face Culling tự động hiển thị nét liền (thấy) / nét đứt (khuất)",
@@ -72,10 +78,12 @@ export const CORE_7_MODULES: CoreModuleCard[] = [
     defaultStationId: "11.01",
     grade: 11,
     is3D: false,
-    title: "Lượng Giác & Đường Tròn Đơn Vị Động (Split-View)",
+    title: "Đường Tròn Đơn Vị & Đồ Thị Lượng Giác",
     source: "SGK Toán 11 KNTT · Bài 1 & 2 (Trang 5-20)",
-    tag: "Toán 11 · 2D Split-View · Sóng thời gian thực",
-    goal: "Đồng bộ kép: Điểm M quay trên đường tròn đơn vị R=1 gióng tia chiếu liên tục sang đồ thị sóng sin/cos; khảo sát họ sóng y = A sin(ωx + φ) + d.",
+    tag: "Lớp 11 · 2D",
+    stationCode: "Trạm 11.01",
+    description: "Kéo điểm quay trên đường tròn để thấy sự hình thành liên tục của đồ thị hàm số sin và cos.",
+    goal: "Kéo điểm quay trên đường tròn để thấy sự hình thành liên tục của đồ thị hàm số sin và cos.",
     features: [
       "Đồng bộ thời gian thực giữa điểm quay M trên đường tròn R=1 và sóng đồ thị",
       "Tia chiếu gióng trực tiếp từ hình chiếu Ox, Oy sang đồ thị hàm số",
@@ -91,10 +99,12 @@ export const CORE_7_MODULES: CoreModuleCard[] = [
     defaultStationId: "12.01",
     grade: 12,
     is3D: false,
-    title: "Khảo Sát Hàm Số & Bảng Biến Thiên 2 Chiều Động",
+    title: "Khảo Sát Hàm Số & Bảng Biến Thiên Động",
     source: "SGK Toán 12 KNTT · Chương 1 Bài 1, 2, 3 (Trang 6-25)",
-    tag: "Toán 12 · Giải Tích 2D · BBT 2 chiều",
-    goal: "Khảo sát hàm bậc 3, bậc 4, phân thức với thanh trượt hệ số a, b, c, d; tương tác 2 chiều giữa đồ thị và bảng biến thiên; đường thẳng y = m đếm số nghiệm.",
+    tag: "Lớp 12 · 2D",
+    stationCode: "Trạm 12.01",
+    description: "Điều chỉnh hệ số a, b, c, d để quan sát cực trị và sự biến thiên đồng bộ với đồ thị.",
+    goal: "Điều chỉnh hệ số a, b, c, d để quan sát cực trị và sự biến thiên đồng bộ với đồ thị.",
     features: [
       "Hỗ trợ 3 dạng hàm chuẩn: Bậc ba, trùng phương và phân thức bậc nhất/bậc nhất",
       "Bảng biến thiên 2 chiều tương tác: Hover dòng nào sáng đồ thị vùng đó",
@@ -110,10 +120,12 @@ export const CORE_7_MODULES: CoreModuleCard[] = [
     defaultStationId: "12.08",
     grade: 12,
     is3D: true,
-    title: "Tích Phân Riemann & Khối Tròn Xoay 3D (Disk Method)",
+    title: "Ứng Dụng Tích Phân & Khối Tròn Xoay 3D",
     source: "SGK Toán 12 KNTT · Chương 4 Bài 12 & 13 (Trang 18-28)",
-    tag: "Toán 12 · 2D + 3D · Tổng Riemann & Khối xoay",
-    goal: "Xấp xỉ diện tích hình phẳng bằng n dải chữ nhật Riemann (n=2...100, Δ → 0); quay lát cắt quanh Ox với góc θ=0°...360° tạo khối tròn xoay 3D.",
+    tag: "Lớp 12 · 3D",
+    stationCode: "Trạm 12.08",
+    description: "Mô phỏng chia nhỏ diện tích hình phẳng và xoay đồ thị quanh trục Ox tạo khối tròn xoay.",
+    goal: "Mô phỏng chia nhỏ diện tích hình phẳng và xoay đồ thị quanh trục Ox tạo khối tròn xoay.",
     features: [
       "Thanh trượt n dải chữ nhật (2 đến 100): Trực quan hóa sai số diện tích tiến về 0",
       "Tùy chọn quy tắc xấp xỉ: Điểm đầu trái (Left), trung điểm (Midpoint), điểm đầu phải (Right)",
@@ -129,10 +141,12 @@ export const CORE_7_MODULES: CoreModuleCard[] = [
     defaultStationId: "12.12",
     grade: 12,
     is3D: false,
-    title: "Xác Suất Hộp Bi, Sơ Đồ Cây & Công Thức Bayes",
+    title: "Sơ Đồ Cây & Công Thức Xác Suất Bayes",
     source: "SGK Toán 12 KNTT · Chương 6 Bài 18 & 19 (Trang 70-85)",
-    tag: "Toán 12 · Xác Suất · Bayes & Cây 2 tầng",
-    goal: "Mô phỏng 2 hộp bi (Đỏ / Xanh) với sơ đồ cây 2 tầng động; tính xác suất toàn phần và xác suất hậu nghiệm Bayes P(Hộp 1 | Đỏ); mô phỏng gieo xúc xắc luật số lớn.",
+    tag: "Lớp 12 · 2D",
+    stationCode: "Trạm 12.12",
+    description: "Mô phỏng bài toán rút bi thực tế, tự động tính xác suất toàn phần và xác suất có điều kiện.",
+    goal: "Mô phỏng bài toán rút bi thực tế, tự động tính xác suất toàn phần và xác suất có điều kiện.",
     features: [
       "Thanh trượt số bi đỏ, bi xanh trong 2 hộp với cập nhật trực tiếp xác suất phân nhánh",
       "Sơ đồ cây động 2 tầng tự động tính tích xác suất từng nhánh",
@@ -145,13 +159,15 @@ export const CORE_7_MODULES: CoreModuleCard[] = [
   {
     id: "conics_and_solids",
     moduleNumber: "07",
-    defaultStationId: "11.07",
+    defaultStationId: "11.08",
     grade: 10,
     is3D: true,
-    title: "Cắt Mặt Nón Conic & Khai Triển Khối Đa Diện",
+    title: "Mặt Nón Conic & Khối Đa Diện 3D",
     source: "Toán 10 Chuyên Đề Conic & Toán 11 KNTT Bài 12 (Trang 48-88)",
-    tag: "Toán 10-11 · 3D Conic · Khai triển đa diện",
-    goal: "Mặt nón đôi 3D cắt bởi mặt phẳng nghiêng góc β (Elip, Parabol, Hypebol); kiểm chứng tính chất tiêu điểm MF₁ + MF₂ = 2a; thanh trượt gấp/mở đa diện 100% → 0%.",
+    tag: "Lớp 10 - 11 · 3D",
+    stationCode: "Trạm 11.08",
+    description: "Thay đổi góc nghiêng mặt phẳng cắt để tạo đường Elip, Parabol, Hypebol và quan sát mô hình trải phẳng đa diện.",
+    goal: "Thay đổi góc nghiêng mặt phẳng cắt để tạo đường Elip, Parabol, Hypebol và quan sát mô hình trải phẳng đa diện.",
     features: [
       "Mô hình 3D mặt nón tròn xoay hai tầng với thanh trượt góc nghiêng mặt phẳng cắt β (10° - 90°)",
       "Tự động nhận diện thiết diện: Đường tròn, Elip, Parabol hay Hypebol kèm định lý Dandelin",

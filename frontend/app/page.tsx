@@ -24,7 +24,6 @@ import {
   Eye,
   EyeOff,
   SlidersHorizontal,
-  CheckCircle2,
   ArrowRight,
   Activity,
   Mail,
@@ -32,7 +31,6 @@ import {
   AlertCircle,
   Calculator,
   RefreshCw,
-  BookOpen,
 } from "lucide-react";
 
 export type SubsystemId = "student" | "teacher" | "research";
@@ -1106,7 +1104,7 @@ function HomeContent() {
               </div>
             </section>
 
-            {/* SECTION: 7 MODULE THÍ NGHIỆM TOÁN HỌC ĐỘNG (GEOGEBRA & DESMOS ENGINE) */}
+            {/* SECTION: 7 PHÒNG THÍ NGHIỆM TOÁN HỌC */}
             <section id="modules-section" className="max-w-6xl mx-auto px-4 md:px-8 space-y-4 pt-2 scroll-mt-16">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 border-b border-slate-800 pb-3">
                 <div>
@@ -1117,16 +1115,16 @@ function HomeContent() {
                     </span>
                   </div>
                   <h2 className="text-xl md:text-2xl font-bold text-slate-100 mt-1">
-                    7 Phòng Thí Nghiệm Toán Học Tương Tác
+                    7 Phòng Thí Nghiệm Toán Học
                   </h2>
                   <p className="text-xs md:text-sm text-slate-400 mt-1 max-w-3xl leading-relaxed">
-                    Mỗi module là một không gian tương tác bám sát chương trình GDPT 2018. Học sinh trực tiếp thao tác trên các tham số động, quan sát quỹ tích và kiểm chứng định lý theo tiến trình khám phá.
+                    Trực quan hóa các khái niệm trừu tượng. Thay đổi tham số để quan sát hình vẽ và đồ thị biến thiên theo thời gian thực.
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="px-3 py-1 rounded-md bg-slate-900 text-slate-300 text-xs border border-slate-800 flex items-center gap-1.5 font-medium">
                     <SlidersHorizontal className="w-3.5 h-3.5 text-blue-400" />
-                    <span>7 Module chuẩn SGK</span>
+                    <span>Chuẩn SGK mới (GDPT 2018)</span>
                   </span>
                 </div>
               </div>
@@ -1143,7 +1141,7 @@ function HomeContent() {
                     <button
                       key={g.id}
                       onClick={() => setSelectedModuleGrade(g.id)}
-                      className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                      className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                         selectedModuleGrade === g.id
                           ? "bg-blue-600 text-white font-semibold shadow-xs"
                           : "bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800"
@@ -1159,79 +1157,58 @@ function HomeContent() {
                 </div>
               </div>
 
-              {/* Grid 7 Module Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Grid 7 Module Cards (3 cột trên Desktop, 1 cột trên Mobile) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredCoreModules.map((mod) => (
                   <article
                     key={mod.id}
-                    className="bg-slate-900/90 rounded-xl border border-slate-800/80 overflow-hidden hover:border-slate-700 transition-all duration-150 flex flex-col justify-between group"
+                    className="bg-slate-900/90 rounded-xl border border-slate-800/80 hover:border-blue-500/50 transition-all duration-200 flex flex-col justify-between group overflow-hidden shadow-lg hover:shadow-blue-500/5"
                   >
                     <div>
-                      {/* Visual SVG Card Art */}
-                      <Link href={`/modules/${mod.id}?mode=dynamic`} className="block h-36 relative overflow-hidden bg-slate-950 cursor-pointer">
+                      {/* Header thẻ: Tag khối lớp & không gian bên trái + Mã trạm nhỏ gọn bên phải */}
+                      <div className="px-4 py-2.5 bg-slate-950 border-b border-slate-800/70 flex items-center justify-between text-xs">
+                        <span className="font-semibold text-blue-400 bg-blue-950/70 border border-blue-900/50 px-2 py-0.5 rounded text-[11px]">
+                          {mod.tag}
+                        </span>
+                        <span className="font-mono text-slate-400 text-[11px] font-medium">
+                          {mod.stationCode}
+                        </span>
+                      </div>
+
+                      {/* Màn hình/Ảnh preview mô phỏng toán học (giữ nguyên) */}
+                      <Link
+                        href={`/modules/${mod.id}?mode=dynamic`}
+                        className="block h-36 relative overflow-hidden bg-slate-950 cursor-pointer"
+                        title={`Xem mô phỏng ${mod.title}`}
+                      >
                         <ModuleCardArt moduleId={mod.id} />
-                        {/* Clean minimal Badges */}
-                        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                          <span className="bg-slate-900/90 text-slate-200 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border border-slate-800">
-                            Lớp {mod.grade}
-                          </span>
-                          <span className="bg-slate-900/80 text-blue-300 border border-slate-800 px-2 py-0.5 rounded-md text-[11px] font-medium">
-                            {mod.is3D ? "Không gian 3D" : "Mặt phẳng 2D"}
-                          </span>
-                        </div>
                       </Link>
 
-                      {/* Card Content */}
+                      {/* Card Content: Tên bài học & Mô tả hành động */}
                       <div className="p-4 space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-blue-400">
-                            {mod.tag}
-                          </span>
-                        </div>
-
-                        <h3 className="font-semibold text-sm text-slate-100 leading-snug group-hover:text-blue-400 transition-colors">
+                        {/* Tên bài học: Chữ in đậm, nổi bật */}
+                        <h3 className="text-white font-semibold text-base leading-snug group-hover:text-blue-400 transition-colors">
                           <Link href={`/modules/${mod.id}?mode=dynamic`}>
                             {mod.title}
                           </Link>
                         </h3>
 
-                        <p className="text-slate-400 text-xs line-clamp-2 leading-relaxed">
-                          {mod.goal}
+                        {/* Mô tả hành động: Đúng 1 CÂU NGẮN GỌN (tối đa 2 dòng), viết trọn vẹn, TUYỆT ĐỐI KHÔNG để bị cắt cụt ba chấm (...) */}
+                        <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                          {mod.description}
                         </p>
-
-                        {/* Feature Highlights */}
-                        <ul className="space-y-1 pt-1.5 border-t border-slate-800/80 text-[11px] text-slate-300">
-                          {mod.features.slice(0, 3).map((feat, i) => (
-                            <li key={i} className="flex items-start gap-1.5 line-clamp-1">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
-                              <span className="line-clamp-1">{feat}</span>
-                            </li>
-                          ))}
-                        </ul>
-
-                        <div className="text-[10px] text-slate-500 font-mono pt-1 border-t border-slate-800/80 flex items-center justify-between">
-                          <span className="truncate max-w-[170px]">{mod.source}</span>
-                          <span className="text-blue-400 font-bold">Trạm {mod.defaultStationId}</span>
-                        </div>
                       </div>
                     </div>
 
-                    <div className="p-3.5 pt-0 flex items-center gap-2">
+                    {/* Nút hành động: 1 nút duy nhất "Vào phòng thí nghiệm →" */}
+                    <div className="p-4 pt-0">
                       <Link
                         href={`/modules/${mod.id}?mode=dynamic`}
-                        className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-                        title="Vào phòng thí nghiệm toán học tương tác GeoGebra"
+                        className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium text-xs sm:text-sm transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs hover:shadow-md"
+                        title={`Vào phòng thí nghiệm ${mod.title}`}
                       >
-                        <SlidersHorizontal className="w-3.5 h-3.5" />
-                        <span>Thí nghiệm động</span>
-                      </Link>
-                      <Link
-                        href={`/modules/${mod.id}?mode=sgk`}
-                        className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 border border-slate-700 cursor-pointer"
-                        title="Làm bài tập hướng dẫn 8 bước theo SGK GDPT 2018"
-                      >
-                        <BookOpen className="w-3.5 h-3.5 text-blue-400" />
-                        <span className="hidden sm:inline">8 bước SGK</span>
+                        <span>Vào phòng thí nghiệm</span>
+                        <span className="text-sm font-semibold transition-transform group-hover:translate-x-0.5">→</span>
                       </Link>
                     </div>
                   </article>
