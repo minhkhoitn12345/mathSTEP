@@ -20,7 +20,7 @@ export interface StationItem {
   priority: "A" | "B" | "C";
   moduleId: ModuleId;
   is3D: boolean;
-  isValidated?: boolean; // True: Đã được thẩm định toán học 100% & sẵn sàng thực hành
+  isValidated?: boolean; // True: Đã sẵn sàng thực hành tương tác
   badge?: string; // Nhãn phân loại KHKT
 }
 
@@ -45,7 +45,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "spatial_geometry",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "10.02",
@@ -84,7 +84,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "linear_programming",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "10.05",
@@ -97,7 +97,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "trigonometry",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "10.06",
@@ -110,7 +110,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "functions",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "10.07",
@@ -123,7 +123,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "functions",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "10.08",
@@ -136,7 +136,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "functions",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "10.09",
@@ -149,7 +149,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "probability",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "10.10",
@@ -162,7 +162,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "functions",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "10.11",
@@ -175,7 +175,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "conics_and_solids",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "10.12",
@@ -188,7 +188,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "conics_and_solids",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "10.13",
@@ -201,7 +201,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "conics_and_solids",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "10.14",
@@ -214,7 +214,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "probability",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "10.15",
@@ -227,7 +227,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "probability",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "10.16",
@@ -240,7 +240,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "probability",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.01",
@@ -266,7 +266,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "trigonometry",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.03",
@@ -279,7 +279,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "trigonometry",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.04",
@@ -292,7 +292,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "calculus",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.05",
@@ -305,13 +305,13 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "calculus",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.06",
     "source": "KNTT tập 1 Bài 11, tr.78",
     "title": "Hình chóp tứ giác: Cạnh thấy vs Cạnh khuất SGK 11",
-    "simulation": "3D: Xoay khối chóp 360°; thuật toán Back-face Culling tự động chuyển nét đứt cho cạnh bị che khuất; xem đường cao SH.",
+    "simulation": "3D: Xoay khối chóp 360°; tự động nhận diện nét khuất và chuyển nét đứt; xem đường cao SH.",
     "goal": "Nhận biết quy ước nét liền (cạnh nhìn thấy) và nét đứt (cạnh bị khuất) theo chuẩn SGK Hình học 11.",
     "priority": "A",
     "grade": 11,
@@ -344,7 +344,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "spatial_geometry",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.09",
@@ -357,7 +357,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "spatial_geometry",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.10",
@@ -370,7 +370,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "calculus",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.11",
@@ -383,7 +383,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "spatial_geometry",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.12",
@@ -396,7 +396,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "spatial_geometry",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.13",
@@ -409,7 +409,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "spatial_geometry",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.14",
@@ -422,7 +422,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "spatial_geometry",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.15",
@@ -435,7 +435,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "spatial_geometry",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.16",
@@ -448,7 +448,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "spatial_geometry",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.17",
@@ -461,7 +461,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "spatial_geometry",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.18",
@@ -474,7 +474,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "spatial_geometry",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.19",
@@ -487,7 +487,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "probability",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "11.20",
@@ -500,7 +500,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "calculus",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "12.01",
@@ -513,7 +513,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "functions",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "12.02",
@@ -526,7 +526,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "functions",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "12.03",
@@ -539,7 +539,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "functions",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "12.04",
@@ -552,7 +552,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "probability",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "12.05",
@@ -565,7 +565,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "calculus",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "12.06",
@@ -578,7 +578,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "calculus",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "12.07",
@@ -591,7 +591,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "calculus",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "12.08",
@@ -604,7 +604,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "calculus",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "12.09",
@@ -617,7 +617,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "calculus",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "12.10",
@@ -630,7 +630,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "conics_and_solids",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "12.11",
@@ -643,7 +643,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "conics_and_solids",
     "is3D": true,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   },
   {
     "id": "12.12",
@@ -656,7 +656,7 @@ export const STATION_CATALOG: StationItem[] = [
     "moduleId": "probability",
     "is3D": false,
     "isValidated": false,
-    "badge": "Đang hoàn thiện theo đề cương"
+    "badge": "Đang cập nhật mô phỏng"
   }
 ];
 

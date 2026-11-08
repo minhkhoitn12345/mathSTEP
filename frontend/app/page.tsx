@@ -66,45 +66,188 @@ type Session = {
   provider?: string;
 };
 
-function StationCardArt({ grade, is3D, stationId }: { grade: number; is3D: boolean; stationId: string }) {
-  const bgGrad = grade === 10 ? "#d5ede4" : grade === 11 ? "#d9e6f3" : "#e9e6d6";
+function StationCardArt({ is3D, stationId }: { grade?: number; is3D: boolean; stationId: string }) {
+  // 1. Bài đường tròn lượng giác & góc quay alpha (Trạm 11.01, 11.02...) - Tuyệt đối không dùng Parabol
+  const isTrig = stationId === "11.01" || stationId === "11.02" || stationId.startsWith("11.01");
+  // 2. Bài bất phương trình & nửa mặt phẳng miền nghiệm (Trạm 10.01, 10.02, 10.03...)
+  const isInequality = stationId === "10.01" || stationId === "10.02" || stationId === "10.03";
+
+  if (isTrig) {
+    return (
+      <svg viewBox="0 0 380 155" className="w-full h-full block" aria-hidden="true">
+        <defs>
+          <linearGradient id={`bg-trig-${stationId}`} x1="0" y1="0" x2="1" y2="1">
+            <stop stopColor="#0f172a" />
+            <stop offset="1" stopColor="#070d19" />
+          </linearGradient>
+          <linearGradient id={`sector-trig-${stationId}`} x1="0" y1="0" x2="1" y2="1">
+            <stop stopColor="#3b82f6" stopOpacity="0.35" />
+            <stop offset="1" stopColor="#06b6d4" stopOpacity="0.1" />
+          </linearGradient>
+        </defs>
+        <rect width="380" height="155" fill={`url(#bg-trig-${stationId})`} />
+        {/* Lưới tọa độ mờ */}
+        <g stroke="#1e293b" strokeWidth="0.8" opacity="0.6">
+          {[40, 80, 120, 160, 200, 240, 280, 320, 360].map((x) => (
+            <line key={`tx-${x}`} x1={x} y1={0} x2={x} y2={155} />
+          ))}
+          {[25, 55, 85, 115, 145].map((y) => (
+            <line key={`ty-${y}`} x1={0} y1={y} x2={380} y2={y} />
+          ))}
+        </g>
+        {/* Hệ trục tọa độ Oxy & Đường tròn lượng giác */}
+        <g transform="translate(190, 78)">
+          <line x1="-120" y1="0" x2="120" y2="0" stroke="#475569" strokeWidth="1.2" />
+          <line x1="0" y1="65" x2="0" y2="-65" stroke="#475569" strokeWidth="1.2" />
+          <text x="112" y="-5" fill="#94a3b8" fontSize="10">x</text>
+          <text x="6" y="-55" fill="#94a3b8" fontSize="10">y</text>
+          <text x="-12" y="14" fill="#64748b" fontSize="9">O</text>
+
+          {/* Đường tròn đơn vị R = 52 */}
+          <circle cx="0" cy="0" r="52" fill="none" stroke="#38bdf8" strokeWidth="1.8" />
+
+          {/* Cung góc alpha */}
+          <path d="M0 0 L52 0 A52 52 0 0 0 36.7 -36.7 Z" fill={`url(#sector-trig-${stationId})`} />
+          <path d="M18 0 A18 18 0 0 0 12.7 -12.7" fill="none" stroke="#f59e0b" strokeWidth="1.5" />
+          <text x="21" y="-6" fill="#fbbf24" fontSize="10" fontWeight="bold">α</text>
+
+          {/* Bán kính quay OM (góc 45 độ, R=52) */}
+          <line x1="0" y1="0" x2="36.7" y2="-36.7" stroke="#3b82f6" strokeWidth="2" />
+          <circle cx="36.7" cy="-36.7" r="4.5" fill="#60a5fa" stroke="#ffffff" strokeWidth="1.5" />
+
+          {/* Hình chiếu vuông góc lên Ox (cos α) và Oy (sin α) */}
+          <line x1="36.7" y1="-36.7" x2="36.7" y2="0" stroke="#f43f5e" strokeWidth="1.2" strokeDasharray="3,3" />
+          <line x1="36.7" y1="-36.7" x2="0" y2="-36.7" stroke="#10b981" strokeWidth="1.2" strokeDasharray="3,3" />
+
+          {/* Nhãn điểm M và giá trị lượng giác */}
+          <circle cx="36.7" cy="0" r="2.5" fill="#f43f5e" />
+          <circle cx="0" cy="-36.7" r="2.5" fill="#10b981" />
+          <text x="44" y="-38" fill="#e2e8f0" fontSize="10" fontWeight="bold">M(cos α; sin α)</text>
+          <text x="28" y="13" fill="#f87171" fontSize="8" fontFamily="monospace">cos α</text>
+          <text x="-26" y="-33" fill="#34d399" fontSize="8" fontFamily="monospace">sin α</text>
+        </g>
+      </svg>
+    );
+  }
+
+  if (isInequality) {
+    return (
+      <svg viewBox="0 0 380 155" className="w-full h-full block" aria-hidden="true">
+        <defs>
+          <linearGradient id={`bg-ineq-${stationId}`} x1="0" y1="0" x2="1" y2="1">
+            <stop stopColor="#06211d" />
+            <stop offset="1" stopColor="#051513" />
+          </linearGradient>
+          <linearGradient id={`region-${stationId}`} x1="0" y1="0" x2="1" y2="1">
+            <stop stopColor="#10b981" stopOpacity="0.4" />
+            <stop offset="1" stopColor="#059669" stopOpacity="0.12" />
+          </linearGradient>
+        </defs>
+        <rect width="380" height="155" fill={`url(#bg-ineq-${stationId})`} />
+        {/* Lưới tọa độ */}
+        <g stroke="#0f3d35" strokeWidth="0.8" opacity="0.6">
+          {[40, 80, 120, 160, 200, 240, 280, 320, 360].map((x) => (
+            <line key={`ix-${x}`} x1={x} y1={0} x2={x} y2={155} />
+          ))}
+          {[25, 55, 85, 115, 145].map((y) => (
+            <line key={`iy-${y}`} x1={0} y1={y} x2={380} y2={y} />
+          ))}
+        </g>
+
+        {/* Hệ trục tọa độ Oxy */}
+        <line x1="40" y1="130" x2="350" y2="130" stroke="#34d399" strokeWidth="1.5" />
+        <line x1="80" y1="145" x2="80" y2="15" stroke="#34d399" strokeWidth="1.5" />
+        <text x="342" y="142" fill="#6ee7b7" fontSize="10" fontWeight="bold">x</text>
+        <text x="68" y="24" fill="#6ee7b7" fontSize="10" fontWeight="bold">y</text>
+        <text x="66" y="142" fill="#6ee7b7" fontSize="10">O</text>
+
+        {/* Nửa mặt phẳng / miền nghiệm tô màu */}
+        <polygon points="80,130 80,55 210,40 280,130" fill={`url(#region-${stationId})`} stroke="#10b981" strokeWidth="2" />
+
+        {/* Đường thẳng bờ d: ax + by = c */}
+        <line x1="50" y1="150" x2="310" y2="20" stroke="#f59e0b" strokeWidth="1.8" strokeDasharray="5,4" />
+        <text x="240" y="22" fill="#fbbf24" fontSize="9" fontWeight="bold">bờ d: ax + by = c</text>
+
+        {/* Điểm nghiệm và nhãn miền nghiệm */}
+        <circle cx="150" cy="85" r="4.5" fill="#34d399" stroke="#ffffff" strokeWidth="1.5" />
+        <text x="160" y="88" fill="#a7f3d0" fontSize="10" fontWeight="bold">Miền nghiệm ax + by ≤ c</text>
+
+        {/* Điểm nguyên x, y */}
+        <g fill="#6ee7b7" opacity="0.6">
+          <circle cx="110" cy="110" r="2.5" />
+          <circle cx="150" cy="110" r="2.5" />
+          <circle cx="190" cy="110" r="2.5" />
+          <circle cx="110" cy="85" r="2.5" />
+          <circle cx="150" cy="60" r="2.5" />
+        </g>
+      </svg>
+    );
+  }
+
+  if (is3D) {
+    return (
+      <svg viewBox="0 0 380 155" className="w-full h-full block" aria-hidden="true">
+        <defs>
+          <linearGradient id={`bg-3d-${stationId}`} x1="0" y1="0" x2="1" y2="1">
+            <stop stopColor="#081e28" />
+            <stop offset="1" stopColor="#040e14" />
+          </linearGradient>
+          <linearGradient id={`grad-3d-${stationId}`} x1="0" y1="0" x2="1" y2="1">
+            <stop stopColor="#06b6d4" stopOpacity="0.4" />
+            <stop offset="1" stopColor="#3b82f6" stopOpacity="0.15" />
+          </linearGradient>
+        </defs>
+        <rect width="380" height="155" fill={`url(#bg-3d-${stationId})`} />
+        {/* Lưới phối cảnh không gian */}
+        <g stroke="#164e63" strokeWidth="0.8" opacity="0.4">
+          <line x1="30" y1="125" x2="350" y2="125" />
+          <line x1="60" y1="140" x2="320" y2="110" />
+        </g>
+        {/* Đáy hình chóp ABCD */}
+        <polygon points="120,135 260,135 300,105 160,105" fill="#083344" stroke="#06b6d4" strokeWidth="1.5" />
+        <line x1="160" y1="105" x2="120" y2="135" stroke="#22d3ee" strokeWidth="1.5" />
+        <line x1="160" y1="105" x2="300" y2="105" stroke="#22d3ee" strokeWidth="1.2" strokeDasharray="4,4" />
+        {/* Chiều cao SH nét đứt */}
+        <line x1="210" y1="20" x2="210" y2="120" stroke="#f43f5e" strokeWidth="1.8" strokeDasharray="4,3" />
+        <circle cx="210" cy="120" r="3" fill="#f43f5e" />
+        <text x="215" y="75" fill="#fda4af" fontSize="9" fontWeight="bold">h = SH</text>
+        {/* Cạnh bên hình chóp: SA, SB, SC thấy (nét liền), SD khuất (nét đứt) */}
+        <line x1="210" y1="20" x2="120" y2="135" stroke="#38bdf8" strokeWidth="2" />
+        <line x1="210" y1="20" x2="260" y2="135" stroke="#38bdf8" strokeWidth="2" />
+        <line x1="210" y1="20" x2="300" y2="105" stroke="#38bdf8" strokeWidth="2" />
+        <line x1="210" y1="20" x2="160" y2="105" stroke="#38bdf8" strokeWidth="1.2" strokeDasharray="4,4" />
+        {/* Đỉnh S */}
+        <circle cx="210" cy="20" r="5" fill="#38bdf8" stroke="#ffffff" strokeWidth="2" />
+        <text x="210" y="14" fill="#ffffff" fontSize="12" fontWeight="bold" textAnchor="middle">S</text>
+      </svg>
+    );
+  }
+
+  // 4. Mặc định 2D (Hàm số & đồ thị)
   return (
     <svg viewBox="0 0 380 155" className="w-full h-full block" aria-hidden="true">
       <defs>
-        <linearGradient id={`bg-${stationId}`} x2="1" y2="1">
-          <stop stopColor={bgGrad} />
-          <stop offset="1" stopColor="#f4f8f5" />
+        <linearGradient id={`bg-def-${stationId}`} x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#1e1b4b" />
+          <stop offset="1" stopColor="#0b0f19" />
         </linearGradient>
       </defs>
-      <rect width="380" height="155" fill={`url(#bg-${stationId})`} />
-      <g stroke="#87aaa3" strokeWidth="1" opacity="0.22">
+      <rect width="380" height="155" fill={`url(#bg-def-${stationId})`} />
+      <g stroke="#334155" strokeWidth="0.8" opacity="0.4">
         {[40, 80, 120, 160, 200, 240, 280, 320, 360].map((x) => (
-          <line key={`v-${x}`} x1={x} y1={0} x2={x} y2={155} />
-        ))}
-        {[25, 55, 85, 115, 145].map((y) => (
-          <line key={`h-${y}`} x1={0} y1={y} x2={380} y2={y} />
+          <line key={`dx-${x}`} x1={x} y1={0} x2={x} y2={155} />
         ))}
       </g>
-      {is3D ? (
-        <g transform="translate(190, 80)">
-          <path d="M-62 24L-4 55L65 24L5 -9Z" fill="#5bafa1" opacity="0.6" />
-          <path d="M-62 24L0 -62L-4 55Z" fill="#16827d" opacity="0.75" />
-          <path d="M-4 55L0 -62L65 24Z" fill="#95d8c0" opacity="0.85" />
-          <path
-            d="M0 -62L-62 24L-4 55L65 24Z M0 -62L-4 55"
-            stroke="#12565d"
-            fill="none"
-            strokeWidth="2"
-          />
-        </g>
-      ) : (
-        <g fill="none" stroke="#5d7e7f">
-          <path d="M50 120H330M115 140V20" strokeWidth="1.5" />
-          <path d="M65 35Q180 230 310 25" stroke="#087e7c" strokeWidth="3.5" />
-          <path d="M80 125L300 35" stroke="#d97706" strokeWidth="2.5" />
-          <circle cx="225" cy="80" r="5" fill="#087e7c" />
-        </g>
-      )}
+      <line x1="40" y1="80" x2="340" y2="80" stroke="#64748b" strokeWidth="1.2" />
+      <line x1="190" y1="140" x2="190" y2="15" stroke="#64748b" strokeWidth="1.2" />
+      <path
+        d="M60 130 C 130 130, 140 25, 190 25 C 240 25, 250 135, 320 30"
+        fill="none"
+        stroke="#818cf8"
+        strokeWidth="2.5"
+      />
+      <circle cx="150" cy="50" r="4.5" fill="#fbbf24" stroke="#ffffff" strokeWidth="1.5" />
+      <circle cx="230" cy="110" r="4.5" fill="#f43f5e" stroke="#ffffff" strokeWidth="1.5" />
     </svg>
   );
 }
@@ -1220,12 +1363,12 @@ function HomeContent() {
             <section id="catalog-section" className="max-w-6xl mx-auto px-4 md:px-8 space-y-6 scroll-mt-16">
               <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-800 pb-4">
                 <div>
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-400 block">
-                    CHỌN MỘT ĐIỀU EM MUỐN HIỂU
-                  </span>
-                  <h2 className="text-xl md:text-2xl font-semibold text-slate-100 mt-1">
-                    Mỗi trạm, một hành trình khám phá mới.
+                  <h2 className="text-xl md:text-2xl font-bold text-slate-100">
+                    Thư Viện Trạm Học Toán THPT
                   </h2>
+                  <p className="text-xs md:text-sm text-slate-400 mt-1 max-w-2xl leading-relaxed">
+                    Khám phá 48 chuyên đề mô phỏng tương tác từ cơ bản đến nâng cao theo chương trình SGK mới.
+                  </p>
                 </div>
                 <span className="px-2.5 py-1 rounded-md bg-slate-900 text-slate-300 text-xs font-medium border border-slate-800">
                   {filteredStations.length} trạm hiển thị
@@ -1283,22 +1426,22 @@ function HomeContent() {
                 </div>
               </div>
 
-              {/* PHÂN VÙNG 1: CÁC TRẠM NGHIÊN CỨU TRỌNG TÂM (ĐÃ THẨM ĐỊNH TOÁN HỌC 100%) */}
+              {/* PHÂN VÙNG 1: CHUYÊN ĐỀ TRỌNG TÂM SGK MỚI */}
               <div className="space-y-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-3 bg-slate-900/90 border border-slate-800 border-l-4 border-l-blue-500 rounded-r-xl rounded-l-md">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 bg-slate-900/90 border border-slate-800 border-l-4 border-l-blue-500 rounded-r-xl rounded-l-md">
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-                      <h3 className="text-xs font-semibold text-slate-200 uppercase tracking-wide">
-                        CHUYÊN ĐỀ NGHIÊN CỨU TRỌNG TÂM (ĐÃ THẨM ĐỊNH TOÁN HỌC & SƯ PHẠM 100%)
+                      <h3 className="text-sm font-semibold text-slate-100 tracking-wide">
+                        Chuyên đề trọng tâm SGK Mới
                       </h3>
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Phục vụ báo cáo dự thi KHKT: Đầy đủ bối cảnh đề bài thực tế, ma trận số liệu và bảng điều khiển đồng bộ 100% với Canvas.
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                      Bộ trạm học cốt lõi tích hợp đầy đủ bài toán thực tế và mô hình mô phỏng tương tác.
                     </p>
                   </div>
-                  <span className="px-2.5 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium text-xs rounded-md shrink-0">
-                    5 Trạm Cốt Lõi Hoàn Hảo
+                  <span className="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium text-xs rounded-md shrink-0">
+                    Khuyên dùng cho tự học
                   </span>
                 </div>
 
@@ -1314,7 +1457,7 @@ function HomeContent() {
                           <StationCardArt grade={st.grade} is3D={st.is3D} stationId={st.id} />
                           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
                             <span className="bg-slate-900/90 text-slate-200 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border border-slate-800 font-mono">
-                              {st.id} · Lớp {st.grade}
+                              Trạm {st.id} · Lớp {st.grade}
                             </span>
                             <span className="bg-slate-900/80 text-blue-300 border border-slate-800 px-2 py-0.5 rounded-md text-[11px] font-medium">
                               {st.is3D ? "Không gian 3D" : "Mặt phẳng 2D"}
@@ -1326,10 +1469,7 @@ function HomeContent() {
                         <div className="p-4 space-y-2">
                           <div className="flex items-center justify-between text-xs">
                             <span className="font-semibold text-blue-400">
-                              {st.badge || "Trọng tâm KHKT"}
-                            </span>
-                            <span className="text-[11px] font-medium text-emerald-400 flex items-center gap-1">
-                              ✓ Đã kiểm chứng 100%
+                              {st.badge ? st.badge.replace("KHKT", "SGK") : "Chuyên đề trọng tâm"}
                             </span>
                           </div>
 
@@ -1353,9 +1493,9 @@ function HomeContent() {
                       <div className="p-3.5 pt-0">
                         <Link
                           href={`/stations/${st.id}`}
-                          className="w-full py-2 bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-slate-700 hover:border-blue-500"
+                          className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                         >
-                          <span>Vào phòng thực hành chuẩn</span>
+                          <span>Vào trạm học</span>
                           <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
@@ -1364,20 +1504,20 @@ function HomeContent() {
                 </div>
               </div>
 
-              {/* PHÂN VÙNG 2: KHUNG KIẾN TRÚC MỞ RỘNG (ĐANG HOÀN THIỆN THEO ĐỀ CƯƠNG) */}
+              {/* PHÂN VÙNG 2: CHUYÊN ĐỀ MỞ RỘNG (ĐANG CẬP NHẬT MÔ PHỎNG) */}
               <div className="space-y-4 pt-4 border-t border-slate-800">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-3 bg-slate-900/50 border border-slate-800 border-l-4 border-l-slate-700 rounded-r-xl rounded-l-md">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 bg-slate-900/50 border border-slate-800 border-l-4 border-l-slate-700 rounded-r-xl rounded-l-md">
                   <div>
                     <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wide flex items-center gap-1.5">
                       <FlaskConical className="w-3.5 h-3.5 text-slate-400 inline mr-1" />
-                      <span>KHUNG KIẾN TRÚC MỞ RỘNG (LỘ TRÌNH ĐỀ CƯƠNG DÀI HẠN)</span>
+                      <span>Chuyên Đề Mở Rộng (Đang Cập Nhật Mô Phỏng)</span>
                     </h3>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Nhóm tác giả cam kết liêm chính khoa học: Chỉ mở công khai các trạm đã được thẩm định toán học 100%. Các trạm dưới đây đang trong lộ trình chuẩn hóa dữ liệu thực nghiệm sư phạm.
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                      Các chuyên đề bổ trợ theo phân phối chương trình SGK mới đang được bổ sung và cập nhật liên tục.
                     </p>
                   </div>
-                  <span className="px-2 py-0.5 bg-slate-800 text-slate-400 font-medium text-[11px] rounded-md border border-slate-700 shrink-0">
-                    Lộ trình mở rộng
+                  <span className="px-2.5 py-1 bg-slate-800 text-slate-400 font-medium text-xs rounded-md border border-slate-700 shrink-0">
+                    Đang cập nhật
                   </span>
                 </div>
 
@@ -1392,12 +1532,15 @@ function HomeContent() {
                         <div className="h-32 relative overflow-hidden bg-slate-950/80 grayscale opacity-70">
                           <StationCardArt grade={st.grade} is3D={st.is3D} stationId={st.id} />
                           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                            <span className="bg-slate-900/90 text-slate-300 px-2 py-0.5 rounded-md text-[10px] font-mono border border-slate-800">
-                              {st.id} · Lớp {st.grade}
+                            <span className="bg-slate-900/90 text-slate-300 px-2.5 py-0.5 rounded-md text-[10px] font-mono border border-slate-800">
+                              Trạm {st.id} · Lớp {st.grade}
+                            </span>
+                            <span className="bg-slate-900/80 text-blue-300/80 border border-slate-800 px-2 py-0.5 rounded-md text-[10px] font-medium">
+                              {st.is3D ? "Không gian 3D" : "Mặt phẳng 2D"}
                             </span>
                           </div>
                           <span className="absolute top-2.5 right-2.5 bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded-md text-[10px] font-medium">
-                            Lộ trình mở rộng
+                            Đang cập nhật
                           </span>
                         </div>
 
@@ -1405,7 +1548,7 @@ function HomeContent() {
                         <div className="p-3.5 space-y-1.5">
                           <div className="flex items-center justify-between text-[10px]">
                             <span className="font-medium text-slate-400">
-                              Đang chuẩn hóa dữ liệu
+                              Đang chuẩn hóa mô phỏng
                             </span>
                           </div>
 
@@ -1427,12 +1570,12 @@ function HomeContent() {
                         <button
                           type="button"
                           onClick={() => {
-                            alert("Trạm này đang trong giai đoạn chuẩn hóa dữ liệu thực nghiệm sư phạm theo lộ trình dài hạn của đề cương. Nhóm nghiên cứu chỉ mở công khai các trạm đã được kiểm chứng tính đúng toán học 100%. Kính mời thầy cô và các bạn trải nghiệm 5 Trạm Trọng tâm phía trên!");
+                            alert("Chuyên đề này đang trong quá trình cập nhật mô phỏng tương tác. Bạn vui lòng trải nghiệm các trạm học trọng tâm phía trên!");
                           }}
                           className="w-full py-1.5 bg-slate-950 text-slate-400 hover:text-slate-200 rounded-lg font-medium text-xs border border-slate-800 hover:border-slate-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                         >
                           <Lock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Đang hoàn thiện theo đề cương</span>
+                          <span>Đang cập nhật mô phỏng</span>
                         </button>
                       </div>
                     </article>
