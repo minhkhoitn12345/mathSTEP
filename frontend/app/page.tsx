@@ -943,12 +943,6 @@ function HomeContent() {
                       <Layers className="w-3.5 h-3.5 text-blue-400" />
                       <span>48 Trạm chuyên đề ↓</span>
                     </button>
-                    <button
-                      onClick={() => setVisualizerOpen(true)}
-                      className="px-3.5 py-2 rounded-md bg-slate-900 hover:bg-slate-850 text-slate-300 font-medium text-xs border border-slate-800 transition-colors cursor-pointer"
-                    >
-                      Mô hình Oxy & 3D
-                    </button>
                   </div>
 
                   {/* STATS ROW */}
