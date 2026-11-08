@@ -79,7 +79,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className="font-sans antialiased bg-[#0B0F17] text-slate-100 selection:bg-blue-600/30 selection:text-white max-w-full overflow-x-hidden">
+      <body className="font-sans antialiased bg-[#0B0F17] text-slate-100 selection:bg-blue-600/30 selection:text-white max-w-full overflow-x-clip">
         {children}
       </body>
     </html>

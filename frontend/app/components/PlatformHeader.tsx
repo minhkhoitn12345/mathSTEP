@@ -81,8 +81,9 @@ export default function PlatformHeader({
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full h-13 bg-[#0B132B]/80 backdrop-blur-md border-b border-white/10 px-3 sm:px-6 flex items-center justify-between select-none">
-      {/* Brand Logo & Name: Nhấn để quay lại section đầu tiên */}
+    <>
+      <header className="fixed top-0 left-0 right-0 z-50 w-full h-13 bg-[#0B132B]/80 backdrop-blur-md border-b border-white/10 px-3 sm:px-6 flex items-center justify-between select-none">
+        {/* Brand Logo & Name: Nhấn để quay lại section đầu tiên */}
       <div className="flex items-center gap-2.5">
         <Link
           href="/"
@@ -394,5 +395,8 @@ export default function PlatformHeader({
         )}
       </div>
     </header>
+    {/* Spacer giữ chỗ để nội dung trang không bị đẩy lùi lên dưới header cố định */}
+    <div className="h-13 w-full shrink-0" aria-hidden="true" />
+  </>
   );
 }

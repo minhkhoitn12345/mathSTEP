@@ -1081,7 +1081,7 @@ function HomeContent() {
   };
 
   return (
-    <div className="min-h-screen max-w-full overflow-x-hidden flex flex-col bg-[#0B0F17] text-slate-100 font-sans selection:bg-blue-600/30 selection:text-white">
+    <div className="min-h-screen max-w-full overflow-x-clip flex flex-col bg-[#0B0F17] text-slate-100 font-sans selection:bg-blue-600/30 selection:text-white">
       {/* 1. TOP NAVIGATION BAR (PLATFORM HEADER COMPONENT) */}
       <PlatformHeader
         subsystem={subsystem}
@@ -1590,7 +1590,7 @@ function HomeContent() {
 
         {/* SUB-SYSTEM 1: STUDENT INTERACTIVE LAB VIEW (MathStepWorkbench) */}
         {subsystem === "student" && viewMode === "lab" && (
-          <div className="flex-1 w-full h-[calc(100dvh-48px)] p-1.5 md:p-2 overflow-hidden bg-[#090D16]">
+          <div className="flex-1 w-full h-[calc(100dvh-52px)] p-1.5 md:p-2 overflow-hidden bg-[#090D16]">
             <MathStepWorkbench
               moduleId={moduleId}
               stationId={stationId}
