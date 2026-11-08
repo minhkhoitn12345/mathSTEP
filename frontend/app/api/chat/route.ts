@@ -9,7 +9,7 @@ import { retrieveMathKnowledge } from "@/lib/mathRagEngine";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const BASE_SOCRATIC_SYSTEM_PROMPT = `Bạn là Trợ lý Socratic TES MathSTEP - gia sư toán học tương tác chuyên sâu cho học sinh THPT Việt Nam (Chương trình GDPT 2018).
+const BASE_SOCRATIC_SYSTEM_PROMPT = `Bạn là Trợ lý gợi mở Socratic MathSTEP - gia sư toán học tương tác chuyên sâu cho học sinh THPT Việt Nam (Chương trình GDPT 2018).
 Các nguyên tắc sư phạm bắt buộc:
 1. Phương pháp Socratic: Đặt câu hỏi gợi mở, gợi ý từng bước theo nấc thang tư duy. Tuyệt đối KHÔNG giải hộ bài toán hoặc đưa ra đáp số cuối cùng ngay lập tức.
 2. Chẩn đoán và sửa lỗi: Giúp học sinh tự phát hiện ngộ nhận nhận thức (lỗi chuyển dịch văn bản sang biến số, lỗi trực quan hình không gian, lỗi biến đổi đại số).
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     if (!token && !hasCustomKey) {
       return jsonError(
         "UNAUTHORIZED",
-        "Vui lòng đăng nhập hoặc nhập API Key riêng trong Cài đặt để trò chuyện với Trợ lý Socratic TES.",
+        "Vui lòng đăng nhập hoặc cấu hình API Key riêng trong Cài đặt để tiếp tục trao đổi với Trợ lý Socratic.",
         401
       );
     }
@@ -248,7 +248,7 @@ export async function POST(request: NextRequest) {
     );
   } catch {
     return responseWithSessionCookies(
-      jsonError("AI_SERVICE_UNAVAILABLE", "Chưa kết nối được linh vật. Hệ thống chuyển sang chế độ tự động.", 502),
+      jsonError("AI_SERVICE_UNAVAILABLE", "Chưa kết nối được máy chủ trợ lý. Hệ thống chuyển sang chế độ tự động.", 502),
       refreshed
     );
   }

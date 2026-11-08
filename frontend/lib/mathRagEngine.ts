@@ -179,7 +179,7 @@ export function retrieveMathKnowledge(
   moduleId: string,
   stationId?: string,
   stepNumber?: number,
-  _userQuery?: string
+  userQuery?: string
 ): string {
   // 1. Tìm chunk khớp chính xác nhất với moduleId hoặc stationId
   let matchedChunk = MATH_KNOWLEDGE_BASE.find(
@@ -217,6 +217,7 @@ export function retrieveMathKnowledge(
     `MÔ PHỎNG & TRẠM HỌC: Trạm ${stationId || moduleInfo?.defaultStationId || "SGK"} - ${stationInfo?.title || matchedChunk.topic}`,
     `MỤC TIÊU SƯ PHẠM: ${stationInfo?.goal || moduleInfo?.goal || ""}`,
     `GIAI ĐOẠN NHẬN THỨC HIỆN TẠI: ${currentStepDesc}`,
+    ...(userQuery && userQuery.trim() ? [`VẤN ĐỀ HỌC SINH ĐANG QUAN TÂM: ${userQuery.trim()}`] : []),
     `KHÁI NIỆM TOÁN HỌC CỐT LÕI:`,
     ...matchedChunk.coreConcepts.map((c) => `  - ${c}`),
     `CÔNG THỨC TOÁN HỌC CHUẨN:`,

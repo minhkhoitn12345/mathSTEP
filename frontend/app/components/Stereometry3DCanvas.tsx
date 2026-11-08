@@ -8,7 +8,6 @@ import {
   RotateCcw,
   RotateCw,
   Eye,
-  Sparkles,
   MapPin,
   Compass,
   FileText,
@@ -305,6 +304,11 @@ interface DynamicEdgesProps {
   showHiddenEdges?: boolean;
   originAtVertexA: boolean;
   isTeacherMode?: boolean;
+}
+
+function formatCompactVN(val: number): string {
+  const rounded = Math.round(val * 10) / 10;
+  return Number.isInteger(rounded) ? `${rounded}` : rounded.toFixed(1).replace(".", ",");
 }
 
 function DynamicPyramidMeshAndEdges({
@@ -744,7 +748,7 @@ function DynamicPyramidMeshAndEdges({
           <meshStandardMaterial color="#10b981" roughness={0.2} metalness={0.6} />
         </mesh>
         <Html position={[0.1, 0.1, 0]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
-          <div className="w-4 h-4 rounded-full bg-slate-950/90 border border-emerald-500/80 font-mono text-[9px] font-bold text-emerald-300 select-none flex items-center justify-center shadow-xs">
+          <div className="w-[18px] h-[18px] rounded-full bg-slate-950/85 backdrop-blur-xs border border-emerald-500/60 font-mono text-[9.5px] font-bold text-emerald-300 select-none flex items-center justify-center shadow-xs">
             M
           </div>
         </Html>
@@ -757,7 +761,7 @@ function DynamicPyramidMeshAndEdges({
           <meshStandardMaterial color="#a855f7" roughness={0.2} metalness={0.6} />
         </mesh>
         <Html position={[0.1, 0.1, 0]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
-          <div className="w-4 h-4 rounded-full bg-slate-950/90 border border-purple-500/80 font-mono text-[9px] font-bold text-purple-300 select-none flex items-center justify-center shadow-xs">
+          <div className="w-[18px] h-[18px] rounded-full bg-slate-950/85 backdrop-blur-xs border border-purple-500/60 font-mono text-[9.5px] font-bold text-purple-300 select-none flex items-center justify-center shadow-xs">
             N
           </div>
         </Html>
@@ -765,90 +769,90 @@ function DynamicPyramidMeshAndEdges({
 
       {/* 5. Đỉnh Billboard Labels chuẩn gọn gàng, thoáng đãng không che khuất */}
       {/* Đỉnh S */}
-      <Html position={[apex.x, apex.y + 0.18, apex.z]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
-        <div className={`rounded font-mono font-bold select-none whitespace-nowrap shadow-xs ${
+      <Html position={[apex.x, apex.y + 0.16, apex.z]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className={`select-none whitespace-nowrap font-mono transition-all ${
           showCoordinates
-            ? "px-1.5 py-0.5 bg-slate-950/95 border border-blue-500/80 text-blue-300 text-[9px]"
-            : "w-4 h-4 rounded-full bg-slate-950/90 border border-blue-500/80 text-blue-300 text-[9px] flex items-center justify-center"
+            ? "px-1.5 py-0.5 bg-slate-950/85 backdrop-blur-xs border border-slate-700/80 text-blue-300 text-[8.5px] rounded-md shadow-xs"
+            : "w-[18px] h-[18px] rounded-full bg-slate-950/85 backdrop-blur-xs border border-blue-500/60 text-blue-300 text-[9.5px] font-bold flex items-center justify-center shadow-xs"
         }`}>
           {showCoordinates
             ? originAtVertexA
-              ? `S(${formatVNFloat(baseWidth / 2)}; ${formatVNFloat(baseDepth / 2)}; ${formatVNFloat(apex.y)})`
-              : `S(0; 0; ${formatVNFloat(apex.y)})`
+              ? `S(${formatCompactVN(baseWidth / 2)}; ${formatCompactVN(baseDepth / 2)}; ${formatCompactVN(apex.y)})`
+              : `S(0; 0; ${formatCompactVN(apex.y)})`
             : "S"}
         </div>
       </Html>
 
       {/* Đỉnh A */}
-      <Html position={[baseA.x - 0.12, baseA.y - 0.08, baseA.z + 0.12]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
-        <div className={`rounded font-mono font-bold select-none whitespace-nowrap shadow-xs ${
+      <Html position={[baseA.x - 0.1, baseA.y - 0.06, baseA.z + 0.1]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className={`select-none whitespace-nowrap font-mono transition-all ${
           showCoordinates
-            ? "px-1.5 py-0.5 bg-slate-950/95 border border-slate-700 text-slate-200 text-[9px]"
-            : "w-4 h-4 rounded-full bg-slate-950/90 border border-slate-700 text-slate-200 text-[9px] flex items-center justify-center"
+            ? "px-1.5 py-0.5 bg-slate-950/85 backdrop-blur-xs border border-slate-700/80 text-slate-200 text-[8.5px] rounded-md shadow-xs"
+            : "w-[18px] h-[18px] rounded-full bg-slate-950/85 backdrop-blur-xs border border-slate-700 text-slate-200 text-[9.5px] font-bold flex items-center justify-center shadow-xs"
         }`}>
           {showCoordinates
             ? originAtVertexA
               ? "A(0; 0; 0)"
-              : `A(-${formatVNFloat(baseWidth / 2)}; -${formatVNFloat(baseDepth / 2)}; 0)`
+              : `A(-${formatCompactVN(baseWidth / 2)}; -${formatCompactVN(baseDepth / 2)}; 0)`
             : "A"}
         </div>
       </Html>
 
       {/* Đỉnh B */}
-      <Html position={[baseB.x + 0.12, baseB.y - 0.08, baseB.z + 0.12]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
-        <div className={`rounded font-mono font-bold select-none whitespace-nowrap shadow-xs ${
+      <Html position={[baseB.x + 0.1, baseB.y - 0.06, baseB.z + 0.1]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className={`select-none whitespace-nowrap font-mono transition-all ${
           showCoordinates
-            ? "px-1.5 py-0.5 bg-slate-950/95 border border-slate-700 text-slate-200 text-[9px]"
-            : "w-4 h-4 rounded-full bg-slate-950/90 border border-slate-700 text-slate-200 text-[9px] flex items-center justify-center"
+            ? "px-1.5 py-0.5 bg-slate-950/85 backdrop-blur-xs border border-slate-700/80 text-slate-200 text-[8.5px] rounded-md shadow-xs"
+            : "w-[18px] h-[18px] rounded-full bg-slate-950/85 backdrop-blur-xs border border-slate-700 text-slate-200 text-[9.5px] font-bold flex items-center justify-center shadow-xs"
         }`}>
           {showCoordinates
             ? originAtVertexA
-              ? `B(${formatVNFloat(baseWidth)}; 0; 0)`
-              : `B(${formatVNFloat(baseWidth / 2)}; -${formatVNFloat(baseDepth / 2)}; 0)`
+              ? `B(${formatCompactVN(baseWidth)}; 0; 0)`
+              : `B(${formatCompactVN(baseWidth / 2)}; -${formatCompactVN(baseDepth / 2)}; 0)`
             : "B"}
         </div>
       </Html>
 
       {/* Đỉnh C */}
-      <Html position={[baseC.x + 0.12, baseC.y - 0.08, baseC.z - 0.12]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
-        <div className={`rounded font-mono font-bold select-none whitespace-nowrap shadow-xs ${
+      <Html position={[baseC.x + 0.1, baseC.y - 0.06, baseC.z - 0.1]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className={`select-none whitespace-nowrap font-mono transition-all ${
           showCoordinates
-            ? "px-1.5 py-0.5 bg-slate-950/95 border border-slate-700 text-slate-200 text-[9px]"
-            : "w-4 h-4 rounded-full bg-slate-950/90 border border-slate-700 text-slate-200 text-[9px] flex items-center justify-center"
+            ? "px-1.5 py-0.5 bg-slate-950/85 backdrop-blur-xs border border-slate-700/80 text-slate-200 text-[8.5px] rounded-md shadow-xs"
+            : "w-[18px] h-[18px] rounded-full bg-slate-950/85 backdrop-blur-xs border border-slate-700 text-slate-200 text-[9.5px] font-bold flex items-center justify-center shadow-xs"
         }`}>
           {showCoordinates
             ? originAtVertexA
-              ? `C(${formatVNFloat(baseWidth)}; ${formatVNFloat(baseDepth)}; 0)`
-              : `C(${formatVNFloat(baseWidth / 2)}; ${formatVNFloat(baseDepth / 2)}; 0)`
+              ? `C(${formatCompactVN(baseWidth)}; ${formatCompactVN(baseDepth)}; 0)`
+              : `C(${formatCompactVN(baseWidth / 2)}; ${formatCompactVN(baseDepth / 2)}; 0)`
             : "C"}
         </div>
       </Html>
 
       {/* Đỉnh D */}
-      <Html position={[baseD.x - 0.12, baseD.y - 0.08, baseD.z - 0.12]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
-        <div className={`rounded font-mono font-bold select-none whitespace-nowrap shadow-xs ${
+      <Html position={[baseD.x - 0.1, baseD.y - 0.06, baseD.z - 0.1]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className={`select-none whitespace-nowrap font-mono transition-all ${
           showCoordinates
-            ? "px-1.5 py-0.5 bg-slate-950/95 border border-slate-700 text-slate-200 text-[9px]"
-            : "w-4 h-4 rounded-full bg-slate-950/90 border border-slate-700 text-slate-200 text-[9px] flex items-center justify-center"
+            ? "px-1.5 py-0.5 bg-slate-950/85 backdrop-blur-xs border border-slate-700/80 text-slate-200 text-[8.5px] rounded-md shadow-xs"
+            : "w-[18px] h-[18px] rounded-full bg-slate-950/85 backdrop-blur-xs border border-slate-700 text-slate-200 text-[9.5px] font-bold flex items-center justify-center shadow-xs"
         }`}>
           {showCoordinates
             ? originAtVertexA
-              ? `D(0; ${formatVNFloat(baseDepth)}; 0)`
-              : `D(-${formatVNFloat(baseWidth / 2)}; ${formatVNFloat(baseDepth / 2)}; 0)`
+              ? `D(0; ${formatCompactVN(baseDepth)}; 0)`
+              : `D(-${formatCompactVN(baseWidth / 2)}; ${formatCompactVN(baseDepth / 2)}; 0)`
             : "D"}
         </div>
       </Html>
 
       {/* Chân đường cao H */}
-      <Html position={[apex.x, 0.08, apex.z]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
-        <div className={`rounded font-mono font-bold select-none whitespace-nowrap shadow-xs ${
+      <Html position={[apex.x, 0.06, apex.z]} center zIndexRange={[0, 5]} style={{ pointerEvents: "none" }}>
+        <div className={`select-none whitespace-nowrap font-mono transition-all ${
           showCoordinates
-            ? "px-1.5 py-0.5 bg-slate-950/95 border border-rose-500/80 text-rose-300 text-[9px]"
-            : "w-4 h-4 rounded-full bg-slate-950/90 border border-rose-500/80 text-rose-300 text-[9px] flex items-center justify-center"
+            ? "px-1.5 py-0.5 bg-slate-950/85 backdrop-blur-xs border border-rose-500/60 text-rose-300 text-[8.5px] rounded-md shadow-xs"
+            : "w-[18px] h-[18px] rounded-full bg-slate-950/85 backdrop-blur-xs border border-rose-500/60 text-rose-300 text-[9.5px] font-bold flex items-center justify-center shadow-xs"
         }`}>
           {showCoordinates
             ? originAtVertexA
-              ? `H(${formatVNFloat(baseWidth / 2)}; ${formatVNFloat(baseDepth / 2)}; 0)`
+              ? `H(${formatCompactVN(baseWidth / 2)}; ${formatCompactVN(baseDepth / 2)}; 0)`
               : "H(0; 0; 0)"
             : "H"}
         </div>
@@ -1009,7 +1013,7 @@ export default function Stereometry3DCanvas({
     <div
       ref={containerRef}
       style={{ touchAction: "none" }}
-      className={`relative w-full h-full flex flex-col bg-[#090D16] select-none overflow-hidden rounded-xl border border-slate-800 ${className}`}
+      className={`relative w-full h-full flex flex-col bg-[#0B0F17] select-none overflow-hidden rounded-xl border border-slate-800 ${className}`}
     >
       {/* Toast thông báo đóng băng cấu hình */}
       {freezeNotice && (
@@ -1450,7 +1454,7 @@ export default function Stereometry3DCanvas({
               <div className="flex flex-col gap-1">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="font-medium text-slate-300 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                    <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
                     <span>Gấp / Mở hình:</span>
                   </span>
                   <span className="font-mono text-cyan-400 font-bold">{foldPercent}%</span>

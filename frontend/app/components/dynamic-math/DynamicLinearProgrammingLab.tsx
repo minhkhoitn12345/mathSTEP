@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useRef } from "react";
-import { Plus, Trash2, Eye, EyeOff, Target, Sparkles, SlidersHorizontal, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, Target, SlidersHorizontal, CheckCircle2 } from "lucide-react";
 import { formatVNFloat } from "../KatexMath";
 import { useDynamicMathStore } from "./useDynamicMathStore";
 
@@ -667,7 +667,7 @@ export default function DynamicLinearProgrammingLab() {
                     >
                       <td className="p-1.5 pl-2.5 font-sans font-bold flex items-center gap-1">
                         <span>{vPt.name}</span>
-                        {isOpt && <Sparkles className="w-3 h-3 text-amber-600 inline" />}
+                        {isOpt && <Target className="w-3 h-3 text-amber-600 inline" />}
                       </td>
                       <td className="p-1.5">
                         ({formatVNFloat(vPt.x)}; {formatVNFloat(vPt.y)})

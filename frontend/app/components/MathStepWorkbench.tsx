@@ -42,17 +42,16 @@ import {
   BookOpen,
   Target,
   Lightbulb,
+  Info,
   BookmarkCheck,
   AlertTriangle,
   RefreshCw,
   Building,
-  Bot,
   Search,
   Lock,
   Download,
   Upload,
-  Sparkles,
-  Wand2,
+  HelpCircle,
   PanelLeftClose,
   PanelLeftOpen,
   PanelRightClose,
@@ -2165,11 +2164,11 @@ export default function MathStepWorkbench({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#090D16] border border-slate-800 rounded-xl overflow-hidden font-sans text-slate-100">
+    <div className="flex flex-col h-full bg-[#0B0F17] border border-slate-800 rounded-xl overflow-hidden font-sans text-slate-100">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="bg-blue-600 text-white text-xs font-semibold px-4 py-2 text-center flex items-center justify-center gap-2 shadow-lg animate-fade-in z-50">
-          <Sparkles className="w-3.5 h-3.5 text-blue-200" />
+          <Info className="w-3.5 h-3.5 text-blue-200" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -2619,13 +2618,14 @@ export default function MathStepWorkbench({
                     type="button"
                     onClick={() =>
                       onAskTutor(
-                        `Nhờ linh vật TES nhận xét câu dự đoán của em ở bài ${meta.title}: "${prediction.trim()}"`
+                        `Em muốn xin gợi ý về câu dự đoán của em ở bài ${meta.title}: "${prediction.trim()}"`
                       )
                     }
-                    className="px-2.5 py-1.5 bg-slate-800 text-blue-400 border border-slate-700 rounded-lg font-semibold text-[10px] hover:bg-slate-700 shrink-0 cursor-pointer"
-                    title="Hỏi trợ lý nhận xét câu dự đoán"
+                    className="px-2.5 py-1.5 bg-slate-800 text-blue-400 border border-slate-700 rounded-lg font-semibold text-[10px] hover:bg-slate-700 shrink-0 cursor-pointer flex items-center gap-1"
+                    title="Xin gợi ý sư phạm về dự đoán này"
                   >
-                    <Bot className="w-3.5 h-3.5 inline mr-1 text-blue-400" /> Nhờ TES nhận xét
+                    <Lightbulb className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Gợi ý dự đoán</span>
                   </button>
                 )}
               </div>
@@ -2815,13 +2815,14 @@ export default function MathStepWorkbench({
                     type="button"
                     onClick={() =>
                       onAskTutor(
-                        `Nhờ linh vật TES nhận xét câu đúc kết quy luật của em ở bài ${meta.title}: "${reason.trim()}"`
+                        `Em muốn trao đổi về câu đúc kết quy luật của em ở bài ${meta.title}: "${reason.trim()}"`
                       )
                     }
-                    className="px-2.5 py-1.5 bg-slate-800 text-blue-400 border border-slate-700 rounded-lg font-semibold text-[10px] hover:bg-slate-700 shrink-0 cursor-pointer"
-                    title="Hỏi trợ lý nhận xét câu đúc kết"
+                    className="px-2.5 py-1.5 bg-slate-800 text-blue-400 border border-slate-700 rounded-lg font-semibold text-[10px] hover:bg-slate-700 shrink-0 cursor-pointer flex items-center gap-1"
+                    title="Trao đổi với trợ lý sư phạm về quy luật này"
                   >
-                    <Bot className="w-3.5 h-3.5 inline mr-1 text-blue-400" /> Nhờ TES nhận xét
+                    <Lightbulb className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Gợi ý quy luật</span>
                   </button>
                 )}
               </div>
@@ -3101,18 +3102,18 @@ export default function MathStepWorkbench({
               </div>
             </div>
           )}
-          {/* Socratic Helper Mascot Button */}
+          {/* Socratic Helper Button */}
           {onAskTutor && (
             <div className="pt-2 border-t border-slate-800 mt-auto">
               <button
                 onClick={() =>
                   onAskTutor(
-                    `Linh vật giúp em ở Bước ${currentStep + 1} (${STEP_NAMES[currentStep]}): ${meta.title}`
+                    `Em muốn xin gợi ý tư duy ở Bước ${currentStep + 1} (${STEP_NAMES[currentStep]}): ${meta.title}`
                   )
                 }
-                className="w-full py-2 bg-slate-800 hover:bg-slate-750 text-blue-400 border border-slate-700 rounded-lg text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-blue-400 border border-slate-800 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
               >
-                <Bot className="w-4 h-4 text-blue-400" /> <span>Hỏi trợ lý Socratic TES</span>
+                <Lightbulb className="w-4 h-4 text-blue-400" /> <span>Gợi ý phương pháp</span>
               </button>
             </div>
           )}
@@ -3120,21 +3121,21 @@ export default function MathStepWorkbench({
         )}
 
         {/* CỘT 2: KHUNG MÔ PHỎNG & CANVAS (SCENE-SIDE) - CHIẾM 75%-80% DIỆN TÍCH */}
-        <section className={`bg-[#090D16] border border-slate-800 rounded-lg overflow-hidden flex flex-col relative ${
+        <section className={`bg-[#0B0F17] border border-slate-800 rounded-lg overflow-hidden flex flex-col relative ${
           isFullscreenScene ? "fixed inset-0 z-50 flex shadow-2xl" : activeMobileTab === "scene" ? "flex" : "hidden lg:flex"
         }`}>
           {/* Header trên của Canvas: Luôn hiển thị Nút Đề bài chi tiết nổi bật và công cụ */}
           <div className="h-9 px-3 bg-slate-950/95 border-b border-slate-800 flex items-center justify-between gap-2.5 text-xs shrink-0 z-20">
             <div className="flex items-center gap-2 min-w-0">
-              {/* NÚT BẤM NỔI BẬT: XEM ĐỀ BÀI CHI TIẾT */}
+              {/* NÚT XEM ĐỀ BÀI */}
               <button
                 type="button"
                 onClick={() => setProblemDetailModalOpen(true)}
-                className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-[11px] font-bold flex items-center gap-1.5 shadow-sm transition-colors shrink-0 cursor-pointer"
-                title="Nhấn để xem rõ toàn văn đề bài chi tiết, giả thiết và hệ điều kiện SGK"
+                className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-[11px] font-semibold flex items-center gap-1.5 shadow-xs transition-colors shrink-0 cursor-pointer"
+                title="Nhấn để xem toàn văn đề bài, giả thiết và hệ điều kiện SGK"
               >
                 <FileText className="w-3.5 h-3.5 text-white" />
-                <span>📄 Xem đề bài chi tiết</span>
+                <span>Đề bài SGK</span>
               </button>
               <div className="min-w-0 hidden sm:flex items-center gap-1.5 text-slate-300 text-[11px] truncate">
                 <span className="font-semibold text-slate-200 truncate">{activeProblem.title}</span>
@@ -3166,7 +3167,7 @@ export default function MathStepWorkbench({
                   onClick={() => {
                     setLabMode("dynamic");
                     setAiCreativeMode(false);
-                    showToast("Đã chuyển sang Phòng Lab Động GeoGebra 60fps.");
+                    showToast("Đã chuyển sang Thí nghiệm động.");
                   }}
                   className={`px-2 py-0.5 rounded text-[10.5px] font-medium transition-colors flex items-center gap-1 ${
                     labMode === "dynamic"
@@ -3175,7 +3176,7 @@ export default function MathStepWorkbench({
                   }`}
                 >
                   <SlidersHorizontal className="w-3 h-3" />
-                  <span>Lab Động GeoGebra</span>
+                  <span>Thí nghiệm động</span>
                 </button>
                 {meta.is3D && (
                   <button
@@ -3183,7 +3184,7 @@ export default function MathStepWorkbench({
                     onClick={() => {
                       setLabMode("sgk");
                       setAiCreativeMode(true);
-                      showToast("Đã chuyển sang Tự do / Sáng tạo (AI Dựng hình 3D).");
+                      showToast("Đã chuyển sang Dựng hình 3D.");
                     }}
                     className={`px-2 py-0.5 rounded text-[10.5px] font-medium transition-colors flex items-center gap-1 ${
                       aiCreativeMode
@@ -3191,8 +3192,8 @@ export default function MathStepWorkbench({
                         : "text-slate-400 hover:text-slate-200"
                     }`}
                   >
-                    <Wand2 className="w-3 h-3" />
-                    <span className="hidden md:inline">AI Dựng hình</span>
+                    <Compass className="w-3 h-3" />
+                    <span className="hidden md:inline">Dựng hình 3D</span>
                   </button>
                 )}
               </div>
@@ -3240,7 +3241,7 @@ export default function MathStepWorkbench({
           )}
 
           {/* Khung Canvas giải phóng toàn bộ chiều cao từ trên xuống dưới */}
-          <div className="flex-1 relative flex items-center justify-center bg-[#090D16] overflow-hidden min-h-[480px] h-full">
+          <div className="flex-1 relative flex items-center justify-center bg-[#0B0F17] overflow-hidden min-h-[480px] h-full">
             {labMode === "dynamic" ? (
               moduleId === "linear_programming" ? (
                 <div className="w-full h-full overflow-y-auto p-4 flex items-center justify-center">
@@ -4224,8 +4225,8 @@ export default function MathStepWorkbench({
                     }}
                     className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
-                    <Bot className="w-3.5 h-3.5" />
-                    <span>Hỏi trợ lý Socratic về đề này</span>
+                    <HelpCircle className="w-3.5 h-3.5" />
+                    <span>Gợi ý hướng tiếp cận</span>
                   </button>
                 )}
                 <button

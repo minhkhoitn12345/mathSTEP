@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Sparkles, Box } from "lucide-react";
+import { ArrowLeft, ArrowRight, Compass, Box } from "lucide-react";
 import { CORE_7_MODULES } from "../lib/modulesCatalogData";
 import { getAllStations } from "../lib/stationCatalogData";
 
@@ -13,7 +13,7 @@ export default function ModulesCatalogPage() {
   const allStations = getAllStations();
 
   return (
-    <div className="min-h-screen bg-[#090D16] text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-[#0B0F17] text-slate-100 flex flex-col">
       {/* Header */}
       <header className="h-14 bg-slate-950/90 border-b border-slate-800 px-4 md:px-8 flex items-center justify-between sticky top-0 z-30 backdrop-blur-md">
         <div className="flex items-center gap-3">
@@ -42,16 +42,16 @@ export default function ModulesCatalogPage() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8 space-y-8">
         {/* Banner giới thiệu */}
         <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-3 relative overflow-hidden">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-950/80 border border-blue-700/60 text-blue-300 text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Hệ Thống Thí Nghiệm Toán Học Động GeoGebra & Desmos</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-950/80 border border-blue-800/60 text-blue-300 text-xs font-medium">
+            <Compass className="w-3.5 h-3.5" />
+            <span>Thí nghiệm toán học tương tác · GDPT 2018</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight">
-            Khám phá 7 Module Toán Học THPT (GDPT 2018)
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">
+            7 Phòng Thí Nghiệm Toán Học THPT
           </h1>
           <p className="text-slate-400 text-sm max-w-3xl leading-relaxed">
-            Mỗi module là một phòng thí nghiệm động chuyên sâu, cho phép học sinh tự do kéo thanh trượt biến số,
-            thao tác đa diện 3D và đồ thị giải tích thời gian thực, đồng hành cùng Trợ lý Socratic AI TES.
+            Mỗi module là một không gian khám phá chuyên sâu, cho phép học sinh tự do điều chỉnh tham số,
+            thao tác mô hình 3D và đồ thị giải tích thời gian thực dưới sự định hướng của phương pháp gợi mở Socratic.
           </p>
         </div>
 

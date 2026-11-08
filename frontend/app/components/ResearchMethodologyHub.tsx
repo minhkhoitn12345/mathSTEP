@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   Terminal,
   Calendar,
-  Sparkles,
+  Lightbulb,
 } from "lucide-react";
 
 export default function ResearchMethodologyHub() {
@@ -157,7 +157,7 @@ export default function ResearchMethodologyHub() {
       title: "Tối ưu Hiệu năng WebGL, Xóa bỏ 'AI Template' & Hoàn thiện Giao diện Desktop-Grade",
       tasks: [
         "Gặp lỗi #06: Hiện tượng giật lag, đơ văng sau khi dùng lâu do Three.js tích tụ BufferGeometry rò rỉ VRAM. Tự khắc phục bằng cơ chế dọn dẹp dispose() toàn diện và kiểm soát tần suất render theo khoảng cách camera.",
-        "Gặp lỗi #07: Khi zoom to trong không gian 3D WebGL và bật ngăn kéo linh vật TES thì màn hình bị tràn (overflow-x vỡ layout). Tự khắc phục bằng touch-action: none trên Canvas, giới hạn chiều rộng max-w-[min(380px,100vw)], overflow-x-hidden trên body và cuộn tự động cho công thức KaTeX.",
+        "Gặp lỗi #07: Khi zoom to trong không gian 3D WebGL và bật ngăn kéo trợ lý Socratic thì màn hình bị tràn (overflow-x vỡ layout). Tự khắc phục bằng touch-action: none trên Canvas, giới hạn chiều rộng max-w-[min(380px,100vw)], overflow-x-hidden trên body và cuộn tự động cho công thức KaTeX.",
         "Gặp lỗi #08: Giao diện ban đầu mang phong cách 'template AI giá rẻ' (gradient tím neon, bóng glow phát sáng lòe loẹt, thẻ card lồng nhau). Tiến hành đại phẫu toàn bộ UI sang phong cách Desktop-Grade Academic Shell chuẩn GeoGebra/Desmos: bảng màu Slate/Zinc sâu lắng, viền 1px tinh tế, trả lại 80% diện tích màn hình cho không gian mô phỏng toán học.",
         "Bổ sung Modal Phóng To Xem Đề Bài Chi Tiết 1-Click (ProblemDetailModal) hiển thị đầy đủ công thức KaTeX, số liệu ràng buộc và nguồn SGK rõ nét.",
       ],
@@ -233,8 +233,8 @@ III. HỒ SƠ 8 LỖI KỸ THUẬT HÓC BÚA TỰ CHẨN ĐOÁN VÀ KHẮC PHỤ
   * Viết hàm kiểm tra chất lượng ngữ nghĩa checkSemanticQuality(str) kiểm tra độ dài và các từ nối tư duy ("vì", "do", "suy ra"). Nếu học sinh trả lời thiếu căn cứ, AI bắt buộc phải hỏi lại để học sinh nêu rõ lý do.
   * Rà soát toàn diện SGK Toán THPT mới, phát hiện Chương trình GDPT 2018 không còn dùng "Góc nhị diện" -> Đã thanh lọc 100% sang "Góc giữa hai mặt phẳng" (và góc giữa mặt bên và mặt đáy).
 
-6. LỖI #06 (05/11/2026): TRÀN MÀN HÌNH KHI ZOOM 3D WEBGL VÀ MỞ TRỢ LÝ SOCRATIC TES
-- Hiện tượng: Trên màn hình cảm ứng hoặc khi zoom bằng trackpad trong không gian 3D, thao tác zoom làm phóng đại toàn bộ trang web; khi bấm mở linh vật TES thì thanh drawer bị đẩy tràn ra khỏi màn hình, xuất hiện thanh cuộn ngang khó chịu.
+6. LỖI #06 (05/11/2026): TRÀN MÀN HÌNH KHI ZOOM 3D WEBGL VÀ MỞ TRỢ LÝ SOCRATIC
+- Hiện tượng: Trên màn hình cảm ứng hoặc khi zoom bằng trackpad trong không gian 3D, thao tác zoom làm phóng đại toàn bộ trang web; khi bấm mở ngăn kéo trợ lý thì thanh drawer bị đẩy tràn ra khỏi màn hình, xuất hiện thanh cuộn ngang khó chịu.
 - Nguyên nhân: Thẻ Canvas của Three.js thiếu thuộc tính touch-action: none; thanh drawer đặt chiều rộng tĩnh vượt quá viewport scaled (100vw); các công thức KaTeX dài không được bọc cuộn ngang tự động.
 - Giải pháp tự khắc phục:
   * Bổ sung style={{ touchAction: "none" }} cho Canvas và container 3D.
@@ -872,12 +872,12 @@ Tác giả học sinh xin cam đoan: Toàn bộ thông tin khai báo trên là h
               {/* Bug 6 */}
               <div className="p-4 bg-white rounded-2xl border border-rose-200 shadow-xs space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 font-mono font-bold">BUG #06: Zoom 3D &amp; Linh vật</span>
+                  <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 font-mono font-bold">BUG #06: Zoom 3D &amp; Trợ lý</span>
                   <span className="text-gray-400 font-mono">05/11/2026</span>
                 </div>
-                <h5 className="font-bold text-xs text-rose-950">Tràn màn hình khi Zoom 3D WebGL và bật Trợ lý TES</h5>
+                <h5 className="font-bold text-xs text-rose-950">Tràn màn hình khi Zoom 3D WebGL và bật Trợ lý Socratic</h5>
                 <p className="text-[11px] text-gray-600 leading-relaxed">
-                  <strong>Hiện tượng:</strong> Pinch-to-zoom trên 3D rồi mở Trợ lý TES thì drawer bị tràn lệch khỏi mép màn hình, vỡ layout ngang.
+                  <strong>Hiện tượng:</strong> Pinch-to-zoom trên 3D rồi mở Trợ lý Socratic thì drawer bị tràn lệch khỏi mép màn hình, vỡ layout ngang.
                   <br />
                   <strong>Nguyên nhân:</strong> Canvas Three.js thiếu <code className="font-mono">touch-action: none</code> và drawer vượt quá chiều rộng viewport scaled.
                   <br />
@@ -973,7 +973,7 @@ Tác giả học sinh xin cam đoan: Toàn bộ thông tin khai báo trên là h
                   </ul>
 
                   <div className="pt-1.5 border-t border-slate-200/80 flex items-start gap-1.5 text-[11px] text-emerald-800 italic">
-                    <Sparkles className="w-3.5 h-3.5 shrink-0 mt-0.5 text-emerald-600" />
+                    <Lightbulb className="w-3.5 h-3.5 shrink-0 mt-0.5 text-emerald-600" />
                     <span>
                       <strong>Đúc kết của học sinh:</strong> {item.selfReflection}
                     </span>

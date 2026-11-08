@@ -7,7 +7,8 @@ import * as THREE from "three";
 import {
   Grid3X3,
   Layers,
-  Sparkles,
+  Scissors,
+  Lightbulb,
   Play,
   Pause,
   Compass,
@@ -313,7 +314,7 @@ export default function Geometry3DViewer({ scene, onAskTutor, className = "" }: 
                 showSection ? "bg-rose-100 text-rose-800" : "text-slate-600 hover:bg-slate-100"
               }`}
             >
-              <Sparkles className="w-4 h-4 text-rose-600" />
+              <Scissors className="w-4 h-4 text-rose-600" />
             </button>
           )}
           <button
@@ -498,7 +499,7 @@ export default function Geometry3DViewer({ scene, onAskTutor, className = "" }: 
               onClick={() => onAskTutor(scene.suggestedQuestions[0])}
               className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#087e7c] hover:bg-[#076a68] text-white rounded-lg text-xs font-medium shadow-sm transition-all"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <Lightbulb className="w-3.5 h-3.5 text-amber-300" />
               <span className="truncate max-w-[200px] sm:max-w-xs">{scene.suggestedQuestions[0]}</span>
             </button>
           </div>

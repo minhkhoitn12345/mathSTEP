@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Layers, Compass, GraduationCap, FileText, Cpu, User } from "lucide-react";
+import { Layers, Compass, GraduationCap, FileText, Settings, User } from "lucide-react";
 import { CustomAiConfig } from "./AccountSettingsModal";
 
 export type SubsystemId = "student" | "teacher" | "research";
@@ -40,20 +40,20 @@ export default function PlatformHeader({
   onLogout,
 }: PlatformHeaderProps) {
   return (
-    <header className="h-12 border-b border-slate-800 bg-[#090D16]/95 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between sticky top-0 z-40 select-none">
+    <header className="h-13 border-b border-slate-800/80 bg-slate-950/95 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between sticky top-0 z-40 select-none">
       {/* Brand Logo */}
       <div className="flex items-center gap-2.5">
         <Link
           href="/"
           onClick={() => onSelectSubsystem("student", "home")}
-          className="flex items-center gap-2 text-white no-underline group"
+          className="flex items-center gap-2.5 text-white no-underline group"
         >
-          <span className="w-7 h-7 rounded-md bg-blue-600 text-white font-mono font-bold text-sm flex items-center justify-center shadow-xs group-hover:bg-blue-500 transition-colors">
+          <span className="w-7 h-7 rounded-lg bg-blue-600 text-white font-mono font-bold text-sm flex items-center justify-center shadow-xs group-hover:bg-blue-500 transition-colors">
             M
           </span>
           <div className="leading-tight">
-            <strong className="font-sans text-xs tracking-wider font-bold block text-white">MATHSTEP</strong>
-            <span className="text-[9px] text-slate-400 font-mono hidden sm:inline">HỌC LIỆU TOÁN HỌC 3D</span>
+            <strong className="font-sans text-xs tracking-wide font-bold block text-slate-100 group-hover:text-white transition-colors">MATHSTEP</strong>
+            <span className="text-[10px] text-slate-400 font-sans hidden sm:inline">Học liệu số Toán THPT</span>
           </div>
         </Link>
       </div>
@@ -154,39 +154,39 @@ export default function PlatformHeader({
               )}
             </button>
 
-            {/* Nút Cấu hình AI Model */}
+            {/* Nút Cài đặt hệ thống */}
             <button
               type="button"
               onClick={() => onOpenAccountModal("ai")}
-              className="px-2 py-1 rounded-md text-[11px] font-mono border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-300 transition-colors flex items-center gap-1 cursor-pointer"
-              title="Cấu hình Model AI (Gemini 2.5, GPT-4o, DeepSeek R1)"
+              className="px-2.5 py-1 rounded-md text-xs font-medium border border-slate-800 bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-slate-100 transition-colors flex items-center gap-1.5 cursor-pointer"
+              title="Cài đặt hệ thống & Cấu hình trợ lý"
             >
-              <Cpu className="w-3 h-3 text-emerald-400" />
+              <Settings className="w-3.5 h-3.5 text-slate-400" />
               <span className="hidden md:inline">
                 {customAiConfig?.model
                   ? customAiConfig.model.replace("gemini-", "").replace("gpt-", "").replace("deepseek-", "")
-                  : "Cài AI"}
+                  : "Cài đặt"}
               </span>
             </button>
 
             <button
               onClick={onLogout}
-              className="text-[11px] text-slate-400 hover:text-rose-400 font-medium px-1.5 py-1 transition-colors cursor-pointer"
+              className="text-xs text-slate-400 hover:text-rose-400 font-medium px-2 py-1 transition-colors cursor-pointer"
               title="Đăng xuất tài khoản"
             >
               Thoát
             </button>
           </div>
         ) : (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => onOpenAccountModal("ai")}
-              className="px-2 py-1 rounded-md text-[11px] font-mono border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-300 transition-colors flex items-center gap-1 cursor-pointer"
-              title="Dùng API Key cá nhân (Gemini, OpenAI)"
+              className="px-2.5 py-1 rounded-md text-xs font-medium border border-slate-800 bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-slate-100 transition-colors flex items-center gap-1.5 cursor-pointer"
+              title="Cài đặt hệ thống & API Key"
             >
-              <Cpu className="w-3 h-3 text-emerald-400" />
-              <span className="hidden sm:inline">Cài AI</span>
+              <Settings className="w-3.5 h-3.5 text-slate-400" />
+              <span className="hidden sm:inline">Cài đặt</span>
             </button>
 
             <button

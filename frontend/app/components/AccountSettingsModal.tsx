@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import {
   User,
-  Sparkles,
   Key,
   CheckCircle2,
   AlertCircle,
@@ -13,7 +12,8 @@ import {
   ShieldCheck,
   Save,
   Trash2,
-  Cpu,
+  SlidersHorizontal,
+  Settings,
 } from "lucide-react";
 
 export interface CustomAiConfig {
@@ -256,7 +256,7 @@ export default function AccountSettingsModal({
       localStorage.setItem("mathstep:custom_ai_config", JSON.stringify(config));
       onAiConfigUpdated?.(config);
 
-      setAiNotice(`Đã kích hoạt thành công mô hình ${selectedModel}! Trợ lý TES sẽ dùng mô hình này.`);
+      setAiNotice(`Đã kích hoạt thành công mô hình ${selectedModel}! Trợ lý học tập sẽ sử dụng mô hình này.`);
       setTimeout(() => setAiNotice(""), 4000);
     } finally {
       setAiSaving(false);
@@ -265,12 +265,12 @@ export default function AccountSettingsModal({
 
   // Xóa API Key về mô hình mặc định
   const handleClearAiConfig = () => {
-    if (confirm("Em có muốn xóa API key cá nhân và quay về sử dụng mô hình Socratic TES mặc định?")) {
+    if (confirm("Em có muốn xóa API key cá nhân và quay về sử dụng mô hình trợ lý mặc định?")) {
       localStorage.removeItem("mathstep:custom_ai_config");
       setApiKey("");
       setTestResult(null);
       onAiConfigUpdated?.(null);
-      setAiNotice("Đã quay về mô hình Socratic TES mặc định.");
+      setAiNotice("Đã quay về mô hình trợ lý mặc định của hệ thống.");
       setTimeout(() => setAiNotice(""), 3000);
     }
   };
@@ -284,36 +284,36 @@ export default function AccountSettingsModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-[#d9e4e2] flex flex-col max-h-[92vh] overflow-hidden text-xs">
+      <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden text-xs">
         {/* Header */}
-        <header className="px-5 py-4 border-b border-[#e5ebe4] bg-[#f8faf9] flex items-center justify-between shrink-0">
+        <header className="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#e2f1ec] text-[#087e7c] flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
               <User className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-[#152f35]">Cài đặt Tài khoản & Model AI</h2>
-              <p className="text-[11px] text-gray-500">
-                Tùy chỉnh thông tin học sinh và tích hợp API Key để dùng các model AI cao cấp
+              <h2 className="text-sm font-bold text-slate-900">Cài đặt Hệ thống & Hồ sơ</h2>
+              <p className="text-[11px] text-slate-500">
+                Quản lý thông tin học tập và cấu hình mô hình trợ lý sư phạm Socratic
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-lg hover:bg-gray-200 text-gray-500 font-bold flex items-center justify-center"
+            className="w-7 h-7 rounded-lg hover:bg-slate-200 text-slate-500 font-bold flex items-center justify-center"
           >
             ✕
           </button>
         </header>
 
         {/* Tab navigation */}
-        <div className="flex border-b border-[#e5ebe4] bg-white px-5 gap-4 shrink-0 text-xs font-bold">
+        <div className="flex border-b border-slate-200 bg-white px-5 gap-4 shrink-0 text-xs font-bold">
           <button
             onClick={() => setActiveTab("profile")}
             className={`py-3 border-b-2 flex items-center gap-1.5 transition-colors ${
               activeTab === "profile"
-                ? "border-[#087e7c] text-[#087e7c]"
-                : "border-transparent text-gray-500 hover:text-gray-800"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
             <User className="w-3.5 h-3.5" />
@@ -323,12 +323,12 @@ export default function AccountSettingsModal({
             onClick={() => setActiveTab("ai")}
             className={`py-3 border-b-2 flex items-center gap-1.5 transition-colors ${
               activeTab === "ai"
-                ? "border-[#087e7c] text-[#087e7c]"
-                : "border-transparent text-gray-500 hover:text-gray-800"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>Model AI & API Key</span>
+            <Settings className="w-3.5 h-3.5 text-slate-500" />
+            <span>Cấu hình Trợ lý học tập</span>
             {apiKey.trim() && (
               <span className="w-2 h-2 rounded-full bg-emerald-500" title="Đã có API key" />
             )}
@@ -466,7 +466,7 @@ export default function AccountSettingsModal({
                       apiKey.trim() ? "bg-amber-200 text-amber-900" : "bg-slate-200 text-slate-700"
                     }`}
                   >
-                    <Cpu className="w-4 h-4" />
+                    <SlidersHorizontal className="w-4 h-4" />
                   </div>
                   <div>
                     <span className="text-[10px] uppercase font-bold text-gray-500 block">

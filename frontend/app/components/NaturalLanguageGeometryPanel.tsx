@@ -2,15 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  Wand2,
+  Box,
+  GraduationCap,
   Key,
   ChevronDown,
   ChevronUp,
-  Sparkles,
   CheckCircle2,
   AlertCircle,
   BookOpen,
-  Cpu,
   ArrowRight,
 } from "lucide-react";
 import { ParsedGeometrySolid } from "../lib/geometryParserPrompt";
@@ -354,7 +353,7 @@ export default function NaturalLanguageGeometryPanel({
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <label htmlFor="geo-prompt-input" className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-            <Cpu className="w-3.5 h-3.5 text-blue-600" />
+            <BookOpen className="w-3.5 h-3.5 text-blue-600" />
             Đề bài hình học tiếng Việt:
           </label>
           <button
@@ -404,13 +403,12 @@ export default function NaturalLanguageGeometryPanel({
           {isLoading ? (
             <>
               <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-              <span>AI đang phân tích và tính toán tọa độ 3D…</span>
+              <span>Đang tính toán tọa độ không gian 3D…</span>
             </>
           ) : (
             <>
-              <Wand2 className="w-4 h-4 text-amber-300" />
-              <span>Dựng mô hình 3D ngay</span>
-              <Sparkles className="w-4 h-4 text-amber-300 ml-1" />
+              <Box className="w-4 h-4 text-blue-200" />
+              <span>Dựng mô hình 3D</span>
             </>
           )}
         </button>
@@ -420,10 +418,10 @@ export default function NaturalLanguageGeometryPanel({
         <button
           type="button"
           onClick={() => onAskTutor(`Em muốn cùng trợ lý giải quyết bài toán hình không gian này từng bước: "${prompt}"`)}
-          className="w-full py-2 px-3 bg-white hover:bg-emerald-50/60 border border-slate-200 text-slate-700 hover:text-emerald-800 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+          className="w-full py-2 px-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-slate-900 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
         >
-          <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-          <span>Hỏi trợ lý Socratic về hình này</span>
+          <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
+          <span>Hỏi trợ lý Socratic về bài toán này</span>
         </button>
       )}
     </div>

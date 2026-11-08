@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  Wand2,
+  Box,
   BookOpen,
   Activity,
   X,
@@ -199,8 +199,8 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
                         : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
-                    <Wand2 className="w-3.5 h-3.5 text-amber-300" />
-                    <span>Tự do / Sáng tạo (AI Dựng hình 3D)</span>
+                    <Box className="w-3.5 h-3.5 text-blue-200" />
+                    <span>Dựng hình tự do (3D)</span>
                   </button>
                 </div>
                 <span className="text-[11px] text-slate-500 hidden sm:inline px-2 font-medium">

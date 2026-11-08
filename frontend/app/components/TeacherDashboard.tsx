@@ -19,7 +19,7 @@ import {
   BookOpen,
   Award,
   Clock,
-  Sparkles,
+  Activity,
   Move3d,
 } from "lucide-react";
 
@@ -568,7 +568,7 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
                   className="bg-white rounded-2xl border-2 border-emerald-500/60 p-5 shadow-md space-y-4 relative overflow-hidden"
                 >
                   <div className="absolute top-0 right-0 bg-emerald-500 text-slate-950 font-bold text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-slate-950" />
+                    <Activity className="w-3 h-3 text-slate-950" />
                     <span>Dữ liệu thực nghiệm vừa lưu</span>
                   </div>
 

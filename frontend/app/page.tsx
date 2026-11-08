@@ -18,7 +18,7 @@ import {
   Search,
   FlaskConical,
   Lock,
-  Bot,
+  GraduationCap,
   Eye,
   EyeOff,
   SlidersHorizontal,
@@ -646,7 +646,7 @@ function HomeContent() {
         {
           id: "intro-mascot",
           role: "assistant",
-          content: "Chào em! Thầy là **Trợ lý Socratic TES**. Thầy sẽ đồng hành cùng em qua các bước khám phá mô hình, đặt câu hỏi gợi mở và kiểm tra lập luận của em chứ tuyệt đối **không giải hộ đáp số**. Em hãy thao tác mô phỏng và hỏi thầy bất cứ khi nào cần định hướng nhé!",
+          content: "Chào em! Thầy/cô là **Trợ lý gợi mở Socratic**. Thầy/cô sẽ đồng hành cùng em qua các bước khám phá mô hình, đặt câu hỏi gợi ý và hỗ trợ em rèn luyện tư duy toán học chứ tuyệt đối **không giải hộ đáp số**. Em hãy thao tác trên mô hình và đặt câu hỏi bất cứ khi nào nhé!",
           intent: "general",
         },
       ]);
@@ -695,7 +695,7 @@ function HomeContent() {
       if (!session?.authenticated && !hasCustomKey && currentGuestUsage >= 5) {
         setPendingVerificationEmail("");
         setAuthMode("signup");
-        setLoginNotice("Em đã hoàn thành 5 lượt tương tác học thử hôm nay. Hãy đăng ký tài khoản và xác minh email để mở khóa học tập không giới hạn cùng Trợ lý Socratic TES!");
+        setLoginNotice("Em đã hoàn thành 5 lượt tương tác học thử hôm nay. Hãy đăng ký tài khoản và xác minh email để mở khóa học tập không giới hạn cùng Trợ lý Socratic!");
         setAuthModalOpen(true);
         setBusy(false);
         return;
@@ -871,7 +871,7 @@ function HomeContent() {
   };
 
   return (
-    <div className="min-h-screen max-w-full overflow-x-hidden flex flex-col bg-[#090D16] text-slate-100 font-sans selection:bg-blue-600/30 selection:text-white">
+    <div className="min-h-screen max-w-full overflow-x-hidden flex flex-col bg-[#0B0F17] text-slate-100 font-sans selection:bg-blue-600/30 selection:text-white">
       {/* 1. TOP NAVIGATION BAR (PLATFORM HEADER COMPONENT) */}
       <PlatformHeader
         subsystem={subsystem}
@@ -980,8 +980,8 @@ function HomeContent() {
                       <small className="text-[11px] text-slate-400 font-sans">mô phỏng 60fps</small>
                     </div>
                     <div>
-                      <strong className="text-xl font-mono font-bold text-amber-400 block">TES</strong>
-                      <small className="text-[11px] text-slate-400 font-sans">trợ lý Socratic</small>
+                      <strong className="text-xl font-mono font-bold text-slate-100 block">Socratic</strong>
+                      <small className="text-[11px] text-slate-400 font-sans">phương pháp gợi mở</small>
                     </div>
                   </div>
                 </div>
@@ -1017,21 +1017,21 @@ function HomeContent() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-blue-500" />
-                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-blue-400">
-                      ĐỘNG CƠ THÍ NGHIỆM TOÁN HỌC ĐỘNG · GEOGEBRA &amp; DESMOS 60FPS
+                    <span className="text-xs font-semibold uppercase tracking-wider text-blue-400">
+                      Mô phỏng hình học &amp; giải tích tương tác
                     </span>
                   </div>
                   <h2 className="text-xl md:text-2xl font-bold text-slate-100 mt-1">
-                    7 Module Thí Nghiệm Toán Học Tương Tác
+                    7 Phòng Thí Nghiệm Toán Học Tương Tác
                   </h2>
                   <p className="text-xs md:text-sm text-slate-400 mt-1 max-w-3xl leading-relaxed">
-                    Mỗi module là một phòng thí nghiệm toán học động chuyên sâu chuẩn SGK Kết nối tri thức. Học sinh tự do điều chỉnh thanh trượt tham số (Sliders), thêm biến số, thay đổi hàm số và quan sát đồ thị biến đổi tức thời.
+                    Mỗi module là một không gian tương tác bám sát chương trình GDPT 2018. Học sinh trực tiếp thao tác trên các tham số động, quan sát quỹ tích và kiểm chứng định lý theo tiến trình khám phá.
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="px-2.5 py-1 rounded bg-slate-900 text-slate-300 text-xs font-mono border border-slate-800 flex items-center gap-1.5">
+                  <span className="px-3 py-1 rounded-md bg-slate-900 text-slate-300 text-xs border border-slate-800 flex items-center gap-1.5 font-medium">
                     <SlidersHorizontal className="w-3.5 h-3.5 text-blue-400" />
-                    <span>7 Module Chuẩn SGK</span>
+                    <span>7 Module chuẩn SGK</span>
                   </span>
                 </div>
               </div>
@@ -1040,17 +1040,17 @@ function HomeContent() {
               <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
                 <div className="flex flex-wrap gap-1 text-xs">
                   {[
-                    { id: 0, label: "Tất cả 7 Module (7)" },
-                    { id: 10, label: "Lớp 10 (2 Module)" },
-                    { id: 11, label: "Lớp 11 (2 Module)" },
-                    { id: 12, label: "Lớp 12 (3 Module)" },
+                    { id: 0, label: "Tất cả (7)" },
+                    { id: 10, label: "Lớp 10 (2)" },
+                    { id: 11, label: "Lớp 11 (2)" },
+                    { id: 12, label: "Lớp 12 (3)" },
                   ].map((g) => (
                     <button
                       key={g.id}
                       onClick={() => setSelectedModuleGrade(g.id)}
-                      className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
+                      className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                         selectedModuleGrade === g.id
-                          ? "bg-blue-600 text-white font-semibold"
+                          ? "bg-blue-600 text-white font-semibold shadow-xs"
                           : "bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800"
                       }`}
                     >
@@ -1058,9 +1058,9 @@ function HomeContent() {
                     </button>
                   ))}
                 </div>
-                <div className="text-[11px] text-slate-400 font-mono hidden sm:flex items-center gap-1.5">
+                <div className="text-[11px] text-slate-400 hidden sm:flex items-center gap-1.5">
                   <Activity className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Bố cục chuẩn 3 cột: Đề bài ↔ Canvas tương tác ↔ Tham số động</span>
+                  <span>Tiến trình 8 bước: Đề bài ↔ Thao tác ↔ Đúc kết quy luật</span>
                 </div>
               </div>
 
@@ -1069,34 +1069,28 @@ function HomeContent() {
                 {filteredCoreModules.map((mod) => (
                   <article
                     key={mod.id}
-                    className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden hover:border-slate-700 transition-all duration-150 flex flex-col justify-between group"
+                    className="bg-slate-900/90 rounded-xl border border-slate-800/80 overflow-hidden hover:border-slate-700 transition-all duration-150 flex flex-col justify-between group"
                   >
                     <div>
                       {/* Visual SVG Card Art */}
                       <div className="h-36 relative overflow-hidden bg-slate-950">
                         <ModuleCardArt moduleId={mod.id} />
-                        {/* Top Badges */}
-                        <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                          <span className="bg-slate-900/90 text-slate-200 px-2 py-0.5 rounded text-[10px] font-mono font-bold border border-slate-800">
-                            MODULE {mod.moduleNumber}
+                        {/* Clean minimal Badges */}
+                        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                          <span className="bg-slate-900/90 text-slate-200 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border border-slate-800">
+                            Lớp {mod.grade}
                           </span>
-                          <span className="bg-blue-600/90 text-white px-2 py-0.5 rounded text-[10px] font-mono font-bold">
-                            LỚP {mod.grade}
+                          <span className="bg-slate-900/80 text-blue-300 border border-slate-800 px-2 py-0.5 rounded-md text-[11px] font-medium">
+                            {mod.is3D ? "Không gian 3D" : "Mặt phẳng 2D"}
                           </span>
                         </div>
-                        <span className="absolute top-2 right-2 bg-slate-900/80 text-blue-300 border border-slate-800 px-2 py-0.5 rounded text-[10px] font-mono font-semibold">
-                          {mod.is3D ? "KHÔNG GIAN 3D" : "MẶT PHẲNG 2D"}
-                        </span>
                       </div>
 
                       {/* Card Content */}
-                      <div className="p-3.5 space-y-2">
-                        <div className="flex items-center justify-between text-[10px]">
-                          <span className="font-mono font-bold text-blue-400 uppercase tracking-wider">
+                      <div className="p-4 space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-semibold text-blue-400">
                             {mod.tag}
-                          </span>
-                          <span className="px-1.5 py-0.5 rounded font-mono text-[9px] bg-slate-800 text-slate-300 border border-slate-700">
-                            60fps Dynamic
                           </span>
                         </div>
 
@@ -1413,16 +1407,16 @@ function HomeContent() {
         )}
       </main>
 
-      {/* 3. FLOATING SOCRATIC TUTOR BUTTON ON BOTTOM RIGHT */}
+      {/* 3. NÚT TRỢ LÝ SƯ PHẠM SOCRATIC Ở GÓC DƯỚI BÊN PHẢI */}
       {!tutorOpen && (
         <button
           type="button"
           onClick={() => setTutorOpen(true)}
-          className="fixed bottom-4 right-4 z-40 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 rounded-full shadow-lg border border-slate-700 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer"
-          title="Mở Trợ lý gợi mở Socratic TES"
+          className="fixed bottom-4 right-4 z-40 px-3.5 py-2 bg-slate-900/95 hover:bg-slate-850 text-slate-200 rounded-full shadow-xl border border-slate-700/80 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer backdrop-blur-md"
+          title="Mở Trợ lý gợi mở Socratic"
         >
-          <Bot className="w-4 h-4 text-blue-400" />
-          <span>Trợ lý TES</span>
+          <GraduationCap className="w-4 h-4 text-blue-400" />
+          <span>Trợ lý Socratic</span>
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
         </button>
       )}

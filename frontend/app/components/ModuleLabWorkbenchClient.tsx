@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Bot, Layers } from "lucide-react";
+import { ArrowLeft, GraduationCap, Layers } from "lucide-react";
 import { CoreModuleCard } from "../lib/modulesCatalogData";
 import { StationItem } from "../lib/stationCatalogData";
 import MathStepWorkbench from "./MathStepWorkbench";
@@ -40,9 +40,9 @@ export default function ModuleLabWorkbenchClient({
     window.history.replaceState(null, "", cleanUrl);
   }, []);
 
-  // Khởi tạo lời chào mở đầu của TES
+  // Khởi tạo lời chào mở đầu của Trợ lý Socratic
   useEffect(() => {
-    const welcomeText = `Chào em! Thầy là TES — Trợ lý Socratic đồng hành cùng em tại **Trạm ${currentStation.id}: ${currentStation.title}** (${module.title}).\n\nEm hãy quan sát trực quan trên mô hình, thao tác thử và chia sẻ phát hiện của em nhé!`;
+    const welcomeText = `Chào em! Thầy/cô là Trợ lý gợi mở Socratic đồng hành cùng em tại **Trạm ${currentStation.id}: ${currentStation.title}** (${module.title}).\n\nEm hãy quan sát trực quan trên mô hình, thao tác thử và chia sẻ phát hiện của em nhé!`;
     setMessages([
       {
         id: crypto.randomUUID(),
@@ -132,7 +132,7 @@ export default function ModuleLabWorkbenchClient({
   };
 
   return (
-    <div className="min-h-screen bg-[#090D16] text-slate-100 flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-[#0B0F17] text-slate-100 flex flex-col overflow-hidden">
       {/* Top Application Bar chuẩn Desktop-Grade GeoGebra */}
       <header className="h-12 bg-slate-950/95 border-b border-slate-800 px-3 sm:px-4 flex items-center justify-between shrink-0 select-none z-30">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -174,10 +174,10 @@ export default function ModuleLabWorkbenchClient({
             type="button"
             onClick={() => setTutorOpen(true)}
             className="px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-            title="Mở Trợ lý Socratic TES"
+            title="Mở Trợ lý gợi mở Socratic"
           >
-            <Bot className="w-3.5 h-3.5" />
-            <span>Trợ lý TES</span>
+            <GraduationCap className="w-3.5 h-3.5" />
+            <span>Trợ lý Socratic</span>
           </button>
         </div>
       </header>

@@ -87,8 +87,9 @@ export function sanitizePromptInput(input: string): string {
 /**
  * Phản hồi sư phạm chuẩn mực khi phát hiện can thiệp vào nguyên tắc Socratic
  */
-export function getSafeSocraticFallback(_reason?: string): string {
-  return `Thầy là **Trợ lý Socratic TES MathSTEP** — người bạn đồng hành giúp em rèn luyện phương pháp tư duy toán học.\n\nTheo chuẩn sư phạm GDPT 2018, thầy **tuyệt đối không giải hộ đáp số** hay thay đổi vai trò sư phạm. Em hãy chia sẻ quan sát đầu tiên của em trên mô hình hoặc bước em đang gặp khó khăn, thầy sẽ cùng em tháo gỡ từng bước một nhé!`;
+export function getSafeSocraticFallback(reason?: string): string {
+  const note = reason ? ` (${reason})` : "";
+  return `Thầy là **Trợ lý gợi mở Socratic MathSTEP** — người đồng hành giúp em rèn luyện phương pháp tư duy toán học.\n\nTheo định hướng giáo dục GDPT 2018, thầy **tuyệt đối không giải hộ đáp số** hay làm thay em bài toán${note}. Em hãy chia sẻ quan sát đầu tiên của em trên mô hình hoặc bước em đang gặp vướng mắc, thầy sẽ đặt câu hỏi gợi mở để cùng em tháo gỡ từng bước nhé!`;
 }
 
 /**

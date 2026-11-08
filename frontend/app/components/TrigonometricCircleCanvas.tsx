@@ -9,7 +9,7 @@ import {
   Magnet,
   Camera,
   Layers,
-  Sparkles,
+  Compass,
 } from "lucide-react";
 import KatexMath, { formatVNFloat } from "./KatexMath";
 
@@ -648,7 +648,7 @@ export default function TrigonometricCircleCanvas({
 
           {/* Huy hiệu Góc phần tư */}
           <div className="px-3 py-1.5 bg-slate-900/90 backdrop-blur-md rounded-lg border border-teal-500/50 text-xs text-teal-300 font-bold flex items-center gap-1.5 shadow-lg">
-            <Sparkles className="w-3.5 h-3.5 text-teal-400" />
+            <Compass className="w-3.5 h-3.5 text-teal-400" />
             <span>{quadrantInfo.label}</span>
             {quadrantInfo.num > 0 && (
               <span className="text-[10px] text-slate-300 font-mono">({quadrantInfo.desc})</span>

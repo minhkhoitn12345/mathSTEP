@@ -4,7 +4,7 @@ import React, { useMemo, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import { Bot, Sparkles, X } from "lucide-react";
+import { GraduationCap, ArrowRight, X } from "lucide-react";
 
 export type ChatMessage = {
   id: string;
@@ -106,10 +106,10 @@ export default function SocraticChatDrawer({
         {/* Header */}
         <div className="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 shrink-0">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-blue-500" />
             <div className="min-w-0">
               <h3 className="text-xs font-bold text-slate-100 flex items-center gap-1.5 truncate">
-                <span>Trợ lý Socratic TES</span>
+                <span>Trợ lý gợi mở Socratic</span>
                 {stationId && (
                   <span className="px-1.5 py-0.2 rounded bg-blue-900/60 text-blue-300 font-mono text-[10px]">
                     {stationId}
@@ -132,7 +132,7 @@ export default function SocraticChatDrawer({
         </div>
 
         {/* Message stream */}
-        <div className="flex-1 p-3.5 overflow-y-auto space-y-3 bg-[#090D16]">
+        <div className="flex-1 p-3.5 overflow-y-auto space-y-3 bg-slate-950">
           {messages.map((item) => (
             <article
               key={item.id}
@@ -140,14 +140,14 @@ export default function SocraticChatDrawer({
             >
               {item.role === "assistant" && (
                 <div className="w-6 h-6 rounded-md bg-blue-900/60 text-blue-300 border border-blue-700/60 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 shadow-xs">
-                  <Bot className="w-3.5 h-3.5" />
+                  <GraduationCap className="w-3.5 h-3.5" />
                 </div>
               )}
               <div className="max-w-[85%] space-y-1 text-xs min-w-0">
                 <div
                   className={`p-2.5 rounded-lg leading-relaxed text-xs break-words ${
                     item.role === "assistant"
-                      ? "bg-slate-900/95 text-slate-200 border border-slate-800"
+                      ? "bg-slate-900 text-slate-200 border border-slate-800"
                       : "bg-blue-600 text-white"
                   }`}
                 >
@@ -172,8 +172,8 @@ export default function SocraticChatDrawer({
           ))}
           {busy && (
             <div className="flex items-center gap-2 text-xs text-slate-400 py-1">
-              <Bot className="w-3.5 h-3.5 text-blue-400 animate-spin" />
-              <span className="italic">TES đang phân tích câu trả lời của em...</span>
+              <GraduationCap className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
+              <span className="italic">Trợ lý đang suy nghĩ câu hỏi gợi ý...</span>
             </div>
           )}
           <div ref={endRef} />
@@ -182,7 +182,7 @@ export default function SocraticChatDrawer({
         {/* Composer */}
         <div className="p-3 border-t border-slate-800 bg-slate-950 shrink-0 space-y-2">
           <div className="flex items-center justify-between text-[10px] text-slate-400">
-            <span>Trợ lý Socratic GDPT 2018</span>
+            <span>Phương pháp Socratic · GDPT 2018</span>
             <button
               type="button"
               onClick={() => {
@@ -190,8 +190,8 @@ export default function SocraticChatDrawer({
               }}
               className="text-blue-400 hover:underline font-medium flex items-center gap-1 cursor-pointer"
             >
-              <Sparkles className="w-3 h-3 text-blue-400" />
-              <span>Tự thử tiếp</span>
+              <ArrowRight className="w-3 h-3 text-blue-400" />
+              <span>Em tự làm tiếp</span>
             </button>
           </div>
 
@@ -213,7 +213,7 @@ export default function SocraticChatDrawer({
                   onSendMessage();
                 }
               }}
-              placeholder="Nhập câu trả lời hoặc câu hỏi cho TES..."
+              placeholder="Nhập suy nghĩ, quan sát hoặc câu hỏi của em..."
               rows={2}
               className="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-500 resize-none min-w-0"
             />
