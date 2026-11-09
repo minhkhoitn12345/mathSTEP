@@ -1,42 +1,112 @@
-import React from 'react';
-import { OptiMascot } from '@/app/components/optimath/mascot/OptiMascot';
-import { Presentation, Compass, BookOpen, Layers, Target, Award, Sparkles } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
+import {
+  Presentation,
+  Compass,
+  Layers,
+  Target,
+  Award,
+  Sparkles,
+  User,
+  ChevronDown,
+  Settings,
+  History,
+  LogOut,
+  Menu,
+  X,
+  BookOpen,
+} from "lucide-react";
+
+export interface SessionData {
+  authenticated: boolean;
+  name: string | null;
+  email: string | null;
+  role?: string;
+  provider?: string;
+}
 
 interface HeaderProps {
   currentModule: string;
   onSelectModule: (modId: string) => void;
   onOpenTeacherGuide: () => void;
+  onToggleChatDrawer?: () => void;
+  chatDrawerOpen?: boolean;
+  session?: SessionData | null;
+  sessionLoading?: boolean;
+  onOpenAccountModal?: (tab: "profile" | "ai") => void;
+  onOpenChatHistory?: () => void;
+  onOpenAuthModal?: () => void;
+  onLogout?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   currentModule,
   onSelectModule,
-  onOpenTeacherGuide
+  onOpenTeacherGuide,
+  onToggleChatDrawer,
+  chatDrawerOpen,
+  session,
+  sessionLoading = false,
+  onOpenAccountModal,
+  onOpenChatHistory,
+  onOpenAuthModal,
+  onLogout,
 }) => {
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setUserMenuOpen(false);
+        setMobileMenuOpen(false);
+      }
+    }
+    if (userMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [userMenuOpen]);
+
   const isLab =
-    currentModule === 'lab' ||
-    currentModule === 'system' ||
-    currentModule === 'optimization' ||
-    currentModule === 'quiz';
+    currentModule === "lab" ||
+    currentModule === "system" ||
+    currentModule === "optimization" ||
+    currentModule === "quiz";
 
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-40 backdrop-blur-md bg-white/95">
+    <header className="bg-white/95 border-b border-slate-200 sticky top-0 z-40 backdrop-blur-md transition-all select-none shadow-xs">
       <div
         className={`max-w-7xl mx-auto px-3 sm:px-6 flex items-center justify-between gap-3 transition-all ${
-          isLab ? 'h-12 sm:h-15' : 'h-16'
+          isLab ? "h-14 sm:h-15" : "h-16"
         }`}
       >
-        {/* Logo */}
+        {/* 1. BRAND LOGO */}
         <button
-          onClick={() => onSelectModule('home')}
+          type="button"
+          onClick={() => {
+            onSelectModule("home");
+            setMobileMenuOpen(false);
+          }}
           className="flex items-center gap-2 text-left group focus:outline-none cursor-pointer"
+          title="Về trang chủ OPTIMATH LAB"
         >
           <div
-            className={`rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform ${
-              isLab ? 'w-8 h-8 sm:w-9 sm:h-9' : 'w-10 h-10'
+            className={`rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform ${
+              isLab ? "w-8 h-8 sm:w-9 sm:h-9" : "w-10 h-10"
             }`}
           >
-            <svg viewBox="0 0 40 40" className={isLab ? 'w-5 h-5' : 'w-6 h-6'} fill="none">
+            <svg viewBox="0 0 40 40" className={isLab ? "w-5 h-5" : "w-6 h-6"} fill="none">
               <path
                 d="M 12 28 L 20 12 L 28 28 Z"
                 stroke="#FFFFFF"
@@ -44,118 +114,364 @@ export const Header: React.FC<HeaderProps> = ({
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-              <circle cx="20" cy="20" r="3" fill="#FBBF24" />
+              <circle cx="20" cy="20" r="3.2" fill="#FBBF24" />
             </svg>
           </div>
           <div>
-            <div className="flex items-center gap-1">
-              <span className={`font-extrabold tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors ${
-                isLab ? 'text-base sm:text-lg' : 'text-lg sm:text-xl'
-              }`}>
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`font-black tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors ${
+                  isLab ? "text-base sm:text-lg" : "text-lg sm:text-xl"
+                }`}
+              >
                 OPTIMATH
               </span>
-              <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-blue-100 text-blue-700 tracking-wider uppercase">
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-100 text-blue-700 tracking-wider uppercase">
                 LAB
               </span>
             </div>
             {!isLab && (
               <p className="text-[10px] text-slate-500 hidden sm:block font-medium">
-                Phòng thí nghiệm Toán học trực quan
+                Phòng thí nghiệm Toán học trực quan GDPT 2018
               </p>
             )}
           </div>
         </button>
 
-        {/* Navigation Quick Links */}
-        <nav className="hidden md:flex items-center gap-1 text-xs font-semibold text-slate-600">
+        {/* 2. NAVIGATION DESKTOP */}
+        <nav className="hidden lg:flex items-center gap-1 text-xs font-semibold text-slate-600">
           <button
-            onClick={() => onSelectModule('home')}
+            type="button"
+            onClick={() => onSelectModule("home")}
             className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-              currentModule === 'home'
-                ? 'bg-blue-50 text-blue-700 font-bold'
-                : 'hover:bg-slate-100 text-slate-700'
+              currentModule === "home"
+                ? "bg-blue-50 text-blue-700 font-bold"
+                : "hover:bg-slate-100 text-slate-700"
             }`}
           >
             Trang chủ
           </button>
           <button
-            onClick={() => onSelectModule('lab')}
+            type="button"
+            onClick={() => onSelectModule("lab")}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
-              currentModule === 'lab'
-                ? 'bg-emerald-600 text-white font-bold shadow-xs'
-                : 'hover:bg-slate-100 text-slate-700'
+              currentModule === "lab"
+                ? "bg-emerald-600 text-white font-bold shadow-xs"
+                : "hover:bg-slate-100 text-slate-700"
             }`}
           >
             <Compass className="w-3.5 h-3.5" />
             <span>Module 2: Một BPT</span>
           </button>
           <button
-            onClick={() => onSelectModule('system')}
+            type="button"
+            onClick={() => onSelectModule("system")}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
-              currentModule === 'system'
-                ? 'bg-amber-600 text-white font-bold shadow-xs'
-                : 'bg-amber-50 hover:bg-amber-100 text-amber-800'
+              currentModule === "system"
+                ? "bg-amber-600 text-white font-bold shadow-xs"
+                : "bg-amber-50 hover:bg-amber-100 text-amber-800"
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
             <span>Module 3: Hệ BPT</span>
           </button>
           <button
-            onClick={() => onSelectModule('optimization')}
+            type="button"
+            onClick={() => onSelectModule("optimization")}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 ${
-              currentModule === 'optimization'
-                ? 'bg-purple-600 text-white font-bold shadow-xs'
-                : 'bg-purple-50 hover:bg-purple-100 text-purple-800'
+              currentModule === "optimization"
+                ? "bg-purple-600 text-white font-bold shadow-xs"
+                : "bg-purple-50 hover:bg-purple-100 text-purple-800"
             }`}
           >
             <Target className="w-3.5 h-3.5" />
             <span>Module 4: Tối Ưu</span>
           </button>
           <button
-            onClick={() => onSelectModule('quiz')}
+            type="button"
+            onClick={() => onSelectModule("quiz")}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 ${
-              currentModule === 'quiz'
-                ? 'bg-indigo-600 text-white font-bold shadow-xs'
-                : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-800'
+              currentModule === "quiz"
+                ? "bg-indigo-600 text-white font-bold shadow-xs"
+                : "bg-indigo-50 hover:bg-indigo-100 text-indigo-800"
             }`}
           >
             <Award className="w-3.5 h-3.5" />
             <span>Module 5: Luyện Tập</span>
           </button>
           <button
-            onClick={() => onSelectModule('knowledge')}
+            type="button"
+            onClick={() => onSelectModule("knowledge")}
             className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-              currentModule === 'knowledge'
-                ? 'bg-blue-50 text-blue-700 font-bold'
-                : 'hover:bg-slate-100 text-slate-700'
+              currentModule === "knowledge"
+                ? "bg-blue-50 text-blue-700 font-bold"
+                : "hover:bg-slate-100 text-slate-700"
             }`}
           >
+            <BookOpen className="w-3.5 h-3.5 inline mr-1" />
             Lý thuyết
           </button>
         </nav>
 
-        {/* Right CTA: Teacher Mode & Opti Indicator */}
-        <div className="flex items-center gap-2">
+        {/* 3. RIGHT CTAS & USER PROFILE */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Nút Kích hoạt Trợ lý Socratic AI */}
+          {onToggleChatDrawer && (
+            <button
+              type="button"
+              onClick={onToggleChatDrawer}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-xs cursor-pointer border ${
+                chatDrawerOpen
+                  ? "bg-blue-600 text-white border-blue-500 shadow-blue-500/20"
+                  : "bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 hover:from-blue-100 hover:to-indigo-100 text-blue-800 border-blue-200"
+              }`}
+              title="Mở Trợ lý Opti Socratic AI"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+              <span className="hidden sm:inline">Hỏi Socratic AI</span>
+              <span className="sm:hidden">Socratic</span>
+            </button>
+          )}
+
+          {/* Nút Chế độ giáo viên */}
           <button
             type="button"
             onClick={onOpenTeacherGuide}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-bold transition-all shadow-xs"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <Presentation className="w-3.5 h-3.5 text-purple-600" />
-            <span className="hidden sm:inline">Chế độ giáo viên</span>
-            <span className="sm:hidden">Giáo viên</span>
+            <span>Giáo viên</span>
           </button>
 
+          {/* Linh vật Opti mini indicator */}
           <div
-            onClick={() => onSelectModule('lab')}
-            className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full bg-slate-100 hover:bg-blue-50 border border-slate-200 cursor-pointer transition-colors"
-            title="Gặp gỡ Opti"
+            onClick={() => onSelectModule("lab")}
+            className="hidden md:flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full bg-slate-100 hover:bg-blue-50 border border-slate-200 cursor-pointer transition-colors"
+            title="Khám phá phòng thí nghiệm cùng Opti"
           >
-            <span className="text-[11px] font-bold text-slate-700 hidden lg:inline">Opti</span>
-            <OptiMascot expression="happy" size={28} animate={false} />
+            <span className="text-[11px] font-bold text-slate-700">Opti</span>
+            <OptiMascot expression="happy" size={26} animate={false} />
           </div>
+
+          {/* User Account / Login */}
+          {sessionLoading ? (
+            <div className="w-8 h-8 rounded-full bg-slate-100 animate-pulse" />
+          ) : session?.authenticated ? (
+            <div className="relative" ref={userMenuRef}>
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen((prev) => !prev)}
+                className="flex items-center gap-1.5 p-1 sm:px-2.5 sm:py-1 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-semibold transition-all cursor-pointer shadow-xs group"
+                aria-expanded={userMenuOpen}
+              >
+                <span className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                  {(session.name || session.email || "M").slice(0, 1).toUpperCase()}
+                </span>
+                <span className="max-w-[100px] truncate hidden sm:inline">
+                  {session.name || session.email?.split("@")[0] || "Học viên"}
+                </span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${
+                    userMenuOpen ? "rotate-180 text-blue-600" : ""
+                  }`}
+                />
+              </button>
+
+              {/* Account Dropdown Menu */}
+              {userMenuOpen && (
+                <div
+                  className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-200 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-xs text-slate-800"
+                  role="menu"
+                >
+                  <div className="px-3.5 py-2.5 border-b border-slate-100 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-mono font-bold text-sm flex items-center justify-center shrink-0 shadow-sm">
+                      {(session.name || session.email || "M").slice(0, 1).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-slate-900 truncate">
+                        {session.name || "Học viên"}
+                      </div>
+                      <div className="text-[11px] text-slate-500 truncate">
+                        {session.email}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-1.5 py-1 space-y-0.5">
+                    {onOpenChatHistory && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          onOpenChatHistory();
+                        }}
+                        className="w-full px-3 py-2 rounded-xl text-left hover:bg-slate-50 flex items-center gap-2.5 text-slate-700 hover:text-blue-600 transition-colors cursor-pointer"
+                      >
+                        <History className="w-4 h-4 text-slate-400" />
+                        <span>Lịch sử trò chuyện AI</span>
+                      </button>
+                    )}
+
+                    {onOpenAccountModal && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            onOpenAccountModal("ai");
+                          }}
+                          className="w-full px-3 py-2 rounded-xl text-left hover:bg-slate-50 flex items-center gap-2.5 text-slate-700 hover:text-blue-600 transition-colors cursor-pointer"
+                        >
+                          <Settings className="w-4 h-4 text-slate-400" />
+                          <span>Cấu hình AI (Gemini Key)</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            onOpenAccountModal("profile");
+                          }}
+                          className="w-full px-3 py-2 rounded-xl text-left hover:bg-slate-50 flex items-center gap-2.5 text-slate-700 hover:text-blue-600 transition-colors cursor-pointer"
+                        >
+                          <User className="w-4 h-4 text-slate-400" />
+                          <span>Hồ sơ cá nhân</span>
+                        </button>
+                      </>
+                    )}
+
+                    {onLogout && (
+                      <div className="pt-1 mt-1 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            onLogout();
+                          }}
+                          className="w-full px-3 py-2 rounded-xl text-left hover:bg-rose-50 text-rose-600 flex items-center gap-2.5 transition-colors cursor-pointer font-medium"
+                        >
+                          <LogOut className="w-4 h-4 text-rose-500" />
+                          <span>Đăng xuất</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={onOpenAuthModal}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors shadow-xs cursor-pointer"
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>Đăng nhập</span>
+            </button>
+          )}
+
+          {/* Mobile Menu Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+            className="lg:hidden p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </div>
+
+      {/* 4. MOBILE NAVIGATION DRAWER */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1 shadow-lg animate-in slide-in-from-top-2 duration-150">
+          <button
+            type="button"
+            onClick={() => {
+              onSelectModule("home");
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
+              currentModule === "home" ? "bg-blue-50 text-blue-700 font-bold" : "text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            Trang chủ
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onSelectModule("lab");
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors ${
+              currentModule === "lab" ? "bg-emerald-50 text-emerald-700 font-bold" : "text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <Compass className="w-4 h-4 text-emerald-600" />
+            <span>Module 2: Một BPT (7 Bước)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onSelectModule("system");
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors ${
+              currentModule === "system" ? "bg-amber-50 text-amber-700 font-bold" : "text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <Layers className="w-4 h-4 text-amber-600" />
+            <span>Module 3: Hệ BPT (Đa giác & Đỉnh)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onSelectModule("optimization");
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors ${
+              currentModule === "optimization" ? "bg-purple-50 text-purple-700 font-bold" : "text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <Target className="w-4 h-4 text-purple-600" />
+            <span>Module 4: Tối Ưu Tuyến Tính</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onSelectModule("quiz");
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors ${
+              currentModule === "quiz" ? "bg-indigo-50 text-indigo-700 font-bold" : "text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <Award className="w-4 h-4 text-indigo-600" />
+            <span>Module 5: Luyện Tập & Chẩn Đoán Lỗi</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onSelectModule("knowledge");
+              setMobileMenuOpen(false);
+            }}
+            className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-700 hover:bg-slate-50"
+          >
+            <BookOpen className="w-4 h-4 text-blue-600" />
+            <span>Sổ tay lý thuyết BPT</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onOpenTeacherGuide();
+              setMobileMenuOpen(false);
+            }}
+            className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-purple-700 bg-purple-50 hover:bg-purple-100"
+          >
+            <Presentation className="w-4 h-4 text-purple-600" />
+            <span>Hướng dẫn sư phạm giáo viên</span>
+          </button>
+        </div>
+      )}
     </header>
   );
 };

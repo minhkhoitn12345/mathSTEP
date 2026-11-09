@@ -28,45 +28,48 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://mathstep-vn.vercel.app"),
   title: {
-    default: "MathSTEP · Nền tảng Học liệu số Toán học THPT 3D/AR & Socratic AI",
-    template: "%s | MathSTEP",
+    default: "OPTIMATH LAB · Phòng Thí Nghiệm Toán Học Tương Tác & Socratic AI",
+    template: "%s | OPTIMATH LAB",
   },
-  description: "Dự án Nghiên cứu KHKT: Hệ thống học liệu số tương tác 8 bước nhận thức, mô phỏng 2D/3D & AR và Trợ lý Socratic kiểm chứng tất định chuẩn SGK Kết nối tri thức.",
+  description:
+    "Phòng thí nghiệm Toán học trực quan 2D Oxy, mô phỏng quy hoạch tuyến tính và Trợ lý Socratic AI chuẩn GDPT 2018.",
   keywords: [
-    "Toán THPT",
-    "Học liệu số",
-    "Hình học không gian 3D",
+    "OPTIMATH LAB",
+    "Toán 10",
+    "Bất phương trình bậc nhất hai ẩn",
+    "Hệ bất phương trình",
     "Quy hoạch tuyến tính",
     "Socratic AI",
-    "Nghiên cứu KHKT",
     "GDPT 2018",
   ],
-  authors: [{ name: "Nguyễn Minh Khôi", url: "https://mathstep-vn.vercel.app" }],
-  creator: "MathSTEP Project Team",
-  publisher: "MathSTEP Education",
+  authors: [{ name: "OPTIMATH LAB", url: "https://mathstep-vn.vercel.app" }],
+  creator: "OPTIMATH LAB Team",
+  publisher: "OPTIMATH LAB",
   manifest: "/manifest.json",
   openGraph: {
     type: "website",
     locale: "vi_VN",
     url: "https://mathstep-vn.vercel.app",
-    siteName: "MathSTEP",
-    title: "MathSTEP · Nền tảng Học liệu số Toán học THPT 3D/AR & Socratic AI",
-    description: "Học bằng thao tác, hiểu bằng lập luận: Khám phá 48 trạm thực nghiệm số và Trợ giảng Socratic AI chuẩn GDPT 2018.",
+    siteName: "OPTIMATH LAB",
+    title: "OPTIMATH LAB · Phòng Thí Nghiệm Toán Học Tương Tác & Socratic AI",
+    description:
+      "Học bằng thao tác, hiểu bằng lập luận: 5 Module trực quan hoá Bất phương trình & Quy hoạch tuyến tính cùng Trợ lý Socratic AI.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "MathSTEP · Nền tảng Học liệu số Toán học THPT",
-    description: "Khám phá 48 trạm thực nghiệm Toán học THPT tương tác 2D/3D & Trợ lý Socratic AI.",
+    title: "OPTIMATH LAB · Phòng Thí Nghiệm Toán Học Tương Tác",
+    description:
+      "Khám phá miền nghiệm, trực quan hóa 2D Oxy và đồng hành cùng Trợ lý Socratic AI chuẩn GDPT 2018.",
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "MathSTEP",
+    title: "OPTIMATH LAB",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#172b31",
+  themeColor: "#2563eb",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -79,7 +82,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className="font-sans antialiased bg-[#0B0F17] text-slate-100 selection:bg-blue-600/30 selection:text-white max-w-full overflow-x-clip">
+      <body className="font-sans antialiased bg-slate-50 text-slate-900 selection:bg-blue-600/30 selection:text-blue-900 max-w-full overflow-x-clip">
         {children}
       </body>
     </html>
