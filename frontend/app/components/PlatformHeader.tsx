@@ -114,68 +114,49 @@ export default function PlatformHeader({
         </Link>
       </div>
 
-      {/* THANH ĐIỀU HƯỚNG TỐI GIẢN (CLEAN & MINIMALIST NAVBAR) */}
-      <nav className="flex items-center gap-5 sm:gap-7 md:gap-8">
-        {/* Tab 1: Trạm học (kéo xuống danh mục trạm học) */}
+      {/* THANH ĐIỀU HƯỚNG TỐI GIẢN (3 CHUYÊN ĐỀ MỚI THEO OPTIMATH LAB) */}
+      <nav className="flex items-center gap-3 sm:gap-6">
         <button
           type="button"
           onClick={() => {
-            if (onNavigateStations) {
-              onNavigateStations();
-            } else {
-              onSelectSubsystem("student", "home");
-            }
+            if (onNavigateHome) onNavigateHome();
+            else onSelectSubsystem("student", "home");
           }}
-          className={`text-sm font-medium px-3 py-1.5 rounded-md transition-colors duration-200 cursor-pointer ${
-            subsystem === "student" && activeSection !== "modules"
-              ? "text-white bg-white/5 font-semibold"
-              : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
-          }`}
+          className="text-xs sm:text-sm font-medium px-2.5 py-1.5 rounded-lg text-white bg-white/10 font-semibold"
         >
-          Trạm học
+          Trang chủ
         </button>
 
-        {/* Tab 2: Module (kế bên trạm học, kéo xuống 7 module thí nghiệm) */}
-        <button
-          type="button"
-          onClick={() => {
-            if (onNavigateModules) {
-              onNavigateModules();
-            } else {
-              onSelectSubsystem("student", "home");
-            }
-          }}
-          className={`text-sm font-medium px-3 py-1.5 rounded-md transition-colors duration-200 cursor-pointer ${
-            subsystem === "student" && activeSection === "modules"
-              ? "text-white bg-white/5 font-semibold"
-              : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
-          }`}
+        <Link
+          href="/optimath"
+          className="text-xs sm:text-sm font-medium px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-1.5"
         >
-          Module
-        </button>
+          <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+          <span>3 Chuyên đề Lab</span>
+        </Link>
 
-        {/* Tab 3: Cơ sở KHKT */}
+        {/* Tab: Cơ sở KHKT */}
         <button
           type="button"
           onClick={() => onSelectSubsystem("research", "home")}
-          className={`text-sm font-medium px-3 py-1.5 rounded-md transition-colors duration-200 cursor-pointer ${
+          className={`text-xs sm:text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors duration-200 cursor-pointer ${
             subsystem === "research"
-              ? "text-white bg-white/5 font-semibold"
+              ? "text-white bg-white/10 font-semibold"
               : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
           }`}
         >
           Cơ sở KHKT
         </button>
 
-        {/* Tab 4: Giáo viên (Chỉ hiển thị khi đã đăng nhập và có quyền giáo viên/admin) */}
+        {/* Tab: Giáo viên */}
         {isTeacher && (
           <button
             type="button"
             onClick={() => onSelectSubsystem("teacher", "home")}
-            className={`text-sm font-medium px-3 py-1.5 rounded-md transition-colors duration-200 cursor-pointer ${
+            className={`text-xs sm:text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors duration-200 cursor-pointer ${
               subsystem === "teacher"
-                ? "text-white bg-white/5 font-semibold"
-                : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
+                ? "text-amber-300 bg-amber-500/10 font-semibold"
+                : "text-slate-400 hover:text-amber-300 hover:bg-white/[0.02]"
             }`}
           >
             Giáo viên

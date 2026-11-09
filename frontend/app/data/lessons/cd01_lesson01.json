@@ -1,0 +1,176 @@
+{
+  "lessonId": "cd01-lesson-01",
+  "curriculum": "GDPT 2018 - Toán 10",
+  "topic": "Chuyên đề 01: Bất phương trình & Quy hoạch tuyến tính",
+  "lessonTitle": "Bài 1: Bất phương trình bậc nhất hai ẩn & Nửa mặt phẳng bờ (d)",
+  "targetGrade": 10,
+  "estimatedTimeMinutes": 12,
+  "coreObjectives": [
+    "Nhận diện chuẩn xác dạng bất phương trình bậc nhất hai ẩn ax + by <= c (a^2 + b^2 > 0) và phân biệt với phương trình.",
+    "Làm chủ quy trình xác định nửa mặt phẳng nghiệm trên Oxy, sử dụng thành thạo điểm thử M(x0, y0) và tránh bẫy đường bờ qua gốc tọa độ O(0,0)."
+  ],
+  "liteTheory": [
+    {
+      "cardId": "theory-1",
+      "title": "Bất phương trình bậc nhất hai ẩn là gì?",
+      "content": "Là biểu thức có dạng ax + by [toán tử] c, trong đó a và b không đồng thời bằng 0. Số mũ của x và y luôn luôn là bậc 1. Khác với phương trình chỉ tìm nghiệm đơn lẻ, bất phương trình mở ra cả một vùng không gian nghiệm!",
+      "visualDescription": "Mô phỏng 2D Oxy trực quan: Khi thay đổi thanh trượt hệ số a, b, đường bờ xoay và phân chia mặt phẳng thành hai nửa miền đối xứng màu xanh (nghiệm) và đỏ (không phải nghiệm).",
+      "miniTip": "Mẹo nhớ: 'Bậc nhất' nghĩa là mũ 1, 'Hai ẩn' là có cả x và y, 'Không đồng thời bằng 0' nghĩa là a^2 + b^2 > 0!"
+    },
+    {
+      "cardId": "theory-2",
+      "title": "Nghiệm của BPT: Không chỉ là một con số!",
+      "content": "Một nghiệm là một cặp số (x0; y0) sao cho khi thay vào, vế trái thỏa mãn quan hệ với vế phải. Trên mặt phẳng tọa độ Oxy, tập hợp tất cả các nghiệm này tạo thành vô số điểm lấp kín cả một nửa mặt phẳng!",
+      "visualDescription": "Mô phỏng tương tác kéo thả điểm M(x; y): Kéo điểm M đi khắp mặt phẳng Oxy. Khi M rơi vào nửa mặt phẳng nghiệm, điểm phát sáng màu xanh kèm âm thanh tinh tang; khi ra ngoài, điểm chuyển màu xám tro.",
+      "miniTip": "Mẹo nhớ: Phương trình chỉ là 1 sợi chỉ (đường thẳng), còn Bất phương trình là cả 1 tấm thảm (nửa mặt phẳng)!"
+    },
+    {
+      "cardId": "theory-3",
+      "title": "Bờ liền hay Bờ đứt? Đừng để mất điểm oan!",
+      "content": "Đường thẳng ax + by = c chính là 'hàng rào' phân chia ranh giới. Nếu BPT có dấu bằng (<= hoặc >=), bờ được tính vào nghiệm nên vẽ bằng NÉT LIỀN. Nếu BPT ngặt (< hoặc >), bờ bị loại ra nên bắt buộc vẽ bằng NÉT ĐỨT.",
+      "visualDescription": "Thanh gạt chuyển đổi toán tử giữa '<=' và '<': Khi gạt sang '<', đường thẳng bờ từ nét liền chuyển ngay thành nét đứt đứt quãng (dashed line) nhấp nháy nổi bật.",
+      "miniTip": "Mẹo nhớ: 'Có bằng thì LIỀN một dải, Không bằng thì ĐỨT chia đôi'!"
+    }
+  ],
+  "exerciseLadder": [
+    {
+      "id": "ex-01",
+      "level": 1,
+      "levelName": "Cấp độ 1: Nhận biết (Warm-up)",
+      "type": "quick_select",
+      "question": "Trong các biểu thức sau, biểu thức nào là Bất phương trình bậc nhất hai ẩn?",
+      "visualWidget": {
+        "type": "formula_cards",
+        "highlight": "bậc của biến"
+      },
+      "options": [
+        { "id": "A", "text": "2x^2 + 3y <= 5", "isCorrect": false },
+        { "id": "B", "text": "3x - 4y > 12", "isCorrect": true },
+        { "id": "C", "text": "x + 2xy - y >= 0", "isCorrect": false },
+        { "id": "D", "text": "0x + 0y < 7", "isCorrect": false }
+      ],
+      "socraticHint": "Hãy quan sát số mũ của từng biến x, y và tích giữa chúng. Biểu thức nào chỉ chứa x bậc 1, y bậc 1 và không có tích xy?",
+      "correctFeedback": "Chính xác! 3x - 4y > 12 có dạng ax + by > c với a = 3, b = -4 (thỏa mãn a^2 + b^2 = 25 > 0) và x, y đều ở bậc nhất.",
+      "incorrectFeedback": {
+        "A": "Chưa đúng: x có số mũ là 2 (bậc hai), vi phạm điều kiện bậc nhất.",
+        "C": "Chưa đúng: Xuất hiện tích xy (bậc hai đối với tập hợp biến), không phải bậc nhất hai ẩn.",
+        "D": "Chưa đúng: Cả a và b đều bằng 0 (0^2 + 0^2 = 0), vi phạm điều kiện tiên quyết a^2 + b^2 > 0."
+      }
+    },
+    {
+      "id": "ex-02",
+      "level": 2,
+      "levelName": "Cấp độ 2: Thông hiểu (Practice)",
+      "type": "drag_drop_classification",
+      "question": "Cho bất phương trình 2x - y <= 1. Hãy kiểm tra và kéo thả các điểm sau vào đúng nhóm: 'Thuộc miền nghiệm' hoặc 'Không thuộc miền nghiệm'.",
+      "visualWidget": {
+        "type": "interactive_oxy_plane",
+        "boundaryLine": "2x - y = 1",
+        "points": [
+          { "label": "O(0; 0)", "coords": [0, 0] },
+          { "label": "A(2; 1)", "coords": [2, 1] },
+          { "label": "B(1; 1)", "coords": [1, 1] },
+          { "label": "C(3; 0)", "coords": [3, 0] }
+        ]
+      },
+      "dragItems": [
+        { "id": "P1", "label": "O(0; 0)", "lhs": "2*(0) - (0) = 0", "targetBucket": "inside" },
+        { "id": "P2", "label": "A(2; 1)", "lhs": "2*(2) - (1) = 3", "targetBucket": "outside" },
+        { "id": "P3", "label": "B(1; 1)", "lhs": "2*(1) - (1) = 1", "targetBucket": "inside" },
+        { "id": "P4", "label": "C(3; 0)", "lhs": "2*(3) - (0) = 6", "targetBucket": "outside" }
+      ],
+      "socraticHint": "Thay tọa độ từng điểm vào vế trái LHS = 2x - y. Nếu giá trị tính được nhỏ hơn hoặc bằng 1 thì điểm đó thuộc miền nghiệm!",
+      "correctFeedback": "Tuyệt vời! Điểm O(0;0) cho 0 <= 1 (Đúng), B(1;1) cho 1 <= 1 (Đúng - nằm trên bờ). Cả hai đều thuộc miền nghiệm!",
+      "incorrectFeedback": {
+        "general": "Chú ý: Với điểm B(1; 1), ta có LHS = 2(1) - 1 = 1. Vì BPT có dấu '<=' nên giá trị bằng 1 vẫn hoàn toàn được chấp nhận!"
+      }
+    },
+    {
+      "id": "ex-03",
+      "level": 3,
+      "levelName": "Cấp độ 3: Vận dụng (Challenge)",
+      "type": "multi_step_flow",
+      "question": "Thực hiện quy trình 3 bước biểu diễn miền nghiệm của BPT: 3x + 2y > 6 trên mặt phẳng Oxy.",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "stepTitle": "Xác định đường thẳng bờ (d)",
+          "task": "Phương trình đường thẳng bờ là gì và nét vẽ như thế nào?",
+          "options": [
+            { "id": "A", "text": "3x + 2y = 6 (Vẽ nét liền)", "isCorrect": false },
+            { "id": "B", "text": "3x + 2y = 6 (Vẽ nét đứt)", "isCorrect": true },
+            { "id": "C", "text": "3x + 2y > 6 (Vẽ nét đứt)", "isCorrect": false }
+          ],
+          "hint": "Đường bờ luôn là phương trình dấu bằng '='. BPT ban đầu dùng dấu ngặt '>' (không có dấu bằng)!"
+        },
+        {
+          "stepIndex": 2,
+          "stepTitle": "Chọn điểm thử nghiệm",
+          "task": "Điểm O(0; 0) có thể dùng làm điểm thử không? Kết quả thử ra sao?",
+          "options": [
+            { "id": "A", "text": "Dùng được. Thay O(0; 0) được 0 > 6 (Sai) => Miền nghiệm KHÔNG chứa O.", "isCorrect": true },
+            { "id": "B", "text": "Dùng được. Thay O(0; 0) được 0 > 6 (Đúng) => Miền nghiệm chứa O.", "isCorrect": false },
+            { "id": "C", "text": "Không được dùng O(0;0) vì đường bờ đi qua gốc tọa độ.", "isCorrect": false }
+          ],
+          "hint": "Đường thẳng 3x + 2y = 6 không đi qua O(0; 0) vì 3(0)+2(0) = 0 khác 6. Do đó chọn O(0;0) là nhanh nhất!"
+        },
+        {
+          "stepIndex": 3,
+          "stepTitle": "Kết luận miền nghiệm",
+          "task": "Miền nghiệm của bất phương trình là nửa mặt phẳng nào?",
+          "options": [
+            { "id": "A", "text": "Nửa mặt phẳng bờ 3x + 2y = 6 chứa gốc tọa độ O(0;0), kể cả bờ.", "isCorrect": false },
+            { "id": "B", "text": "Nửa mặt phẳng bờ 3x + 2y = 6 không chứa gốc tọa độ O(0;0), không kể bờ.", "isCorrect": true }
+          ],
+          "hint": "Kết hợp bước 1 (nét đứt = không kể bờ) và bước 2 (thay O ra Sai = không chứa O)."
+        }
+      ],
+      "correctFeedback": "Xuất sắc! Em đã hoàn thành trọn vẹn quy trình giải chuẩn mực của SGK GDPT 2018: Bờ nét đứt + Không chứa gốc tọa độ O!",
+      "incorrectFeedback": {
+        "step1": "Lưu ý dấu '>' là bất đẳng thức ngặt, đường bờ không thuộc nghiệm nên bắt buộc phải vẽ bằng nét đứt.",
+        "step2": "0 > 6 là mệnh đề toán học SAI, chứng tỏ nửa mặt phẳng chứa điểm O không phải là miền nghiệm."
+      }
+    },
+    {
+      "id": "ex-04",
+      "level": 4,
+      "levelName": "Cấp độ 4: Boss Fight (Chẩn đoán bẫy sai lầm M08)",
+      "type": "boss_diagnostic",
+      "question": "Bạn Minh giải bài toán: 'Biểu diễn miền nghiệm của BPT 2x - y >= 0'. Minh chọn điểm thử là gốc tọa độ O(0; 0) và thay vào: 2(0) - 0 = 0 >= 0 (Đúng), rồi kết luận miền nghiệm là nửa mặt phẳng chứa điểm O. Em hãy phát hiện sai lầm trong lời giải của Minh!",
+      "visualWidget": {
+        "type": "diagnostic_trap_simulation",
+        "trapCode": "M08_ZERO_ORIGIN_TRAP",
+        "boundaryLine": "2x - y = 0 (đi qua O)"
+      },
+      "options": [
+        {
+          "id": "A",
+          "text": "Minh tính toán sai phép trừ 2(0) - 0.",
+          "isCorrect": false
+        },
+        {
+          "id": "B",
+          "text": "Minh mắc bẫy M08: Đường thẳng bờ d: 2x - y = 0 đi qua chính gốc O(0;0), nên không được dùng O làm điểm thử để phân chia 2 nửa mặt phẳng!",
+          "isCorrect": true
+        },
+        {
+          "id": "C",
+          "text": "Bất phương trình này vô nghiệm nên không có miền nghiệm.",
+          "isCorrect": false
+        },
+        {
+          "id": "D",
+          "text": "Dấu >= phải đổi chiều khi chia cho số âm.",
+          "isCorrect": false
+        }
+      ],
+      "socraticHint": "Điểm thử phải nằm HẲN VỀ MỘT BÊN của đường thẳng. Nếu điểm thử nằm ngay trên đường ranh giới bờ thì liệu nó có giúp ta phân biệt được bên trái hay bên phải không?",
+      "correctFeedback": "Đỉnh cao tư duy phản biện! Đây chính là bẫy kinh điển M08 trong SGK. Khi c = 0, đường thẳng đi qua gốc tọa độ O, bắt buộc phải chọn một điểm phụ nằm ngoài đường thẳng như M(1; 0) hoặc M(0; 1) để thử!",
+      "incorrectFeedback": {
+        "A": "Phép tính 2(0) - 0 = 0 hoàn toàn đúng về mặt số học, sai lầm nằm ở phương pháp hình học.",
+        "C": "BPT bậc nhất hai ẩn với a^2 + b^2 > 0 luôn có vô số nghiệm lấp đầy một nửa mặt phẳng, không thể vô nghiệm.",
+        "D": "Không có phép chia cho số âm nào trong quá trình thử điểm."
+      }
+    }
+  ]
+}

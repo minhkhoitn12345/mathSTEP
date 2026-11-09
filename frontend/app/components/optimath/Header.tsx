@@ -82,68 +82,45 @@ export const Header: React.FC<HeaderProps> = ({
   const isLab = currentModule !== "home" && currentModule !== "knowledge";
 
   return (
-    <header className="bg-white/95 border-b border-slate-200 sticky top-0 z-40 backdrop-blur-md transition-all select-none shadow-xs">
-      <div
-        className={`max-w-7xl mx-auto px-3 sm:px-6 flex items-center justify-between gap-3 transition-all ${
-          isLab ? "h-14 sm:h-15" : "h-16"
-        }`}
-      >
-        {/* 1. BRAND LOGO */}
+    <header className="sticky top-0 left-0 right-0 z-50 w-full h-14 bg-[#0B132B]/95 backdrop-blur-md border-b border-white/10 px-3 sm:px-6 flex items-center justify-between select-none shadow-md transition-all">
+      <div className="w-full max-w-7xl mx-auto flex items-center justify-between gap-3">
+        {/* 1. BRAND LOGO & TITLE: Chuẩn phong cách MathSTEP · OPTIMATH LAB */}
         <button
           type="button"
           onClick={() => {
             onSelectModule("home");
             setMobileMenuOpen(false);
           }}
-          className="flex items-center gap-2 text-left group focus:outline-none cursor-pointer"
+          className="flex items-center gap-2.5 text-left group focus:outline-none cursor-pointer shrink-0"
           title="Về trang chủ MATHSTEP · OPTIMATH LAB"
         >
-          <div
-            className={`rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform ${
-              isLab ? "w-8 h-8 sm:w-9 sm:h-9" : "w-10 h-10"
-            }`}
-          >
-            <svg viewBox="0 0 40 40" className={isLab ? "w-5 h-5" : "w-6 h-6"} fill="none">
-              <path
-                d="M 12 28 L 20 12 L 28 28 Z"
-                stroke="#FFFFFF"
-                strokeWidth="3.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <circle cx="20" cy="20" r="3.2" fill="#FBBF24" />
-            </svg>
-          </div>
-          <div>
+          <span className="w-8 h-8 rounded-lg bg-blue-600 text-white font-mono font-bold text-sm flex items-center justify-center shadow-md shadow-blue-500/30 group-hover:bg-blue-500 transition-colors">
+            M
+          </span>
+          <div className="leading-tight">
             <div className="flex items-center gap-1.5">
-              <span
-                className={`font-black tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors ${
-                  isLab ? "text-base sm:text-lg" : "text-lg sm:text-xl"
-                }`}
-              >
+              <strong className="font-sans text-xs tracking-wide font-bold block text-slate-100 group-hover:text-blue-400 transition-colors">
                 MATHSTEP
-              </span>
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-blue-100 text-blue-700 tracking-wider uppercase">
-                3 CHUYÊN ĐỀ
+              </strong>
+              <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-blue-500/20 text-blue-300 border border-blue-400/30 tracking-wider uppercase">
+                OPTIMATH
               </span>
             </div>
-            {!isLab && (
-              <p className="text-[10px] text-slate-500 hidden sm:block font-medium">
-                Học liệu số & Phòng thí nghiệm Toán học tương tác GDPT 2018
-              </p>
-            )}
+            <span className="text-[10px] text-slate-400 font-sans hidden sm:inline">
+              Học liệu số & Phòng thí nghiệm Toán THPT
+            </span>
           </div>
         </button>
 
-        {/* 2. NAVIGATION DESKTOP: 3 CORE RESEARCH MODULES */}
-        <nav className="hidden lg:flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+        {/* 2. NAVIGATION DESKTOP: 3 CHUYÊN ĐỀ MỚI (LOẠI BỎ HOÀN TOÀN TRẠM HỌC VÀ MODULE CŨ) */}
+        <nav className="hidden lg:flex items-center gap-1.5 text-xs font-medium text-slate-300">
           <button
             type="button"
             onClick={() => onSelectModule("home")}
             className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
               currentModule === "home"
-                ? "bg-slate-100 text-slate-900 font-bold"
-                : "hover:bg-slate-100 text-slate-700"
+                ? "bg-white/10 text-white font-semibold shadow-inner"
+                : "text-slate-300 hover:text-white hover:bg-white/5"
             }`}
           >
             Trang chủ
@@ -159,13 +136,13 @@ export const Header: React.FC<HeaderProps> = ({
               currentModule === "system" ||
               currentModule === "optimization" ||
               currentModule === "quiz"
-                ? "bg-blue-600 text-white font-bold shadow-xs"
-                : "hover:bg-blue-50 text-blue-800"
+                ? "bg-blue-600/90 text-white font-semibold shadow-xs"
+                : "text-slate-300 hover:text-white hover:bg-white/5"
             }`}
           >
-            <Compass className="w-3.5 h-3.5" />
+            <Compass className="w-3.5 h-3.5 text-blue-400" />
             <span>CĐ1: BPT & Tối Ưu</span>
-            <span className="text-[9px] px-1 rounded bg-white/20">Lớp 10</span>
+            <span className="text-[9px] px-1 py-0.2 rounded bg-white/10 text-slate-300">Lớp 10</span>
           </button>
 
           {/* Chuyên đề 2: Hình học không gian 3D (Toán 11) */}
@@ -174,13 +151,13 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => onSelectModule("spatial_geometry")}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
               currentModule === "spatial_geometry"
-                ? "bg-emerald-600 text-white font-bold shadow-xs"
-                : "hover:bg-emerald-50 text-emerald-800"
+                ? "bg-emerald-600/90 text-white font-semibold shadow-xs"
+                : "text-slate-300 hover:text-white hover:bg-white/5"
             }`}
           >
-            <Box className="w-3.5 h-3.5" />
+            <Box className="w-3.5 h-3.5 text-emerald-400" />
             <span>CĐ2: Không Gian 3D</span>
-            <span className="text-[9px] px-1 rounded bg-white/20">Lớp 11</span>
+            <span className="text-[9px] px-1 py-0.2 rounded bg-white/10 text-slate-300">Lớp 11</span>
           </button>
 
           {/* Chuyên đề 3: Lượng giác (Toán 11) */}
@@ -189,28 +166,39 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => onSelectModule("trigonometry")}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
               currentModule === "trigonometry"
-                ? "bg-purple-600 text-white font-bold shadow-xs"
-                : "hover:bg-purple-50 text-purple-800"
+                ? "bg-purple-600/90 text-white font-semibold shadow-xs"
+                : "text-slate-300 hover:text-white hover:bg-white/5"
             }`}
           >
-            <Activity className="w-3.5 h-3.5" />
+            <Activity className="w-3.5 h-3.5 text-purple-400" />
             <span>CĐ3: Lượng Giác</span>
-            <span className="text-[9px] px-1 rounded bg-white/20">Lớp 11</span>
+            <span className="text-[9px] px-1 py-0.2 rounded bg-white/10 text-slate-300">Lớp 11</span>
           </button>
 
-          {/* Sổ tay lý thuyết */}
+          {/* Cơ sở KHKT */}
           <button
             type="button"
             onClick={() => onSelectModule("knowledge")}
             className={`px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
               currentModule === "knowledge"
-                ? "bg-slate-100 text-slate-900 font-bold"
-                : "hover:bg-slate-100 text-slate-600"
+                ? "bg-white/10 text-white font-semibold shadow-inner"
+                : "text-slate-300 hover:text-white hover:bg-white/5"
             }`}
             title="Sổ tay phương pháp luận & cơ sở khoa học"
           >
-            <BookOpen className="w-3.5 h-3.5 inline mr-1" />
-            Lý thuyết
+            <BookOpen className="w-3.5 h-3.5 inline mr-1 text-slate-400" />
+            Cơ sở KHKT
+          </button>
+
+          {/* Dành cho Giáo viên */}
+          <button
+            type="button"
+            onClick={onOpenTeacherGuide}
+            className="px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer flex items-center gap-1.5"
+            title="Hướng dẫn sư phạm giáo viên"
+          >
+            <Presentation className="w-3.5 h-3.5 text-amber-400" />
+            <span>Giáo viên</span>
           </button>
         </nav>
 
@@ -223,76 +211,66 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={onToggleChatDrawer}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-xs cursor-pointer border ${
                 chatDrawerOpen
-                  ? "bg-blue-600 text-white border-blue-500 shadow-blue-500/20"
-                  : "bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 hover:from-blue-100 hover:to-indigo-100 text-blue-800 border-blue-200"
+                  ? "bg-blue-600 text-white border-blue-400 shadow-blue-500/30"
+                  : "bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 hover:text-white border-blue-500/30 hover:border-blue-400"
               }`}
-              title="Mở Trợ lý Opti Socratic AI"
+              title="Mở Trợ lý Socratic Opti"
             >
-              <Sparkles className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+              <Sparkles className="w-3.5 h-3.5 text-blue-400 shrink-0" />
               <span className="hidden sm:inline">Hỏi Socratic AI</span>
               <span className="sm:hidden">Socratic</span>
             </button>
           )}
 
-          {/* Nút Chế độ giáo viên */}
-          <button
-            type="button"
-            onClick={onOpenTeacherGuide}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-bold transition-all shadow-xs cursor-pointer"
-          >
-            <Presentation className="w-3.5 h-3.5 text-purple-600" />
-            <span>Giáo viên</span>
-          </button>
-
           {/* Linh vật Opti mini indicator */}
           <div
             onClick={() => onSelectModule("linear_programming")}
-            className="hidden md:flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full bg-slate-100 hover:bg-blue-50 border border-slate-200 cursor-pointer transition-colors"
+            className="hidden md:flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 cursor-pointer transition-colors"
             title="Đồng hành cùng Opti"
           >
-            <span className="text-[11px] font-bold text-slate-700">Opti</span>
-            <OptiMascot expression="happy" size={26} animate={false} />
+            <span className="text-[11px] font-bold text-slate-300">Opti</span>
+            <OptiMascot expression="happy" size={24} animate={false} />
           </div>
 
           {/* User Account / Login */}
           {sessionLoading ? (
-            <div className="w-8 h-8 rounded-full bg-slate-100 animate-pulse" />
+            <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
           ) : session?.authenticated ? (
             <div className="relative" ref={userMenuRef}>
               <button
                 type="button"
                 onClick={() => setUserMenuOpen((prev) => !prev)}
-                className="flex items-center gap-1.5 p-1 sm:px-2.5 sm:py-1 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-semibold transition-all cursor-pointer shadow-xs group"
+                className="flex items-center gap-1.5 p-1 sm:px-2.5 sm:py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs font-semibold transition-all cursor-pointer shadow-xs group"
                 aria-expanded={userMenuOpen}
               >
-                <span className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-mono font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
                   {(session.name || session.email || "M").slice(0, 1).toUpperCase()}
                 </span>
-                <span className="max-w-[100px] truncate hidden sm:inline">
+                <span className="max-w-[120px] truncate hidden sm:inline text-slate-200 font-medium">
                   {session.name || session.email?.split("@")[0] || "Học viên"}
                 </span>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${
-                    userMenuOpen ? "rotate-180 text-blue-600" : ""
+                  className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                    userMenuOpen ? "rotate-180 text-blue-400" : ""
                   }`}
                 />
               </button>
 
-              {/* Account Dropdown Menu */}
+              {/* Account Dropdown Menu (Dark Frosted Glass Theme) */}
               {userMenuOpen && (
                 <div
-                  className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-200 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-xs text-slate-800"
+                  className="absolute right-0 mt-2 w-64 rounded-2xl bg-[#0B132B] border border-white/10 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-xs text-slate-200 backdrop-blur-xl"
                   role="menu"
                 >
-                  <div className="px-3.5 py-2.5 border-b border-slate-100 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-mono font-bold text-sm flex items-center justify-center shrink-0 shadow-sm">
+                  <div className="px-3.5 py-2.5 border-b border-white/10 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-blue-600 text-white font-mono font-bold text-sm flex items-center justify-center shrink-0 shadow-sm">
                       {(session.name || session.email || "M").slice(0, 1).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="font-bold text-slate-900 truncate">
+                      <div className="font-bold text-slate-100 truncate">
                         {session.name || "Học viên MathSTEP"}
                       </div>
-                      <div className="text-[11px] text-slate-500 truncate">
+                      <div className="text-[11px] text-slate-400 truncate">
                         {session.email}
                       </div>
                     </div>
@@ -306,7 +284,7 @@ export const Header: React.FC<HeaderProps> = ({
                           setUserMenuOpen(false);
                           onOpenChatHistory();
                         }}
-                        className="w-full px-3 py-2 rounded-xl text-left hover:bg-slate-50 flex items-center gap-2.5 text-slate-700 hover:text-blue-600 transition-colors cursor-pointer"
+                        className="w-full px-3 py-2 rounded-xl text-left hover:bg-white/5 flex items-center gap-2.5 text-slate-300 hover:text-white transition-colors cursor-pointer"
                       >
                         <History className="w-4 h-4 text-slate-400" />
                         <span>Lịch sử trò chuyện AI</span>
@@ -321,7 +299,7 @@ export const Header: React.FC<HeaderProps> = ({
                             setUserMenuOpen(false);
                             onOpenAccountModal("ai");
                           }}
-                          className="w-full px-3 py-2 rounded-xl text-left hover:bg-slate-50 flex items-center gap-2.5 text-slate-700 hover:text-blue-600 transition-colors cursor-pointer"
+                          className="w-full px-3 py-2 rounded-xl text-left hover:bg-white/5 flex items-center gap-2.5 text-slate-300 hover:text-white transition-colors cursor-pointer"
                         >
                           <Settings className="w-4 h-4 text-slate-400" />
                           <span>Cấu hình AI (Gemini Key)</span>
@@ -332,7 +310,7 @@ export const Header: React.FC<HeaderProps> = ({
                             setUserMenuOpen(false);
                             onOpenAccountModal("profile");
                           }}
-                          className="w-full px-3 py-2 rounded-xl text-left hover:bg-slate-50 flex items-center gap-2.5 text-slate-700 hover:text-blue-600 transition-colors cursor-pointer"
+                          className="w-full px-3 py-2 rounded-xl text-left hover:bg-white/5 flex items-center gap-2.5 text-slate-300 hover:text-white transition-colors cursor-pointer"
                         >
                           <User className="w-4 h-4 text-slate-400" />
                           <span>Hồ sơ cá nhân</span>
@@ -341,16 +319,16 @@ export const Header: React.FC<HeaderProps> = ({
                     )}
 
                     {onLogout && (
-                      <div className="pt-1 mt-1 border-t border-slate-100">
+                      <div className="pt-1 mt-1 border-t border-white/10">
                         <button
                           type="button"
                           onClick={() => {
                             setUserMenuOpen(false);
                             onLogout();
                           }}
-                          className="w-full px-3 py-2 rounded-xl text-left hover:bg-rose-50 text-rose-600 flex items-center gap-2.5 transition-colors cursor-pointer font-medium"
+                          className="w-full px-3 py-2 rounded-xl text-left hover:bg-rose-500/10 text-rose-400 hover:text-rose-300 flex items-center gap-2.5 transition-colors cursor-pointer font-medium"
                         >
-                          <LogOut className="w-4 h-4 text-rose-500" />
+                          <LogOut className="w-4 h-4 text-rose-400" />
                           <span>Đăng xuất</span>
                         </button>
                       </div>
@@ -363,7 +341,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenAuthModal}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors shadow-xs cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-colors shadow-xs cursor-pointer"
             >
               <User className="w-3.5 h-3.5" />
               <span>Đăng nhập</span>
@@ -374,17 +352,17 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="lg:hidden p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer"
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen ? <X className="w-5 h-5 text-white" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
-      {/* 4. MOBILE NAVIGATION DRAWER */}
+      {/* 4. MOBILE NAVIGATION DRAWER (DARK THEMED) */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1 shadow-lg animate-in slide-in-from-top-2 duration-150">
+        <div className="lg:hidden absolute top-14 left-0 right-0 border-b border-white/10 bg-[#0B132B] px-4 py-3 space-y-1 shadow-2xl animate-in slide-in-from-top-2 duration-150 text-slate-200">
           <button
             type="button"
             onClick={() => {
@@ -392,7 +370,7 @@ export const Header: React.FC<HeaderProps> = ({
               setMobileMenuOpen(false);
             }}
             className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
-              currentModule === "home" ? "bg-slate-100 text-slate-900 font-bold" : "text-slate-700 hover:bg-slate-50"
+              currentModule === "home" ? "bg-white/10 text-white font-bold" : "text-slate-300 hover:bg-white/5"
             }`}
           >
             Trang chủ
@@ -404,10 +382,10 @@ export const Header: React.FC<HeaderProps> = ({
               setMobileMenuOpen(false);
             }}
             className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors ${
-              currentModule === "linear_programming" ? "bg-blue-50 text-blue-700 font-bold" : "text-slate-700 hover:bg-slate-50"
+              currentModule === "linear_programming" ? "bg-blue-600/30 text-blue-300 font-bold" : "text-slate-300 hover:bg-white/5"
             }`}
           >
-            <Compass className="w-4 h-4 text-blue-600" />
+            <Compass className="w-4 h-4 text-blue-400" />
             <span>Chuyên đề 1: BPT & Tối Ưu (Toán 10)</span>
           </button>
           <button
@@ -417,10 +395,10 @@ export const Header: React.FC<HeaderProps> = ({
               setMobileMenuOpen(false);
             }}
             className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors ${
-              currentModule === "spatial_geometry" ? "bg-emerald-50 text-emerald-700 font-bold" : "text-slate-700 hover:bg-slate-50"
+              currentModule === "spatial_geometry" ? "bg-emerald-600/30 text-emerald-300 font-bold" : "text-slate-300 hover:bg-white/5"
             }`}
           >
-            <Box className="w-4 h-4 text-emerald-600" />
+            <Box className="w-4 h-4 text-emerald-400" />
             <span>Chuyên đề 2: Không Gian 3D (Toán 11)</span>
           </button>
           <button
@@ -430,10 +408,10 @@ export const Header: React.FC<HeaderProps> = ({
               setMobileMenuOpen(false);
             }}
             className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors ${
-              currentModule === "trigonometry" ? "bg-purple-50 text-purple-700 font-bold" : "text-slate-700 hover:bg-slate-50"
+              currentModule === "trigonometry" ? "bg-purple-600/30 text-purple-300 font-bold" : "text-slate-300 hover:bg-white/5"
             }`}
           >
-            <Activity className="w-4 h-4 text-purple-600" />
+            <Activity className="w-4 h-4 text-purple-400" />
             <span>Chuyên đề 3: Lượng Giác (Toán 11)</span>
           </button>
           <button
@@ -442,10 +420,10 @@ export const Header: React.FC<HeaderProps> = ({
               onSelectModule("knowledge");
               setMobileMenuOpen(false);
             }}
-            className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-700 hover:bg-slate-50"
+            className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-300 hover:bg-white/5"
           >
-            <BookOpen className="w-4 h-4 text-slate-600" />
-            <span>Sổ tay lý thuyết & phương pháp</span>
+            <BookOpen className="w-4 h-4 text-slate-400" />
+            <span>Cơ sở KHKT & Sổ tay lý thuyết</span>
           </button>
           <button
             type="button"
@@ -453,9 +431,9 @@ export const Header: React.FC<HeaderProps> = ({
               onOpenTeacherGuide();
               setMobileMenuOpen(false);
             }}
-            className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-purple-700 bg-purple-50 hover:bg-purple-100"
+            className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-amber-300 bg-amber-500/10 hover:bg-amber-500/20"
           >
-            <Presentation className="w-4 h-4 text-purple-600" />
+            <Presentation className="w-4 h-4 text-amber-400" />
             <span>Hướng dẫn sư phạm giáo viên</span>
           </button>
         </div>
