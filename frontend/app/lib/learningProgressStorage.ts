@@ -7,9 +7,33 @@ const DEFAULT_PROGRESS: UserLearningProgress = {
   lastActiveLessonId: "lp-lesson-1",
   quizScores: {},
   earnedXp: 0,
-  streakDays: 1,
-  lastStudyDate: new Date().toISOString().split("T")[0],
+  streakDays: 0,
+  lastStudyDate: "",
 };
+
+function getLocalDateKey(date = new Date()): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getDateSerial(dateKey: string): number | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
+  if (!match) return null;
+
+  const [, year, month, day] = match;
+  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  if (
+    date.getUTCFullYear() !== Number(year) ||
+    date.getUTCMonth() !== Number(month) - 1 ||
+    date.getUTCDate() !== Number(day)
+  ) {
+    return null;
+  }
+
+  return Math.floor(date.getTime() / 86_400_000);
+}
 
 export function loadUserLearningProgress(): UserLearningProgress {
   if (typeof window === "undefined") {
@@ -24,8 +48,8 @@ export function loadUserLearningProgress(): UserLearningProgress {
       lastActiveLessonId: parsed.lastActiveLessonId || "lp-lesson-1",
       quizScores: parsed.quizScores || {},
       earnedXp: typeof parsed.earnedXp === "number" ? parsed.earnedXp : 0,
-      streakDays: typeof parsed.streakDays === "number" ? parsed.streakDays : 1,
-      lastStudyDate: parsed.lastStudyDate || new Date().toISOString().split("T")[0],
+      streakDays: typeof parsed.streakDays === "number" ? parsed.streakDays : 0,
+      lastStudyDate: typeof parsed.lastStudyDate === "string" ? parsed.lastStudyDate : "",
     };
   } catch (err) {
     console.warn("Failed to load learning progress from localStorage", err);
@@ -58,11 +82,19 @@ export function markLessonCompleted(
     ? current.earnedXp
     : current.earnedXp + xpEarned;
 
-  const today = new Date().toISOString().split("T")[0];
-  let updatedStreak = current.streakDays;
-  if (current.lastStudyDate !== today) {
-    updatedStreak += 1;
-  }
+  const today = getLocalDateKey();
+  const todaySerial = getDateSerial(today);
+  const previousStudySerial = getDateSerial(current.lastStudyDate);
+  const daysSinceLastStudy =
+    todaySerial !== null && previousStudySerial !== null
+      ? todaySerial - previousStudySerial
+      : null;
+  const updatedStreak =
+    daysSinceLastStudy === 0
+      ? current.streakDays
+      : daysSinceLastStudy === 1
+        ? current.streakDays + 1
+        : 1;
 
   const updated: UserLearningProgress = {
     ...current,
