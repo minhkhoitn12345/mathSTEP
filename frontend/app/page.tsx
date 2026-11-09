@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, Suspense, FormEvent } from "react";
+import React, { useState, useEffect, useCallback, Suspense, FormEvent, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { Header, SessionData } from "./components/optimath/Header";
 import { Hero } from "./components/optimath/Hero";
@@ -20,7 +20,8 @@ import AccountSettingsModal, { CustomAiConfig } from "./components/AccountSettin
 import ChatHistoryModal from "./components/ChatHistoryModal";
 import { generateSmartSocraticResponse } from "./lib/smartSocratic";
 import { LearningMode } from "./types/math";
-import { Sparkles, Mail, Lock, User, AlertCircle, RefreshCw, Compass, Layers, Target, Award } from "lucide-react";
+import { CORE_3_MODULES } from "./types/curriculum";
+import { Sparkles, Mail, Lock, User, AlertCircle, RefreshCw, Compass, Layers, Target, Award, ArrowLeft } from "lucide-react";
 
 type ActiveView =
   | "home"
@@ -37,6 +38,7 @@ function OptimathMainContent() {
 
   // 1. Navigation state
   const [currentView, setCurrentView] = useState<ActiveView>("home");
+  const [activeLessonId, setActiveLessonId] = useState<string>("lp-lesson-1");
   const [learningMode, setLearningMode] = useState<LearningMode>("guided");
   const [lpSubTab, setLpSubTab] = useState<"single" | "system" | "optimization" | "practice">("single");
 
@@ -146,37 +148,82 @@ function OptimathMainContent() {
       setCurrentView("home");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "linear_programming" || modId === "lab") {
-      setLearningMode("guided");
       setCurrentView("linear_programming");
       setLpSubTab("single");
+      setActiveLessonId("lp-lesson-1");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "spatial_geometry") {
-      setLearningMode("guided");
       setCurrentView("spatial_geometry");
+      setActiveLessonId("sg-lesson-1");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "trigonometry") {
-      setLearningMode("guided");
       setCurrentView("trigonometry");
+      setActiveLessonId("trig-lesson-1");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "system") {
-      setLearningMode("guided");
       setCurrentView("linear_programming");
       setLpSubTab("system");
+      setActiveLessonId("lp-lesson-3");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "optimization") {
-      setLearningMode("guided");
       setCurrentView("linear_programming");
       setLpSubTab("optimization");
+      setActiveLessonId("lp-lesson-4");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "quiz") {
-      setLearningMode("guided");
       setCurrentView("linear_programming");
       setLpSubTab("practice");
+      setActiveLessonId("lp-lesson-5");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "knowledge") {
       setIsKnowledgeModalOpen(true);
     }
   };
+
+  // Mở thẳng đúng một mô phỏng tương ứng của bài học được chọn
+  const handleOpenLesson = (moduleId: string, lessonId: string) => {
+    setActiveLessonId(lessonId);
+    if (moduleId === "linear_programming") {
+      setCurrentView("linear_programming");
+      if (lessonId === "lp-lesson-1") {
+        setLpSubTab("single");
+        setLearningMode("practice");
+      } else if (lessonId === "lp-lesson-2") {
+        setLpSubTab("single");
+        setLearningMode("guided");
+      } else if (lessonId === "lp-lesson-3") {
+        setLpSubTab("system");
+      } else if (lessonId === "lp-lesson-4") {
+        setLpSubTab("optimization");
+      } else if (lessonId === "lp-lesson-5") {
+        setLpSubTab("practice");
+      }
+    } else if (moduleId === "spatial_geometry") {
+      setCurrentView("spatial_geometry");
+    } else if (moduleId === "trigonometry") {
+      setCurrentView("trigonometry");
+    }
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const sgLessonIndex = useMemo(() => {
+    const idx = CORE_3_MODULES[1]?.lessons.findIndex((l) => l.id === activeLessonId);
+    return idx >= 0 ? idx : 0;
+  }, [activeLessonId]);
+
+  const trigLessonIndex = useMemo(() => {
+    const idx = CORE_3_MODULES[2]?.lessons.findIndex((l) => l.id === activeLessonId);
+    return idx >= 0 ? idx : 0;
+  }, [activeLessonId]);
+
+  const currentLpLesson = useMemo(() => {
+    return (
+      CORE_3_MODULES[0]?.lessons.find((l) => l.id === activeLessonId) ||
+      CORE_3_MODULES[0]?.lessons[0]
+    );
+  }, [activeLessonId]);
 
   const handleStartExplore = () => {
     setLearningMode("guided");
@@ -377,14 +424,18 @@ function OptimathMainContent() {
             {/* Hero Section */}
             <Hero onStartExplore={handleStartExplore} onOpenTeacherGuide={handleOpenTeacherGuide} />
 
-            {/* 3 Core Research Modules Cards */}
-            <ModuleCards onSelectModule={handleSelectModule} />
+            {/* 3 Core Research Modules Cards with direct lesson simulation openers */}
+            <ModuleCards
+              onSelectModule={handleSelectModule}
+              onSelectLesson={handleOpenLesson}
+            />
           </>
         ) : currentView === "spatial_geometry" ? (
           /* =========================================================================
              MODULE 2: HÌNH HỌC KHÔNG GIAN 3D (CHUYÊN ĐỀ 2)
              ========================================================================= */
           <SpatialGeometryLab
+            initialLessonIndex={sgLessonIndex}
             onBackToHome={() => setCurrentView("home")}
             onOpenSocraticDrawer={(contextMsg) => {
               setChatDrawerOpen(true);
@@ -398,6 +449,7 @@ function OptimathMainContent() {
              MODULE 3: LƯỢNG GIÁC TƯƠNG TÁC (CHUYÊN ĐỀ 3)
              ========================================================================= */
           <TrigonometryLab
+            initialLessonIndex={trigLessonIndex}
             onBackToHome={() => setCurrentView("home")}
             onOpenSocraticDrawer={(contextMsg) => {
               setChatDrawerOpen(true);
@@ -409,69 +461,53 @@ function OptimathMainContent() {
         ) : (
           /* =========================================================================
              MODULE 1: BẤT PHƯƠNG TRÌNH & QUY HOẠCH TUYẾN TÍNH (CHUYÊN ĐỀ 1)
+             MỞ ĐÚNG MỘT MÔ PHỎNG THEO BÀI ĐƯỢC CHỌN
              ========================================================================= */
           <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4">
-            {/* Module 1 Sub-Tab Switcher */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-100 text-blue-800 uppercase tracking-wider">
-                  CHUYÊN ĐỀ 1
-                </span>
-                <span className="text-xs text-slate-500 font-medium">Toán 10 · BPT & Tối Ưu</span>
+            {/* Thanh điều hướng bài học tinh gọn & nút quay lại trang chủ */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-200 shadow-xs">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setCurrentView("home")}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
+                  title="Quay lại danh sách bài học trang chủ"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Trang chủ</span>
+                </button>
+                <div className="h-4 w-[1px] bg-slate-200 hidden sm:block" />
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-black bg-blue-100 text-blue-800">
+                    CĐ1 · {currentLpLesson.code}
+                  </span>
+                  <span className="text-xs font-bold text-slate-900 hidden sm:inline">
+                    {currentLpLesson.title}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs font-bold">
-                <button
-                  type="button"
-                  onClick={() => setLpSubTab("single")}
-                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
-                    lpSubTab === "single"
-                      ? "bg-white text-blue-700 shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <Compass className="w-3.5 h-3.5" />
-                  <span>Bài 1 & 2: 1 BPT (7 Bước)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLpSubTab("system")}
-                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
-                    lpSubTab === "system"
-                      ? "bg-white text-amber-700 shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <Layers className="w-3.5 h-3.5" />
-                  <span>Bài 3: Hệ BPT (Đa giác)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLpSubTab("optimization")}
-                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
-                    lpSubTab === "optimization"
-                      ? "bg-white text-purple-700 shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <Target className="w-3.5 h-3.5" />
-                  <span>Bài 4: Tối Ưu Xưởng Mộc</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLpSubTab("practice")}
-                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
-                    lpSubTab === "practice"
-                      ? "bg-white text-indigo-700 shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  <Award className="w-3.5 h-3.5" />
-                  <span>Bài 5: Luyện Tập & Lỗi M01-M17</span>
-                </button>
+
+              {/* Lựa chọn 5 bài học của Chuyên đề 1: Chuyển thẳng sang mô phỏng bài đó */}
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-[11px] font-bold">
+                {CORE_3_MODULES[0].lessons.map((les) => (
+                  <button
+                    key={les.id}
+                    type="button"
+                    onClick={() => handleOpenLesson("linear_programming", les.id)}
+                    className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                      activeLessonId === les.id
+                        ? "bg-blue-600 text-white shadow-xs"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                    }`}
+                    title={les.title}
+                  >
+                    {les.code}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Sub-Tab Contents */}
+            {/* Sub-Tab Contents: Mở đúng một mô phỏng tương ứng */}
             {lpSubTab === "single" ? (
               <SingleInequalityLab
                 initialLearningMode={learningMode}

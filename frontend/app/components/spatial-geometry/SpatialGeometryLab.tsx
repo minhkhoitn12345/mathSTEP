@@ -16,11 +16,22 @@ import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
 interface SpatialGeometryLabProps {
   onBackToHome?: () => void;
   onOpenSocraticDrawer?: (contextMessage?: string) => void;
+  initialLessonIndex?: number;
 }
 
-export function SpatialGeometryLab({ onBackToHome, onOpenSocraticDrawer }: SpatialGeometryLabProps) {
+export function SpatialGeometryLab({
+  onBackToHome,
+  onOpenSocraticDrawer,
+  initialLessonIndex = 0,
+}: SpatialGeometryLabProps) {
   const moduleConfig = CORE_3_MODULES[1]; // Module 2
-  const [selectedLessonIndex, setSelectedLessonIndex] = useState(0);
+  const [selectedLessonIndex, setSelectedLessonIndex] = useState(initialLessonIndex);
+
+  React.useEffect(() => {
+    if (typeof initialLessonIndex === "number" && initialLessonIndex >= 0) {
+      setSelectedLessonIndex(initialLessonIndex);
+    }
+  }, [initialLessonIndex]);
   const currentLesson: LessonUnit = moduleConfig.lessons[selectedLessonIndex] || moduleConfig.lessons[0];
 
   // 3D Parameters according to Task SG-M2-01

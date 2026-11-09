@@ -13,11 +13,22 @@ import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
 interface TrigonometryLabProps {
   onBackToHome?: () => void;
   onOpenSocraticDrawer?: (contextMessage?: string) => void;
+  initialLessonIndex?: number;
 }
 
-export function TrigonometryLab({ onBackToHome, onOpenSocraticDrawer }: TrigonometryLabProps) {
+export function TrigonometryLab({
+  onBackToHome,
+  onOpenSocraticDrawer,
+  initialLessonIndex = 0,
+}: TrigonometryLabProps) {
   const moduleConfig = CORE_3_MODULES[2]; // Module 3
-  const [selectedLessonIndex, setSelectedLessonIndex] = useState(0);
+  const [selectedLessonIndex, setSelectedLessonIndex] = useState(initialLessonIndex);
+
+  React.useEffect(() => {
+    if (typeof initialLessonIndex === "number" && initialLessonIndex >= 0) {
+      setSelectedLessonIndex(initialLessonIndex);
+    }
+  }, [initialLessonIndex]);
   const currentLesson: LessonUnit = moduleConfig.lessons[selectedLessonIndex] || moduleConfig.lessons[0];
 
   // Core angle in degrees (Defaults to -765° from Task LG-MH01)
