@@ -1,213 +1,155 @@
-import React from 'react';
-import { BookOpen, Compass, Layers, Target, Award, ArrowRight, Clock, CheckCircle } from 'lucide-react';
-import { OptiMascot } from '@/app/components/optimath/mascot/OptiMascot';
+import React from "react";
+import { Compass, Box, Activity, ArrowRight, CheckCircle } from "lucide-react";
+import { CORE_3_MODULES, CoreModuleConfig } from "@/app/types/curriculum";
+
+export interface ModuleData {
+  id: string;
+  number?: number;
+  title: string;
+  subtitle?: string;
+  description: string;
+  badgeLabel?: string;
+  badgeBg?: string;
+  badgeText?: string;
+}
 
 interface ModuleCardsProps {
   onSelectModule: (modId: string) => void;
 }
 
-export interface ModuleData {
-  id: string;
-  number: number;
-  title: string;
-  subtitle: string;
-  description: string;
-  color: string;
-  bgColor: string;
-  borderColor: string;
-  textColor: string;
-  badgeBg: string;
-  badgeText: string;
-  badgeLabel: string;
-  status: 'active' | 'preview' | 'in_development';
-  optiPose: 'reading' | 'pointing' | 'idle' | 'running' | 'waving';
-  optiExpr: 'happy' | 'wink' | 'thinking' | 'surprised' | 'cheering';
-}
-
-export const MODULES_CONFIG: ModuleData[] = [
-  {
-    id: 'knowledge',
-    number: 1,
-    title: 'Khám Phá Kiến Thức',
-    subtitle: 'Nền tảng định nghĩa & Lý thuyết cốt lõi',
-    description: 'Tìm hiểu bất phương trình bậc nhất hai ẩn, quy ước nửa mặt phẳng bờ (d), cách kiểm tra nghiệm bằng phương pháp đại số.',
-    color: '#3882F6',
-    bgColor: 'bg-blue-50/50',
-    borderColor: 'border-blue-200',
-    textColor: 'text-blue-700',
-    badgeBg: 'bg-blue-100',
-    badgeText: 'text-blue-800',
-    badgeLabel: 'Lý thuyết & Ví dụ',
-    status: 'preview',
-    optiPose: 'reading',
-    optiExpr: 'thinking'
-  },
-  {
-    id: 'lab',
-    number: 2,
-    title: 'Phòng Thí Nghiệm Miền Nghiệm',
-    subtitle: 'Quy trình tương tác 7 bước chuẩn SGK Toán 10',
-    description: 'Thực hành quy trình 7 bước chuẩn mực: Nhận diện hệ số → Vẽ đường biên nét liền/đứt → Định vị 2 điểm A,B → Nối bờ → Điểm thử M → Xác định miền nghiệm → Kết luận sư phạm.',
-    color: '#10B981',
-    bgColor: 'bg-emerald-50/50',
-    borderColor: 'border-emerald-300',
-    textColor: 'text-emerald-700',
-    badgeBg: 'bg-emerald-600 text-white',
-    badgeText: 'text-white',
-    badgeLabel: '7 BƯỚC HOÀN TOÀN',
-    status: 'active',
-    optiPose: 'pointing',
-    optiExpr: 'happy'
-  },
-  {
-    id: 'system',
-    number: 3,
-    title: 'Phòng Thí Nghiệm Hệ BPT',
-    subtitle: 'Xác định miền giao & Các đỉnh của miền nghiệm',
-    description: 'Thực hành hệ từ 2 đến 5 bất phương trình: Biểu diễn từng nửa mặt phẳng, tìm giao điểm các đường bờ, xác định các đỉnh đa giác, nhận diện miền rỗng/không bị chặn/suy biến.',
-    color: '#F59E0B',
-    bgColor: 'bg-amber-50/50',
-    borderColor: 'border-amber-300',
-    textColor: 'text-amber-700',
-    badgeBg: 'bg-amber-600 text-white',
-    badgeText: 'text-white',
-    badgeLabel: '7 BƯỚC HOÀN THIỆN',
-    status: 'active',
-    optiPose: 'pointing',
-    optiExpr: 'happy'
-  },
-  {
-    id: 'optimization',
-    number: 4,
-    title: 'Mô Hình Hóa & Tối Ưu',
-    subtitle: 'Quy hoạch tuyến tính thực tế',
-    description: 'Chuyển bài toán sản xuất, dinh dưỡng, chi phí thành hệ bất phương trình. Tìm giá trị lớn nhất, nhỏ nhất của hàm mục tiêu F(x;y).',
-    color: '#8B5CF6',
-    bgColor: 'bg-purple-50/50',
-    borderColor: 'border-purple-300',
-    textColor: 'text-purple-700',
-    badgeBg: 'bg-purple-600 text-white',
-    badgeText: 'text-white',
-    badgeLabel: '7 BƯỚC HOÀN TOÀN',
-    status: 'active',
-    optiPose: 'running',
-    optiExpr: 'cheering'
-  },
-  {
-    id: 'quiz',
-    number: 5,
-    title: 'Luyện Tập & Đánh Giá',
-    subtitle: '40 bài tập tương tác, Phân tích lỗi E01–E10 & Cá nhân hóa',
-    description: 'Ngân hàng 40 bài tập chuẩn hóa 4 mức độ, chấm theo bước với đồ thị tương tác, chẩn đoán 10 mã lỗi E01–E10, lộ trình cá nhân và Dashboard Giáo viên (IndexedDB/CSV).',
-    color: '#4F46E5',
-    bgColor: 'bg-indigo-50/50',
-    borderColor: 'border-indigo-300',
-    textColor: 'text-indigo-700',
-    badgeBg: 'bg-indigo-600 text-white',
-    badgeText: 'text-white',
-    badgeLabel: '5 KHU VỰC HOÀN THIỆN',
-    status: 'active',
-    optiPose: 'pointing',
-    optiExpr: 'wink'
-  }
-];
-
 export const ModuleCards: React.FC<ModuleCardsProps> = ({ onSelectModule }) => {
   return (
-    <section className="py-8 sm:py-12 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-10 gap-3 sm:gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-blue-600 uppercase tracking-wider mb-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-600" />
-              Lộ trình 5 Module Toán 10
-            </div>
-            <h2 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Hệ thống phòng học tương tác OPTIMATH
-            </h2>
-            <p className="text-slate-600 text-xs sm:text-sm mt-1 max-w-xl">
-              Từ lý thuyết cơ bản, phòng thí nghiệm trực quan, đến mô hình tối ưu thực tiễn và đánh giá cá nhân hóa.
-            </p>
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      {/* Section Title */}
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-100 text-blue-800 uppercase tracking-wider">
+              3 CHUYÊN ĐỀ NGHIÊN CỨU TRỌNG TÂM
+            </span>
+            <span className="text-xs text-slate-500 font-medium">Chuẩn GDPT 2018</span>
           </div>
-
-          <div className="text-[11px] sm:text-xs text-slate-600 font-medium flex items-center gap-1.5 self-start md:self-auto bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-            <span>Trọn bộ 5 Module hoạt động hoàn toàn</span>
-          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            3 Phòng Thí Nghiệm Toán Học Tương Tác
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
+            Mỗi chuyên đề được thiết kế theo quy trình nhiều bước sư phạm từ cơ bản đến vận dụng, tích hợp mô phỏng đồ họa 2D/3D và Trợ lý Socratic AI đồng hành.
+          </p>
         </div>
+      </div>
 
-        {/* 5 Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {MODULES_CONFIG.map(mod => {
-            const isActive = mod.status === 'active';
-            const isPreview = mod.status === 'preview';
+      {/* 3 Main Module Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {CORE_3_MODULES.map((mod: CoreModuleConfig, idx: number) => {
+          const isBlue = mod.id === "linear_programming";
+          const isEmerald = mod.id === "spatial_geometry";
+          const isPurple = mod.id === "trigonometry";
 
-            return (
+          return (
+            <div
+              key={mod.id}
+              className={`rounded-3xl p-6 border transition-all duration-200 flex flex-col justify-between shadow-sm hover:shadow-xl hover:-translate-y-1 relative overflow-hidden bg-white ${
+                isBlue
+                  ? "border-blue-200 hover:border-blue-400"
+                  : isEmerald
+                  ? "border-emerald-200 hover:border-emerald-400"
+                  : "border-purple-200 hover:border-purple-400"
+              }`}
+            >
+              {/* Top Accent Strip */}
               <div
-                key={mod.id}
-                onClick={() => onSelectModule(mod.id)}
-                className={`group relative rounded-2xl sm:rounded-3xl border ${mod.borderColor} ${mod.bgColor} p-4 sm:p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer bg-white`}
-              >
-                {/* Top Badge & Number */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide ${
-                        isActive
-                          ? 'bg-emerald-600 text-white shadow-xs'
-                          : isPreview
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-slate-100 text-slate-600'
-                      }`}
-                    >
-                      {mod.badgeLabel}
-                    </span>
+                className={`absolute top-0 left-0 right-0 h-2 ${
+                  isBlue ? "bg-blue-600" : isEmerald ? "bg-emerald-600" : "bg-purple-600"
+                }`}
+              />
 
-                    <span className="w-8 h-8 rounded-full bg-slate-100 font-extrabold text-slate-400 flex items-center justify-center text-sm font-mono">
-                      0{mod.number}
-                    </span>
-                  </div>
-
-                  {/* Title & Subtitle */}
-                  <h3 className="text-lg font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors">
-                    {mod.title}
-                  </h3>
-                  <p className="text-xs font-semibold text-slate-500 mb-3">
-                    {mod.subtitle}
-                  </p>
-
-                  {/* Description */}
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
-                    {mod.description}
-                  </p>
-                </div>
-
-                {/* Footer with Opti sticker avatar and Action Button */}
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <OptiMascot expression={mod.optiExpr} pose={mod.optiPose} size={42} animate={false} />
-                    <span className="text-[11px] font-semibold text-slate-500">
-                      {isActive ? 'Thao tác ngay' : isPreview ? 'Xem lý thuyết' : 'Sắp ra mắt'}
-                    </span>
-                  </div>
-
-                  <div
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      isActive
-                        ? 'bg-emerald-600 text-white group-hover:bg-emerald-700 shadow-sm'
-                        : isPreview
-                        ? 'bg-blue-600 text-white group-hover:bg-blue-700'
-                        : 'bg-slate-100 text-slate-500 group-hover:bg-slate-200'
+              <div>
+                {/* Header Badge & Code */}
+                <div className="flex items-center justify-between gap-2 mb-4 pt-1">
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold ${
+                      isBlue
+                        ? "bg-blue-100 text-blue-800"
+                        : isEmerald
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "bg-purple-100 text-purple-800"
                     }`}
                   >
-                    <span>{isActive ? 'Vào phòng lab' : isPreview ? 'Xem trước' : 'Chi tiết'}</span>
-                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                    {mod.code} · LỚP {mod.grade}
+                  </span>
+                  <div className="flex items-center gap-1 text-[11px] font-bold text-slate-500">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>{mod.lessons.length} Bài học</span>
                   </div>
                 </div>
+
+                {/* Module Icon & Mascot Accent */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-md ${
+                      isBlue
+                        ? "bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-blue-500/25"
+                        : isEmerald
+                        ? "bg-gradient-to-tr from-emerald-600 to-teal-600 shadow-emerald-500/25"
+                        : "bg-gradient-to-tr from-purple-600 to-indigo-600 shadow-purple-500/25"
+                    }`}
+                  >
+                    {isBlue ? (
+                      <Compass className="w-6 h-6" />
+                    ) : isEmerald ? (
+                      <Box className="w-6 h-6" />
+                    ) : (
+                      <Activity className="w-6 h-6" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-black text-lg text-slate-900 leading-snug">
+                      {mod.shortTitle}
+                    </h3>
+                    <span className="text-[11px] font-semibold text-slate-500">
+                      Mã lỗi: {mod.standardCodes.join(", ")}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                  {mod.description}
+                </p>
+
+                {/* Progressive Lesson Steps Summary */}
+                <div className="space-y-1.5 mb-5 p-3 rounded-2xl bg-slate-50 border border-slate-100 text-[11px]">
+                  <span className="font-bold text-slate-700 block mb-1">
+                    Lộ trình 5 bài học quy trình:
+                  </span>
+                  {mod.lessons.map((lesson) => (
+                    <div key={lesson.id} className="flex items-center gap-1.5 text-slate-600 truncate">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+                      <span className="font-bold text-slate-800 shrink-0">{lesson.code}:</span>
+                      <span className="truncate">{lesson.title.split(":")[0]}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            );
-          })}
-        </div>
+
+              {/* Enter Lab Button */}
+              <button
+                type="button"
+                onClick={() => onSelectModule(mod.id)}
+                className={`w-full py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 text-white shadow-md transition-all active:scale-95 cursor-pointer ${
+                  isBlue
+                    ? "bg-blue-600 hover:bg-blue-700 shadow-blue-500/25"
+                    : isEmerald
+                    ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/25"
+                    : "bg-purple-600 hover:bg-purple-700 shadow-purple-500/25"
+                }`}
+              >
+                <span>Vào phòng thí nghiệm {mod.code}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

@@ -1,20 +1,15 @@
-// RAG Engine (Retrieval-Augmented Generation) Toán Học Chuẩn SGK GDPT 2018 & Đề Cương KHKT MathSTEP
-// Tích hợp: 
-// 1. Lý luận sư phạm: Raymond Duval (Hệ thống biểu đạt), Newman (5 tầng lỗi), Polya (4 bước & 3 hướng nhìn lại), Paul & Elder (Socratic)
-// 2. Ma trận 17 mã lỗi nhận thức (M01 - M17) & 10 mã lỗi thực nghiệm (E01 - E10)
-// 3. Yêu cầu cần đạt 4 mức độ (Nhận biết, Thông hiểu, Vận dụng, Vận dụng cao) chuẩn Bộ GD&ĐT (Thông tư 32/2018)
-// 4. Cẩm nang 5 Bài học cốt lõi (Module 1 - 5) của OPTIMATH LAB
-
-import { STATION_CATALOG } from "../app/lib/stationCatalogData";
-import { CORE_7_MODULES } from "../app/lib/modulesCatalogData";
+// RAG Engine (Retrieval-Augmented Generation) Toán Học Chuẩn GDPT 2018 & 3 Chuyên Đề Nghiên Cứu KHKT MathSTEP
+// Module 1: Bất phương trình & Quy hoạch tuyến tính (Toán 10 - Đề cương KHKT Chú Chum & SGK KNTT/CTST/Cánh Diều)
+// Module 2: Dựng hình và khảo sát quan hệ Hình học không gian 3D (Toán 11 - Chuyên đề 2, Task SG-M2-01, SG01-SG16)
+// Module 3: Khảo sát các quan hệ Lượng giác tương tác (Toán 11 - Chuyên đề 3, Task LG-MH01-MH05, E01-E16)
 
 export interface MathKnowledgeChunk {
-  moduleId: string;
-  stationId?: string;
+  moduleId: "linear_programming" | "spatial_geometry" | "trigonometry";
+  lessonId: string;
   topic: string;
-  grade: 10 | 11 | 12;
-  coreConcepts: string[];
+  grade: 10 | 11;
   sgkSource: string;
+  coreConcepts: string[];
   keyFormulas: string[];
   commonMisconceptions: string[];
   socraticGuidance: string[];
@@ -25,11 +20,11 @@ export interface MathKnowledgeChunk {
 
 export const MATH_KNOWLEDGE_BASE: MathKnowledgeChunk[] = [
   // =========================================================================
-  // TOÁN 10 - CHƯƠNG II: BẤT PHƯƠNG TRÌNH & HỆ BẤT PHƯƠNG TRÌNH BẬC NHẤT HAI ẨN
+  // CHUYÊN ĐỀ 1: BẤT PHƯƠNG TRÌNH & QUY HOẠCH TUYẾN TÍNH (TOÁN 10)
   // =========================================================================
   {
     moduleId: "linear_programming",
-    stationId: "10.01",
+    lessonId: "lp-lesson-1",
     topic: "Bài 1: Bất Phương Trình Bậc Nhất Hai Ẩn & Đại Số Nghiệm",
     grade: 10,
     sgkSource: "SGK Toán 10 KNTT · Chương II Bài 1 (Trang 22-26); CTST & Cánh Diều",
@@ -59,340 +54,251 @@ export const MATH_KNOWLEDGE_BASE: MathKnowledgeChunk[] = [
       "Câu hỏi làm rõ (M05): 'Khi thay số âm vào vế trái, em đã viết dấu ngoặc đơn a*(x0) chưa? Tích của hệ số âm với số âm mang dấu gì?'",
     ],
   },
-
   {
     moduleId: "linear_programming",
-    stationId: "10.02",
-    topic: "Bài 2: Biểu Diễn Hình Học Miền Nghiệm & Quy Trình 7 Bước SGK",
+    lessonId: "lp-lesson-2",
+    topic: "Bài 2: Quy Trình 7 Bước Biểu Diễn Miền Nghiệm Chuẩn SGK",
     grade: 10,
-    sgkSource: "SGK Toán 10 KNTT · Chương II Bài 1 (Trang 26-28); Quy chuẩn GDPT 2018",
-    pedagogicalLayer: "Duval: Phép chuyển đổi biểu đạt (Conversion) Đại số <-> Hình học Oxy",
-    newmanLevel: "Tầng 4 (Process Skills - Kỹ năng vẽ bờ & Gạch miền)",
+    sgkSource: "SGK Toán 10 KNTT · Chương II Bài 1 (Trang 24-25); Đề cương KHKT",
+    pedagogicalLayer: "Duval: Phép chuyển đổi biểu đạt (Conversion) Đại số -> Hình học Oxy",
+    newmanLevel: "Tầng 4 (Kỹ năng thực hiện): Vẽ bờ và gạch nửa mặt phẳng",
     evaluationStandards: [
-      "Thông hiểu (Mức 2): Vẽ chính xác đường thẳng bờ d: ax + by = c kéo dài hai phía; phân biệt nét liền (<=, >=) và nét đứt (<, >).",
-      "Thông hiểu (Mức 2): Chọn điểm thử M0 không thuộc d (ưu tiên O(0;0) nếu c != 0; chọn P(1;0) nếu c = 0).",
-      "Quy ước SGK Việt Nam: Gạch bỏ phần mặt phẳng không phải là miền nghiệm, phần giữ trắng là miền nghiệm.",
+      "Thông hiểu (Mức 2): Thực hiện đúng 7 bước SGK, phân biệt nét liền (<=, >=) và nét đứt (<, >).",
+      "Kỹ năng: Chọn điểm thử M0 không thuộc bờ d. Tuyệt đối KHÔNG chọn O(0,0) khi c = 0.",
+      "Quy ước SGK: Gạch bỏ phần không thỏa mãn, phần không bị gạch (giữ trắng) là miền nghiệm.",
     ],
     coreConcepts: [
-      "Đường thẳng bờ d: ax + by = c chia mặt phẳng tọa độ Oxy thành hai nửa mặt phẳng đối nhau.",
-      "Quy tắc nét vẽ bờ: Có dấu bằng (<=, >=) vẽ NÉT LIỀN (lấy cả bờ); Dấu ngặt (<, >) vẽ NÉT ĐỨT (không lấy bờ).",
-      "Nguyên tắc điểm thử: Điểm M0 bắt buộc KHÔNG ĐƯỢC NẰM TRÊN BỜ (ax0 + by0 != c).",
-      "Khi c = 0: Đường bờ đi qua gốc tọa độ O(0; 0), TUYỆT ĐỐI KHÔNG DÙNG O(0;0) LÀM ĐIỂM THỬ; phải dùng P(1; 0) hoặc Q(0; 1).",
+      "Bước 1: Nhận diện hệ số a, b, c và toán tử [op].",
+      "Bước 2: Xác định kiểu nét vẽ đường bờ: Nét liền (<=, >=) hoặc Nét đứt (<, >).",
+      "Bước 3: Xác định 2 điểm cắt trục A(c/a, 0) và B(0, c/b).",
+      "Bước 4: Vẽ đường thẳng bờ d kéo dài vô hạn về hai phía.",
+      "Bước 5: Chọn điểm thử M0(x0, y0) KHÔNG THUỘC đường thẳng d (nếu c != 0 chọn O(0,0); nếu c = 0 chọn P(1,0) hoặc Q(0,1)).",
+      "Bước 6: Tính LHS và so sánh với RHS để kết luận nửa mặt phẳng nghiệm.",
+      "Bước 7: Kết luận sư phạm tường minh, chỉ rõ lấy biên hay không lấy biên.",
     ],
     keyFormulas: [
-      "Đường bờ: $d: ax + by = c$",
-      "Giao trục tọa độ: $A(0;\\, \\frac{c}{b})$, $B(\\frac{c}{a};\\, 0)$",
-      "Quy tắc gạch: $M_0$ thỏa mãn $\\rightarrow$ gạch nửa KHÔNG chứa $M_0$; $M_0$ sai $\\rightarrow$ gạch nửa CHỨA $M_0$.",
+      "Đường thẳng bờ: $d: ax + by = c$",
+      "Giao điểm trục: $A(\\frac{c}{a}; 0)$, $B(0; \\frac{c}{b})$",
+      "Quy ước: Gạch phần sai, giữ trắng miền đúng.",
     ],
     commonMisconceptions: [
-      "[M03] Xác định nhầm vị trí điểm trên hai trục: Chấm điểm (0; 3) lên trục Ox và (2; 0) lên trục Oy.",
-      "[M04] Vẽ đoạn thẳng ngắn cụt giữa 2 trục thay vì đường thẳng vô hạn chia đôi mặt phẳng.",
-      "[M06] Lúng túng với BPT khuyết ẩn như x >= 0, y <= 3 (không biết vẽ đường thẳng song song trục).",
-      "[M07] Nhớ mẹo vẹt 'lớn lấy phải, nhỏ lấy trái' dẫn đến sai khi hệ số a mang dấu âm.",
-      "[M08] Chọn điểm thử O(0;0) ngay cả khi đường thẳng bờ đi qua gốc tọa độ (c = 0).",
-      "[M09] Nhầm lẫn quy ước gạch bỏ: Điểm thử đúng lại đi gạch luôn miền chứa điểm thử.",
-      "[M10] Quên quy tắc nét đứt khi BPT mang dấu ngặt (<, >).",
+      "[M06] Vẽ đoạn thẳng hữu hạn cụt thay vì đường thẳng kéo dài, làm mặt phẳng không bị chia cắt rõ ràng.",
+      "[M07] Áp dụng mẹo truyền miệng 'lớn phải nhỏ trái' gây sai lầm khi hệ số a < 0.",
+      "[M08] Chọn điểm thử O(0,0) khi đường bờ d đi qua gốc tọa độ (c = 0), dẫn đến 0 = 0 vô nghĩa.",
     ],
     socraticGuidance: [
-      "Phản ví dụ điểm thử trên bờ (M08): 'Điểm O(0;0) đang nằm ở đâu so với đường thẳng 2x - y = 0? Một điểm nằm ngay trên ranh giới có thể đại diện cho nửa bên này hay nửa bên kia không?'",
-      "Phản ví dụ mẹo vẹt (M07): 'Với BPT -x + 2y > 4, em thử lấy điểm M(5; 0) ở bên phải thay vào xem mệnh đề nhận được là đúng hay sai? Vì sao lại ngược lại?'",
-      "Nhắc nhở nét vẽ (M10): 'Bất phương trình có lấy các điểm nằm đúng trên bờ không? Nếu không lấy thì quy ước SGK dùng nét gì?'",
+      "Câu hỏi định vị (M08): 'Đường thẳng 7x - 2y = 0 có đi qua O(0,0) không? Một điểm nằm ngay trên đường ranh giới có thể đại diện cho nửa mặt phẳng bên này hay bên kia không? Hãy chọn P(1, 0) để thử.'",
+      "Câu hỏi phản ví dụ (M07): 'Với BPT -x + 2y > 4, em thử lấy M(1, 0) ở bên phải thay vào xem mệnh đề đúng hay sai? Vậy mẹo lớn phải có luôn đúng không?'",
     ],
   },
-
   {
     moduleId: "linear_programming",
-    stationId: "10.03",
+    lessonId: "lp-lesson-3",
     topic: "Bài 3: Hệ Bất Phương Trình Bậc Nhất Hai Ẩn & Miền Đa Giác Lồi",
     grade: 10,
-    sgkSource: "SGK Toán 10 KNTT · Chương II Bài 2 (Trang 28-31); Bản đặc tả Bộ GD&ĐT",
-    pedagogicalLayer: "Duval: Phép giao nhiều nửa mặt phẳng & Xác định tập lồi đa giác",
-    newmanLevel: "Tầng 4 (Process Skills) - Lọc đỉnh khả thi & Giải hệ tọa độ",
+    sgkSource: "SGK Toán 10 KNTT · Chương II Bài 2 (Trang 26-28)",
+    pedagogicalLayer: "Duval: Chuyển đổi giao các nửa mặt phẳng thành đa giác lồi đóng",
+    newmanLevel: "Tầng 4 (Kỹ năng thực hiện) & Tầng 5 (Trình bày)",
     evaluationStandards: [
-      "Thông hiểu (Mức 2): Biểu diễn lần lượt từng nửa mặt phẳng và xác định miền giao không bị gạch bỏ.",
-      "Thông hiểu (Mức 2): Giải đúng hệ phương trình từng cặp đường bờ để tìm tọa độ các đỉnh (Vertices) thay vì ước lượng bằng mắt.",
-      "Vận dụng (Mức 3): Nhận diện miền đa giác đóng bị chặn, miền mở hoặc miền rỗng.",
+      "Thông hiểu (Mức 2): Xác định miền nghiệm là giao của các nửa mặt phẳng.",
+      "Vận dụng (Mức 3): Tìm tọa độ các đỉnh của miền đa giác bằng cách giải hệ phương trình hai đường thẳng cắt nhau.",
     ],
     coreConcepts: [
-      "Miền nghiệm của hệ BPT là phần giao của các miền nghiệm của từng BPT trong hệ.",
-      "Miền nghiệm thường là một miền đa giác lồi (tam giác, tứ giác, ngũ giác) hoặc miền không bị chặn.",
-      "Tọa độ các đỉnh của miền đa giác là giao điểm của các cặp đường thẳng bờ thỏa mãn đồng thời tất cả BPT còn lại.",
-      "Quy ước SGK: Gạch lần lượt các miền không thỏa mãn của từng BPT; phần trắng còn lại duy nhất chính là miền đa giác nghiệm.",
+      "Nghiệm của hệ là cặp số (x0; y0) thỏa mãn đồng thời TẤT CẢ các bất phương trình trong hệ.",
+      "Miền nghiệm của hệ là phần giao của các miền nghiệm thành phần, thường là một miền đa giác lồi.",
+      "Tọa độ đỉnh đa giác phải được tính bằng giải hệ 2 phương trình bậc nhất hai ẩn, KHÔNG được ước lượng bằng mắt.",
     ],
     keyFormulas: [
-      "Hệ: $\\begin{cases} a_1 x + b_1 y \\le c_1 \\\\ a_2 x + b_2 y \\le c_2 \\\\ x \\ge 0,\\, y \\ge 0 \\end{cases}$",
-      "Giao điểm đỉnh $I(x, y)$: nghiệm của hệ $\\begin{cases} a_i x + b_i y = c_i \\\\ a_j x + b_j y = c_j \\end{cases}$",
+      "Hệ: $\\begin{cases} a_1 x + b_1 y \\le c_1 \\\\ a_2 x + b_2 y \\le c_2 \\\\ x \\ge 0, y \\ge 0 \\end{cases}$",
+      "Tọa độ đỉnh: Nghiệm của $\\begin{cases} a_1 x + b_1 y = c_1 \\\\ a_2 x + b_2 y = c_2 \\end{cases}$",
     ],
     commonMisconceptions: [
-      "[M02] Nhầm lẫn phép giao với phép hợp: Thử điểm chỉ thỏa 1 BPT đã kết luận thuộc miền nghiệm của hệ.",
-      "[M11] Gạch quá dày và cùng hướng làm đen toàn bộ mặt phẳng, mất dấu miền đa giác trắng.",
-      "[M16] Ước lượng tọa độ đỉnh bằng mắt thường từ hình vẽ tay dẫn đến sai số (đặc biệt đỉnh phân số).",
-      "[M17] Bối rối khi phần mềm GeoGebra tô màu miền nghiệm ngược với cách gạch bỏ trong SGK.",
+      "[M02] Nhầm lẫn giữa phép giao và phép hợp: Chỉ kiểm tra 1 BPT thỏa mãn đã vội kết luận là nghiệm của cả hệ.",
+      "[M10] Rối hình khi giao nhiều miền: Gạch nét quá dày làm mất dấu miền trắng.",
+      "[M16] Ước lượng tọa độ đỉnh bằng mắt thường thay vì giải hệ phương trình đại số.",
     ],
     socraticGuidance: [
-      "Kiểm tra tính thỏa mãn đồng thời (M02): 'Để một điểm thuộc nghiệm của HỆ, nó cần thỏa mãn một vài BPT hay TẤT CẢ các BPT trong hệ?'",
-      "Khắc phục sai số hình vẽ (M16): 'Đỉnh B là giao của 2 đường bờ nào? Để tìm tọa độ chính xác tuyệt đối mà nét vẽ tay không làm sai lệch, em cần giải hệ phương trình nào?'",
-      "Định hướng gạch hình (M11): 'Hãy gạch các đường nghiêng thưa và đổi góc nghiêng cho từng BPT để phần trắng lộ rõ nhất nhé!'",
+      "Câu hỏi logic (M02): 'Điểm A có thỏa mãn BPT thứ hai không? Nghiệm của hệ đòi hỏi thỏa mãn MỘT BPT hay TẤT CẢ các BPT?'",
+      "Câu hỏi kiểm chứng (M16): 'Đỉnh B là giao điểm của hai đường bờ nào? Để tìm tọa độ chính xác tuyệt đối không bị sai số nét vẽ, em cần giải hệ phương trình nào?'",
     ],
   },
-
   {
     moduleId: "linear_programming",
-    stationId: "10.04",
-    topic: "Bài 4: Mô Hình Hóa & Tối Ưu Hóa Tuyến Tính Thực Tiễn (Bài Toán Xưởng Mộc)",
+    lessonId: "lp-lesson-4",
+    topic: "Bài 4: Mô Hình Hóa & Bài Toán Tối Ưu Xưởng Mộc (SGK Trang 26-30)",
     grade: 10,
-    sgkSource: "SGK Toán 10 KNTT · Chương II Bài 2 (Trang 30-33); Đề cương KHKT MathSTEP",
-    pedagogicalLayer: "Newman: Đọc đề (R) -> Hiểu đề (C) -> Chuyển hóa (T) -> Thực hiện (P) -> Kết luận (E)",
-    newmanLevel: "Tầng 3 (Chuyển hóa) & Tầng 5 (Kết luận thực tế)",
+    sgkSource: "SGK Toán 10 KNTT · Chương II Bài 2 (Trang 26-30); Đề cương KHKT",
+    pedagogicalLayer: "Duval: Chuyển đổi Ngôn ngữ tự nhiên -> Hệ đại số -> Miền đa giác -> Cực trị",
+    newmanLevel: "Tầng 2 (Hiểu đề) -> Tầng 3 (Chuyển hóa) -> Tầng 5 (Kết luận)",
     evaluationStandards: [
-      "Vận dụng (Mức 3): Gọi ẩn x, y kèm đơn vị và điều kiện thực tế (x >= 0, y >= 0, x, y thuộc N).",
-      "Vận dụng (Mức 3): Kiểm soát tính đồng nhất đơn vị hai vế, lập đúng hệ BPT ràng buộc tài nguyên.",
-      "Vận dụng (Mức 3): Lập bảng tính giá trị F(x, y) = ax + by tại tất cả các đỉnh và kết luận phương án tối ưu.",
-      "Vận dụng cao (Mức 4): Xử lý bài toán khi thay đổi tham số hoặc bài toán tối ưu suy biến.",
+      "Vận dụng (Mức 3): Thiết lập đúng hệ BPT ràng buộc từ tình huống thực tiễn, đồng nhất đơn vị.",
+      "Vận dụng cao (Mức 4): Vận dụng định lý cực trị trên miền đa giác lồi để tìm max/min của F(x,y) = ax + by.",
+      "Nhìn lại (Looking back - Polya): Kiểm tra lại điều kiện nguyên x, y in N và 3 phương diện suy ngẫm.",
     ],
     coreConcepts: [
-      "Định lý giá trị tối ưu: Biểu thức F(x, y) = ax + by đạt giá trị lớn nhất (hoặc nhỏ nhất) tại ít nhất một đỉnh của miền đa giác lồi bị chặn.",
-      "Nguyên tắc đồng nhất đơn vị: Các số hạng trong một vế và hai vế của một BPT phải có cùng bản chất đại lượng và cùng đơn vị đo.",
-      "Quy trình 4 giai đoạn Polya: (1) Lập mô hình -> (2) Biểu diễn miền đa giác -> (3) Tính F tại các đỉnh -> (4) Nhìn lại 3 phương diện (đối chiếu điều kiện nguyên, tối ưu trình bày, mở rộng khi thay đổi giá bán).",
+      "Bài toán xưởng mộc: x (bàn), y (ghế). Điều kiện: x, y in N, x >= 0, y >= 0.",
+      "Giờ lắp ráp: 1,5x + y <= 24 (hay 3x + 2y <= 48). Giờ hoàn thiện: x + 2y <= 32. Thị trường: y <= 3,5x (hay 7x - 2y >= 0).",
+      "Hàm tiền lãi: F(x, y) = 600x + 450y (nghìn đồng).",
+      "Miền nghiệm là tứ giác lồi OABC với O(0,0), A(4,14), B(8,12), C(16,0).",
+      "Định lý cực trị: Giá trị lớn nhất/nhỏ nhất của F(x, y) luôn đạt tại một trong các đỉnh của miền đa giác.",
+      "F(O)=0, F(A)=8.700, F(B)=10.200, F(C)=9.600 -> Max F đạt tại B(8, 12) = 10.200 nghìn đồng (10.200.000 đồng).",
     ],
     keyFormulas: [
-      "Hàm mục tiêu: $F(x, y) = ax + by$ (lợi nhuận hoặc chi phí)",
-      "Định lý cực trị miền đa giác: $F_{\\max} = \\max\\{F(O), F(A), F(B), F(C)\\}$",
-      "Ví dụ chuẩn: Xưởng mộc bàn ghế: $3x + 2y \\le 48$, $x + 2y \\le 32$, $7x - 2y \\ge 0$, $x, y \\ge 0$",
-      "Đỉnh tối ưu: $B(8; 12) \\rightarrow F_{\\max} = 600(8) + 450(12) = 10.200$ (nghìn đồng)",
+      "$\\max F(x, y) = 600x + 450y$",
+      "Hệ ràng buộc: $\\begin{cases} 3x + 2y \\le 48 \\\\ x + 2y \\le 32 \\\\ 7x - 2y \\ge 0 \\\\ x, y \\ge 0, x, y \\in \\mathbb{N} \\end{cases}$",
     ],
     commonMisconceptions: [
-      "[M12] Dịch sai chiều dấu: 'không quá / tối đa C' (<= C) lại viết thành (>= C); 'ít nhất / tối thiểu' lại viết (<=).",
-      "[M13] Ghép nhầm các đại lượng khác bản chất: cộng protein với lipit rồi so sánh với tổng protein.",
-      "[M14] Quên điều kiện thực tế x >= 0, y >= 0 hoặc quên x, y thuộc N (sản phẩm nguyên chiếc).",
-      "[M15] Đưa luôn biểu thức tiền lãi F = ax + by vào trong hệ BPT để vẽ đường bờ ngay từ đầu.",
+      "[M11] Dịch sai cụm từ định lượng: 'không vượt quá' phải dùng <= nhưng lại viết > hoặc <.",
+      "[M12] Ghép các đại lượng khác bản chất (không đồng nhất đơn vị): Cộng thời gian với tiền bạc.",
+      "[M13] Quên điều kiện thực tế: Quên x >= 0, y >= 0 hoặc x, y in N (số bàn ghế không thể là số âm hoặc phân số).",
+      "[M14] Đưa hàm mục tiêu F(x,y) vào chung hệ BPT để vẽ đường bờ.",
     ],
     socraticGuidance: [
-      "Kiểm tra đơn vị hai vế (M13): 'Con số ở vế phải có đơn vị là gì? Vế trái của em cộng hai số hạng có cùng đơn vị đó chưa?'",
-      "Kiểm tra ngữ nghĩa giới hạn (M12): 'Cụm từ \"không quá 8 giờ\" nghĩa là đúng bằng 8 giờ có được chấp nhận không? Lớn hơn 8 giờ có được phép không?'",
-      "Phân biệt vai trò của F (M15): 'Biểu thức tiền lãi F đã có con số giới hạn cố định chưa, hay là đại lượng ta cần tìm giá trị lớn nhất ở bước cuối cùng?'",
-      "Nhìn lại Polya Phương diện 3: 'Nếu tiền lãi một chiếc bàn đổi thành 300k và ghế đổi thành 600k, miền tứ giác OABC có đổi không? Ta chỉ cần tính lại bước nào?'",
-    ],
-  },
-
-  {
-    moduleId: "linear_programming",
-    stationId: "10.05",
-    topic: "Bài 5: Chẩn Đoán 10 Mã Lỗi E01–E10 & Sư Phạm Phản Hồi 3 Tầng",
-    grade: 10,
-    sgkSource: "Khung Newman Error Analysis & Đề cương KHKT MathSTEP",
-    pedagogicalLayer: "Paul & Elder: Socratic Questioning 3 Tầng (Orientation -> Rule -> Correction)",
-    newmanLevel: "Toàn diện 5 tầng lỗi Newman (Reading -> Comprehension -> Transformation -> Process -> Encoding)",
-    evaluationStandards: [
-      "Nhận diện chính xác 10 mã lỗi E01–E10 dựa trên thao tác hoặc câu trả lời của học sinh.",
-      "Tầng 1: Đặt câu hỏi định hướng kích thích học sinh tự phát hiện mâu thuẫn.",
-      "Tầng 2: Gợi ý phương pháp và quy tắc SGK.",
-      "Tầng 3: Hướng dẫn sửa chữa chi tiết và sinh bài tập tương đương (Near-transfer).",
-    ],
-    coreConcepts: [
-      "E01: Thay tọa độ sai (nhầm hoành/tung hoặc tính sai dấu).",
-      "E02: Nhầm dấu bất phương trình (nhầm nét đứt/liền hoặc nhầm chiều chia số âm).",
-      "E03: Chọn sai điểm trên đường biên khi vẽ bờ.",
-      "E04: Chọn điểm thử nằm ngay trên đường biên (đặc biệt khi c = 0).",
-      "E05: Chọn sai nửa mặt phẳng nghiệm sau khi thử điểm.",
-      "E06: Tính sai tọa độ giao điểm hai đường bờ.",
-      "E07: Chọn điểm không thỏa mãn toàn bộ hệ.",
-      "E08: Lập sai ràng buộc thực tế (dịch sai từ ngữ, sai đơn vị).",
-      "E09: Xác định sai hàm mục tiêu hoặc nhầm MAX với MIN.",
-      "E10: Kết luận tối ưu sai (bỏ sót đỉnh phân số, tự ý làm tròn nghiệm nguyên).",
-    ],
-    keyFormulas: [
-      "Bộ mã phân loại: E01 -> E10",
-      "Tiến trình phản hồi 3 tầng: $H_1$ (Orientation) -> $H_2$ (Rule) -> $H_3$ (Correction)",
-    ],
-    commonMisconceptions: [
-      "Học sinh lặp lại lỗi cũ nếu giáo viên cung cấp ngay đáp án thay vì dùng câu hỏi gợi mở Socratic.",
-      "Tự ý làm tròn nghiệm tối ưu phân số mà không kiểm tra lại tính khả thi của điểm nguyên lân cận.",
-    ],
-    socraticGuidance: [
-      "Gợi ý 3 tầng mẫu (E04): H1: 'Điểm thử em chọn có vị trí như thế nào với đường bờ?' -> H2: 'Quy tắc SGK: Điểm thử bắt buộc KHÔNG ĐƯỢC thuộc bờ' -> H3: 'Vì bờ qua O(0,0), hãy chọn P(1, 0) để thử.'",
+      "Câu hỏi đồng nhất (M12): 'Con số 24 ở vế phải có đơn vị là gì (giờ)? Vậy các số hạng ở vế trái phải có đơn vị là gì? Có thể lấy giờ cộng với tiền được không?'",
+      "Câu hỏi điều kiện (M13): 'Số lượng bàn ghế xuất xưởng có thể là số âm hoặc số thập phân như 2,5 chiếc không?'",
+      "Câu hỏi Looking Back (Polya): 'Nếu tiền lãi một chiếc bàn thay đổi thì miền tứ giác OABC có thay đổi không? Tại sao?'",
     ],
   },
 
   // =========================================================================
-  // CÁC CHUYÊN ĐỀ LỚP 11 & 12 ĐÃ CHUẨN HÓA
+  // CHUYÊN ĐỀ 2: HÌNH HỌC KHÔNG GIAN 3D (TOÁN 11)
   // =========================================================================
   {
     moduleId: "spatial_geometry",
-    stationId: "11.06",
-    topic: "Hình chóp tứ giác đều S.ABCD: Cạnh thấy vs Cạnh khuất",
+    lessonId: "sg-lesson-1",
+    topic: "Chuyên Đề 2: Dựng Hình & Khảo Sát Quan Hệ Không Gian 3D (SG-M2-01)",
     grade: 11,
-    sgkSource: "SGK Hình học 11 KNTT · Chương IV Bài 11 (Trang 78-83)",
+    sgkSource: "SGK Toán 11 KNTT · Chương IV Quan hệ song song trong không gian; Đề cương Chuyên đề 2",
+    pedagogicalLayer: "Duval: Phép chuyển đổi biểu đạt Ngôn ngữ hình học -> Không gian 3D -> Hình chiếu 2D",
+    newmanLevel: "Tầng 1 (Đọc giả thiết) -> Tầng 3 (Chuyển hóa ràng buộc) -> Tầng 4 (Thao tác dựng hình)",
+    evaluationStandards: [
+      "Nhận biết (Mức 1): Nhận diện đúng đối tượng điểm, đường thẳng, mặt phẳng và điều kiện xác định duy nhất.",
+      "Thông hiểu (Mức 2): Chuyển đúng giả thiết thành tọa độ và ràng buộc phụ thuộc (trung điểm, tỉ số chia đoạn).",
+      "Vận dụng (Mức 3): Khảo sát 360°, phân biệt nét thấy/nét khuất, xác định thiết diện đa giác lồi và trải phẳng không chồng lấn.",
+    ],
     coreConcepts: [
-      "Quy ước nét vẽ: Nét liền biểu diễn cạnh nhìn thấy, nét đứt biểu diễn cạnh bị che khuất.",
-      "Đường cao của hình chóp đều: Đoạn thẳng nối đỉnh S với tâm H của đa giác đáy, SH vuông góc với (ABCD).",
-      "Tọa độ hóa không gian: Chọn gốc O tại tâm H hoặc đỉnh A để giải tích hóa các đỉnh chóp.",
+      "Nhiệm vụ trọng tâm SG-M2-01: Cho hình chóp S.ABCD, đáy ABCD là hình bình hành tâm O. Điểm M là trung điểm SA. Điểm N thuộc đoạn SB và SN : NB = 2 : 1.",
+      "Nguyên tắc dựng hình đúng giả thiết: Bảo toàn các quan hệ đã cho; KHÔNG tự biến hình chóp tổng quát thành hình chóp đều, không tự thêm vuông góc khi đề không cho (SG02).",
+      "Quan sát không thay cho chứng minh: Xoay hình giúp phát hiện dự đoán, nhưng kết luận phải dựa trên căn cứ toán học (SG07, SG08).",
+      "Nét thấy và nét khuất: Nét đứt phụ thuộc góc nhìn và sự che khuất của bề mặt, không phải thuộc tính cố định của cạnh (SG16).",
+      "Mặt phẳng cắt & Thiết diện: Giao tuyến của mặt phẳng cắt qua M song song đáy tạo thành thiết diện lồi MPQR.",
+      "Trải phẳng (Unfolding): Bảo toàn kích thước và diện tích từng mặt, không có phần trong chồng lấn (SG12, SG13).",
     ],
     keyFormulas: [
-      "$SH \\perp (ABCD)$ tại tâm đáy $H$",
-      "$V = \\frac{1}{3} S_{ABCD} \\cdot h$",
-      "Độ dài cạnh bên: $SA = \\sqrt{SH^2 + HA^2}$",
+      "Tâm đáy: $O = \\frac{A + C}{2} = \\frac{B + D}{2}$",
+      "Trung điểm: $M = \\frac{S + A}{2}$",
+      "Tỉ số chia đoạn: $N = S + \\frac{2}{3}(B - S)$ (với $SN:NB = 2:1$)",
+      "Thiết diện qua M song song đáy: $MPQR$ với $P, Q, R$ là trung điểm $SB, SC, SD$.",
     ],
     commonMisconceptions: [
-      "Học sinh nhầm lẫn đường cao hình chóp SH với trung đoạn kẻ từ S xuống cạnh đáy.",
-      "Học sinh mặc định cạnh đáy nào nằm phía sau cũng luôn là nét đứt mà không nhận ra khi xoay 180 độ thì cạnh đó trở thành cạnh nhìn thấy.",
+      "[SG01] Bỏ sót điều kiện của đề bài: Quên dựng tâm O hoặc quên điều kiện trung điểm.",
+      "[SG02] Tự thêm tính chất không được cho: Mặc định đáy là hình chữ nhật hoặc SA vuông góc với đáy.",
+      "[SG04] Đặt điểm sai đối tượng: Đặt M nằm ngoài đoạn SA (thuộc đường thẳng nhưng không thuộc đoạn).",
+      "[SG05] Xác định sai tỉ số chia đoạn: Nhầm SN:NB = 2:1 thành 1:2 (làm N nằm gần S hơn B).",
+      "[SG07] Nhầm giao nhau trên ảnh với giao nhau trong không gian: Coi hai đường chéo nhau AB và SD là cắt nhau.",
+      "[SG10] Giữ điểm ngoài cạnh làm đỉnh thiết diện: Lấy giao điểm trên phần kéo dài ngoài khối đa diện.",
+      "[SG16] Hiểu sai nét thấy và nét khuất: Coi nét đứt là ký hiệu cố định hoặc ký hiệu song song.",
     ],
     socraticGuidance: [
-      "Hãy hướng dẫn học sinh xoay mô hình 3D từ từ và quan sát cạnh đáy CD: Khi nào nó chuyển từ nét đứt sang nét liền?",
-      "Đặt câu hỏi: 'Nếu đường cao SH vuông góc với đáy, thì tam giác SHA là tam giác gì? Đoạn HA bằng bao nhiêu phần đường chéo AC?'",
+      "Câu hỏi làm rõ (SG02): 'Đề bài cho đáy là hình bình hành, đề có cho góc vuông nào không? Nếu em dựng SA vuông góc đáy thì có đại diện cho mọi hình chóp thỏa đề không?'",
+      "Câu hỏi tỉ số (SG05): 'Theo tỉ số SN:NB = 2:1, đoạn SN dài gấp mấy lần đoạn NB? Vậy điểm N phải nằm gần đỉnh S hơn hay gần B hơn?'",
+      "Câu hỏi phản ví dụ (SG07): 'Hai đường thẳng AB và SD có cùng nằm trong một mặt phẳng nào không? Hãy xoay mô hình 3D sang góc nhìn khác: điểm giao nhau trên màn hình có còn trùng nhau không?'",
+      "Câu hỏi thiết diện (SG10): 'Đỉnh của thiết diện bắt buộc phải nằm trên cạnh của khối đa diện hay được nằm trên phần kéo dài bên ngoài khối?'",
     ],
   },
+
+  // =========================================================================
+  // CHUYÊN ĐỀ 3: LƯỢNG GIÁC TƯƠNG TÁC (TOÁN 11)
+  // =========================================================================
   {
     moduleId: "trigonometry",
-    stationId: "11.01",
-    topic: "Đường Tròn Lượng Giác Đơn Vị & Đồ Thị Sóng Tuần Hoàn",
+    lessonId: "trig-lesson-1",
+    topic: "Chuyên Đề 3: Khảo Sát Các Quan Hệ Lượng Giác Tương Tác (LG-MH01 - LG-MH05)",
     grade: 11,
-    sgkSource: "SGK Toán 11 KNTT · Chương I Bài 1 & 2 (Trang 5-20)",
+    sgkSource: "SGK Toán 11 KNTT · Chương I Hàm số lượng giác và Phương trình lượng giác; Đề cương Chuyên đề 3",
+    pedagogicalLayer: "Duval: Chuyển đổi biểu đạt Góc quay -> Điểm trên đường tròn đơn vị -> Đồ thị sóng -> Nghiệm",
+    newmanLevel: "Tầng 1 (Đọc đơn vị) -> Tầng 3 (Biến đổi công thức) -> Tầng 4 (Kỹ năng vẽ đồ thị)",
+    evaluationStandards: [
+      "Nhận biết (Mức 1): Nhận diện đúng chiều quay (chiều dương ngược chiều kim đồng hồ), đơn vị độ và radian.",
+      "Thông hiểu (Mức 2): Xác định đúng tọa độ điểm M(cos alpha, sin alpha), xét dấu trên 4 góc phần tư, phân biệt giá trị 0 và không xác định.",
+      "Vận dụng (Mức 3): Áp dụng cung liên kết, công thức nhân đôi, liên kết chu kỳ sóng T = 2pi và giải phương trình trên khoảng [a; b].",
+    ],
     coreConcepts: [
-      "Đường tròn lượng giác đơn vị bán kính R = 1, trục hoành là trục Cosin, trục tung là trục Sin.",
-      "Mỗi góc lượng giác alpha tương ứng với một điểm M(cos alpha, sin alpha) trên đường tròn.",
-      "Hàm số y = sin x tuần hoàn với chu kỳ 2pi; y = cos x tuần hoàn chu kỳ 2pi.",
+      "Nhiệm vụ LG-MH01: Góc alpha = -765 độ = (-2)*360 độ - 45 độ. Góc đại diện trong vòng dương là 315 độ (7pi/4), điểm cuối thuộc góc phần tư IV.",
+      "Nhiệm vụ LG-MH02: Tọa độ điểm biểu diễn M(sqrt(2)/2; -sqrt(2)/2). sin = -sqrt(2)/2, cos = sqrt(2)/2, tan = -1, cot = -1.",
+      "Phân biệt bằng 0 và không xác định: Tại pi/2, cot = 0 nhưng tan không xác định do mẫu cos = 0 (E06). Điểm trên trục không thuộc góc phần tư nào (E05).",
+      "Nhiệm vụ LG-MH03: Công thức nhân đôi sin(2*alpha) = 2*sin(alpha)*cos(alpha) = -1. Khớp với điểm biểu diễn góc -1530 độ = -90 độ.",
+      "Nhiệm vụ LG-MH04: Liên kết đường tròn và đồ thị. Góc -765 độ và 315 độ có cùng tung độ trên đường tròn nhưng hoành độ trên đồ thị cách nhau 6pi (3 chu kỳ).",
+      "Nhiệm vụ LG-MH05: Giải phương trình sin(x) = -sqrt(2)/2 trên [-pi; pi]. Nghiệm tổng quát: x = -pi/4 + k2pi hoặc x = -3pi/4 + k2pi. Trong [-pi; pi] có đúng 2 nghiệm: x1 = -pi/4, x2 = -3pi/4.",
     ],
     keyFormulas: [
-      "$\\sin^2 \\alpha + \\cos^2 \\alpha = 1$",
-      "$\\tan \\alpha = \\frac{\\sin \\alpha}{\\cos \\alpha}$ $(\\alpha \\ne \\frac{\\pi}{2} + k\\pi)$",
-      "$y = A \\sin(\\omega x + \\varphi) + d$",
+      "Đổi đơn vị: $180^\\circ = \\pi \\text{ rad}$, $\\alpha \\text{ rad} = \\alpha \\cdot \\frac{180^\\circ}{\\pi}$",
+      "Tọa độ trên đường tròn đơn vị: $M(\\cos \\alpha; \\sin \\alpha)$",
+      "Hệ thức cơ bản: $\\sin^2 \\alpha + \\cos^2 \\alpha = 1$, $\\tan \\alpha = \\frac{\\sin \\alpha}{\\cos \\alpha}$",
+      "Công thức nhân đôi: $\\sin 2\\alpha = 2\\sin \\alpha \\cos \\alpha$, $\\cos 2\\alpha = \\cos^2 \\alpha - \\sin^2 \\alpha$",
+      "Chu kỳ hàm số: $y = \\sin x$ có chu kỳ cơ bản $T = 2\\pi$, $y = \\tan x$ có chu kỳ $T = \\pi$",
     ],
     commonMisconceptions: [
-      "Nhầm trục hoành là trục Sin, trục tung là trục Cos.",
-      "Quên rằng sin(x + 2pi) = sin x.",
+      "[E01] Chọn chiều quay không phù hợp với dấu của góc: Quay góc âm theo chiều ngược kim đồng hồ.",
+      "[E02] Coi hai góc có cùng điểm biểu diễn là bằng nhau về số đo (nhầm -765 độ bằng 315 độ).",
+      "[E03] Sử dụng lẫn lộn đơn vị độ và radian trong cùng một biểu thức.",
+      "[E04] Đổi vai trò sin và cos: Lấy cos là tung độ, sin là hoành độ.",
+      "[E05] Gán điểm nằm trên trục tọa độ vào một góc phần tư.",
+      "[E06] Coi giá trị không xác định của tan/cot là bằng 0.",
+      "[E08] Dùng công thức ngộ nhận sin(a + b) = sin a + sin b.",
+      "[E10] Quên dấu âm trong công thức hiệu hai cosin: cos a - cos b = -2*sin((a+b)/2)*sin((a-b)/2).",
+      "[E12] Nhầm một chu kỳ với chu kỳ cơ bản: Coi 4pi là chu kỳ cơ bản của sin x.",
+      "[E15] Thiếu nghiệm, đếm trùng hoặc bỏ sót nghiệm tại đầu mút khoảng xét.",
+      "[E16] Chia cho sin x khi giải phương trình mà không xét trường hợp sin x = 0 dẫn đến mất nghiệm.",
     ],
     socraticGuidance: [
-      "Gợi ý: 'Hãy nhìn vào tia gióng từ điểm M sang đồ thị bên phải: Khi M đi từ góc 0 đến pi/2, giá trị tung độ của M tăng hay giảm?'",
-    ],
-  },
-  {
-    moduleId: "functions",
-    stationId: "12.01",
-    topic: "Khảo Sát Sự Biến Thiên & Bảng Biến Thiên 2 Chiều",
-    grade: 12,
-    sgkSource: "SGK Toán 12 KNTT · Chương I Bài 1, 2, 3 (Trang 6-25)",
-    coreConcepts: [
-      "Dấu của đạo hàm f'(x) quyết định tính đơn điệu: f'(x) > 0 hàm đồng biến, f'(x) < 0 hàm nghịch biến.",
-      "Điểm cực trị: Điểm tại đó đạo hàm đổi dấu từ dương sang âm (cực đại) hoặc từ âm sang dương (cực tiểu).",
-      "Tiếp tuyến của đồ thị tại điểm M(x0, y0): y = f'(x0)(x - x0) + y0.",
-    ],
-    keyFormulas: [
-      "$y' = 3ax^2 + 2bx + c$ đối với hàm bậc ba",
-      "Tiếp tuyến: $y = f'(x_0)(x - x_0) + f(x_0)$",
-    ],
-    commonMisconceptions: [
-      "Đồng nhất giá trị cực đại với giá trị lớn nhất toàn cục của hàm số.",
-    ],
-    socraticGuidance: [
-      "Hỏi: 'Khi đường thẳng y = m di chuyển từ dưới lên trên, tại những giá trị m nào thì nó cắt đồ thị tại đúng 3 điểm phân biệt?'",
-    ],
-  },
-  {
-    moduleId: "calculus",
-    stationId: "12.08",
-    topic: "Tổng Tích Phân Riemann & Thể Tích Khối Tròn Xoay",
-    grade: 12,
-    sgkSource: "SGK Toán 12 KNTT · Chương IV Bài 12 & 13 (Trang 18-28)",
-    coreConcepts: [
-      "Ý nghĩa hình học của tích phân: Diện tích hình thang cong giới hạn bởi đồ thị y = f(x), trục hoành và hai đường thẳng x = a, x = b.",
-      "Xấp xỉ Riemann: Chia đoạn [a, b] thành n đoạn nhỏ, tính tổng diện tích n hình chữ nhật.",
-    ],
-    keyFormulas: [
-      "$S = \\int_a^b |f(x)|\\,dx$",
-      "$V = \\pi \\int_a^b [f(x)]^2\\,dx$",
-    ],
-    commonMisconceptions: [
-      "Quên nhân hệ số pi trong công thức thể tích khối tròn xoay.",
-    ],
-    socraticGuidance: [
-      "Gợi ý: 'Khi em tăng thanh trượt n từ 5 lên 50, phần khoảng trống sai số giữa các cột chữ nhật và đường cong thay đổi như thế nào?'",
-    ],
-  },
-  {
-    moduleId: "probability",
-    stationId: "12.12",
-    topic: "Xác Suất Có Điều Kiện, Sơ Đồ Cây & Công Thức Bayes",
-    grade: 12,
-    sgkSource: "SGK Toán 12 KNTT · Chương VI Bài 18 & 19 (Trang 70-85)",
-    coreConcepts: [
-      "Xác suất có điều kiện: P(A|B) = P(A và B) / P(B) với P(B) > 0.",
-      "Công thức xác suất toàn phần: P(B) = sum P(A_i) * P(B|A_i).",
-      "Công thức Bayes: Cập nhật xác suất sau khi biết biến cố B đã xảy ra.",
-    ],
-    keyFormulas: [
-      "$P(A|B) = \\frac{P(A \\cap B)}{P(B)}$",
-      "$P(A_k|B) = \\frac{P(A_k) P(B|A_k)}{\\sum_{i=1}^n P(A_i) P(B|A_i)}$",
-    ],
-    commonMisconceptions: [
-      "Học sinh đánh đồng P(A|B) và P(B|A) (Nghịch lý công tố viên).",
-    ],
-    socraticGuidance: [
-      "Hỏi: 'Biết rằng viên bi rút ra màu Đỏ, điều này làm tăng hay giảm khả năng viên bi đó đến từ Hộp 1?'",
+      "Câu hỏi chiều quay (E01): 'Dấu âm của góc quy định chiều quay cùng chiều hay ngược chiều kim đồng hồ?'",
+      "Câu hỏi số đo (E02): 'Góc -765 độ và góc 315 độ có cùng vị trí điểm cuối, nhưng số vòng quay của chúng có giống nhau không?'",
+      "Câu hỏi mẫu số (E06): 'Tại góc pi/2 (90 độ), cosin bằng bao nhiêu? Trong biểu thức tan = sin/cos, mẫu số bằng 0 thì phép chia có xác định không?'",
+      "Câu hỏi biến đổi (E16): 'Trước khi chia cả hai vế cho sin x, em đã kiểm tra trường hợp sin x = 0 chưa? Nếu sin x = 0 thì phương trình ban đầu có thỏa mãn không?'",
     ],
   },
 ];
 
-/**
- * RAG Retriever: Tìm kiếm và trích xuất ngữ cảnh kiến thức SGK & Sư phạm phù hợp nhất
- */
+// Hàm tìm kiếm tri thức RAG theo ngữ cảnh module và câu hỏi học sinh
+export function queryMathRagKnowledge(query: string, moduleId?: string): MathKnowledgeChunk[] {
+  const normalizedQuery = query.toLowerCase();
+
+  return MATH_KNOWLEDGE_BASE.filter((chunk) => {
+    if (moduleId && chunk.moduleId !== moduleId) {
+      return false;
+    }
+
+    const matchTopic = chunk.topic.toLowerCase().includes(normalizedQuery);
+    const matchConcepts = chunk.coreConcepts.some((c) => c.toLowerCase().includes(normalizedQuery));
+    const matchErrors = chunk.commonMisconceptions.some((m) => m.toLowerCase().includes(normalizedQuery));
+
+    return matchTopic || matchConcepts || matchErrors || Boolean(moduleId);
+  });
+}
+
+// Hàm rút trích văn bản tri thức RAG đưa vào prompt phòng thủ Socratic AI
 export function retrieveMathKnowledge(
-  moduleId: string,
+  moduleId?: string,
   stationId?: string,
-  stepNumber?: number,
+  learningStage?: number,
   userQuery?: string
 ): string {
-  // 1. Tìm chunk khớp chính xác nhất với stationId hoặc moduleId
-  let matchedChunk = MATH_KNOWLEDGE_BASE.find(
-    (chunk) => (stationId && chunk.stationId === stationId) || chunk.moduleId === moduleId
-  );
-
-  // Nếu không khớp chính xác, fallback theo moduleId
-  if (!matchedChunk) {
-    matchedChunk = MATH_KNOWLEDGE_BASE.find((c) => c.moduleId === moduleId) || MATH_KNOWLEDGE_BASE[0];
+  const chunks = queryMathRagKnowledge(userQuery || "", moduleId);
+  if (!chunks || chunks.length === 0) {
+    return "Không tìm thấy trích đoạn tri thức riêng biệt; hãy tuân thủ nguyên tắc sư phạm gợi mở Socratic 3 tầng chuẩn GDPT 2018.";
   }
 
-  // 2. Tìm thông tin từ STATION_CATALOG
-  const stationInfo = STATION_CATALOG.find((s) => s.id === stationId);
-  const moduleInfo = CORE_7_MODULES.find((m) => m.id === moduleId);
-
-  // 3. Tiến trình 8 bước nhận thức của MathSTEP
-  const stepNames = [
-    "1. Nhìn thấy (Trực quan hóa hình ảnh)",
-    "2. Dự đoán (Hình thành phán đoán ban đầu)",
-    "3. Thao tác (Tương tác trực tiếp trên mô hình)",
-    "4. Khám phá (Chẩn đoán ngộ nhận & Bắt lỗi)",
-    "5. Kiểm chứng (Đối chiếu định lượng & Đại số)",
-    "6. Giải thích (Lập luận bán cấu trúc)",
-    "7. Chuyển giao (Vận dụng tương đồng)",
-    "8. Rèn luyện độc lập (Khắc sâu kiến thức)",
-  ];
-
-  const currentStepDesc = typeof stepNumber === "number" && stepNumber >= 0 && stepNumber < stepNames.length
-    ? stepNames[stepNumber]
-    : "Khám phá tự do";
-
-  const contextLines: string[] = [
-    `CHỦ ĐỀ & BÀI HỌC: ${matchedChunk.topic}`,
-    `NGUỒN HỌC LIỆU SGK: ${matchedChunk.sgkSource}`,
-    `TRẠM HỌC HIỆN TẠI: Trạm ${stationId || moduleInfo?.defaultStationId || "SGK"} - ${stationInfo?.title || matchedChunk.topic}`,
-    `TIẾN TRÌNH NHẬN THỨC 8 BƯỚC: ${currentStepDesc}`,
-    ...(matchedChunk.pedagogicalLayer ? [`NỀN TẢNG SƯ PHẠM (DUVAL/POLYA/NEWMAN): ${matchedChunk.pedagogicalLayer}`] : []),
-    ...(matchedChunk.newmanLevel ? [`TẦNG LỖI NEWMAN TIÊU ĐIỂM: ${matchedChunk.newmanLevel}`] : []),
-    ...(matchedChunk.evaluationStandards && matchedChunk.evaluationStandards.length > 0 ? [
-      `CHUẨN ĐÁNH GIÁ GDPT 2018 (BỘ GD&ĐT):`,
-      ...matchedChunk.evaluationStandards.map((s) => `  * ${s}`),
-    ] : []),
-    ...(userQuery && userQuery.trim() ? [`VẤN ĐỀ HỌC SINH ĐANG HỎI: ${userQuery.trim()}`] : []),
-    `KHÁI NIỆM TOÁN HỌC CỐT LÕI:`,
-    ...matchedChunk.coreConcepts.map((c) => `  - ${c}`),
-    `CÔNG THỨC TOÁN HỌC CHUẨN SGK:`,
-    ...matchedChunk.keyFormulas.map((f) => `  - ${f}`),
-    `MA TRẬN LỖI NHẬN THỨC CẦN CHẨN ĐOÁN (M01-M17 & E01-E10):`,
-    ...matchedChunk.commonMisconceptions.map((m) => `  - ${m}`),
-    `KỊCH BẢN CÂU HỎI GỢI MỞ SOCRATIC (PAUL & ELDER - TUYỆT ĐỐI KHÔNG DÙNG CÂU HỎI CÓ/KHÔNG):`,
-    ...matchedChunk.socraticGuidance.map((g) => `  - ${g}`),
-  ];
-
-  return contextLines.join("\n");
+  const selected = chunks.slice(0, 2);
+  return selected
+    .map(
+      (c) =>
+        `[TRI THỨC SGK CHUẨN - ${c.topic}]\n` +
+        `- Nguồn học liệu: ${c.sgkSource}\n` +
+        `- Khái niệm cốt lõi: ${c.coreConcepts.join("; ")}\n` +
+        `- Công thức toán học: ${c.keyFormulas.join("; ")}\n` +
+        `- Sai lầm thường gặp: ${c.commonMisconceptions.join("; ")}\n` +
+        `- Định hướng gợi mở Socratic: ${c.socraticGuidance.join("; ")}`
+    )
+    .join("\n\n");
 }

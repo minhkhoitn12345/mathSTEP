@@ -4,14 +4,15 @@ import React, { useState, useEffect, useCallback, Suspense, FormEvent } from "re
 import { useSearchParams } from "next/navigation";
 import { Header, SessionData } from "./components/optimath/Header";
 import { Hero } from "./components/optimath/Hero";
-import { ModuleCards, MODULES_CONFIG, ModuleData } from "./components/optimath/ModuleCards";
+import { ModuleCards } from "./components/optimath/ModuleCards";
 import { SingleInequalityLab } from "./components/optimath/SingleInequalityLab";
 import { SystemInequalityLab } from "./components/optimath/SystemInequalityLab/SystemInequalityLab";
 import { OptimizationLab } from "./components/optimath/OptimizationLab/OptimizationLab";
 import { PracticeLab } from "./components/optimath/PracticeLab/PracticeLab";
+import { SpatialGeometryLab } from "./components/spatial-geometry/SpatialGeometryLab";
+import { TrigonometryLab } from "./components/trigonometry/TrigonometryLab";
 import { KnowledgeBaseModal } from "./components/optimath/KnowledgeBaseModal";
 import { TeacherGuideModal } from "./components/optimath/TeacherGuideModal";
-import { UnderDevModal } from "./components/optimath/UnderDevModal";
 import { Footer } from "./components/optimath/Footer";
 import { OptiMascot } from "./components/optimath/mascot/OptiMascot";
 import SocraticChatDrawer, { ChatMessage } from "./components/SocraticChatDrawer";
@@ -19,19 +20,29 @@ import AccountSettingsModal, { CustomAiConfig } from "./components/AccountSettin
 import ChatHistoryModal from "./components/ChatHistoryModal";
 import { generateSmartSocraticResponse } from "./lib/smartSocratic";
 import { LearningMode } from "./types/math";
-import { Sparkles, Mail, Lock, User, AlertCircle, RefreshCw } from "lucide-react";
+import { Sparkles, Mail, Lock, User, AlertCircle, RefreshCw, Compass, Layers, Target, Award } from "lucide-react";
+
+type ActiveView =
+  | "home"
+  | "linear_programming"
+  | "spatial_geometry"
+  | "trigonometry"
+  | "lab"
+  | "system"
+  | "optimization"
+  | "quiz";
 
 function OptimathMainContent() {
   const searchParams = useSearchParams();
 
   // 1. Navigation state
-  const [currentView, setCurrentView] = useState<"home" | "lab" | "system" | "optimization" | "quiz">("home");
+  const [currentView, setCurrentView] = useState<ActiveView>("home");
   const [learningMode, setLearningMode] = useState<LearningMode>("guided");
+  const [lpSubTab, setLpSubTab] = useState<"single" | "system" | "optimization" | "practice">("single");
 
   // 2. Modals state
   const [isKnowledgeModalOpen, setIsKnowledgeModalOpen] = useState(false);
   const [isTeacherModalOpen, setIsTeacherModalOpen] = useState(false);
-  const [underDevModule, setUnderDevModule] = useState<ModuleData | null>(null);
 
   // 3. User session & auth state
   const [session, setSession] = useState<SessionData | null>(null);
@@ -60,7 +71,7 @@ function OptimathMainContent() {
       id: "opti-welcome-1",
       role: "assistant",
       content:
-        "Xin chào em! Thầy là **Trợ lý Opti Socratic** đồng hành cùng em trong phòng thí nghiệm Toán học **OPTIMATH LAB**.\n\nEm đang khám phá phần kiến thức nào (1 BPT, Hệ BPT hay Bài toán Tối ưu thực tế)? Có bước nào em còn băn khoăn cứ chia sẻ cùng thầy nhé!",
+        "Xin chào em! Thầy là **Trợ lý Socratic Opti** đồng hành cùng em trong hệ thống học liệu số **MATHSTEP** (3 Chuyên đề chuẩn GDPT 2018).\n\nEm đang khám phá Chuyên đề nào (1. BPT & Tối ưu, 2. Không gian 3D, hay 3. Lượng giác)? Cần thầy gợi ý bước nào cứ chia sẻ cùng thầy nhé!",
     },
   ]);
   const [chatInput, setChatInput] = useState("");
@@ -70,8 +81,16 @@ function OptimathMainContent() {
   // Check URL parameters for view routing
   useEffect(() => {
     const viewParam = searchParams.get("view");
-    if (viewParam === "lab" || viewParam === "system" || viewParam === "optimization" || viewParam === "quiz") {
-      setCurrentView(viewParam);
+    if (
+      viewParam === "linear_programming" ||
+      viewParam === "spatial_geometry" ||
+      viewParam === "trigonometry" ||
+      viewParam === "lab" ||
+      viewParam === "system" ||
+      viewParam === "optimization" ||
+      viewParam === "quiz"
+    ) {
+      setCurrentView(viewParam as ActiveView);
     }
   }, [searchParams]);
 
@@ -126,35 +145,43 @@ function OptimathMainContent() {
     if (modId === "home") {
       setCurrentView("home");
       window.scrollTo({ top: 0, behavior: "smooth" });
-    } else if (modId === "lab") {
+    } else if (modId === "linear_programming" || modId === "lab") {
       setLearningMode("guided");
-      setCurrentView("lab");
+      setCurrentView("linear_programming");
+      setLpSubTab("single");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (modId === "spatial_geometry") {
+      setLearningMode("guided");
+      setCurrentView("spatial_geometry");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (modId === "trigonometry") {
+      setLearningMode("guided");
+      setCurrentView("trigonometry");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "system") {
       setLearningMode("guided");
-      setCurrentView("system");
+      setCurrentView("linear_programming");
+      setLpSubTab("system");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "optimization") {
       setLearningMode("guided");
-      setCurrentView("optimization");
+      setCurrentView("linear_programming");
+      setLpSubTab("optimization");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "quiz") {
       setLearningMode("guided");
-      setCurrentView("quiz");
+      setCurrentView("linear_programming");
+      setLpSubTab("practice");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "knowledge") {
       setIsKnowledgeModalOpen(true);
-    } else {
-      const found = MODULES_CONFIG.find((m) => m.id === modId);
-      if (found) {
-        setUnderDevModule(found);
-      }
     }
   };
 
   const handleStartExplore = () => {
     setLearningMode("guided");
-    setCurrentView("lab");
+    setCurrentView("linear_programming");
+    setLpSubTab("single");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -165,15 +192,16 @@ function OptimathMainContent() {
   const handleLaunchTeacherLab = () => {
     setIsTeacherModalOpen(false);
     setLearningMode("teacher");
-    setCurrentView("lab");
+    setCurrentView("linear_programming");
+    setLpSubTab("single");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleGoToLabFromModal = () => {
     setIsKnowledgeModalOpen(false);
-    setUnderDevModule(null);
     setLearningMode("guided");
-    setCurrentView("lab");
+    setCurrentView("linear_programming");
+    setLpSubTab("single");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -236,14 +264,27 @@ function OptimathMainContent() {
     setChatMessages((prev) => [...prev, userMsg]);
     setChatBusy(true);
 
-    // Context from current module
-    const moduleContextMap: Record<string, string> = {
-      home: "Trang chủ OPTIMATH LAB - Khái quát về Bất phương trình & Quy hoạch tuyến tính",
-      lab: "Module 2: Một Bất Phương Trình Bậc Nhất Hai Ẩn (Quy trình 7 bước SGK, nửa mặt phẳng, điểm thử)",
-      system: "Module 3: Hệ Bất Phương Trình Bậc Nhất Hai Ẩn (Miền nghiệm đa giác, giao điểm, các đỉnh)",
-      optimization: "Module 4: Mô hình hoá & Tối ưu bài toán thực tế (Xưởng mộc, hàm mục tiêu F(x,y))",
-      quiz: "Module 5: Luyện tập, Chẩn đoán 10 mã lỗi nhận thức E01-E10 & M01-M17",
+    // Context from current active module
+    const moduleContextMap: Record<string, { module: string; topic: string }> = {
+      home: {
+        module: "linear_programming",
+        topic: "Tổng quan 3 Chuyên đề MathSTEP: 1. BPT & Tối ưu, 2. Không gian 3D, 3. Lượng giác",
+      },
+      linear_programming: {
+        module: "linear_programming",
+        topic: "Chuyên đề 1: Bất phương trình & Quy hoạch tuyến tính (Toán 10, Bài toán xưởng mộc, M01-M17)",
+      },
+      spatial_geometry: {
+        module: "spatial_geometry",
+        topic: "Chuyên đề 2: Dựng hình & Quan hệ Hình học không gian 3D (Toán 11, SG-M2-01, chóp S.ABCD, SG01-SG16)",
+      },
+      trigonometry: {
+        module: "trigonometry",
+        topic: "Chuyên đề 3: Khảo sát quan hệ Lượng giác tương tác (Toán 11, LG-MH01-MH05, alpha = -765 deg, E01-E16)",
+      },
     };
+
+    const curContext = moduleContextMap[currentView] || moduleContextMap.linear_programming;
 
     try {
       const res = await fetch("/api/chat", {
@@ -254,7 +295,8 @@ function OptimathMainContent() {
           message: textToSend,
           mode: "guided_learning",
           learning_context: {
-            module: moduleContextMap[currentView] || "linear_programming",
+            module: curContext.module,
+            topic: curContext.topic,
             currentView,
             learning_stage: "explore",
           },
@@ -277,7 +319,7 @@ function OptimathMainContent() {
         setChatMessages((prev) => [...prev, botReply]);
       } else {
         // Offline / Socratic Fallback Engine
-        const fallback = generateSmartSocraticResponse(textToSend, "linear_programming", "explore", 1);
+        const fallback = generateSmartSocraticResponse(textToSend, curContext.module, "explore", 1);
         setChatMessages((prev) => [
           ...prev,
           {
@@ -291,7 +333,7 @@ function OptimathMainContent() {
         ]);
       }
     } catch {
-      const fallback = generateSmartSocraticResponse(textToSend, "linear_programming", "explore", 1);
+      const fallback = generateSmartSocraticResponse(textToSend, curContext.module, "explore", 1);
       setChatMessages((prev) => [
         ...prev,
         {
@@ -335,33 +377,123 @@ function OptimathMainContent() {
             {/* Hero Section */}
             <Hero onStartExplore={handleStartExplore} onOpenTeacherGuide={handleOpenTeacherGuide} />
 
-            {/* 5 Modules Navigation */}
+            {/* 3 Core Research Modules Cards */}
             <ModuleCards onSelectModule={handleSelectModule} />
           </>
-        ) : currentView === "lab" ? (
-          /* Module 2: Một Bất Phương Trình (Quy trình 7 bước) */
-          <SingleInequalityLab
-            initialLearningMode={learningMode}
+        ) : currentView === "spatial_geometry" ? (
+          /* =========================================================================
+             MODULE 2: HÌNH HỌC KHÔNG GIAN 3D (CHUYÊN ĐỀ 2)
+             ========================================================================= */
+          <SpatialGeometryLab
             onBackToHome={() => setCurrentView("home")}
+            onOpenSocraticDrawer={(contextMsg) => {
+              setChatDrawerOpen(true);
+              if (contextMsg) {
+                void handleSendMessage(contextMsg);
+              }
+            }}
           />
-        ) : currentView === "system" ? (
-          /* Module 3: Hệ Bất Phương Trình (Đa giác & Đỉnh) */
-          <SystemInequalityLab
-            initialLearningMode={learningMode}
+        ) : currentView === "trigonometry" ? (
+          /* =========================================================================
+             MODULE 3: LƯỢNG GIÁC TƯƠNG TÁC (CHUYÊN ĐỀ 3)
+             ========================================================================= */
+          <TrigonometryLab
             onBackToHome={() => setCurrentView("home")}
-          />
-        ) : currentView === "optimization" ? (
-          /* Module 4: Mô hình hoá & Tối ưu tuyến tính */
-          <OptimizationLab
-            initialLearningMode={learningMode}
-            onBackToHome={() => setCurrentView("home")}
+            onOpenSocraticDrawer={(contextMsg) => {
+              setChatDrawerOpen(true);
+              if (contextMsg) {
+                void handleSendMessage(contextMsg);
+              }
+            }}
           />
         ) : (
-          /* Module 5: Luyện tập & Chẩn đoán lỗi E01-E10 & M01-M17 */
-          <PracticeLab
-            initialLearningMode={learningMode}
-            onBackToHome={() => setCurrentView("home")}
-          />
+          /* =========================================================================
+             MODULE 1: BẤT PHƯƠNG TRÌNH & QUY HOẠCH TUYẾN TÍNH (CHUYÊN ĐỀ 1)
+             ========================================================================= */
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4">
+            {/* Module 1 Sub-Tab Switcher */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-blue-100 text-blue-800 uppercase tracking-wider">
+                  CHUYÊN ĐỀ 1
+                </span>
+                <span className="text-xs text-slate-500 font-medium">Toán 10 · BPT & Tối Ưu</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => setLpSubTab("single")}
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
+                    lpSubTab === "single"
+                      ? "bg-white text-blue-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <Compass className="w-3.5 h-3.5" />
+                  <span>Bài 1 & 2: 1 BPT (7 Bước)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLpSubTab("system")}
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
+                    lpSubTab === "system"
+                      ? "bg-white text-amber-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>Bài 3: Hệ BPT (Đa giác)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLpSubTab("optimization")}
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
+                    lpSubTab === "optimization"
+                      ? "bg-white text-purple-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <Target className="w-3.5 h-3.5" />
+                  <span>Bài 4: Tối Ưu Xưởng Mộc</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLpSubTab("practice")}
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer ${
+                    lpSubTab === "practice"
+                      ? "bg-white text-indigo-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <Award className="w-3.5 h-3.5" />
+                  <span>Bài 5: Luyện Tập & Lỗi M01-M17</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Sub-Tab Contents */}
+            {lpSubTab === "single" ? (
+              <SingleInequalityLab
+                initialLearningMode={learningMode}
+                onBackToHome={() => setCurrentView("home")}
+              />
+            ) : lpSubTab === "system" ? (
+              <SystemInequalityLab
+                initialLearningMode={learningMode}
+                onBackToHome={() => setCurrentView("home")}
+              />
+            ) : lpSubTab === "optimization" ? (
+              <OptimizationLab
+                initialLearningMode={learningMode}
+                onBackToHome={() => setCurrentView("home")}
+              />
+            ) : (
+              <PracticeLab
+                initialLearningMode={learningMode}
+                onBackToHome={() => setCurrentView("home")}
+              />
+            )}
+          </div>
         )}
       </main>
 
@@ -394,15 +526,11 @@ function OptimathMainContent() {
         onSendMessage={handleSendMessage}
         sessionName={session?.name}
         moduleTitle={
-          currentView === "lab"
-            ? "Module 2: Một BPT (7 Bước)"
-            : currentView === "system"
-            ? "Module 3: Hệ BPT (Đa giác)"
-            : currentView === "optimization"
-            ? "Module 4: Tối Ưu Tuyến Tính"
-            : currentView === "quiz"
-            ? "Module 5: Luyện Tập & Chẩn Đoán Lỗi"
-            : "Tổng quan OPTIMATH LAB"
+          currentView === "spatial_geometry"
+            ? "Chuyên đề 2: Hình học không gian 3D (SG01-SG16)"
+            : currentView === "trigonometry"
+            ? "Chuyên đề 3: Lượng giác tương tác (E01-E16)"
+            : "Chuyên đề 1: BPT & Tối ưu (M01-M17)"
         }
       />
 
@@ -417,13 +545,6 @@ function OptimathMainContent() {
         isOpen={isTeacherModalOpen}
         onClose={() => setIsTeacherModalOpen(false)}
         onOpenTeacherLab={handleLaunchTeacherLab}
-      />
-
-      <UnderDevModal
-        module={underDevModule}
-        isOpen={!!underDevModule}
-        onClose={() => setUnderDevModule(null)}
-        onGoToLab={handleGoToLabFromModal}
       />
 
       <AccountSettingsModal
@@ -459,7 +580,7 @@ function OptimathMainContent() {
             <div className="flex justify-between items-center pb-3 border-b border-slate-100">
               <div>
                 <span className="text-[10px] font-mono font-bold text-blue-600 uppercase tracking-wider">
-                  OPTIMATH TÀI KHOẢN
+                  MATHSTEP TÀI KHOẢN
                 </span>
                 <h3 className="text-base font-bold text-slate-900">
                   {authMode === "login"
@@ -629,7 +750,7 @@ export default function Home() {
         <div className="min-h-screen flex items-center justify-center bg-slate-50">
           <div className="flex flex-col items-center gap-3">
             <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs font-semibold text-slate-600">Đang khởi tạo OPTIMATH LAB...</p>
+            <p className="text-xs font-semibold text-slate-600">Đang khởi tạo MATHSTEP 3 Chuyên đề...</p>
           </div>
         </div>
       }
