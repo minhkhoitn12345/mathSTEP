@@ -633,58 +633,58 @@ function DynamicPyramidMeshAndEdges({
 
   return (
     <group>
-      {/* 1. Các mặt kính mờ Frosted Glassmorphism */}
+      {/* Matte faces keep the pyramid readable while the edge layer explains visibility. */}
       <mesh geometry={faceGeometries.baseGeo}>
         <meshPhysicalMaterial
-          transmission={0.65}
-          roughness={0.2}
-          opacity={0.35}
+          transmission={0}
+          roughness={0.82}
+          opacity={0.3}
           transparent={true}
-          color="#0d9488"
+          color="#67e8f9"
           side={THREE.DoubleSide}
           depthWrite={false}
         />
       </mesh>
       <mesh geometry={faceGeometries.sabGeo}>
         <meshPhysicalMaterial
-          transmission={0.6}
-          roughness={0.2}
-          opacity={0.4}
+          transmission={0}
+          roughness={0.82}
+          opacity={0.38}
           transparent={true}
-          color="#06b6d4"
+          color="#6ee7b7"
           side={THREE.DoubleSide}
           depthWrite={false}
         />
       </mesh>
       <mesh geometry={faceGeometries.sbcGeo}>
         <meshPhysicalMaterial
-          transmission={0.6}
-          roughness={0.2}
-          opacity={0.4}
+          transmission={0}
+          roughness={0.82}
+          opacity={0.38}
           transparent={true}
-          color="#14b8a6"
+          color="#7dd3fc"
           side={THREE.DoubleSide}
           depthWrite={false}
         />
       </mesh>
       <mesh geometry={faceGeometries.scdGeo}>
         <meshPhysicalMaterial
-          transmission={0.6}
-          roughness={0.2}
-          opacity={0.4}
+          transmission={0}
+          roughness={0.82}
+          opacity={0.38}
           transparent={true}
-          color="#0284c7"
+          color="#c4b5fd"
           side={THREE.DoubleSide}
           depthWrite={false}
         />
       </mesh>
       <mesh geometry={faceGeometries.sdaGeo}>
         <meshPhysicalMaterial
-          transmission={0.6}
-          roughness={0.2}
-          opacity={0.4}
+          transmission={0}
+          roughness={0.82}
+          opacity={0.38}
           transparent={true}
-          color="#0d9488"
+          color="#fde68a"
           side={THREE.DoubleSide}
           depthWrite={false}
         />

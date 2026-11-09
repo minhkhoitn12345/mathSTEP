@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import type { DetailedLessonContent } from "../../types/learningPath";
-import { DIFFICULTY_QUIZ_DATA } from "../../data/difficultyQuizData";
+import { DIFFICULTY_QUIZ_DATA, sampleLessonQuiz, sampleLessonQuizLevel } from "../../data/difficultyQuizData";
 import { LEARNER_FRIENDLY_EXPLANATIONS } from "../../data/learnerFriendlyExplanations";
 import KatexMath, { MathFormattedText } from "../KatexMath";
 import {
@@ -77,6 +77,7 @@ export function LessonStudyScreen({
   const [showCheckpointHints, setShowCheckpointHints] = useState<Record<string, boolean>>({});
 
   // Review Quiz state: questionId -> selectedOptionId
+  const [sampledQuizItems, setSampledQuizItems] = useState(() => sampleLessonQuiz(content.lessonId, () => 0));
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [quizSubmitted, setQuizSubmitted] = useState<boolean>(false);
   const [activeQuizLevel, setActiveQuizLevel] = useState<"basic" | "intermediate" | "advanced">(() =>
@@ -86,6 +87,7 @@ export function LessonStudyScreen({
   const [activeWorkedStepIndex, setActiveWorkedStepIndex] = useState(0);
   const [workedHintLevel, setWorkedHintLevel] = useState(0);
   const [workedStepChecked, setWorkedStepChecked] = useState(false);
+  const [workedStepAttempt, setWorkedStepAttempt] = useState("");
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showCompletionCelebration, setShowCompletionCelebration] = useState(false);
   const [alreadyCompletedAtFinish, setAlreadyCompletedAtFinish] = useState(false);
@@ -110,10 +112,20 @@ export function LessonStudyScreen({
     }
   }, []);
 
-  const quizItems = useMemo(() => [
-    ...(DIFFICULTY_QUIZ_DATA[content.lessonId] ?? []),
-    ...content.reviewQuiz.map((item) => ({ ...item, level: item.level ?? "intermediate" as const })),
-  ], [content.lessonId, content.reviewQuiz]);
+  useEffect(() => {
+    // Keep server and initial client markup deterministic, then draw a fresh set after hydration.
+    setSampledQuizItems(sampleLessonQuiz(content.lessonId));
+    setQuizAnswers({});
+    setPassedQuizLevels({});
+    setQuizSubmitted(false);
+    setActiveQuizLevel("basic");
+  }, [content.lessonId]);
+
+  const quizItems = useMemo(() => {
+    const authoredTierQuestions = DIFFICULTY_QUIZ_DATA[content.lessonId] ?? [];
+    if (authoredTierQuestions.length > 0) return sampledQuizItems;
+    return content.reviewQuiz.map((item) => ({ ...item, level: item.level ?? "intermediate" as const }));
+  }, [content.lessonId, content.reviewQuiz, sampledQuizItems]);
   const quizLevels = useMemo(
     () => (["basic", "intermediate", "advanced"] as const).filter((level) => quizItems.some((item) => item.level === level)),
     [quizItems]
@@ -157,6 +169,7 @@ export function LessonStudyScreen({
     setActiveWorkedStepIndex((index) => Math.min(index + 1, content.workedExample.steps.length));
     setWorkedHintLevel(0);
     setWorkedStepChecked(false);
+    setWorkedStepAttempt("");
   };
 
   // Handle checkpoint option selection
@@ -177,7 +190,7 @@ export function LessonStudyScreen({
   const handleSubmitQuizLevel = () => {
     setQuizSubmitted(true);
     const allAnswersCorrect = activeQuizItems.every((q) => quizAnswers[q.id] === q.options.find((option) => option.isCorrect)?.id);
-    const passed = content.moduleId === "linear_programming" || allAnswersCorrect;
+    const passed = allAnswersCorrect;
     if (passed) {
       setPassedQuizLevels((previous) => ({ ...previous, [activeQuizLevel]: true }));
       if (allAnswersCorrect) playAchievementSound(soundEnabled);
@@ -208,11 +221,16 @@ export function LessonStudyScreen({
   };
 
   const handleRetryQuizLevel = () => {
+    const replacementQuestions = sampleLessonQuizLevel(content.lessonId, activeQuizLevel);
     setQuizAnswers((previous) => {
       const next = { ...previous };
       activeQuizItems.forEach((q) => delete next[q.id]);
       return next;
     });
+    setSampledQuizItems((previous) => [
+      ...previous.filter((item) => item.level !== activeQuizLevel),
+      ...replacementQuestions,
+    ]);
     setQuizSubmitted(false);
   };
 
@@ -517,6 +535,18 @@ export function LessonStudyScreen({
                   </div>
                 </div>
 
+                <label className="mt-4 block space-y-1.5">
+                  <span className="text-xs font-extrabold text-slate-800">Bài làm của em ở bước này</span>
+                  <textarea
+                    value={workedStepAttempt}
+                    onChange={(event) => setWorkedStepAttempt(event.target.value)}
+                    disabled={workedStepChecked}
+                    rows={3}
+                    placeholder="Viết phép tính, lập luận hoặc kết quả em tự tìm được..."
+                    className="w-full resize-y rounded-xl border border-slate-300 bg-white p-3 text-sm leading-relaxed text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 disabled:bg-slate-50"
+                  />
+                </label>
+
                 {workedHintLevel > 0 && (
                   <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-xs leading-relaxed text-indigo-950">
                     <div className="mb-1 flex items-center gap-1.5 font-extrabold">
@@ -534,13 +564,15 @@ export function LessonStudyScreen({
 
                 {workedStepChecked && (
                   <div className="mt-4 space-y-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs leading-relaxed text-emerald-950">
+                    <p><strong>Em đã viết:</strong> <span className="whitespace-pre-wrap">{workedStepAttempt}</span></p>
+                    <p className="font-semibold">So sánh bài làm của em với lời giải mẫu bên dưới. Hãy tự xác định bước nào đã đúng và chỗ nào cần sửa.</p>
                     {activeWorkedStep.mathExpression && (
                       <div className="overflow-x-auto rounded-lg bg-white p-2 font-mono text-blue-900">
                         <MathFormattedText text={`$$${activeWorkedStep.mathExpression}$$`} />
                       </div>
                     )}
                     <p><MathFormattedText text={activeWorkedStep.explanation} /></p>
-                    <p className="border-t border-emerald-200 pt-2"><strong>Vì sao làm bước này?</strong> {activeWorkedStep.rationale}</p>
+                    <p className="border-t border-emerald-200 pt-2"><strong>Vì sao làm bước này?</strong> <MathFormattedText text={activeWorkedStep.rationale} /></p>
                   </div>
                 )}
 
@@ -550,8 +582,8 @@ export function LessonStudyScreen({
                       <button type="button" onClick={handleShowNextWorkedHint} disabled={workedHintLevel >= 3} className="rounded-xl border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 transition-colors hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50">
                         {workedHintLevel >= 3 ? "Đã xem hết gợi ý" : workedHintLevel === 0 ? "Mở gợi ý" : "Gợi ý tiếp theo"}
                       </button>
-                      <button type="button" onClick={() => setWorkedStepChecked(true)} className="rounded-xl bg-purple-600 px-3 py-2 text-xs font-extrabold text-white transition-colors hover:bg-purple-700">
-                        Đối chiếu bước này
+                      <button type="button" onClick={() => setWorkedStepChecked(true)} disabled={!workedStepAttempt.trim()} className="rounded-xl bg-purple-600 px-3 py-2 text-xs font-extrabold text-white transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-45">
+                        Đối chiếu bài làm
                       </button>
                     </>
                   ) : (
@@ -652,7 +684,7 @@ export function LessonStudyScreen({
                     {/* Hint reveal */}
                     {showHint && (
                       <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs font-medium">
-                        💡 <strong>Gợi ý:</strong> {cp.socraticHint}
+                        <Lightbulb className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> <strong>Gợi ý:</strong> <MathFormattedText text={cp.socraticHint} />
                       </div>
                     )}
 
@@ -667,11 +699,11 @@ export function LessonStudyScreen({
                       >
                         {isSelectedCorrect ? (
                           <>
-                            <strong>Chính xác!</strong> {cp.explanationCorrect}
+                            <strong>Chính xác!</strong> <MathFormattedText text={cp.explanationCorrect} />
                           </>
                         ) : (
                           <>
-                            <strong>Chưa chính xác:</strong> {cp.explanationIncorrect}
+                            <strong>Chưa chính xác:</strong> <MathFormattedText text={cp.explanationIncorrect} />
                           </>
                         )}
                       </div>
@@ -772,11 +804,11 @@ export function LessonStudyScreen({
                       >
                         {isCorrect ? (
                           <>
-                            <strong>Giải thích:</strong> {q.explanationCorrect}
+                            <strong>Giải thích:</strong> <MathFormattedText text={q.explanationCorrect} />
                           </>
                         ) : (
                           <>
-                            <strong>Chưa đúng:</strong> {q.explanationIncorrect}
+                            <strong>Chưa đúng:</strong> <MathFormattedText text={q.explanationIncorrect} />
                             {q.errorTag && (
                               <span className="ml-2 font-mono text-[10px] px-1.5 py-0.5 rounded bg-rose-200/80 text-rose-900">
                                 Mã lỗi: {q.errorTag}

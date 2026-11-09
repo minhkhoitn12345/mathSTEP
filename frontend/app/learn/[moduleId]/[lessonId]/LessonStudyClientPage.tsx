@@ -15,6 +15,8 @@ import SocraticChatDrawer, { ChatMessage } from "@/app/components/SocraticChatDr
 import { generateSmartSocraticResponse } from "@/app/lib/smartSocratic";
 import { CORE_3_MODULES } from "@/app/types/curriculum";
 import { getLessonDetailedContent } from "@/app/data/learningPathData";
+import { SpatialGeometryLab } from "@/app/components/spatial-geometry/SpatialGeometryLab";
+import { TrigonometryLab } from "@/app/components/trigonometry/TrigonometryLab";
 import {
   hasCompletedLessonTheory,
   loadUserLearningProgress,
@@ -62,6 +64,21 @@ export default function LessonStudyClientPage({
     loadUserLearningProgress()
   );
   const [practiceAccessLessonId, setPracticeAccessLessonId] = useState<string | null>(null);
+  const [simulationOpen, setSimulationOpen] = useState(false);
+
+  useEffect(() => {
+    if (!simulationOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSimulationOpen(false);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [simulationOpen]);
 
   useEffect(() => {
     if (stage !== "practice" || !isValidLesson) return;
@@ -184,12 +201,12 @@ export default function LessonStudyClientPage({
 
   // Open simulation lab handler
   const handleOpenSimulation = (modId: string, lId: string) => {
-    // Navigate to home page with lab view and returnTo parameter
-    const lessonUrl = stage === "practice"
-      ? `/learn/${modId}/${lId}/practice`
-      : `/learn/${modId}/${lId}`;
-    const returnUrl = encodeURIComponent(lessonUrl);
-    router.push(`/?view=${modId}&lesson=${lId}&returnTo=${returnUrl}`);
+    if (modId === moduleId && lId === lessonId && (modId === "spatial_geometry" || modId === "trigonometry")) {
+      setSimulationOpen(true);
+      return;
+    }
+    const lessonUrl = stage === "practice" ? `/learn/${modId}/${lId}/practice` : `/learn/${modId}/${lId}`;
+    router.push(`/?view=${modId}&lesson=${lId}&returnTo=${encodeURIComponent(lessonUrl)}`);
   };
 
   // Chat message send handler
@@ -463,6 +480,33 @@ export default function LessonStudyClientPage({
         )}
       </main>
 
+      {simulationOpen && lessonContent && (
+        <div className="fixed inset-0 z-[70] bg-slate-950/75 p-2 backdrop-blur-sm sm:p-5" role="dialog" aria-modal="true" aria-label={`Mô phỏng bài ${lessonContent.title}`}>
+          <section className="mx-auto flex h-full max-w-[1500px] flex-col overflow-hidden rounded-2xl bg-slate-50 shadow-2xl sm:rounded-3xl">
+            <header className="z-10 flex shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
+              <button type="button" onClick={() => setSimulationOpen(false)} className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-100" aria-label="Quay lại bài học">
+                <ArrowLeft className="h-4 w-4" /> <span className="hidden sm:inline">Quay lại bài học</span><span className="sm:hidden">Quay lại</span>
+              </button>
+              <div className="min-w-0">
+                <p className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700">Mô phỏng gắn với bài học · {lessonContent.code}</p>
+                <h2 className="truncate text-sm font-black text-slate-900 sm:text-base">{lessonContent.title}</h2>
+                <p className="hidden truncate text-xs text-slate-500 sm:block">Hãy thao tác trên hình để kiểm chứng ý tưởng, rồi quay lại tiếp tục bước giải đang học.</p>
+              </div>
+              <button type="button" onClick={() => { setSimulationOpen(false); setChatDrawerOpen(true); }} className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-purple-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-purple-700">
+                <Sparkles className="h-3.5 w-3.5" /><span className="hidden sm:inline">Hỏi Opti</span>
+              </button>
+            </header>
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              {moduleId === "spatial_geometry" ? (
+                <SpatialGeometryLab embedded initialLessonIndex={Math.max(0, (lessonContent.order || 1) - 1)} onBackToHome={() => setSimulationOpen(false)} onOpenSocraticDrawer={(context) => { setSimulationOpen(false); setChatDrawerOpen(true); if (context) setChatInput(context); }} />
+              ) : moduleId === "trigonometry" ? (
+                <TrigonometryLab embedded initialLessonIndex={Math.max(0, (lessonContent.order || 1) - 1)} onBackToHome={() => setSimulationOpen(false)} onOpenSocraticDrawer={(context) => { setSimulationOpen(false); setChatDrawerOpen(true); if (context) setChatInput(context); }} />
+              ) : null}
+            </div>
+          </section>
+        </div>
+      )}
+
       {/* 4. Socratic Chat Drawer */}
       <SocraticChatDrawer
         isOpen={chatDrawerOpen}
@@ -490,9 +534,9 @@ export default function LessonStudyClientPage({
       <KnowledgeBaseModal
         isOpen={isKnowledgeModalOpen}
         onClose={() => setIsKnowledgeModalOpen(false)}
-        onGoToLab={() => {
+        onGoToLab={(documentModuleId, documentLessonId) => {
           setIsKnowledgeModalOpen(false);
-          handleOpenSimulation(moduleId, lessonId);
+          handleOpenSimulation(documentModuleId, documentLessonId);
         }}
       />
 

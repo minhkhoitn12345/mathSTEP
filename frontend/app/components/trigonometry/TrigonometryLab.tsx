@@ -18,12 +18,14 @@ interface TrigonometryLabProps {
   onBackToHome?: () => void;
   onOpenSocraticDrawer?: (contextMessage?: string) => void;
   initialLessonIndex?: number;
+  embedded?: boolean;
 }
 
 export function TrigonometryLab({
   onBackToHome,
   onOpenSocraticDrawer,
   initialLessonIndex = 0,
+  embedded = false,
 }: TrigonometryLabProps) {
   const moduleConfig = CORE_3_MODULES[2]; // Module 3
   const [selectedLessonIndex, setSelectedLessonIndex] = useState(initialLessonIndex);
@@ -232,9 +234,9 @@ export function TrigonometryLab({
   const eqCircleIntersectX2 = cX - cR * Math.sqrt(Math.max(0, 1 - eqM * eqM));
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-6">
+    <div className={`max-w-7xl mx-auto px-3 sm:px-6 ${embedded ? "py-3 sm:py-4 space-y-4" : "py-4 sm:py-6 space-y-6"}`}>
       {/* 1. TOP HEADER & BREADCRUMB */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
+      {!embedded && <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
         <div className="flex items-center gap-2.5">
           {onBackToHome && (
             <button
@@ -274,10 +276,10 @@ export function TrigonometryLab({
             <span>Hỏi Opti về lượng giác</span>
           </button>
         )}
-      </div>
+      </div>}
 
       {/* 2. PROGRESSIVE LESSON SELECTOR TABS */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+      {!embedded && <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
         {moduleConfig.lessons.map((lesson, idx) => (
           <button
             key={lesson.id}
@@ -325,7 +327,14 @@ export function TrigonometryLab({
             </div>
           </button>
         ))}
-      </div>
+      </div>}
+
+      {embedded && (
+        <div className="flex items-start gap-3 rounded-2xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm">
+          <span className="mt-0.5 rounded-lg bg-purple-700 px-2 py-1 text-[10px] font-black text-white">QUAN SÁT</span>
+          <div><p className="font-bold text-purple-950">{currentLesson.title}</p><p className="mt-0.5 text-xs leading-relaxed text-purple-900">{currentLesson.steps[0]?.instruction || currentLesson.description} Thử thay đổi góc hoặc tham số bên dưới để xem đại lượng trên hình thay đổi như thế nào.</p></div>
+        </div>
+      )}
 
       {/* 3. SPLIT WORKBENCH: UNIT CIRCLE (LEFT) + WAVE GRAPH (RIGHT) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

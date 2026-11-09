@@ -21,12 +21,14 @@ interface SpatialGeometryLabProps {
   onBackToHome?: () => void;
   onOpenSocraticDrawer?: (contextMessage?: string) => void;
   initialLessonIndex?: number;
+  embedded?: boolean;
 }
 
 export function SpatialGeometryLab({
   onBackToHome,
   onOpenSocraticDrawer,
   initialLessonIndex = 0,
+  embedded = false,
 }: SpatialGeometryLabProps) {
   const moduleConfig = CORE_3_MODULES[1]; // Module 2
   const [selectedLessonIndex, setSelectedLessonIndex] = useState(initialLessonIndex);
@@ -167,16 +169,59 @@ export function SpatialGeometryLab({
   const pCutQ = project3D(cutQ);
   const pCutR = project3D(cutR);
 
-  // Hidden edge deduction based on viewing angle
+  // Classify a face by its outward normal after applying the same rotations as the drawing.
+  // The SVG camera looks toward the object along +z after projection.
+  const isFaceVisible = (p1: number[], p2: number[], p3: number[], faceCenter: number[]) => {
+    const cross = (u: number[], v: number[]) => [
+      u[1] * v[2] - u[2] * v[1],
+      u[2] * v[0] - u[0] * v[2],
+      u[0] * v[1] - u[1] * v[0],
+    ];
+    const sub = (u: number[], v: number[]) => [u[0] - v[0], u[1] - v[1], u[2] - v[2]];
+    let normal = cross(sub(p2, p1), sub(p3, p1));
+    const solidCenter = [(baseA[0] + baseB[0] + baseC[0] + baseD[0] + apexS[0]) / 5,
+      (baseA[1] + baseB[1] + baseC[1] + baseD[1] + apexS[1]) / 5,
+      apexS[2] / 5];
+    if (normal[0] * (faceCenter[0] - solidCenter[0]) + normal[1] * (faceCenter[1] - solidCenter[1]) + normal[2] * (faceCenter[2] - solidCenter[2]) < 0) {
+      normal = normal.map((value) => -value);
+    }
+    const radX = (rotX * Math.PI) / 180;
+    const radY = (rotY * Math.PI) / 180;
+    const x1 = normal[0] * Math.cos(radY) + normal[2] * Math.sin(radY);
+    const y1 = normal[1];
+    const z1 = -normal[0] * Math.sin(radY) + normal[2] * Math.cos(radY);
+    const z2 = y1 * Math.sin(radX) + z1 * Math.cos(radX);
+    return z2 > 1e-7;
+  };
+
+  const midpoint3D = (p: number[], q: number[], r: number[]) => [
+    (p[0] + q[0] + r[0]) / 3,
+    (p[1] + q[1] + r[1]) / 3,
+    (p[2] + q[2] + r[2]) / 3,
+  ];
+  const faceVisibility = {
+    base: isFaceVisible(baseA, baseB, baseC, centerO),
+    SAB: isFaceVisible(baseA, baseB, apexS, midpoint3D(baseA, baseB, apexS)),
+    SBC: isFaceVisible(baseB, baseC, apexS, midpoint3D(baseB, baseC, apexS)),
+    SCD: isFaceVisible(baseC, baseD, apexS, midpoint3D(baseC, baseD, apexS)),
+    SDA: isFaceVisible(baseD, baseA, apexS, midpoint3D(baseD, baseA, apexS)),
+  };
+
+  // An edge is hidden only when both faces meeting at it face away from the learner.
   const isHiddenEdge = (name1: string, name2: string) => {
     if (transparentMode) return false;
-    const normalizedRotY = ((rotY % 360) + 360) % 360;
-    if (normalizedRotY >= 0 && normalizedRotY < 180) {
-      if ((name1 === "A" && name2 === "D") || (name1 === "D" && name2 === "A")) return true;
-      if ((name1 === "S" && name2 === "A") || (name1 === "A" && name2 === "S")) return true;
-      if ((name1 === "A" && name2 === "B") || (name1 === "B" && name2 === "A")) return true;
-    }
-    return false;
+    const key = [name1, name2].sort().join("");
+    const adjacentFaces: Record<string, boolean[]> = {
+      AB: [faceVisibility.base, faceVisibility.SAB],
+      BC: [faceVisibility.base, faceVisibility.SBC],
+      CD: [faceVisibility.base, faceVisibility.SCD],
+      AD: [faceVisibility.base, faceVisibility.SDA],
+      SA: [faceVisibility.SAB, faceVisibility.SDA],
+      SB: [faceVisibility.SAB, faceVisibility.SBC],
+      SC: [faceVisibility.SBC, faceVisibility.SCD],
+      SD: [faceVisibility.SCD, faceVisibility.SDA],
+    };
+    return (adjacentFaces[key] || []).every((visible) => !visible);
   };
 
   // Lesson 5 Unfolded vertices (Revolving lateral faces around base edges onto z=0)
@@ -252,9 +297,9 @@ export function SpatialGeometryLab({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-6">
+    <div className={`max-w-7xl mx-auto px-3 sm:px-6 ${embedded ? "py-3 sm:py-4 space-y-4" : "py-4 sm:py-6 space-y-6"}`}>
       {/* 1. TOP HEADER & BREADCRUMB */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
+      {!embedded && <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
         <div className="flex items-center gap-2.5">
           {onBackToHome && (
             <button
@@ -294,10 +339,10 @@ export function SpatialGeometryLab({
             <span>Hỏi Opti về hình này</span>
           </button>
         )}
-      </div>
+      </div>}
 
       {/* 2. PROGRESSIVE LESSON SELECTOR TABS */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+      {!embedded && <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
         {moduleConfig.lessons.map((lesson, idx) => (
           <button
             key={lesson.id}
@@ -347,7 +392,14 @@ export function SpatialGeometryLab({
             </div>
           </button>
         ))}
-      </div>
+      </div>}
+
+      {embedded && (
+        <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm">
+          <span className="mt-0.5 rounded-lg bg-emerald-600 px-2 py-1 text-[10px] font-black text-white">QUAN SÁT</span>
+          <div><p className="font-bold text-emerald-950">{currentLesson.title}</p><p className="mt-0.5 text-xs leading-relaxed text-emerald-900">{currentLesson.steps[0]?.instruction || currentLesson.description} Kéo hình để đổi góc nhìn và theo dõi cạnh nào đang bị mặt khác che.</p></div>
+        </div>
+      )}
 
       {/* 3. MAIN WORKBENCH: 3D CANVAS & CONTROLS */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -499,10 +551,14 @@ export function SpatialGeometryLab({
               <polygon
                 points={`${pA.x},${pA.y} ${pB.x},${pB.y} ${pC.x},${pC.y} ${pD.x},${pD.y}`}
                 fill="url(#baseGrad)"
-                stroke="#60A5FA"
-                strokeWidth="1.5"
-                strokeDasharray={isHiddenEdge("A", "D") ? "4,4" : undefined}
+                stroke="none"
               />
+
+              {/* Subtle face fills make the pyramid read as a connected solid, not loose segments. */}
+              <polygon points={`${pS.x},${pS.y} ${pA.x},${pA.y} ${pB.x},${pB.y}`} fill="#34D399" fillOpacity={faceVisibility.SAB ? 0.13 : 0.035} />
+              <polygon points={`${pS.x},${pS.y} ${pB.x},${pB.y} ${pC.x},${pC.y}`} fill="#38BDF8" fillOpacity={faceVisibility.SBC ? 0.13 : 0.035} />
+              <polygon points={`${pS.x},${pS.y} ${pC.x},${pC.y} ${pD.x},${pD.y}`} fill="#A78BFA" fillOpacity={faceVisibility.SCD ? 0.13 : 0.035} />
+              <polygon points={`${pS.x},${pS.y} ${pD.x},${pD.y} ${pA.x},${pA.y}`} fill="#FBBF24" fillOpacity={faceVisibility.SDA ? 0.13 : 0.035} />
 
               {/* Diagonal lines AC and BD meeting at center O */}
               {showCenterO && (
@@ -583,8 +639,8 @@ export function SpatialGeometryLab({
                 x2={pD.x}
                 y2={pD.y}
                 stroke={selectedLessonIndex === 2 ? "#F59E0B" : "#E2E8F0"}
-                strokeWidth={selectedLessonIndex === 2 ? "3.5" : isHiddenEdge("S", "D") ? "1.5" : "2"}
-                strokeDasharray={isHiddenEdge("S", "D") && selectedLessonIndex !== 2 ? "4,4" : undefined}
+                strokeWidth={isHiddenEdge("S", "D") ? "1.8" : selectedLessonIndex === 2 ? "3.5" : "2"}
+                strokeDasharray={isHiddenEdge("S", "D") ? "5,4" : undefined}
               />
 
               {/* Base edges */}
@@ -595,8 +651,8 @@ export function SpatialGeometryLab({
                 x2={pB.x}
                 y2={pB.y}
                 stroke={selectedLessonIndex === 2 ? "#38BDF8" : "#93C5FD"}
-                strokeWidth={selectedLessonIndex === 2 ? "3.5" : "1.5"}
-                strokeDasharray={isHiddenEdge("A", "B") && selectedLessonIndex !== 2 ? "4,4" : undefined}
+                strokeWidth={isHiddenEdge("A", "B") ? "1.8" : selectedLessonIndex === 2 ? "3.5" : "1.5"}
+                strokeDasharray={isHiddenEdge("A", "B") ? "5,4" : undefined}
               />
               <line
                 x1={pB.x}
@@ -701,6 +757,12 @@ export function SpatialGeometryLab({
                 </>
               )}
             </svg>
+          </div>
+
+          <div className="flex w-full flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px]">
+            <span className="inline-flex items-center gap-2 font-semibold text-slate-700"><span className="inline-block w-8 border-t-2 border-slate-700" />Nét liền: nhìn thấy</span>
+            <span className="inline-flex items-center gap-2 font-semibold text-slate-700"><span className="inline-block w-8 border-t-2 border-dashed border-slate-500" />Nét đứt: bị mặt khác che</span>
+            <span className="text-slate-500">Xoay hình: kéo trực tiếp trên hình</span>
           </div>
 
           {/* Quick Sliders below 3D canvas */}
