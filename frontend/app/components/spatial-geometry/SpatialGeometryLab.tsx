@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { CORE_3_MODULES, LessonUnit } from "@/app/types/curriculum";
 import {
   RotateCcw,
@@ -10,6 +10,10 @@ import {
   Box,
   Eye,
   EyeOff,
+  Layers,
+  Sparkles,
+  Maximize2,
+  CheckCircle2,
 } from "lucide-react";
 import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
 
@@ -32,17 +36,24 @@ export function SpatialGeometryLab({
       setSelectedLessonIndex(initialLessonIndex);
     }
   }, [initialLessonIndex]);
+
   const currentLesson: LessonUnit = moduleConfig.lessons[selectedLessonIndex] || moduleConfig.lessons[0];
 
-  // 3D Parameters according to Task SG-M2-01
-  // Base A(-2, -1.5, 0), B(2, -1.5, 0), C(3, 1.5, 0), D(-1, 1.5, 0) (Parallelogram)
-  // Apex S(0, 0, 4)
-  const [apexX, setApexX] = useState(0);
-  const [apexY, setApexY] = useState(0);
-  const [apexZ, setApexZ] = useState(4.5);
-  const [ratioN, setRatioN] = useState<number>(2 / 3); // 2:1 ratio (2/3 of SB)
+  // 3D Apex Parameters (S.ABCD)
+  const [apexX, setApexX] = useState<number>(0);
+  const [apexY, setApexY] = useState<number>(0);
+  const [apexZ, setApexZ] = useState<number>(4.5);
 
-  // 3D Interaction View Controls
+  // Lesson 2: Point N division ratio along SB (default 2/3 for SN:NB = 2:1)
+  const [ratioN, setRatioN] = useState<number>(2 / 3);
+
+  // Lesson 4: Section plane height ratio along SA (k = 0.5 for midpoint M)
+  const [cutK, setCutK] = useState<number>(0.5);
+
+  // Lesson 5: Unfolding angle (0 deg = 3D pyramid, 90 deg = fully unfolded 2D net)
+  const [unfoldAngle, setUnfoldAngle] = useState<number>(0);
+
+  // 3D View Controls
   const [rotX, setRotX] = useState<number>(24);
   const [rotY, setRotY] = useState<number>(-38);
   const [zoom, setZoom] = useState<number>(1.0);
@@ -53,9 +64,8 @@ export function SpatialGeometryLab({
   const [showSectionPlane, setShowSectionPlane] = useState<boolean>(true);
   const [showCenterO, setShowCenterO] = useState<boolean>(true);
   const [showPointsMN, setShowPointsMN] = useState<boolean>(true);
-  const [isUnfolded, setIsUnfolded] = useState<boolean>(false); // Trải phẳng
-  const [unfoldAngle, setUnfoldAngle] = useState<number>(0); // 0 (closed) to 90 (flat)
   const [transparentMode, setTransparentMode] = useState<boolean>(false);
+  const [illusionSnapActive, setIllusionSnapActive] = useState<boolean>(false);
 
   // SVG viewport dimensions
   const svgW = 540;
@@ -64,13 +74,14 @@ export function SpatialGeometryLab({
   const originY = svgH / 2 + 30;
   const scale = 42 * zoom;
 
-  // Parallelogram base points
+  // Parallelogram base points: A(-2.2, -1.4, 0), B(1.8, -1.4, 0), C(2.6, 1.4, 0)
+  // D = A + C - B = (-1.4, 1.4, 0)
   const baseA = [-2.2, -1.4, 0] as [number, number, number];
   const baseB = [1.8, -1.4, 0] as [number, number, number];
   const baseC = [2.6, 1.4, 0] as [number, number, number];
   const baseD = [-1.4, 1.4, 0] as [number, number, number];
 
-  // Center O = midpoint of AC and BD
+  // Center O = midpoint of AC and BD = (0.2, 0, 0)
   const centerO = [
     (baseA[0] + baseC[0]) / 2,
     (baseA[1] + baseC[1]) / 2,
@@ -87,18 +98,37 @@ export function SpatialGeometryLab({
     (apexS[2] + baseA[2]) / 2,
   ] as [number, number, number];
 
-  // Point N on SB with SN:NB = 2:1 => N = S + (2/3)*(B - S)
+  // Point N on SB with SN = ratioN * SB (SN:NB = 2:1 when ratioN = 2/3)
   const pointN = [
     apexS[0] + ratioN * (baseB[0] - apexS[0]),
     apexS[1] + ratioN * (baseB[1] - apexS[1]),
     apexS[2] + ratioN * (baseB[2] - apexS[2]),
   ] as [number, number, number];
 
-  // Section plane parallel to base passing through M:
-  // Cuts SB at P, SC at Q, SD at R (all midpoints)
-  const pointP = [(apexS[0] + baseB[0]) / 2, (apexS[1] + baseB[1]) / 2, (apexS[2] + baseB[2]) / 2] as [number, number, number];
-  const pointQ = [(apexS[0] + baseC[0]) / 2, (apexS[1] + baseC[1]) / 2, (apexS[2] + baseC[2]) / 2] as [number, number, number];
-  const pointR = [(apexS[0] + baseD[0]) / 2, (apexS[1] + baseD[1]) / 2, (apexS[2] + baseD[2]) / 2] as [number, number, number];
+  // Section plane parallel to base at height ratio cutK along SA, SB, SC, SD
+  const cutM = [
+    apexS[0] + cutK * (baseA[0] - apexS[0]),
+    apexS[1] + cutK * (baseA[1] - apexS[1]),
+    apexS[2] + cutK * (baseA[2] - apexS[2]),
+  ] as [number, number, number];
+
+  const cutP = [
+    apexS[0] + cutK * (baseB[0] - apexS[0]),
+    apexS[1] + cutK * (baseB[1] - apexS[1]),
+    apexS[2] + cutK * (baseB[2] - apexS[2]),
+  ] as [number, number, number];
+
+  const cutQ = [
+    apexS[0] + cutK * (baseC[0] - apexS[0]),
+    apexS[1] + cutK * (baseC[1] - apexS[1]),
+    apexS[2] + cutK * (baseC[2] - apexS[2]),
+  ] as [number, number, number];
+
+  const cutR = [
+    apexS[0] + cutK * (baseD[0] - apexS[0]),
+    apexS[1] + cutK * (baseD[1] - apexS[1]),
+    apexS[2] + cutK * (baseD[2] - apexS[2]),
+  ] as [number, number, number];
 
   // 3D Projection math: Rotate around X and Y axes
   const project3D = (coord: [number, number, number]): { x: number; y: number; zDepth: number } => {
@@ -131,14 +161,15 @@ export function SpatialGeometryLab({
   const pO = project3D(centerO);
   const pM = project3D(pointM);
   const pN = project3D(pointN);
-  const pP = project3D(pointP);
-  const pQ = project3D(pointQ);
-  const pR = project3D(pointR);
+
+  const pCutM = project3D(cutM);
+  const pCutP = project3D(cutP);
+  const pCutQ = project3D(cutQ);
+  const pCutR = project3D(cutR);
 
   // Hidden edge deduction based on viewing angle
   const isHiddenEdge = (name1: string, name2: string) => {
     if (transparentMode) return false;
-    // In classic SGK view, DA and CD/AB depending on azimuth
     const normalizedRotY = ((rotY % 360) + 360) % 360;
     if (normalizedRotY >= 0 && normalizedRotY < 180) {
       if ((name1 === "A" && name2 === "D") || (name1 === "D" && name2 === "A")) return true;
@@ -147,6 +178,45 @@ export function SpatialGeometryLab({
     }
     return false;
   };
+
+  // Lesson 5 Unfolded vertices (Revolving lateral faces around base edges onto z=0)
+  const unfoldFactor = unfoldAngle / 90; // 0 -> 1
+
+  // Face SAB revolves around AB (y = -1.4)
+  const hSAB = Math.sqrt(Math.pow(apexY - baseA[1], 2) + Math.pow(apexZ, 2));
+  const sUnfoldAB: [number, number, number] = [
+    apexX,
+    baseA[1] - (apexY - baseA[1]) * (1 - unfoldFactor) - hSAB * unfoldFactor,
+    apexZ * (1 - unfoldFactor),
+  ];
+  const pSUnfoldAB = project3D(sUnfoldAB);
+
+  // Face SBC revolves around BC
+  const hSBC = Math.sqrt(Math.pow(apexX - baseB[0], 2) + Math.pow(apexZ, 2));
+  const sUnfoldBC: [number, number, number] = [
+    baseB[0] + (apexX - baseB[0]) * (1 - unfoldFactor) + hSBC * unfoldFactor,
+    apexY,
+    apexZ * (1 - unfoldFactor),
+  ];
+  const pSUnfoldBC = project3D(sUnfoldBC);
+
+  // Face SCD revolves around CD (y = 1.4)
+  const hSCD = Math.sqrt(Math.pow(apexY - baseC[1], 2) + Math.pow(apexZ, 2));
+  const sUnfoldCD: [number, number, number] = [
+    apexX,
+    baseC[1] + (apexY - baseC[1]) * (1 - unfoldFactor) + hSCD * unfoldFactor,
+    apexZ * (1 - unfoldFactor),
+  ];
+  const pSUnfoldCD = project3D(sUnfoldCD);
+
+  // Face SDA revolves around DA
+  const hSDA = Math.sqrt(Math.pow(apexX - baseA[0], 2) + Math.pow(apexZ, 2));
+  const sUnfoldDA: [number, number, number] = [
+    baseA[0] - (apexX - baseA[0]) * (1 - unfoldFactor) - hSDA * unfoldFactor,
+    apexY,
+    apexZ * (1 - unfoldFactor),
+  ];
+  const pSUnfoldDA = project3D(sUnfoldDA);
 
   // Drag handlers for mouse/touch 3D rotation
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -164,6 +234,22 @@ export function SpatialGeometryLab({
   };
 
   const handlePointerUp = () => setIsRotating(false);
+
+  // Snap to Illusion angle for Lesson 3 (AB & SD projection intersection)
+  const handleSnapIllusionAngle = () => {
+    setRotX(15);
+    setRotY(-62);
+    setZoom(1.05);
+    setIllusionSnapActive(true);
+  };
+
+  // Reset view
+  const handleResetView = () => {
+    setRotX(24);
+    setRotY(-38);
+    setZoom(1.0);
+    setIllusionSnapActive(false);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-6">
@@ -188,7 +274,7 @@ export function SpatialGeometryLab({
               <span className="text-xs text-slate-500 font-medium">Toán 11 · GDPT 2018</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              Dựng Hình & Khảo Sát Quan Hệ Không Gian 3D
+              Dựng Hình & Khảo Sát Quan Hệ Không Gian 3D (S.ABCD)
             </h1>
           </div>
         </div>
@@ -199,7 +285,7 @@ export function SpatialGeometryLab({
             type="button"
             onClick={() =>
               onOpenSocraticDrawer(
-                `Em đang thực hành ${currentLesson.title} thuộc Chuyên đề 2 Hình học không gian. Thầy Opti hướng dẫn giúp em với ạ!`
+                `Em đang thực hành ${currentLesson.code}: ${currentLesson.title} thuộc Chuyên đề 2 Hình học không gian. Thầy Opti hướng dẫn giúp em với ạ!`
               )
             }
             className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all cursor-pointer"
@@ -218,8 +304,16 @@ export function SpatialGeometryLab({
             type="button"
             onClick={() => {
               setSelectedLessonIndex(idx);
-              if (idx === 3) setShowSectionPlane(true);
-              if (idx === 4) setIsUnfolded(true);
+              setIllusionSnapActive(false);
+              if (idx === 3) {
+                setShowSectionPlane(true);
+                setCutK(0.5);
+              }
+              if (idx === 4) {
+                setUnfoldAngle(45);
+              } else {
+                setUnfoldAngle(0);
+              }
             }}
             className={`p-2.5 rounded-2xl text-left border transition-all cursor-pointer ${
               selectedLessonIndex === idx
@@ -264,17 +358,17 @@ export function SpatialGeometryLab({
             <div className="flex items-center gap-2">
               <Box className="w-4 h-4 text-emerald-600" />
               <span className="font-bold text-slate-800">
-                Mô hình 3D: Chóp S.ABCD (Nhiệm vụ SG-M2-01)
+                {selectedLessonIndex === 0 && "Bài 1: Đáy ABCD hình bình hành & Điểm S"}
+                {selectedLessonIndex === 1 && "Bài 2: Trung điểm M (SA) & Điểm N (SB, tỉ số 2:1)"}
+                {selectedLessonIndex === 2 && "Bài 3: Xoay 360°, Nét khuất & Hai đường chéo nhau AB, SD"}
+                {selectedLessonIndex === 3 && "Bài 4: Thiết diện MPQR song song với đáy"}
+                {selectedLessonIndex === 4 && "Bài 5: Trải phẳng (Unfolding) 4 mặt bên ra mặt đáy"}
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-slate-500">
               <button
                 type="button"
-                onClick={() => {
-                  setRotX(24);
-                  setRotY(-38);
-                  setZoom(1.0);
-                }}
+                onClick={handleResetView}
                 className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors"
                 title="Đặt lại góc nhìn chuẩn"
               >
@@ -293,7 +387,7 @@ export function SpatialGeometryLab({
             </div>
           </div>
 
-          {/* Interactive SVG Projection */}
+          {/* Interactive SVG Projection Canvas */}
           <div
             className="w-full relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 rounded-2xl my-3 cursor-grab active:cursor-grabbing select-none"
             onPointerDown={handlePointerDown}
@@ -301,24 +395,105 @@ export function SpatialGeometryLab({
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
           >
-            <div className="absolute top-2 left-3 text-[10px] font-mono text-emerald-400/80 bg-slate-900/60 px-2 py-0.5 rounded-md border border-emerald-500/20 pointer-events-none">
-              Góc nhìn: X={rotX.toFixed(0)}°, Y={rotY.toFixed(0)}° (Kéo chuột xoay 360°)
+            <div className="absolute top-2 left-3 text-[10px] font-mono text-emerald-400/90 bg-slate-900/75 px-2.5 py-1 rounded-md border border-emerald-500/20 pointer-events-none z-10 flex items-center gap-2">
+              <span>X={rotX.toFixed(0)}°, Y={rotY.toFixed(0)}°</span>
+              <span className="text-slate-400">| Kéo chuột xoay 360°</span>
             </div>
+
+            {illusionSnapActive && selectedLessonIndex === 2 && (
+              <div className="absolute top-2 right-3 text-[10px] font-bold text-amber-300 bg-amber-950/80 px-2.5 py-1 rounded-md border border-amber-500/40 pointer-events-none z-10 animate-pulse">
+                Góc nhìn ảo ảnh: AB & SD trông như cắt nhau!
+              </div>
+            )}
 
             <svg
               viewBox={`0 0 ${svgW} ${svgH}`}
-              className="w-full h-[360px] sm:h-[420px]"
+              className="w-full h-[370px] sm:h-[430px]"
             >
               <defs>
                 <linearGradient id="planeGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#10B981" stopOpacity="0.35" />
-                  <stop offset="100%" stopColor="#059669" stopOpacity="0.15" />
+                  <stop offset="0%" stopColor="#10B981" stopOpacity="0.45" />
+                  <stop offset="100%" stopColor="#059669" stopOpacity="0.20" />
                 </linearGradient>
                 <linearGradient id="baseGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.15" />
-                  <stop offset="100%" stopColor="#1D4ED8" stopOpacity="0.05" />
+                  <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#1D4ED8" stopOpacity="0.08" />
+                </linearGradient>
+                <linearGradient id="unfoldGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.30" />
+                  <stop offset="100%" stopColor="#D97706" stopOpacity="0.10" />
                 </linearGradient>
               </defs>
+
+              {/* LESSON 5: Unfolded Lateral Faces when unfoldAngle > 0 */}
+              {selectedLessonIndex === 4 && unfoldAngle > 0 && (
+                <>
+                  {/* Face SAB unfolded */}
+                  <polygon
+                    points={`${pSUnfoldAB.x},${pSUnfoldAB.y} ${pA.x},${pA.y} ${pB.x},${pB.y}`}
+                    fill="url(#unfoldGrad)"
+                    stroke="#F59E0B"
+                    strokeWidth="1.5"
+                    strokeDasharray="4,3"
+                  />
+                  <circle cx={pSUnfoldAB.x} cy={pSUnfoldAB.y} r="4" fill="#F59E0B" />
+                  <text x={pSUnfoldAB.x} y={pSUnfoldAB.y + 12} fill="#FCD34D" fontSize="10" fontWeight="bold" textAnchor="middle">
+                    S (mặt AB)
+                  </text>
+
+                  {/* Face SBC unfolded */}
+                  <polygon
+                    points={`${pSUnfoldBC.x},${pSUnfoldBC.y} ${pB.x},${pB.y} ${pC.x},${pC.y}`}
+                    fill="url(#unfoldGrad)"
+                    stroke="#F59E0B"
+                    strokeWidth="1.5"
+                    strokeDasharray="4,3"
+                  />
+                  <circle cx={pSUnfoldBC.x} cy={pSUnfoldBC.y} r="4" fill="#F59E0B" />
+                  <text x={pSUnfoldBC.x + 8} y={pSUnfoldBC.y} fill="#FCD34D" fontSize="10" fontWeight="bold">
+                    S (mặt BC)
+                  </text>
+
+                  {/* Face SCD unfolded */}
+                  <polygon
+                    points={`${pSUnfoldCD.x},${pSUnfoldCD.y} ${pC.x},${pC.y} ${pD.x},${pD.y}`}
+                    fill="url(#unfoldGrad)"
+                    stroke="#F59E0B"
+                    strokeWidth="1.5"
+                    strokeDasharray="4,3"
+                  />
+                  <circle cx={pSUnfoldCD.x} cy={pSUnfoldCD.y} r="4" fill="#F59E0B" />
+                  <text x={pSUnfoldCD.x} y={pSUnfoldCD.y - 6} fill="#FCD34D" fontSize="10" fontWeight="bold" textAnchor="middle">
+                    S (mặt CD)
+                  </text>
+
+                  {/* Face SDA unfolded */}
+                  <polygon
+                    points={`${pSUnfoldDA.x},${pSUnfoldDA.y} ${pD.x},${pD.y} ${pA.x},${pA.y}`}
+                    fill="url(#unfoldGrad)"
+                    stroke="#F59E0B"
+                    strokeWidth="1.5"
+                    strokeDasharray="4,3"
+                  />
+                  <circle cx={pSUnfoldDA.x} cy={pSUnfoldDA.y} r="4" fill="#F59E0B" />
+                  <text x={pSUnfoldDA.x - 12} y={pSUnfoldDA.y} fill="#FCD34D" fontSize="10" fontWeight="bold" textAnchor="end">
+                    S (mặt DA)
+                  </text>
+
+                  {/* Shortest path line on unfolded net from A to S(mặt BC) */}
+                  {unfoldAngle >= 80 && (
+                    <line
+                      x1={pA.x}
+                      y1={pA.y}
+                      x2={pSUnfoldBC.x}
+                      y2={pSUnfoldBC.y}
+                      stroke="#EF4444"
+                      strokeWidth="2.5"
+                      strokeDasharray="5,3"
+                    />
+                  )}
+                </>
+              )}
 
               {/* Parallelogram Base Surface ABCD */}
               <polygon
@@ -353,15 +528,21 @@ export function SpatialGeometryLab({
                 </>
               )}
 
-              {/* Section Plane (P) passing through M parallel to base: MPQR */}
+              {/* LESSON 4: Section Plane Polygon (P) parallel to base through cutK */}
               {showSectionPlane && selectedLessonIndex >= 3 && (
-                <polygon
-                  points={`${pM.x},${pM.y} ${pP.x},${pP.y} ${pQ.x},${pQ.y} ${pR.x},${pR.y}`}
-                  fill="url(#planeGrad)"
-                  stroke="#34D399"
-                  strokeWidth="2"
-                  strokeDasharray="4,3"
-                />
+                <>
+                  <polygon
+                    points={`${pCutM.x},${pCutM.y} ${pCutP.x},${pCutP.y} ${pCutQ.x},${pCutQ.y} ${pCutR.x},${pCutR.y}`}
+                    fill="url(#planeGrad)"
+                    stroke="#34D399"
+                    strokeWidth="2"
+                    strokeDasharray="4,3"
+                  />
+                  <line x1={pCutM.x} y1={pCutM.y} x2={pCutP.x} y2={pCutP.y} stroke="#10B981" strokeWidth="2" />
+                  <line x1={pCutP.x} y1={pCutP.y} x2={pCutQ.x} y2={pCutQ.y} stroke="#10B981" strokeWidth="2" />
+                  <line x1={pCutQ.x} y1={pCutQ.y} x2={pCutR.x} y2={pCutR.y} stroke="#10B981" strokeWidth="2" />
+                  <line x1={pCutR.x} y1={pCutR.y} x2={pCutM.x} y2={pCutM.y} stroke="#10B981" strokeWidth="2" />
+                </>
               )}
 
               {/* Lateral Edges from Apex S to Base */}
@@ -371,8 +552,8 @@ export function SpatialGeometryLab({
                 y1={pS.y}
                 x2={pA.x}
                 y2={pA.y}
-                stroke="#E2E8F0"
-                strokeWidth={isHiddenEdge("S", "A") ? "1.5" : "2"}
+                stroke={selectedLessonIndex === 1 ? "#34D399" : "#E2E8F0"}
+                strokeWidth={selectedLessonIndex === 1 ? "2.5" : isHiddenEdge("S", "A") ? "1.5" : "2"}
                 strokeDasharray={isHiddenEdge("S", "A") ? "4,4" : undefined}
               />
               {/* SB */}
@@ -381,8 +562,8 @@ export function SpatialGeometryLab({
                 y1={pS.y}
                 x2={pB.x}
                 y2={pB.y}
-                stroke="#E2E8F0"
-                strokeWidth={isHiddenEdge("S", "B") ? "1.5" : "2"}
+                stroke={selectedLessonIndex === 1 ? "#F59E0B" : "#E2E8F0"}
+                strokeWidth={selectedLessonIndex === 1 ? "2.5" : isHiddenEdge("S", "B") ? "1.5" : "2"}
                 strokeDasharray={isHiddenEdge("S", "B") ? "4,4" : undefined}
               />
               {/* SC */}
@@ -395,26 +576,27 @@ export function SpatialGeometryLab({
                 strokeWidth={isHiddenEdge("S", "C") ? "1.5" : "2"}
                 strokeDasharray={isHiddenEdge("S", "C") ? "4,4" : undefined}
               />
-              {/* SD */}
+              {/* SD: In Lesson 3, SD is highlighted in gold to analyze skew relationship with AB */}
               <line
                 x1={pS.x}
                 y1={pS.y}
                 x2={pD.x}
                 y2={pD.y}
-                stroke="#E2E8F0"
-                strokeWidth={isHiddenEdge("S", "D") ? "1.5" : "2"}
-                strokeDasharray={isHiddenEdge("S", "D") ? "4,4" : undefined}
+                stroke={selectedLessonIndex === 2 ? "#F59E0B" : "#E2E8F0"}
+                strokeWidth={selectedLessonIndex === 2 ? "3.5" : isHiddenEdge("S", "D") ? "1.5" : "2"}
+                strokeDasharray={isHiddenEdge("S", "D") && selectedLessonIndex !== 2 ? "4,4" : undefined}
               />
 
               {/* Base edges */}
+              {/* AB: In Lesson 3, AB is highlighted in bright cyan to analyze skew relationship with SD */}
               <line
                 x1={pA.x}
                 y1={pA.y}
                 x2={pB.x}
                 y2={pB.y}
-                stroke="#93C5FD"
-                strokeWidth="1.5"
-                strokeDasharray={isHiddenEdge("A", "B") ? "4,4" : undefined}
+                stroke={selectedLessonIndex === 2 ? "#38BDF8" : "#93C5FD"}
+                strokeWidth={selectedLessonIndex === 2 ? "3.5" : "1.5"}
+                strokeDasharray={isHiddenEdge("A", "B") && selectedLessonIndex !== 2 ? "4,4" : undefined}
               />
               <line
                 x1={pB.x}
@@ -448,7 +630,7 @@ export function SpatialGeometryLab({
               {/* S */}
               <circle cx={pS.x} cy={pS.y} r="5" fill="#EF4444" stroke="#FFFFFF" strokeWidth="1.5" />
               <text x={pS.x} y={pS.y - 8} fill="#FCA5A5" fontSize="13" fontWeight="bold" textAnchor="middle">
-                S
+                S({apexX.toFixed(1)}, {apexY.toFixed(1)}, {apexZ.toFixed(1)})
               </text>
 
               {/* A */}
@@ -480,37 +662,42 @@ export function SpatialGeometryLab({
                 <>
                   <circle cx={pO.x} cy={pO.y} r="3.5" fill="#FBBF24" stroke="#FFFFFF" strokeWidth="1" />
                   <text x={pO.x} y={pO.y + 12} fill="#FDE68A" fontSize="11" fontWeight="bold" textAnchor="middle">
-                    O
+                    O (Tâm đáy)
                   </text>
                 </>
               )}
 
-              {/* Midpoint M on SA */}
+              {/* Lesson 2 & general: Midpoint M on SA */}
               {showPointsMN && selectedLessonIndex >= 1 && (
                 <>
-                  <circle cx={pM.x} cy={pM.y} r="4.5" fill="#10B981" stroke="#FFFFFF" strokeWidth="1.5" />
+                  <circle cx={pM.x} cy={pM.y} r="5" fill="#10B981" stroke="#FFFFFF" strokeWidth="1.5" />
                   <text x={pM.x - 14} y={pM.y - 2} fill="#6EE7B7" fontSize="12" fontWeight="bold">
-                    M (1/2)
+                    M (1/2 SA)
                   </text>
                 </>
               )}
 
-              {/* Point N on SB (SN:NB = 2:1) */}
+              {/* Lesson 2 & general: Point N on SB (ratioN) */}
               {showPointsMN && selectedLessonIndex >= 1 && (
                 <>
-                  <circle cx={pN.x} cy={pN.y} r="4.5" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="1.5" />
+                  <circle cx={pN.x} cy={pN.y} r="5" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="1.5" />
                   <text x={pN.x + 8} y={pN.y} fill="#FCD34D" fontSize="12" fontWeight="bold">
-                    N (2/3)
+                    N ({ratioN === 2 / 3 ? "2/3 SB" : `${(ratioN * 100).toFixed(0)}% SB`})
                   </text>
                 </>
               )}
 
-              {/* Section Points P, Q, R */}
+              {/* Lesson 4: Section Points M, P, Q, R */}
               {showSectionPlane && selectedLessonIndex >= 3 && (
                 <>
-                  <circle cx={pP.x} cy={pP.y} r="3.5" fill="#34D399" />
-                  <circle cx={pQ.x} cy={pQ.y} r="3.5" fill="#34D399" />
-                  <circle cx={pR.x} cy={pR.y} r="3.5" fill="#34D399" />
+                  <circle cx={pCutM.x} cy={pCutM.y} r="4" fill="#34D399" stroke="#FFFFFF" strokeWidth="1" />
+                  <circle cx={pCutP.x} cy={pCutP.y} r="4" fill="#34D399" stroke="#FFFFFF" strokeWidth="1" />
+                  <circle cx={pCutQ.x} cy={pCutQ.y} r="4" fill="#34D399" stroke="#FFFFFF" strokeWidth="1" />
+                  <circle cx={pCutR.x} cy={pCutR.y} r="4" fill="#34D399" stroke="#FFFFFF" strokeWidth="1" />
+                  <text x={pCutM.x - 12} y={pCutM.y - 4} fill="#A7F3D0" fontSize="10" fontWeight="bold">M</text>
+                  <text x={pCutP.x + 8} y={pCutP.y - 4} fill="#A7F3D0" fontSize="10" fontWeight="bold">P</text>
+                  <text x={pCutQ.x + 8} y={pCutQ.y} fill="#A7F3D0" fontSize="10" fontWeight="bold">Q</text>
+                  <text x={pCutR.x - 12} y={pCutR.y} fill="#A7F3D0" fontSize="10" fontWeight="bold">R</text>
                 </>
               )}
             </svg>
@@ -520,7 +707,7 @@ export function SpatialGeometryLab({
           <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-2 text-xs">
             <div>
               <div className="flex justify-between text-slate-600 mb-1">
-                <span>Chiều cao S (z):</span>
+                <span>Cao độ S (z):</span>
                 <span className="font-mono font-bold text-emerald-700">{apexZ.toFixed(1)}</span>
               </div>
               <input
@@ -563,6 +750,148 @@ export function SpatialGeometryLab({
                 className="w-full accent-emerald-600 cursor-pointer"
               />
             </div>
+          </div>
+
+          {/* Lesson-Specific Interactive Control Bar */}
+          <div className="w-full mt-3 p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
+            {selectedLessonIndex === 0 && (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 text-slate-700 font-medium">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Kiểm tra: <strong>D = A + C - B</strong> = (-1.4; 1.4; 0) · Tâm O(0.2; 0; 0)</span>
+                </div>
+                <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                  Bảo toàn hình bình hành SG02
+                </span>
+              </div>
+            )}
+
+            {selectedLessonIndex === 1 && (
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-slate-700">
+                  <span className="font-bold flex items-center gap-1.5">
+                    <span>Thanh trượt tỉ số điểm N trên SB:</span>
+                    <span className="font-mono text-emerald-700">
+                      SN = {(ratioN * 100).toFixed(0)}% SB ({ratioN === 2 / 3 ? "2:1 chuẩn" : "tùy chỉnh"})
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setRatioN(2 / 3)}
+                    className="px-2 py-0.5 rounded bg-amber-100 text-amber-800 hover:bg-amber-200 text-[10px] font-bold"
+                  >
+                    Về chuẩn 2:1 (2/3)
+                  </button>
+                </div>
+                <input
+                  type="range"
+                  min="0.2"
+                  max="0.8"
+                  step="0.05"
+                  value={ratioN}
+                  onChange={(e) => setRatioN(parseFloat(e.target.value))}
+                  className="w-full accent-amber-500 cursor-pointer"
+                />
+                <p className="text-[11px] text-slate-500">
+                  {ratioN === 2 / 3
+                    ? "✓ Tỉ số SN:NB = 2:1 đồng nghĩa SN lấy 2 phần, NB lấy 1 phần, N nằm gần B hơn S!"
+                    : "Đang tùy chỉnh vị trí điểm N trên cạnh bên SB."}
+                </p>
+              </div>
+            )}
+
+            {selectedLessonIndex === 2 && (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-sky-400 inline-block"></span>
+                  <span className="font-bold text-sky-800">Đường AB</span>
+                  <span className="w-3 h-3 rounded-full bg-amber-500 inline-block ml-2"></span>
+                  <span className="font-bold text-amber-800">Đường SD</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSnapIllusionAngle}
+                  className="px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] shadow-xs cursor-pointer flex items-center gap-1"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Góc nhìn ảo ảnh SG16 (Cắt nhau trên 2D)</span>
+                </button>
+              </div>
+            )}
+
+            {selectedLessonIndex === 3 && (
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-slate-700">
+                  <span className="font-bold flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Vị trí mặt cắt k (dọc theo SA):</span>
+                    <span className="font-mono text-emerald-700">{cutK.toFixed(2)}</span>
+                  </span>
+                  <span className="text-[10px] font-mono font-bold text-slate-500">
+                    Tỉ số diện tích k² = {(cutK * cutK).toFixed(3)} Sđáy
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0.2"
+                  max="0.8"
+                  step="0.05"
+                  value={cutK}
+                  onChange={(e) => setCutK(parseFloat(e.target.value))}
+                  className="w-full accent-emerald-600 cursor-pointer"
+                />
+                <div className="flex items-center justify-between text-[11px] text-slate-500">
+                  <span>k = 0.5: Đi qua trung điểm M (diện tích thiết diện = 1/4 diện tích đáy)</span>
+                  <button
+                    type="button"
+                    onClick={() => setCutK(0.5)}
+                    className="underline text-emerald-700 font-semibold"
+                  >
+                    Đặt k = 0.5
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {selectedLessonIndex === 4 && (
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-slate-700">
+                  <span className="font-bold flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Góc mở trải phẳng các mặt bên:</span>
+                    <span className="font-mono text-amber-700">{unfoldAngle}° / 90°</span>
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setUnfoldAngle(0)}
+                      className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-slate-300 font-semibold text-[10px]"
+                    >
+                      Gập lại (0°)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUnfoldAngle(90)}
+                      className="px-2 py-0.5 rounded bg-amber-500 text-white hover:bg-amber-600 font-bold text-[10px]"
+                    >
+                      Mở phẳng (90°)
+                    </button>
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="90"
+                  step="5"
+                  value={unfoldAngle}
+                  onChange={(e) => setUnfoldAngle(parseInt(e.target.value, 10))}
+                  className="w-full accent-amber-500 cursor-pointer"
+                />
+                <p className="text-[11px] text-slate-500">
+                  Khi mở 90°, 4 mặt bên trải phẳng hoàn toàn ra mặt đáy, đường đỏ nối hai đỉnh là đường trắc địa ngắn nhất!
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -611,19 +940,69 @@ export function SpatialGeometryLab({
             </div>
           </div>
 
-          {/* Diagnostic Box: SG01 - SG16 Misconception Checks */}
+          {/* Diagnostic Box: Lesson-Specific Misconception Checks */}
           <div className="bg-emerald-50/60 rounded-3xl p-4 sm:p-5 border border-emerald-200/80 space-y-2.5">
             <div className="flex items-center gap-2 text-emerald-900">
               <AlertCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-              <h3 className="font-bold text-xs">Chẩn đoán sai lầm thường gặp ({currentLesson.errorCodes.join(", ")})</h3>
+              <h3 className="font-bold text-xs">
+                Chẩn đoán sai lầm nhận thức ({currentLesson.errorCodes.join(", ")})
+              </h3>
             </div>
-            <div className="text-[11px] text-emerald-800 leading-relaxed space-y-1.5">
-              <p>
-                <strong>Quy tắc đối chiếu:</strong> Khi kéo đỉnh S làm thay đổi cấu hình, trung điểm M và điểm chia đoạn N luôn được cập nhật chính xác theo quan hệ phụ thuộc.
-              </p>
-              <div className="p-2 rounded-xl bg-white/80 border border-emerald-200 text-slate-700">
-                <span className="font-bold text-emerald-900">[SG07] Cảnh báo giao trên ảnh:</span> Hai đường thẳng AB và SD chéo nhau trong không gian nhưng có thể cắt nhau trên hình chiếu ở một số góc nhìn. Hãy xoay 360° để kiểm chứng!
-              </div>
+            <div className="text-[11px] text-emerald-800 leading-relaxed space-y-2">
+              {selectedLessonIndex === 0 && (
+                <>
+                  <p>
+                    <strong>[SG02] Tự thêm tính chất vuông góc:</strong> Không được vẽ đáy thành hình chữ nhật hay tự cho $SA \perp (ABCD)$ nếu đề bài chỉ cho hình chóp tổng quát đáy hình bình hành.
+                  </p>
+                  <p>
+                    <strong>[SG03] Đỉnh suy biến:</strong> Đỉnh $S$ bắt buộc có cao độ $z \ne 0$ để không bị rơi vào mặt phẳng đáy.
+                  </p>
+                </>
+              )}
+
+              {selectedLessonIndex === 1 && (
+                <>
+                  <p>
+                    <strong>[SG04] Nhầm tỉ số:</strong> Tỉ số $SN : NB = 2 : 1$ nghĩa là $SN = \frac{2}{3}SB$ (chia 3 phần), không phải $\frac{1}{2}SB$.
+                  </p>
+                  <p>
+                    <strong>[SG05] Điểm ngoài đoạn:</strong> Điểm $N$ nằm trong đoạn $SB$, gần đỉnh $B$ hơn đỉnh $S$.
+                  </p>
+                </>
+              )}
+
+              {selectedLessonIndex === 2 && (
+                <>
+                  <p>
+                    <strong>[SG16] Ảo ảnh giao điểm trên hình chiếu 2D:</strong> Hai đường thẳng $AB$ và $SD$ chéo nhau ($AB \cap SD = \emptyset$), nhưng khi xoay đến góc nhìn chiếu phẳng chúng nhìn như cắt nhau. Hãy xoay chuột 360° để thấy rõ khoảng cách không gian!
+                  </p>
+                  <p>
+                    <strong>[SG08] Nét khuất:</strong> Nét đứt bị che bởi các mặt bên phía trước, thay đổi trạng thái khi đổi góc nhìn.
+                  </p>
+                </>
+              )}
+
+              {selectedLessonIndex === 3 && (
+                <>
+                  <p>
+                    <strong>[SG10] Điểm ngoài cạnh:</strong> Thiết diện là đa giác lồi khép kín $MPQR$, 4 đỉnh bắt buộc nằm trên các cạnh của hình chóp.
+                  </p>
+                  <p>
+                    <strong>[SG11] Tỉ số diện tích:</strong> Với mặt phẳng song song qua trung điểm $k = 1/2$, tỉ số diện tích là $k^2 = (1/2)^2 = 1/4$ diện tích đáy, không phải $1/2$.
+                  </p>
+                </>
+              )}
+
+              {selectedLessonIndex === 4 && (
+                <>
+                  <p>
+                    <strong>[SG13] Méo mó kích thước:</strong> Trải phẳng là phép biến hình cứng, bảo toàn 100% độ dài các cạnh và các góc của từng tam giác bên.
+                  </p>
+                  <p>
+                    <strong>[SG14] Chồng lấn mặt:</strong> Các mặt bên được mở xoay quanh từng cạnh đáy tương ứng, không được đè lên nhau.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -66,28 +66,77 @@ export function generateSmartSocraticResponse(
   }
 
   if (moduleId === "spatial_geometry") {
-    if (q.includes("vuông góc") || q.includes("sa vuông góc")) {
+    if (q.includes("hình bình hành") || q.includes("đỉnh d") || q.includes("tâm o") || q.includes("giả thiết")) {
       return {
-        answer: `Định lý trọng tâm: **Nếu một đường thẳng vuông góc với mặt phẳng thì nó vuông góc với mọi đường thẳng nằm trong mặt phẳng đó** ($d \\perp (P) \\Rightarrow d \\perp a, \\forall a \\subset (P)$).\n\nVì $SA \\perp (ABCD)$ nên $SA$ vuông góc với cả $AB, AD, AC, BD$. Em hãy xoay hình 3D sang **Góc nhìn Trước** hoặc **Góc nhìn Trên** để thấy rõ góc $90^\\circ$ nhé!`,
+        answer: `Quy tắc dựng hình chóp $S.ABCD$ đúng chuẩn GDPT 2018:\n- **Đáy hình bình hành tổng quát:** Tọa độ đỉnh $D$ xác định bởi $\\vec{AD} = \\vec{BC} \\iff D = A + C - B$. Tâm $O$ là trung điểm chung của $AC$ và $BD$.\n- **Cảnh báo lỗi nhận thức SG02:** Tuyệt đối không tự ý vẽ đáy thành hình chữ nhật hay hình vuông, và không tự thêm $SA \\perp (ABCD)$ nếu đề không cho!`,
         intent: "explain",
-        nextQuestion: "Làm sao chứng minh tam giác SBC vuông?",
+        nextQuestion: "Vì sao hình bình hành trong phép chiếu song song vẫn là hình bình hành?",
       };
     }
-    if (q.includes("thể tích") || q.includes("chiều cao")) {
+    if (q.includes("trung điểm") || q.includes("tỉ số") || q.includes("điểm n") || q.includes("2:1")) {
       return {
-        answer: `Thể tích khối chóp tính bằng: $$V = \\frac{1}{3} S_{\\text{đáy}} \\cdot h$$\nTrong đó $h$ là độ dài đoạn vuông góc kẻ từ đỉnh $S$ xuống mặt phẳng đáy. Khi em tăng chiều cao $h$ từ $3$ lên $6$, thể tích $V$ sẽ thay đổi thế nào?`,
+        answer: `Quy tắc điểm chia đoạn thẳng theo tỉ số:\n- $M$ là trung điểm $SA \\iff M = \\frac{S + A}{2}$.\n- Điểm $N$ chia cạnh $SB$ theo tỉ số $SN : NB = 2 : 1$ nghĩa là đoạn $SB$ chia làm 3 phần bằng nhau: $SN$ chiếm 2 phần, $NB$ chiếm 1 phần $\\implies \\vec{SN} = \\frac{2}{3}\\vec{SB}$. Điểm $N$ nằm **gần đỉnh B hơn đỉnh S** (Lỗi SG05).`,
         intent: "hint",
-        nextQuestion: "Thiết diện cắt song song với đáy tạo ra hình gì?",
+        nextQuestion: "Khi kéo đỉnh S dịch chuyển thì tọa độ điểm N có tự động cập nhật không?",
+      };
+    }
+    if (q.includes("chéo nhau") || q.includes("cắt nhau") || q.includes("nét đứt") || q.includes("nét khuất") || q.includes("góc nhìn")) {
+      return {
+        answer: `Cảnh báo ảo ảnh thị giác SG16:\n- Hai đường thẳng $AB$ (thuộc đáy) và $SD$ (cạnh bên) là **hai đường thẳng chéo nhau** ($AB \\cap SD = \\emptyset$).\n- Trên hình chiếu phẳng 2D, hai đoạn thẳng có thể nhìn như cắt nhau, nhưng thực chất ở các độ sâu $z$ khác nhau. Em hãy xoay chuột 360° để kiểm chứng nhé!`,
+        intent: "diagnose",
+        nextQuestion: "Làm sao dùng định lý đường thẳng cắt mặt phẳng để chứng minh hai đường chéo nhau?",
+      };
+    }
+    if (q.includes("thiết diện") || q.includes("mặt phẳng cắt") || q.includes("mpqr")) {
+      return {
+        answer: `Thiết diện song song với mặt phẳng đáy:\n- Mặt phẳng qua trung điểm $M$ song song với đáy $(ABCD)$ sẽ cắt các cạnh bên $SB, SC, SD$ lần lượt tại trung điểm $P, Q, R$.\n- Thiết diện $MPQR$ là hình bình hành đồng dạng với đáy theo tỉ số $k = 1/2$. Do đó diện tích thiết diện bằng $k^2 = (1/2)^2 = 1/4$ diện tích đáy $ABCD$.`,
+        intent: "explain",
+        nextQuestion: "Điểm N (tỉ số 2/3) có nằm trên mặt phẳng thiết diện MPQR không?",
+      };
+    }
+    if (q.includes("trải phẳng") || q.includes("unfold") || q.includes("diện tích mặt") || q.includes("đường đi ngắn nhất")) {
+      return {
+        answer: `Kỹ thuật trải phẳng (Unfolding):\n- Trải các mặt bên $\\Delta SAB, \\Delta SBC, \\Delta SCD, \\Delta SDA$ quay quanh các cạnh đáy phẳng ra mặt đất $z = 0$.\n- **Bảo toàn hình học:** Đây là phép biến hình cứng, toàn bộ độ dài cạnh và số đo góc của từng tam giác được giữ nguyên 100% (không méo, không chồng lấn). Quỹ đạo ngắn nhất nối hai điểm trên khối chóp sẽ biến thành đoạn thẳng trên bản trải phẳng!`,
+        intent: "hint",
+        nextQuestion: "Diện tích toàn phần của khối chóp bằng tổng diện tích những mặt nào?",
       };
     }
   }
 
   if (moduleId === "trigonometry") {
-    if (q.includes("sin") || q.includes("cos") || q.includes("đường tròn")) {
+    if (q.includes("chiều quay") || q.includes("góc âm") || q.includes("-765") || q.includes("vòng")) {
       return {
-        answer: `Trên đường tròn lượng giác đơn vị ($R = 1$):\n- **Hoành độ** của điểm biểu diễn $M$ chính là $\\cos \\theta$.\n- **Tung độ** của điểm $M$ chính là $\\sin \\theta$.\n\nKhi góc $\\theta$ chuyển từ góc nhọn ($0^\\circ - 90^\\circ$) sang góc tù ($90^\\circ - 180^\\circ$), hoành độ điểm $M$ nằm ở phần âm hay dương của trục $Ox$? Từ đó em suy ra dấu của $\\cos \\theta$ nhé!`,
+        answer: `Quy tắc góc lượng giác nhiều vòng:\n- **Chiều quay:** Ngược kim đồng hồ là chiều DƯƠNG (+), cùng kim đồng hồ là chiều ÂM (-).\n- Với góc $\\alpha = -765^\\circ$:\n  $$-765^\\circ = (-2) \\times 360^\\circ - 45^\\circ = (-3) \\times 360^\\circ + 315^\\circ$$\n- Nghĩa là quay theo chiều âm 2 vòng tròn rồi quay tiếp $-45^\\circ$. Điểm ngọn trùng với góc $315^\\circ = \\frac{7\\pi}{4}$, nằm ở **Góc phần tư IV**.`,
         intent: "explain",
-        nextQuestion: "Vì sao sin²θ + cos²θ luôn bằng 1?",
+        nextQuestion: "Hai góc lượng giác có cùng điểm biểu diễn thì số đo hơn kém nhau bao nhiêu?",
+      };
+    }
+    if (q.includes("xét dấu") || q.includes("góc phần tư") || q.includes("sin") || q.includes("cos") || q.includes("tan") || q.includes("cot")) {
+      return {
+        answer: `Định nghĩa trên đường tròn đơn vị và thần chú xét dấu:\n- Hoành độ điểm ngọn là $\\cos \\alpha$, tung độ là $\\sin \\alpha$.\n- **Thần chú 4 góc phần tư:**\n  + Góc phần tư I: **Nhất CẢ** (tất cả đều dương).\n  + Góc phần tư II: **Nhì SIN** (chỉ sin dương).\n  + Góc phần tư III: **Tam TAN** (chỉ tan, cot dương).\n  + Góc phần tư IV: **Tứ COS** (chỉ cos dương).\n- Tại $\\alpha = -765^\\circ$ (góc phần tư IV): $\\cos > 0$ ($+\\frac{\\sqrt{2}}{2}$), $\\sin < 0$ ($-\\frac{\\sqrt{2}}{2}$), $\\tan = -1, \\cot = -1$.`,
+        intent: "explain",
+        nextQuestion: "Vì sao sin²α + cos²α luôn luôn bằng 1 với mọi góc α?",
+      };
+    }
+    if (q.includes("cung liên kết") || q.includes("nhân đôi") || q.includes("công thức") || q.includes("sin(2a)")) {
+      return {
+        answer: `Hệ thống công thức lượng giác cốt lõi:\n- **Cung liên kết:** 'Cos đối, Sin bù, Phụ chéo, Hơn kém pi Tang'. Ví dụ: $\\sin(\\pi - \\alpha) = \\sin \\alpha$, $\\cos(-\\alpha) = \\cos \\alpha$.\n- **Công thức nhân đôi:** $\\sin(2\\alpha) = 2\\sin\\alpha\\cos\\alpha$.\n- **Cảnh báo lỗi E08:** Tuyệt đối KHÔNG phân phối $\\sin(a+b) = \\sin a + \\sin b$! Vì $\\sin$ là hàm số phi tuyến.`,
+        intent: "hint",
+        nextQuestion: "Nếu cos(α) = 0 thì sin(2α) bằng bao nhiêu?",
+      };
+    }
+    if (q.includes("chu kỳ") || q.includes("đồ thị") || q.includes("sóng") || q.includes("biên độ")) {
+      return {
+        answer: `Mối liên hệ giữa đường tròn và đồ thị hàm số:\n- Khi điểm $M$ quay liên tục trên đường tròn đơn vị, tung độ $\\sin x$ vẽ nên đường cong sóng hình sin trên đồ thị.\n- Hàm số $y = \\sin x$ và $y = \\cos x$ có chu kỳ tuần hoàn cơ bản $T = 2\\pi$.\n- Với hàm tổng quát $y = a\\sin(bx + c) + d$: Biên độ là $|a|$, chu kỳ là $T = \\frac{2\\pi}{|b|}$, và tập giá trị là $[d - |a|; \\, d + |a|]$.`,
+        intent: "explain",
+        nextQuestion: "Chu kỳ của hàm số y = tan(x) bằng bao nhiêu?",
+      };
+    }
+    if (q.includes("phương trình") || q.includes("lọc nghiệm") || q.includes("khoảng") || q.includes("nghiệm")) {
+      return {
+        answer: `Kỹ thuật giải phương trình $\\sin x = m$ và lọc nghiệm trên $[-\\pi; \\pi]$:\n- Điều kiện có nghiệm: $-1 \\le m \\le 1$.\n- Với $m = -\\frac{\\sqrt{2}}{2} = \\sin\\left(-\\frac{\\pi}{4}\\right)$:\n  + Họ 1: $x = -\\frac{\\pi}{4} + k2\\pi \\implies k = 0 \\implies x_1 = -\\frac{\\pi}{4}$.\n  + Họ 2: $x = \\pi - \\left(-\\frac{\\pi}{4}\\right) + k2\\pi = \\frac{5\\pi}{4} + k2\\pi \\implies k = -1 \\implies x_2 = -\\frac{3\\pi}{4}$.\n- Cả hai nghiệm $-\\frac{\\pi}{4}$ và $-\\frac{3\\pi}{4}$ đều nằm trong đoạn $[-\\pi; \\pi]$.`,
+        intent: "hint",
+        nextQuestion: "Đường thẳng y = -sqrt(2)/2 cắt đường tròn đơn vị tại mấy điểm?",
       };
     }
   }

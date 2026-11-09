@@ -170,7 +170,7 @@ export const CORE_3_MODULES: CoreModuleConfig[] = [
           {
             stepNumber: 2,
             title: "Tính giá trị F(x, y) tại các đỉnh và kết luận",
-            instruction: "Tính F(O), F(A), F(B), F(C) để tìm giá trị lớn nhất tại đỉnh B(8; 12) = 10.200 nghìn đồng.",
+            instruction: "Xác định 4 đỉnh khả thi O(0; 0), A(16; 0), B(8; 12), C(4; 14) (loại điểm (0; 16) do vi phạm y <= 3.5x), tính F(O), F(A), F(B), F(C) để tìm giá trị lớn nhất tại đỉnh B(8; 12) = 10.200 nghìn đồng.",
             coreConcepts: ["Định lý cực trị trên tập lồi", "3 phương diện Looking back của Polya"],
             socraticQuestions: ["Nếu tiền lãi mỗi chiếc bàn thay đổi thì miền đa giác OABC có thay đổi không?", "Tại sao cực trị luôn đạt tại đỉnh?"],
           },
@@ -233,7 +233,7 @@ export const CORE_3_MODULES: CoreModuleConfig[] = [
           {
             stepNumber: 1,
             title: "Trích xuất đối tượng và ràng buộc",
-            instruction: "Nhận diện đỉnh S, đáy ABCD là hình bình hành, dựng D = A + B - C sao cho ABCD đồng phẳng không suy biến.",
+            instruction: "Nhận diện đỉnh S, đáy ABCD là hình bình hành, dựng D = A + C - B sao cho ABCD đồng phẳng không suy biến.",
             coreConcepts: ["Điều kiện xác định hình chóp", "Không tự thêm tính đều hay vuông góc (SG02)"],
             socraticQuestions: ["Đề bài cho đáy hình bình hành, ta có được tự ý xem đáy là hình chữ nhật không?", "Điều kiện để đỉnh S tạo thành hình chóp là gì?"],
           },

@@ -7,7 +7,6 @@ import {
   Compass,
   Box,
   Activity,
-  Sparkles,
   User,
   ChevronDown,
   Settings,
@@ -16,7 +15,7 @@ import {
   Menu,
   X,
   BookOpen,
-  GraduationCap,
+  Search,
 } from "lucide-react";
 
 export interface SessionData {
@@ -54,38 +53,67 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAuthModal,
   onLogout,
 }) => {
+  // Dropdown states for Desktop
+  const [simMenuOpen, setSimMenuOpen] = useState(false);
+  const [docsMenuOpen, setDocsMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  // Mobile drawer states
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSimExpanded, setMobileSimExpanded] = useState(true);
+
+  // Dropdown refs for click-outside detection
+  const simMenuRef = useRef<HTMLDivElement>(null);
+  const docsMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (simMenuRef.current && !simMenuRef.current.contains(target)) {
+        setSimMenuOpen(false);
+      }
+      if (docsMenuRef.current && !docsMenuRef.current.contains(target)) {
+        setDocsMenuOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(target)) {
         setUserMenuOpen(false);
       }
     }
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
+        setSimMenuOpen(false);
+        setDocsMenuOpen(false);
         setUserMenuOpen(false);
         setMobileMenuOpen(false);
       }
     }
-    if (userMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleKeyDown);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [userMenuOpen]);
+  }, []);
 
-  const isLab = currentModule !== "home" && currentModule !== "knowledge";
+  // Check if current view is a simulation lab
+  const isSimActive = [
+    "linear_programming",
+    "spatial_geometry",
+    "trigonometry",
+    "lab",
+    "system",
+    "optimization",
+    "quiz",
+  ].includes(currentModule);
+
+  // Check if user has teacher role
+  const canAccessTeacher = session?.role === "teacher" || session?.role === "admin";
 
   return (
     <header className="sticky top-0 left-0 right-0 z-50 w-full h-14 bg-[#0B132B]/95 backdrop-blur-md border-b border-white/10 px-3 sm:px-6 flex items-center justify-between select-none shadow-md transition-all">
       <div className="w-full max-w-7xl mx-auto flex items-center justify-between gap-3">
-        {/* 1. BRAND LOGO & TITLE: Chuẩn phong cách MathSTEP · OPTIMATH LAB */}
+        {/* 1. BRAND LOGO: MathSTEP */}
         <button
           type="button"
           onClick={() => {
@@ -93,7 +121,7 @@ export const Header: React.FC<HeaderProps> = ({
             setMobileMenuOpen(false);
           }}
           className="flex items-center gap-2.5 text-left group focus:outline-none cursor-pointer shrink-0"
-          title="Về trang chủ MATHSTEP · OPTIMATH LAB"
+          title="Về mục lục tìm kiếm bài học"
         >
           <span className="w-8 h-8 rounded-lg bg-blue-600 text-white font-mono font-bold text-sm flex items-center justify-center shadow-md shadow-blue-500/30 group-hover:bg-blue-500 transition-colors">
             M
@@ -101,7 +129,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="leading-tight">
             <div className="flex items-center gap-1.5">
               <strong className="font-sans text-xs tracking-wide font-bold block text-slate-100 group-hover:text-blue-400 transition-colors">
-                MATHSTEP
+                MathSTEP
               </strong>
               <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-blue-500/20 text-blue-300 border border-blue-400/30 tracking-wider uppercase">
                 OPTIMATH
@@ -113,117 +141,215 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </button>
 
-        {/* 2. NAVIGATION DESKTOP: 3 CHUYÊN ĐỀ MỚI (LOẠI BỎ HOÀN TOÀN TRẠM HỌC VÀ MODULE CŨ) */}
-        <nav className="hidden lg:flex items-center gap-1.5 text-xs font-medium text-slate-300">
+        {/* 2. DESKTOP NAVIGATION: Bài học | Mô phỏng ▾ | Tài liệu ▾ */}
+        <nav className="hidden lg:flex items-center gap-2 text-xs font-medium text-slate-300">
+          {/* Menu 1: Bài học (Về mục lục tìm kiếm ở trang chủ) */}
           <button
             type="button"
             onClick={() => onSelectModule("home")}
-            className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-              currentModule === "home"
+            className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+              currentModule === "home" || currentModule === "learning_path" || currentModule === "lesson_study"
                 ? "bg-white/10 text-white font-semibold shadow-inner"
                 : "text-slate-300 hover:text-white hover:bg-white/5"
             }`}
+            title="Mục lục bài học & Tìm kiếm"
           >
-            Trang chủ
+            <BookOpen className="w-3.5 h-3.5 text-blue-400" />
+            <span>Bài học</span>
           </button>
 
-          {/* Luồng học tập riêng: Lộ trình 3 Chuyên đề (15 Bài) */}
-          <button
-            type="button"
-            onClick={() => onSelectModule("learning_path")}
-            className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
-              currentModule === "learning_path" || currentModule === "lesson_study"
-                ? "bg-emerald-600/90 text-white font-bold shadow-xs ring-1 ring-emerald-400/50"
-                : "text-emerald-300 hover:text-white hover:bg-white/5"
-            }`}
-            title="Mở Lộ trình học tập từng bước (Bite-sized track)"
-          >
-            <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Lộ trình học</span>
-            <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-extrabold">
-              15 Bài
-            </span>
-          </button>
+          {/* Menu 2: Mô phỏng ▾ (Gom 3 chuyên đề hiện có thành menu con) */}
+          <div className="relative" ref={simMenuRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setSimMenuOpen((prev) => !prev);
+                setDocsMenuOpen(false);
+                setUserMenuOpen(false);
+              }}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
+                isSimActive
+                  ? "bg-blue-600/90 text-white font-semibold shadow-xs"
+                  : "text-slate-300 hover:text-white hover:bg-white/5"
+              }`}
+              aria-expanded={simMenuOpen}
+            >
+              <Compass className="w-3.5 h-3.5 text-blue-400" />
+              <span>Mô phỏng</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                  simMenuOpen ? "rotate-180 text-blue-400" : ""
+                }`}
+              />
+            </button>
 
-          {/* Chuyên đề 1: BPT & Tối ưu (Toán 10) */}
-          <button
-            type="button"
-            onClick={() => onSelectModule("linear_programming")}
-            className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
-              currentModule === "linear_programming" ||
-              currentModule === "lab" ||
-              currentModule === "system" ||
-              currentModule === "optimization" ||
-              currentModule === "quiz"
-                ? "bg-blue-600/90 text-white font-semibold shadow-xs"
-                : "text-slate-300 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            <Compass className="w-3.5 h-3.5 text-blue-400" />
-            <span>CĐ1: BPT & Tối Ưu</span>
-            <span className="text-[9px] px-1 py-0.2 rounded bg-white/10 text-slate-300">Lớp 10</span>
-          </button>
+            {simMenuOpen && (
+              <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-[#0B132B] border border-white/10 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-xs text-slate-200 backdrop-blur-xl">
+                <div className="px-3.5 py-1.5 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                  Phòng thí nghiệm thực hành
+                </div>
 
-          {/* Chuyên đề 2: Hình học không gian 3D (Toán 11) */}
-          <button
-            type="button"
-            onClick={() => onSelectModule("spatial_geometry")}
-            className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
-              currentModule === "spatial_geometry"
-                ? "bg-emerald-600/90 text-white font-semibold shadow-xs"
-                : "text-slate-300 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            <Box className="w-3.5 h-3.5 text-emerald-400" />
-            <span>CĐ2: Không Gian 3D</span>
-            <span className="text-[9px] px-1 py-0.2 rounded bg-white/10 text-slate-300">Lớp 11</span>
-          </button>
+                {/* CĐ1 */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSimMenuOpen(false);
+                    onSelectModule("linear_programming");
+                  }}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer group"
+                >
+                  <span className="p-2 rounded-xl bg-blue-500/10 text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors shrink-0">
+                    <Compass className="w-4 h-4" />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-slate-100 group-hover:text-blue-300 truncate">
+                      CĐ1: BPT & Tối Ưu Tuyến Tính
+                    </div>
+                    <div className="text-[10px] text-slate-400 truncate">
+                      Quét đường mức, xưởng mộc & đa giác nghiệm
+                    </div>
+                  </div>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-bold shrink-0">
+                    Toán 10
+                  </span>
+                </button>
 
-          {/* Chuyên đề 3: Lượng giác (Toán 11) */}
-          <button
-            type="button"
-            onClick={() => onSelectModule("trigonometry")}
-            className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
-              currentModule === "trigonometry"
-                ? "bg-purple-600/90 text-white font-semibold shadow-xs"
-                : "text-slate-300 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            <Activity className="w-3.5 h-3.5 text-purple-400" />
-            <span>CĐ3: Lượng Giác</span>
-            <span className="text-[9px] px-1 py-0.2 rounded bg-white/10 text-slate-300">Lớp 11</span>
-          </button>
+                {/* CĐ2 */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSimMenuOpen(false);
+                    onSelectModule("spatial_geometry");
+                  }}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer group"
+                >
+                  <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-colors shrink-0">
+                    <Box className="w-4 h-4" />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-slate-100 group-hover:text-emerald-300 truncate">
+                      CĐ2: Hình Học Không Gian 3D
+                    </div>
+                    <div className="text-[10px] text-slate-400 truncate">
+                      Chóp S.ABCD, nét khuất, thiết diện & trải phẳng
+                    </div>
+                  </div>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold shrink-0">
+                    Toán 11
+                  </span>
+                </button>
 
-          {/* Cơ sở KHKT */}
-          <button
-            type="button"
-            onClick={() => onSelectModule("knowledge")}
-            className={`px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
-              currentModule === "knowledge"
-                ? "bg-white/10 text-white font-semibold shadow-inner"
-                : "text-slate-300 hover:text-white hover:bg-white/5"
-            }`}
-            title="Sổ tay phương pháp luận & cơ sở khoa học"
-          >
-            <BookOpen className="w-3.5 h-3.5 inline mr-1 text-slate-400" />
-            Cơ sở KHKT
-          </button>
+                {/* CĐ3 */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSimMenuOpen(false);
+                    onSelectModule("trigonometry");
+                  }}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer group"
+                >
+                  <span className="p-2 rounded-xl bg-purple-500/10 text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-colors shrink-0">
+                    <Activity className="w-4 h-4" />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-slate-100 group-hover:text-purple-300 truncate">
+                      CĐ3: Lượng Giác Tương Tác
+                    </div>
+                    <div className="text-[10px] text-slate-400 truncate">
+                      Vòng tròn đơn vị, cung liên kết & sóng sin/cos
+                    </div>
+                  </div>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold shrink-0">
+                    Toán 11
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
 
-          {/* Dành cho Giáo viên */}
-          <button
-            type="button"
-            onClick={onOpenTeacherGuide}
-            className="px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-colors cursor-pointer flex items-center gap-1.5"
-            title="Hướng dẫn sư phạm giáo viên"
-          >
-            <Presentation className="w-3.5 h-3.5 text-amber-400" />
-            <span>Giáo viên</span>
-          </button>
+          {/* Menu 3: Tài liệu ▾ (Cơ sở KHKT và Hướng dẫn giáo viên) */}
+          <div className="relative" ref={docsMenuRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setDocsMenuOpen((prev) => !prev);
+                setSimMenuOpen(false);
+                setUserMenuOpen(false);
+              }}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
+                currentModule === "knowledge"
+                  ? "bg-white/10 text-white font-semibold shadow-inner"
+                  : "text-slate-300 hover:text-white hover:bg-white/5"
+              }`}
+              aria-expanded={docsMenuOpen}
+            >
+              <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+              <span>Tài liệu</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                  docsMenuOpen ? "rotate-180 text-blue-400" : ""
+                }`}
+              />
+            </button>
+
+            {docsMenuOpen && (
+              <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-[#0B132B] border border-white/10 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-xs text-slate-200 backdrop-blur-xl">
+                {/* Cơ sở KHKT */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDocsMenuOpen(false);
+                    onSelectModule("knowledge");
+                  }}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer group"
+                >
+                  <span className="p-2 rounded-xl bg-slate-500/10 text-slate-300 group-hover:bg-blue-600 group-hover:text-white transition-colors shrink-0">
+                    <BookOpen className="w-4 h-4" />
+                  </span>
+                  <div>
+                    <div className="font-bold text-slate-100 group-hover:text-blue-300">
+                      Cơ sở KHKT & Sổ tay lý thuyết
+                    </div>
+                    <div className="text-[10px] text-slate-400">
+                      Phương pháp luận & Nghiên cứu sư phạm
+                    </div>
+                  </div>
+                </button>
+
+                {/* Hướng dẫn giáo viên (chỉ hiện khi phù hợp) */}
+                {canAccessTeacher && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDocsMenuOpen(false);
+                      onOpenTeacherGuide();
+                    }}
+                    className="w-full px-3.5 py-2.5 text-left hover:bg-amber-500/10 flex items-center gap-3 transition-colors cursor-pointer group text-amber-300 border-t border-white/5"
+                  >
+                    <span className="p-2 rounded-xl bg-amber-500/20 text-amber-400 group-hover:bg-amber-500 group-hover:text-white transition-colors shrink-0">
+                      <Presentation className="w-4 h-4" />
+                    </span>
+                    <div>
+                      <div className="font-bold text-amber-300 group-hover:text-amber-200 flex items-center gap-1.5">
+                        <span>Hướng dẫn giáo viên</span>
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/30 text-amber-200 font-extrabold uppercase">
+                          Sư phạm
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-amber-400/80">
+                        Kế hoạch bài dạy & Chuẩn GDPT 2018
+                      </div>
+                    </div>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </nav>
 
-        {/* 3. RIGHT CTAS & USER PROFILE */}
+        {/* 3. RIGHT SECTION: Nút Hỏi Opti & Tài khoản */}
         <div className="flex items-center gap-2 sm:gap-2.5">
-          {/* Nút Kích hoạt Trợ lý Socratic AI */}
+          {/* Nút Hỏi Opti rõ ràng */}
           {onToggleChatDrawer && (
             <button
               type="button"
@@ -235,21 +361,10 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
               title="Mở Trợ lý Socratic Opti"
             >
-              <Sparkles className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-              <span className="hidden sm:inline">Hỏi Socratic AI</span>
-              <span className="sm:hidden">Socratic</span>
+              <OptiMascot expression="happy" size={20} animate={false} />
+              <span className="font-bold">Hỏi Opti</span>
             </button>
           )}
-
-          {/* Linh vật Opti mini indicator */}
-          <div
-            onClick={() => onSelectModule("linear_programming")}
-            className="hidden md:flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 cursor-pointer transition-colors"
-            title="Đồng hành cùng Opti"
-          >
-            <span className="text-[11px] font-bold text-slate-300">Opti</span>
-            <OptiMascot expression="happy" size={24} animate={false} />
-          </div>
 
           {/* User Account / Login */}
           {sessionLoading ? (
@@ -266,7 +381,7 @@ export const Header: React.FC<HeaderProps> = ({
                   {(session.name || session.email || "M").slice(0, 1).toUpperCase()}
                 </span>
                 <span className="max-w-[120px] truncate hidden sm:inline text-slate-200 font-medium">
-                  {session.name || session.email?.split("@")[0] || "Học viên"}
+                  {session.name || session.email?.split("@")[0] || "Tài khoản"}
                 </span>
                 <ChevronDown
                   className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
@@ -275,7 +390,7 @@ export const Header: React.FC<HeaderProps> = ({
                 />
               </button>
 
-              {/* Account Dropdown Menu (Dark Frosted Glass Theme) */}
+              {/* Account Dropdown Menu */}
               {userMenuOpen && (
                 <div
                   className="absolute right-0 mt-2 w-64 rounded-2xl bg-[#0B132B] border border-white/10 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-xs text-slate-200 backdrop-blur-xl"
@@ -379,97 +494,196 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* 4. MOBILE NAVIGATION DRAWER (DARK THEMED) */}
+      {/* 4. MOBILE NAVIGATION DRAWER: Tìm bài → Mô phỏng → Tài liệu → Giáo viên (nếu có quyền) → Tài khoản */}
       {mobileMenuOpen && (
-        <div className="lg:hidden absolute top-14 left-0 right-0 border-b border-white/10 bg-[#0B132B] px-4 py-3 space-y-1 shadow-2xl animate-in slide-in-from-top-2 duration-150 text-slate-200">
+        <div className="lg:hidden absolute top-14 left-0 right-0 border-b border-white/10 bg-[#0B132B] px-4 py-3 space-y-2 shadow-2xl animate-in slide-in-from-top-2 duration-150 text-slate-200">
+          {/* Mục 1: Tìm bài */}
           <button
             type="button"
             onClick={() => {
               onSelectModule("home");
               setMobileMenuOpen(false);
             }}
-            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
-              currentModule === "home" ? "bg-white/10 text-white font-bold" : "text-slate-300 hover:bg-white/5"
+            className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-colors ${
+              currentModule === "home" ? "bg-blue-600 text-white font-bold" : "text-slate-300 hover:bg-white/5"
             }`}
           >
-            Trang chủ
+            <Search className="w-4 h-4 text-blue-400" />
+            <span>Tìm bài (Mục lục bài học)</span>
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              onSelectModule("learning_path");
-              setMobileMenuOpen(false);
-            }}
-            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors ${
-              currentModule === "learning_path" || currentModule === "lesson_study"
-                ? "bg-emerald-600/30 text-emerald-300 font-bold"
-                : "text-emerald-300 hover:bg-white/5"
-            }`}
-          >
-            <GraduationCap className="w-4 h-4 text-emerald-400" />
-            <span>Lộ trình học tập (15 Bài học)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              onSelectModule("linear_programming");
-              setMobileMenuOpen(false);
-            }}
-            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors ${
-              currentModule === "linear_programming" ? "bg-blue-600/30 text-blue-300 font-bold" : "text-slate-300 hover:bg-white/5"
-            }`}
-          >
-            <Compass className="w-4 h-4 text-blue-400" />
-            <span>Chuyên đề 1: BPT & Tối Ưu (Toán 10)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              onSelectModule("spatial_geometry");
-              setMobileMenuOpen(false);
-            }}
-            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors ${
-              currentModule === "spatial_geometry" ? "bg-emerald-600/30 text-emerald-300 font-bold" : "text-slate-300 hover:bg-white/5"
-            }`}
-          >
-            <Box className="w-4 h-4 text-emerald-400" />
-            <span>Chuyên đề 2: Không Gian 3D (Toán 11)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              onSelectModule("trigonometry");
-              setMobileMenuOpen(false);
-            }}
-            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors ${
-              currentModule === "trigonometry" ? "bg-purple-600/30 text-purple-300 font-bold" : "text-slate-300 hover:bg-white/5"
-            }`}
-          >
-            <Activity className="w-4 h-4 text-purple-400" />
-            <span>Chuyên đề 3: Lượng Giác (Toán 11)</span>
-          </button>
+
+          {/* Mục 2: Mô phỏng (mở rộng hiển thị 3 chuyên đề) */}
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setMobileSimExpanded((prev) => !prev)}
+              className="w-full text-left px-3 py-2.5 text-xs font-bold flex items-center justify-between text-blue-300 hover:bg-white/5 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Compass className="w-4 h-4 text-blue-400" />
+                <span>Mô phỏng thực hành</span>
+              </div>
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-blue-400 transition-transform duration-200 ${
+                  mobileSimExpanded ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {mobileSimExpanded && (
+              <div className="px-2 pb-2 pt-1 space-y-1 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectModule("linear_programming");
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between transition-colors ${
+                    currentModule === "linear_programming"
+                      ? "bg-blue-600/40 text-blue-300 font-bold"
+                      : "text-slate-300 hover:bg-white/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <Compass className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                    <span className="truncate">CĐ1: BPT & Tối Ưu</span>
+                  </div>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-slate-300">Lớp 10</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectModule("spatial_geometry");
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between transition-colors ${
+                    currentModule === "spatial_geometry"
+                      ? "bg-emerald-600/40 text-emerald-300 font-bold"
+                      : "text-slate-300 hover:bg-white/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <Box className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span className="truncate">CĐ2: Không Gian 3D</span>
+                  </div>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-slate-300">Lớp 11</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectModule("trigonometry");
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between transition-colors ${
+                    currentModule === "trigonometry"
+                      ? "bg-purple-600/40 text-purple-300 font-bold"
+                      : "text-slate-300 hover:bg-white/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <Activity className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                    <span className="truncate">CĐ3: Lượng Giác</span>
+                  </div>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-slate-300">Lớp 11</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Mục 3: Tài liệu */}
           <button
             type="button"
             onClick={() => {
               onSelectModule("knowledge");
               setMobileMenuOpen(false);
             }}
-            className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-300 hover:bg-white/5"
+            className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-slate-300 hover:bg-white/5"
           >
             <BookOpen className="w-4 h-4 text-slate-400" />
-            <span>Cơ sở KHKT & Sổ tay lý thuyết</span>
+            <span>Tài liệu: Cơ sở KHKT & Sổ tay</span>
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              onOpenTeacherGuide();
-              setMobileMenuOpen(false);
-            }}
-            className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-amber-300 bg-amber-500/10 hover:bg-amber-500/20"
-          >
-            <Presentation className="w-4 h-4 text-amber-400" />
-            <span>Hướng dẫn sư phạm giáo viên</span>
-          </button>
+
+          {/* Mục 4: Giáo viên (chỉ hiện khi có quyền) */}
+          {canAccessTeacher && (
+            <button
+              type="button"
+              onClick={() => {
+                onOpenTeacherGuide();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-amber-300 bg-amber-500/10 hover:bg-amber-500/20"
+            >
+              <Presentation className="w-4 h-4 text-amber-400" />
+              <span>Hướng dẫn sư phạm giáo viên</span>
+            </button>
+          )}
+
+          {/* Mục 5: Tài khoản */}
+          <div className="pt-2 border-t border-white/10 space-y-1">
+            {session?.authenticated ? (
+              <>
+                <div className="px-3 py-1.5 text-[11px] text-slate-400 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-mono text-[10px] flex items-center justify-center font-bold">
+                    {(session.name || session.email || "M").slice(0, 1).toUpperCase()}
+                  </span>
+                  <span className="truncate text-slate-200 font-semibold">{session.name || session.email}</span>
+                </div>
+                {onOpenChatHistory && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenChatHistory();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-lg text-xs text-slate-300 hover:bg-white/5 flex items-center gap-2"
+                  >
+                    <History className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Lịch sử trò chuyện AI</span>
+                  </button>
+                )}
+                {onOpenAccountModal && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenAccountModal("ai");
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-lg text-xs text-slate-300 hover:bg-white/5 flex items-center gap-2"
+                  >
+                    <Settings className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Cấu hình AI (Gemini Key)</span>
+                  </button>
+                )}
+                {onLogout && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 flex items-center gap-2 font-medium"
+                  >
+                    <LogOut className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Đăng xuất</span>
+                  </button>
+                )}
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenAuthModal?.();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 flex items-center gap-2"
+              >
+                <User className="w-4 h-4" />
+                <span>Đăng nhập tài khoản</span>
+              </button>
+            )}
+          </div>
         </div>
       )}
     </header>
