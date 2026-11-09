@@ -63,7 +63,7 @@ Deploy this repository as two Vercel projects so the frontend and FastAPI backen
 
 Set these variables in both Preview and Production environments:
 
-- Frontend: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `FASTAPI_BASE_URL` set to the deployed backend's HTTPS URL.
+- Frontend: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `FASTAPI_BASE_URL` set to the deployed backend's HTTPS URL, and a stable server-only `CAPTCHA_SECRET` (at least 32 random characters) shared by every frontend deployment instance.
 - Backend: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `AI_BASE_URL`, `AI_API_KEY`, and `AI_MODEL`.
 
 Keep `SUPABASE_SERVICE_ROLE_KEY` and `AI_API_KEY` only in the backend project's encrypted environment variables. Do not copy them into the frontend project. The two projects can be created from the same Git repository with different Root Directory settings. Deploy a Preview first, verify `/health`, sign-in, and chat, then deploy Production.

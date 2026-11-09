@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Header, SessionData } from "@/app/components/optimath/Header";
 import { Footer } from "@/app/components/optimath/Footer";
 import { LessonStudyScreen } from "@/app/components/learning-path/LessonStudyScreen";
+import { LessonTheoryScreen } from "@/app/components/learning-path/LessonTheoryScreen";
 import { TeacherGuideModal } from "@/app/components/optimath/TeacherGuideModal";
 import { KnowledgeBaseModal } from "@/app/components/optimath/KnowledgeBaseModal";
 import AccountSettingsModal, { CustomAiConfig } from "@/app/components/AccountSettingsModal";
@@ -30,11 +31,13 @@ import {
 interface LessonStudyClientPageProps {
   moduleId: string;
   lessonId: string;
+  stage?: "theory" | "practice";
 }
 
 export default function LessonStudyClientPage({
   moduleId,
   lessonId,
+  stage = "theory",
 }: LessonStudyClientPageProps) {
   const router = useRouter();
 
@@ -165,7 +168,10 @@ export default function LessonStudyClientPage({
   // Open simulation lab handler
   const handleOpenSimulation = (modId: string, lId: string) => {
     // Navigate to home page with lab view and returnTo parameter
-    const returnUrl = encodeURIComponent(`/learn/${modId}/${lId}`);
+    const lessonUrl = stage === "practice"
+      ? `/learn/${modId}/${lId}/practice`
+      : `/learn/${modId}/${lId}`;
+    const returnUrl = encodeURIComponent(lessonUrl);
     router.push(`/?view=${modId}&lesson=${lId}&returnTo=${returnUrl}`);
   };
 
@@ -192,6 +198,7 @@ export default function LessonStudyClientPage({
         body: JSON.stringify({
           conversation_id: conversationId || `opti-${lessonId}`,
           message: `[Ngữ cảnh học sinh đang học ${lessonContent?.code}: ${lessonContent?.title} - Chuyên đề ${parentModule?.title}]\n${text}`,
+          custom_ai: customAiConfig || undefined,
           history: chatMessages.slice(-6).map((m) => ({
             role: m.role,
             content: m.content,
@@ -377,6 +384,7 @@ export default function LessonStudyClientPage({
 
           {/* Quick Simulation Link & Socratic AI Button */}
           <div className="flex items-center gap-2 shrink-0">
+            {stage === "practice" && (
             <button
               type="button"
               onClick={() => handleOpenSimulation(moduleId, lessonId)}
@@ -387,6 +395,7 @@ export default function LessonStudyClientPage({
               <span className="hidden xs:inline">Mở</span>
               <span>Mô phỏng</span>
             </button>
+            )}
 
             <button
               type="button"
@@ -401,15 +410,24 @@ export default function LessonStudyClientPage({
         </div>
       </div>
 
-      {/* 3. Main Lesson Study Screen (Full 7 Sections) */}
+      {/* Stage 1 is theory only; stage 2 is guided procedure and practice. */}
       <main className="flex-1 py-4 sm:py-6">
-        <LessonStudyScreen
-          content={lessonContent}
-          onBackToRoadmap={() => router.push("/")}
-          onCompleteAndNext={handleCompleteAndNext}
-          onOpenSimulation={handleOpenSimulation}
-          isCompleted={isCompleted}
-        />
+        {stage === "theory" ? (
+          <LessonTheoryScreen
+            key={`theory-${lessonId}`}
+            content={lessonContent}
+            onStartGuidedPractice={() => router.push(`/learn/${moduleId}/${lessonId}/practice`)}
+          />
+        ) : (
+          <LessonStudyScreen
+            key={`practice-${lessonId}`}
+            content={lessonContent}
+            onBackToTheory={() => router.push(`/learn/${moduleId}/${lessonId}`)}
+            onCompleteAndNext={handleCompleteAndNext}
+            onOpenSimulation={handleOpenSimulation}
+            isCompleted={isCompleted}
+          />
+        )}
       </main>
 
       {/* 4. Socratic Chat Drawer */}

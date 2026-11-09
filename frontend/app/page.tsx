@@ -50,7 +50,7 @@ function OptimathMainContent() {
   // 1. Navigation state
   const [currentView, setCurrentView] = useState<ActiveView>("home");
   const [activeLessonId, setActiveLessonId] = useState<string>("lp-lesson-1");
-  const [selectedStudyLessonId, setSelectedStudyLessonId] = useState<string>("lp-lesson-1");
+  const [selectedStudyLessonId] = useState<string>("lp-lesson-1");
   const [returnToUrl, setReturnToUrl] = useState<string | null>(null);
   const [userProgress, setUserProgress] = useState<UserLearningProgress>(() =>
     loadUserLearningProgress()
@@ -74,6 +74,12 @@ function OptimathMainContent() {
   const [loginNotice, setLoginNotice] = useState<string | null>(null);
   const [loginBusy, setLoginBusy] = useState(false);
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState("");
+  const [captchaQuestion, setCaptchaQuestion] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaAnswer, setCaptchaAnswer] = useState("");
+  const [captchaLoading, setCaptchaLoading] = useState(false);
+  const [captchaLoadError, setCaptchaLoadError] = useState("");
+  const [googleBusy, setGoogleBusy] = useState(false);
 
   // 4. Custom AI & Account Modals
   const [accountModalOpen, setAccountModalOpen] = useState(false);
@@ -98,6 +104,20 @@ function OptimathMainContent() {
 
   // Check URL parameters for view routing
   useEffect(() => {
+    const authError = searchParams.get("auth_error");
+    if (authError) {
+      setAuthModalOpen(true);
+      setAuthMode("login");
+      setLoginError(
+        authError === "google-disabled"
+          ? "Đăng nhập Google chưa được bật trong cấu hình Supabase. Em có thể dùng email hoặc thử lại sau."
+          : "Chưa kết nối được dịch vụ đăng nhập Google. Em có thể dùng email hoặc thử lại sau."
+      );
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.delete("auth_error");
+      window.history.replaceState({}, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+    }
+
     const viewParam = searchParams.get("view");
     const lessonParam = searchParams.get("lesson");
     const returnToParam = searchParams.get("returnTo");
@@ -108,8 +128,15 @@ function OptimathMainContent() {
 
     if (viewParam === "learning_path" || viewParam === "study") {
       if (lessonParam) {
-        setSelectedStudyLessonId(lessonParam);
-        setCurrentView("lesson_study");
+        const lessonModule = CORE_3_MODULES.find((module) =>
+          module.lessons.some((lesson) => lesson.id === lessonParam)
+        );
+        const lesson = lessonModule?.lessons.find((item) => item.id === lessonParam);
+        if (lessonModule && lesson) {
+          window.location.replace(`/learn/${lessonModule.id}/${lesson.id}`);
+        } else {
+          setCurrentView("learning_path");
+        }
       } else {
         setCurrentView("learning_path");
       }
@@ -132,6 +159,33 @@ function OptimathMainContent() {
       setCurrentView(viewParam as ActiveView);
     }
   }, [searchParams]);
+
+  const loadCaptcha = useCallback(async () => {
+    setCaptchaLoading(true);
+    setCaptchaLoadError("");
+    setCaptchaToken("");
+    setCaptchaQuestion("");
+    setCaptchaAnswer("");
+
+    try {
+      const response = await fetch("/api/auth/captcha", { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok || !data?.ok || typeof data.question !== "string" || typeof data.token !== "string") {
+        throw new Error(data?.error || "Chưa tải được câu hỏi xác thực.");
+      }
+      setCaptchaQuestion(data.question);
+      setCaptchaToken(data.token);
+    } catch (error) {
+      setCaptchaLoadError(error instanceof Error ? error.message : "Chưa tải được câu hỏi xác thực.");
+    } finally {
+      setCaptchaLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!authModalOpen || authMode === "verify_email") return;
+    void loadCaptcha();
+  }, [authModalOpen, authMode, loadCaptcha]);
 
   // Check user session
   const checkSession = useCallback(async () => {
@@ -229,13 +283,12 @@ function OptimathMainContent() {
 
   // Chọn bài học trong Lộ trình học (Bite-sized Track)
   const handleSelectStudyLesson = (lessonId: string) => {
-    setSelectedStudyLessonId(lessonId);
+    const lessonModule = CORE_3_MODULES.find((module) =>
+      module.lessons.some((lesson) => lesson.id === lessonId)
+    );
+    if (!lessonModule) return;
     setLastActiveLesson(lessonId);
-    setUserProgress(loadUserLearningProgress());
-    setCurrentView("lesson_study");
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    window.location.assign(`/learn/${lessonModule.id}/${lessonId}`);
   };
 
   // Hoàn thành bài học và chuyển tiếp
@@ -252,15 +305,11 @@ function OptimathMainContent() {
     const currentIndex = allLessons.findIndex((l) => l.id === lessonId);
     if (currentIndex >= 0 && currentIndex < allLessons.length - 1) {
       const nextLesson = allLessons[currentIndex + 1];
-      setSelectedStudyLessonId(nextLesson.id);
       setLastActiveLesson(nextLesson.id);
-      setCurrentView("lesson_study");
+      window.location.assign(`/learn/${nextLesson.moduleId}/${nextLesson.id}`);
     } else {
       // Đã xong bài cuối cùng, quay lại Lộ trình
-      setCurrentView("learning_path");
-    }
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.location.assign("/");
     }
   };
 
@@ -343,14 +392,18 @@ function OptimathMainContent() {
     e.preventDefault();
     setLoginError(null);
     setLoginNotice(null);
+    if (!captchaToken || !captchaAnswer.trim()) {
+      setLoginError("Hãy tải và trả lời câu hỏi xác thực trước khi tiếp tục.");
+      return;
+    }
     setLoginBusy(true);
 
     try {
       const endpoint = authMode === "signup" ? "/api/auth/signup" : "/api/auth/login";
       const payload =
         authMode === "signup"
-          ? { email: loginEmail, password: loginPassword, name: loginName }
-          : { email: loginEmail, password: loginPassword };
+          ? { email: loginEmail, password: loginPassword, name: loginName, captchaAnswer, captchaToken }
+          : { email: loginEmail, password: loginPassword, captchaAnswer, captchaToken };
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -360,10 +413,10 @@ function OptimathMainContent() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Có lỗi xảy ra trong quá trình xác thực.");
+        throw new Error(data?.detail?.message || data?.error || "Có lỗi xảy ra trong quá trình xác thực.");
       }
 
-      if (data.email_verification_required) {
+      if (data.email_verification_required || data.confirmation_required) {
         setPendingVerificationEmail(loginEmail);
         setAuthMode("verify_email");
         return;
@@ -375,6 +428,7 @@ function OptimathMainContent() {
       setLoginError(err instanceof Error ? err.message : "Đăng nhập thất bại");
     } finally {
       setLoginBusy(false);
+      void loadCaptcha();
     }
   };
 
@@ -550,6 +604,7 @@ function OptimathMainContent() {
                 onCompleteAndNext={handleCompleteAndNext}
                 onOpenSimulation={handleOpenLesson}
                 isCompleted={userProgress.completedLessonIds.includes(selectedStudyLessonId)}
+                showTheorySections
               />
             );
           })()
@@ -870,6 +925,28 @@ function OptimathMainContent() {
                   </div>
                 )}
 
+                <button
+                  type="button"
+                  disabled={googleBusy || loginBusy}
+                  onClick={() => {
+                    setLoginError(null);
+                    setGoogleBusy(true);
+                    window.location.assign("/api/auth/google");
+                  }}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white py-2.5 text-xs font-bold text-slate-800 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-60"
+                >
+                  {googleBusy ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <span aria-hidden="true" className="flex h-5 w-5 items-center justify-center rounded-full border border-slate-200 font-black text-blue-600">G</span>
+                  )}
+                  Tiếp tục với Google
+                </button>
+                <div className="relative py-1 text-center text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                  <span className="relative z-10 bg-white px-2">Hoặc dùng email</span>
+                  <span className="absolute inset-x-0 top-1/2 border-t border-slate-100" />
+                </div>
+
                 {authMode === "signup" && (
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -919,9 +996,51 @@ function OptimathMainContent() {
                   </div>
                 </div>
 
+                <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <label htmlFor="auth-captcha-answer" className="text-xs font-bold text-slate-800">
+                      Xác thực chống spam
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => void loadCaptcha()}
+                      disabled={captchaLoading}
+                      className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 hover:text-blue-900 disabled:opacity-50"
+                    >
+                      <RefreshCw className={`h-3 w-3 ${captchaLoading ? "animate-spin" : ""}`} />
+                      Đổi câu hỏi
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span aria-live="polite" className="min-w-20 rounded-lg border border-amber-200 bg-white px-3 py-2 text-center font-mono text-sm font-black text-amber-950">
+                      {captchaLoading ? "…" : captchaQuestion || "—"}
+                    </span>
+                    <span aria-hidden="true" className="text-xs text-slate-500">=</span>
+                    <input
+                      id="auth-captcha-answer"
+                      type="number"
+                      inputMode="numeric"
+                      min="0"
+                      step="1"
+                      required
+                      value={captchaAnswer}
+                      onChange={(event) => setCaptchaAnswer(event.target.value)}
+                      placeholder="Đáp án"
+                      disabled={captchaLoading || !captchaToken}
+                      className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100"
+                    />
+                  </div>
+                  <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
+                    Tính nhanh phép toán để xác nhận em không phải chương trình tự động.
+                  </p>
+                  {captchaLoadError && (
+                    <p role="alert" className="mt-2 text-[11px] font-semibold text-rose-700">{captchaLoadError}</p>
+                  )}
+                </div>
+
                 <button
                   type="submit"
-                  disabled={loginBusy}
+                  disabled={loginBusy || googleBusy || captchaLoading || !captchaToken || !captchaAnswer.trim()}
                   className="w-full py-2.5 mt-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {loginBusy ? (

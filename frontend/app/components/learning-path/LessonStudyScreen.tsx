@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { DetailedLessonContent, WorkedStep } from "../../types/learningPath";
+import type { DetailedLessonContent } from "../../types/learningPath";
 import { MathFormattedText } from "../KatexMath";
 import {
   ArrowLeft,
@@ -20,18 +20,22 @@ import { OptiMascot } from "../optimath/mascot/OptiMascot";
 
 interface LessonStudyScreenProps {
   content: DetailedLessonContent;
-  onBackToRoadmap: () => void;
+  onBackToTheory?: () => void;
+  onBackToRoadmap?: () => void;
   onCompleteAndNext: (lessonId: string, scorePercentage: number, xpEarned: number) => void;
   onOpenSimulation: (moduleId: string, lessonId: string) => void;
   isCompleted?: boolean;
+  showTheorySections?: boolean;
 }
 
 export function LessonStudyScreen({
   content,
+  onBackToTheory,
   onBackToRoadmap,
   onCompleteAndNext,
   onOpenSimulation,
   isCompleted = false,
+  showTheorySections = false,
 }: LessonStudyScreenProps) {
   // Checkpoint question state: checkpointId -> selectedOptionId
   const [checkpointAnswers, setCheckpointAnswers] = useState<Record<string, string>>({});
@@ -40,6 +44,9 @@ export function LessonStudyScreen({
   // Review Quiz state: questionId -> selectedOptionId
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [quizSubmitted, setQuizSubmitted] = useState<boolean>(false);
+  const [activeWorkedStepIndex, setActiveWorkedStepIndex] = useState(0);
+  const [workedHintLevel, setWorkedHintLevel] = useState(0);
+  const [workedStepChecked, setWorkedStepChecked] = useState(false);
 
   // Optional Socratic AI Assistant Drawer
   const [aiDrawerOpen, setAiDrawerOpen] = useState<boolean>(false);
@@ -65,6 +72,30 @@ export function LessonStudyScreen({
     });
     return Math.round((correct / content.reviewQuiz.length) * 100);
   }, [content.reviewQuiz, quizAnswers]);
+
+  const activeWorkedStep = content.workedExample.steps[activeWorkedStepIndex];
+  const workedStepProgress = activeWorkedStep
+    ? Math.round((activeWorkedStepIndex / content.workedExample.steps.length) * 100)
+    : 100;
+  const workedExampleComplete = activeWorkedStepIndex >= content.workedExample.steps.length;
+  const checkpointsComplete = content.checkpoints.every((checkpoint) => {
+    const selectedId = checkpointAnswers[checkpoint.id];
+    return checkpoint.options.some((option) => option.id === selectedId && option.isCorrect);
+  });
+  const canCompleteLesson =
+    workedExampleComplete &&
+    checkpointsComplete &&
+    (content.reviewQuiz.length === 0 || quizSubmitted);
+
+  const handleShowNextWorkedHint = () => {
+    setWorkedHintLevel((level) => Math.min(level + 1, 3));
+  };
+
+  const handleAdvanceWorkedStep = () => {
+    setActiveWorkedStepIndex((index) => Math.min(index + 1, content.workedExample.steps.length));
+    setWorkedHintLevel(0);
+    setWorkedStepChecked(false);
+  };
 
   // Handle checkpoint option selection
   const handleSelectCheckpointOption = (qId: string, optId: string) => {
@@ -133,13 +164,13 @@ export function LessonStudyScreen({
           <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
-              onClick={onBackToRoadmap}
+              onClick={onBackToTheory ?? onBackToRoadmap ?? (() => undefined)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer shrink-0"
-              title="Quay lại danh sách lộ trình bài học"
+              title={onBackToTheory ? "Quay lại phần lý thuyết" : "Quay lại danh sách lộ trình bài học"}
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Lộ trình học</span>
-              <span className="sm:hidden">Lộ trình</span>
+              <span className="hidden sm:inline">{onBackToTheory ? "Lý thuyết" : "Lộ trình học"}</span>
+              <span className="sm:hidden">{onBackToTheory ? "Lý thuyết" : "Lộ trình"}</span>
             </button>
 
             <div className="h-4 w-[1px] bg-slate-200 shrink-0" />
@@ -227,6 +258,7 @@ export function LessonStudyScreen({
           </div>
         </div>
 
+        {showTheorySections && <>
         {/* PHẦN 1: MỤC TIÊU BÀI HỌC */}
         <section className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center gap-2.5 text-slate-900">
@@ -249,7 +281,9 @@ export function LessonStudyScreen({
             ))}
           </div>
         </section>
+        </>}
 
+        {showTheorySections && <>
         {/* PHẦN 2: LÝ THUYẾT NGẮN GỌN (LITE THEORY) */}
         <section className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-5">
           <div className="flex items-center gap-2.5 text-slate-900">
@@ -322,15 +356,16 @@ export function LessonStudyScreen({
             </div>
           </div>
         </section>
+        </>}
 
-        {/* PHẦN 3: VÍ DỤ MINH HỌA TUẦN TỰ (WORKED EXAMPLE) */}
+        {/* Guided example: learners reveal and check one step at a time. */}
         <section className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-5">
           <div className="flex items-center gap-2.5 text-slate-900">
             <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs">
-              3
+              {showTheorySections ? 3 : 1}
             </div>
             <h2 className="text-base sm:text-lg font-black tracking-tight">
-              Ví Dụ Minh Họa Tuần Tự Có Lý Giải (Worked Example)
+              Ví dụ hướng dẫn từng bước
             </h2>
           </div>
 
@@ -339,55 +374,89 @@ export function LessonStudyScreen({
             <strong>Đề bài:</strong> <MathFormattedText text={content.workedExample.problemStatement} />
           </div>
 
-          {/* Step-by-step reasoning cards */}
-          <div className="space-y-3.5">
-            {content.workedExample.steps.map((step: WorkedStep) => (
-              <div
-                key={step.stepNumber}
-                className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-2 relative"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-lg bg-purple-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
-                    {step.stepNumber}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-500">
+              <span>{activeWorkedStep ? `Bước ${activeWorkedStepIndex + 1} / ${content.workedExample.steps.length}` : "Đã xong ví dụ"}</span>
+              <span>{workedStepProgress}%</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label="Tiến độ ví dụ hướng dẫn" aria-valuemin={0} aria-valuemax={content.workedExample.steps.length} aria-valuenow={activeWorkedStepIndex}>
+              <div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${workedStepProgress}%` }} />
+            </div>
+
+            {activeWorkedStep ? (
+              <article className="rounded-2xl border border-purple-200 bg-purple-50/50 p-4 sm:p-5">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-purple-600 text-sm font-black text-white">
+                    {activeWorkedStep.stepNumber}
                   </span>
-                  <span className="font-bold text-xs sm:text-sm text-slate-900">
-                    {step.title}
-                  </span>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-slate-900">{activeWorkedStep.title}</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                      Em hãy tự thử làm bước này trước. Khi cần, mở gợi ý; sau đó đối chiếu lời giải để chuyển tiếp.
+                    </p>
+                  </div>
                 </div>
 
-                {step.mathExpression && (
-                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 font-mono text-xs sm:text-sm text-blue-900">
-                    <MathFormattedText text={`$$${step.mathExpression}$$`} />
+                {workedHintLevel > 0 && (
+                  <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-xs leading-relaxed text-indigo-950">
+                    <div className="mb-1 flex items-center gap-1.5 font-extrabold">
+                      <Lightbulb className="h-3.5 w-3.5" aria-hidden="true" />
+                      Gợi ý {workedHintLevel} / 3
+                    </div>
+                    <MathFormattedText text={workedHintLevel === 1 ? activeWorkedStep.rationale : activeWorkedStep.explanation} />
+                    {workedHintLevel === 3 && activeWorkedStep.mathExpression && (
+                      <div className="mt-2 overflow-x-auto rounded-lg bg-white p-2 font-mono text-blue-900">
+                        <MathFormattedText text={`$$${activeWorkedStep.mathExpression}$$`} />
+                      </div>
+                    )}
                   </div>
                 )}
 
-                <p className="text-xs text-slate-700 leading-relaxed">
-                  <MathFormattedText text={step.explanation} />
-                </p>
+                {workedStepChecked && (
+                  <div className="mt-4 space-y-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs leading-relaxed text-emerald-950">
+                    {activeWorkedStep.mathExpression && (
+                      <div className="overflow-x-auto rounded-lg bg-white p-2 font-mono text-blue-900">
+                        <MathFormattedText text={`$$${activeWorkedStep.mathExpression}$$`} />
+                      </div>
+                    )}
+                    <p><MathFormattedText text={activeWorkedStep.explanation} /></p>
+                    <p className="border-t border-emerald-200 pt-2"><strong>Vì sao làm bước này?</strong> {activeWorkedStep.rationale}</p>
+                  </div>
+                )}
 
-                {/* Sư phạm: Rationale */}
-                <div className="text-[11px] text-indigo-700 bg-indigo-50 border border-indigo-200/60 px-2.5 py-1.5 rounded-xl flex items-start gap-1.5">
-                  <Lightbulb className="w-3.5 h-3.5 text-indigo-600 shrink-0 mt-0.5" />
-                  <span>
-                    <strong>Lý giải sư phạm:</strong> {step.rationale}
-                  </span>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {!workedStepChecked ? (
+                    <>
+                      <button type="button" onClick={handleShowNextWorkedHint} disabled={workedHintLevel >= 3} className="rounded-xl border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 transition-colors hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50">
+                        {workedHintLevel >= 3 ? "Đã xem hết gợi ý" : workedHintLevel === 0 ? "Mở gợi ý" : "Gợi ý tiếp theo"}
+                      </button>
+                      <button type="button" onClick={() => setWorkedStepChecked(true)} className="rounded-xl bg-purple-600 px-3 py-2 text-xs font-extrabold text-white transition-colors hover:bg-purple-700">
+                        Đối chiếu bước này
+                      </button>
+                    </>
+                  ) : (
+                    <button type="button" onClick={handleAdvanceWorkedStep} className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-extrabold text-white transition-colors hover:bg-emerald-700">
+                      {activeWorkedStepIndex + 1 < content.workedExample.steps.length ? "Sang bước tiếp theo" : "Xem kết luận ví dụ"}
+                      <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                    </button>
+                  )}
                 </div>
+              </article>
+            ) : (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-relaxed text-emerald-950">
+                <strong>Kết luận:</strong> <MathFormattedText text={content.workedExample.conclusion} />
               </div>
-            ))}
+            )}
           </div>
 
-          {/* Conclusion */}
-          <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold">
-            ✓ Kết luận: {content.workedExample.conclusion}
-          </div>
         </section>
 
         {/* PHẦN 4: CÂU HỎI TỰ LUYỆN SAU MỖI PHẦN (CHECKPOINTS) */}
-        {content.checkpoints.length > 0 && (
+        {content.checkpoints.length > 0 && workedExampleComplete && (
           <section className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-5">
             <div className="flex items-center gap-2.5 text-slate-900">
               <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">
-                4
+                {showTheorySections ? 4 : 2}
               </div>
               <h2 className="text-base sm:text-lg font-black tracking-tight">
                 Tự Luyện Kiểm Tra Nhanh (Checkpoints)
@@ -495,12 +564,12 @@ export function LessonStudyScreen({
         )}
 
         {/* PHẦN 5: BÀI ÔN TẬP NGẮN CUỐI BÀI (MINI REVIEW QUIZ) */}
-        {content.reviewQuiz.length > 0 && (
+        {content.reviewQuiz.length > 0 && workedExampleComplete && checkpointsComplete && (
           <section className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-5">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 text-slate-900">
                 <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">
-                  5
+                {showTheorySections ? 5 : 3}
                 </div>
                 <h2 className="text-base sm:text-lg font-black tracking-tight">
                   Bài Ôn Tập Ngắn Cuối Bài (Review Quiz)
@@ -623,11 +692,11 @@ export function LessonStudyScreen({
         )}
 
         {/* PHẦN 6 & 7: NÚT HOÀN THÀNH & MỞ PHÒNG MÔ PHỎNG */}
-        <section className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        {canCompleteLesson && <section className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-1.5 text-center md:text-left">
             <div className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-200 bg-white/10 px-2.5 py-0.5 rounded-full">
               <Award className="w-3.5 h-3.5 text-amber-300" />
-              <span>HOÀN TẤT BÀI HỌC</span>
+              <span>{showTheorySections ? "HOÀN TẤT BÀI HỌC" : "CHẶNG CUỐI"}</span>
             </div>
             <h3 className="text-lg sm:text-xl font-black">
               Em đã sẵn sàng hoàn thành bài này?
@@ -658,7 +727,7 @@ export function LessonStudyScreen({
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-        </section>
+        </section>}
       </main>
 
       {/* 3. OPTIONAL SOCRATIC AI DRAWER (EMBEDDED) */}

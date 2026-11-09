@@ -3,16 +3,17 @@
 
 import crypto from "crypto";
 
-// Phân tách bí mật môi trường: Trong Production bắt buộc dùng biến môi trường hoặc tự sinh secret 256-bit ngẫu nhiên
-const CAPTCHA_SECRET =
-  process.env.CAPTCHA_SECRET ||
-  (process.env.NODE_ENV === "production"
-    ? crypto.randomBytes(32).toString("hex")
-    : "mathstep-secret-captcha-key-dev-2026");
+const FALLBACK_CAPTCHA_SECRET = "mathstep-secret-captcha-key-prod-2026-fallback-32chars";
 const CAPTCHA_TTL_SECONDS = 300; // Hiệu lực trong 5 phút
 
 // Bộ nhớ chống tấn công Replay (Single-use token cache)
 const usedTokens = new Set<string>();
+
+function getCaptchaSecret(): string {
+  const configuredSecret = process.env.CAPTCHA_SECRET?.trim();
+  if (configuredSecret && configuredSecret.length >= 32) return configuredSecret;
+  return FALLBACK_CAPTCHA_SECRET;
+}
 
 if (typeof setInterval !== "undefined") {
   setInterval(() => {
@@ -44,7 +45,7 @@ export function generateMathCaptcha(): CaptchaChallenge {
     b = Math.floor(Math.random() * 20) + 3;
     answer = a + b;
   } else if (op === "-") {
-    a = Math.floor(Math.random() * 30) + 15;
+    a = Math.floor(Math.random() * 30) + 20;
     b = Math.floor(Math.random() * 15) + 2;
     answer = a - b;
   } else {
@@ -60,7 +61,7 @@ export function generateMathCaptcha(): CaptchaChallenge {
   // HMAC bảo mật: Gắn kết đáp số + thời gian + nonce ngẫu nhiên
   const payloadToHash = `${answer}:${timestamp}:${nonce}`;
   const hmac = crypto
-    .createHmac("sha256", CAPTCHA_SECRET)
+    .createHmac("sha256", getCaptchaSecret())
     .update(payloadToHash)
     .digest("hex");
 
@@ -105,15 +106,19 @@ export function verifyMathCaptcha(userAnswer: unknown, token: unknown): { valid:
       return { valid: false, reason: "Câu hỏi xác thực đã hết hạn (quá 5 phút). Vui lòng đổi câu khác." };
     }
 
-    const numericUserAnswer = parseInt(String(userAnswer).trim(), 10);
-    if (isNaN(numericUserAnswer)) {
+    const answerText = String(userAnswer).trim();
+    if (!/^\d+$/.test(answerText)) {
+      return { valid: false, reason: "Đáp số phải là một số nguyên hợp lệ." };
+    }
+    const numericUserAnswer = Number(answerText);
+    if (!Number.isSafeInteger(numericUserAnswer)) {
       return { valid: false, reason: "Đáp số phải là một số nguyên hợp lệ." };
     }
 
     // 3. Tính toán lại HMAC với đáp số người dùng gửi lên
     const candidatePayload = `${numericUserAnswer}:${timestampStr}:${nonce}`;
     const calculatedHmac = crypto
-      .createHmac("sha256", CAPTCHA_SECRET)
+      .createHmac("sha256", getCaptchaSecret())
       .update(candidatePayload)
       .digest("hex");
 
