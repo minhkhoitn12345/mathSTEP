@@ -9,6 +9,7 @@ const DEFAULT_PROGRESS: UserLearningProgress = {
   quizScores: {},
   earnedXp: 0,
   streakDays: 0,
+  longestStreakDays: 0,
   lastStudyDate: "",
 };
 
@@ -50,6 +51,9 @@ export function loadUserLearningProgress(): UserLearningProgress {
       quizScores: parsed.quizScores || {},
       earnedXp: typeof parsed.earnedXp === "number" ? parsed.earnedXp : 0,
       streakDays: typeof parsed.streakDays === "number" ? parsed.streakDays : 0,
+      longestStreakDays: typeof parsed.longestStreakDays === "number"
+        ? Math.max(parsed.longestStreakDays, typeof parsed.streakDays === "number" ? parsed.streakDays : 0)
+        : typeof parsed.streakDays === "number" ? parsed.streakDays : 0,
       lastStudyDate: typeof parsed.lastStudyDate === "string" ? parsed.lastStudyDate : "",
     };
   } catch (err) {
@@ -107,6 +111,7 @@ export function markLessonCompleted(
     },
     earnedXp: updatedXp,
     streakDays: updatedStreak,
+    longestStreakDays: Math.max(current.longestStreakDays ?? current.streakDays, updatedStreak),
     lastStudyDate: today,
   };
 

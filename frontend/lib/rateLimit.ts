@@ -99,4 +99,6 @@ export const RATE_LIMIT_RULES = {
   SIGNUP: { maxRequests: 4, windowSeconds: 600, actionName: "signup" }, // Tối đa 4 lần đăng ký/10 phút
   RESEND_EMAIL: { maxRequests: 2, windowSeconds: 300, actionName: "resend" }, // Tối đa 2 lần gửi lại email/5 phút
   GEOMETRY_PARSER: { maxRequests: 15, windowSeconds: 60, actionName: "geom_parse" }, // 15 lượt dựng hình 3D/phút
+  CAPTCHA: { maxRequests: 30, windowSeconds: 60, actionName: "captcha" }, // Tối đa 30 câu hỏi captcha/phút
+  TEST_KEY: { maxRequests: 10, windowSeconds: 60, actionName: "test_key" }, // Tối đa 10 lần kiểm tra key/phút
 };

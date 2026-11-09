@@ -1,19 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isJsonRequest, isSameOrigin, jsonError } from "@/lib/security";
-import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { checkRateLimit, getClientIp, RATE_LIMIT_RULES } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
+
+const NO_CACHE_HEADERS = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+  Pragma: "no-cache",
+  Expires: "0",
+};
 
 export async function POST(request: NextRequest) {
   if (!isSameOrigin(request)) return jsonError("FORBIDDEN", "Yêu cầu không hợp lệ.", 403);
   if (!isJsonRequest(request)) return jsonError("INVALID_CONTENT_TYPE", "Yêu cầu phải ở định dạng JSON.", 415);
 
   const clientIp = getClientIp(request);
-  const rateLimitStatus = checkRateLimit(clientIp, { maxRequests: 10, windowSeconds: 60, actionName: "test_key" });
+  const rateLimitStatus = checkRateLimit(clientIp, RATE_LIMIT_RULES.TEST_KEY);
   if (!rateLimitStatus.success) {
     return NextResponse.json(
       { detail: { code: "RATE_LIMIT_EXCEEDED", message: `Thao tác kiểm tra key quá nhanh. Vui lòng đợi ${rateLimitStatus.resetSeconds} giây.` } },
-      { status: 429, headers: { "Retry-After": rateLimitStatus.resetSeconds.toString() } }
+      { status: 429, headers: { "Retry-After": rateLimitStatus.resetSeconds.toString(), ...NO_CACHE_HEADERS } }
     );
   }
 
@@ -26,6 +32,9 @@ export async function POST(request: NextRequest) {
     }
 
     const key = apiKey.trim();
+    if (key.length < 15 || key.length > 512 || !/^[\x21-\x7E]+$/.test(key)) {
+      return jsonError("KEY_INVALID_FORMAT", "API key không hợp lệ hoặc chứa ký tự đặc biệt không được phép.", 400);
+    }
 
     if (provider === "gemini") {
       const rawModel = typeof model === "string" ? model : "gemini-3-flash-preview";
@@ -52,7 +61,7 @@ export async function POST(request: NextRequest) {
           );
           const data = await res.json();
           if (res.ok) {
-            return NextResponse.json({ ok: true, message: `Kết nối thành công với Google ${m}!` });
+            return NextResponse.json({ ok: true, message: `Kết nối thành công với Google ${m}!` }, { headers: NO_CACHE_HEADERS });
           } else {
             lastError = data.error?.message || "Model không khả dụng.";
           }
@@ -66,7 +75,9 @@ export async function POST(request: NextRequest) {
         provider === "deepseek"
           ? "https://api.deepseek.com/chat/completions"
           : "https://api.openai.com/v1/chat/completions";
-      const modelName = model || (provider === "deepseek" ? "deepseek-chat" : "gpt-4o-mini");
+      const rawModel = typeof model === "string" ? model : (provider === "deepseek" ? "deepseek-chat" : "gpt-4o-mini");
+      const modelName = rawModel.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 64) || (provider === "deepseek" ? "deepseek-chat" : "gpt-4o-mini");
+
       const res = await fetch(baseUrl, {
         method: "POST",
         headers: {
@@ -84,7 +95,7 @@ export async function POST(request: NextRequest) {
       if (!res.ok) {
         return jsonError("KEY_INVALID", data.error?.message || "API key không hợp lệ.", 400);
       }
-      return NextResponse.json({ ok: true, message: `Kết nối thành công với ${modelName}!` });
+      return NextResponse.json({ ok: true, message: `Kết nối thành công với ${modelName}!` }, { headers: NO_CACHE_HEADERS });
     }
 
     return jsonError("UNSUPPORTED_PROVIDER", "Nhà cung cấp chưa được hỗ trợ.", 400);

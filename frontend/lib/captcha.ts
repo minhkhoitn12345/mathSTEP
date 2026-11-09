@@ -9,6 +9,9 @@ const CAPTCHA_TTL_SECONDS = 300; // Hiệu lực trong 5 phút
 
 // Bộ nhớ chống tấn công Replay (Single-use token cache)
 const usedTokens = new Set<string>();
+// Giới hạn số lần thử đoán đáp số trên mỗi token (chống Brute-force câu hỏi)
+const failedAttempts = new Map<string, number>();
+const MAX_FAILED_ATTEMPTS = 2;
 
 function getCaptchaSecret(): string {
   const configuredSecret = process.env.CAPTCHA_SECRET?.trim();
@@ -24,6 +27,9 @@ if (typeof setInterval !== "undefined") {
     // Dọn dẹp cache token định kỳ để tránh rò rỉ bộ nhớ
     if (usedTokens.size > 5000) {
       usedTokens.clear();
+    }
+    if (failedAttempts.size > 5000) {
+      failedAttempts.clear();
     }
   }, 10 * 60 * 1000);
 }
@@ -93,6 +99,10 @@ export function verifyMathCaptcha(userAnswer: unknown, token: unknown): { valid:
   if (usedTokens.has(token)) {
     return { valid: false, reason: "Mã xác thực này đã được sử dụng. Vui lòng lấy câu hỏi mới." };
   }
+  if ((failedAttempts.get(token) || 0) >= MAX_FAILED_ATTEMPTS) {
+    usedTokens.add(token);
+    return { valid: false, reason: "Mã xác thực này đã hết lượt thử. Vui lòng lấy câu hỏi mới." };
+  }
 
   try {
     const decoded = Buffer.from(token, "base64url").toString("utf8");
@@ -131,11 +141,21 @@ export function verifyMathCaptcha(userAnswer: unknown, token: unknown): { valid:
     const hmacB = Buffer.from(expectedHmac, "hex");
 
     if (hmacA.length !== hmacB.length || !crypto.timingSafeEqual(hmacA, hmacB)) {
+      const fails = (failedAttempts.get(token) || 0) + 1;
+      failedAttempts.set(token, fails);
+      if (fails >= MAX_FAILED_ATTEMPTS) {
+        usedTokens.add(token);
+        return {
+          valid: false,
+          reason: "Kết quả tính nhẩm chưa chính xác. Mã xác thực đã hết lượt thử, vui lòng đổi câu hỏi mới!",
+        };
+      }
       return { valid: false, reason: "Kết quả tính nhẩm chưa chính xác. Vui lòng thử lại!" };
     }
 
     // Đánh dấu token đã được dùng thành công (Anti-Replay)
     usedTokens.add(token);
+    failedAttempts.delete(token);
 
     return { valid: true };
   } catch {

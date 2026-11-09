@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
 import {
   Presentation,
@@ -16,6 +17,7 @@ import {
   X,
   BookOpen,
   Search,
+  Trophy,
 } from "lucide-react";
 
 export interface SessionData {
@@ -349,6 +351,14 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* 3. RIGHT SECTION: Nút Hỏi Opti & Tài khoản */}
         <div className="flex items-center gap-2 sm:gap-2.5">
+          <Link
+            href="/leaderboard"
+            title="Bảng xếp hạng học tập"
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-amber-400/20 bg-amber-400/10 px-2.5 text-amber-200 transition hover:border-amber-300/40 hover:bg-amber-400/15 sm:px-3"
+          >
+            <Trophy className="h-4 w-4 text-amber-300" />
+            <span className="hidden text-xs font-bold md:inline">Xếp hạng</span>
+          </Link>
           {/* Nút Hỏi Opti rõ ràng */}
           {onToggleChatDrawer && (
             <button

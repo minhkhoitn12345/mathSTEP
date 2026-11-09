@@ -28,6 +28,7 @@ import {
   markLessonCompleted,
   setLastActiveLesson,
 } from "./lib/learningProgressStorage";
+import { syncLeaderboardProgress } from "./lib/leaderboardClient";
 import { getLessonDetailedContent } from "./data/learningPathData";
 import { UserLearningProgress } from "./types/learningPath";
 import { Sparkles, Mail, Lock, User, AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
@@ -310,6 +311,7 @@ function OptimathMainContent() {
   ) => {
     const updated = markLessonCompleted(lessonId, scorePercentage, xpEarned);
     setUserProgress(updated);
+    if (session?.authenticated) void syncLeaderboardProgress(updated);
 
     // Tìm bài học tiếp theo trong toàn bộ 15 bài
     const allLessons = CORE_3_MODULES.flatMap((m) => m.lessons);
@@ -327,6 +329,7 @@ function OptimathMainContent() {
   const handleRewardLesson = (lessonId: string, scorePercentage: number, xpEarned: number) => {
     const updated = markLessonCompleted(lessonId, scorePercentage, xpEarned);
     setUserProgress(updated);
+    if (session?.authenticated) void syncLeaderboardProgress(updated);
   };
 
   // Mở thẳng đúng một mô phỏng tương ứng của bài học được chọn

@@ -92,5 +92,6 @@ export interface UserLearningProgress {
   quizScores: Record<string, number>; // lessonId -> percentage
   earnedXp: number;
   streakDays: number;
+  longestStreakDays: number;
   lastStudyDate: string;
 }

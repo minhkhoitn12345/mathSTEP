@@ -26,6 +26,19 @@ async function proxy(request: NextRequest, method: "GET" | "PUT" | "DELETE") {
   try {
     const body = method === "PUT" ? await request.text() : undefined;
     if (body && body.length > 1024) return responseWithSessionCookies(jsonError("REQUEST_TOO_LARGE", "API key quá dài.", 413), session.refreshed);
+    if (method === "PUT") {
+      if (!body || body.trim().length === 0) {
+        return responseWithSessionCookies(jsonError("INVALID_REQUEST", "Dữ liệu API key không được để trống.", 400), session.refreshed);
+      }
+      try {
+        const parsed = JSON.parse(body);
+        if (!parsed.api_key || typeof parsed.api_key !== "string" || parsed.api_key.trim().length < 15 || parsed.api_key.trim().length > 512) {
+          return responseWithSessionCookies(jsonError("INVALID_API_KEY", "API key phải từ 15 đến 512 ký tự hợp lệ.", 400), session.refreshed);
+        }
+      } catch {
+        return responseWithSessionCookies(jsonError("INVALID_JSON", "Định dạng JSON không hợp lệ.", 400), session.refreshed);
+      }
+    }
     const upstream = await fetch(`${baseUrl}/assistant/account/api-key`, {
       method,
       headers: { Authorization: `Bearer ${session.token}`, ...(body ? { "Content-Type": "application/json" } : {}) },

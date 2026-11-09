@@ -24,6 +24,7 @@ import {
   markLessonCompleted,
   setLastActiveLesson,
 } from "@/app/lib/learningProgressStorage";
+import { syncLeaderboardProgress } from "@/app/lib/leaderboardClient";
 import { UserLearningProgress } from "@/app/types/learningPath";
 import {
   ArrowLeft,
@@ -180,6 +181,7 @@ export default function LessonStudyClientPage({
   ) => {
     const updated = markLessonCompleted(lId, scorePercentage, xpEarned);
     setUserProgress(updated);
+    if (session?.authenticated) void syncLeaderboardProgress(updated);
 
     // Find next lesson in the entire 15 lessons curriculum
     const allLessons = CORE_3_MODULES.flatMap((m) => m.lessons);
@@ -197,6 +199,7 @@ export default function LessonStudyClientPage({
   const handleRewardLesson = (lId: string, scorePercentage: number, xpEarned: number) => {
     const updated = markLessonCompleted(lId, scorePercentage, xpEarned);
     setUserProgress(updated);
+    if (session?.authenticated) void syncLeaderboardProgress(updated);
   };
 
   // Open simulation lab handler

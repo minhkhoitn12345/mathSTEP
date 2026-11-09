@@ -102,8 +102,12 @@ export async function POST(request: NextRequest) {
     } | undefined;
 
     const serverGeminiKey = (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "").trim();
+    const customApiKeyCandidate = typeof customAi?.apiKey === "string" ? customAi.apiKey.trim() : "";
     const hasCustomKey = Boolean(
-      customAi?.apiKey && typeof customAi.apiKey === "string" && customAi.apiKey.trim().length > 10
+      customApiKeyCandidate &&
+      customApiKeyCandidate.length >= 15 &&
+      customApiKeyCandidate.length <= 512 &&
+      /^[\x21-\x7E]+$/.test(customApiKeyCandidate)
     );
 
     if (!token && !hasCustomKey && !serverGeminiKey) {

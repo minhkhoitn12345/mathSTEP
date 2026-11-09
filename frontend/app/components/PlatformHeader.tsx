@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Compass, GraduationCap, Settings, User, ChevronDown, LogOut, History, Sparkles } from "lucide-react";
+import { Compass, GraduationCap, Settings, User, ChevronDown, LogOut, History, Sparkles, Trophy } from "lucide-react";
 import { CustomAiConfig } from "./AccountSettingsModal";
 import { OptiMascot } from "./optimath/mascot/OptiMascot";
 
@@ -162,6 +162,14 @@ export default function PlatformHeader({
             Giáo viên
           </button>
         )}
+        <Link
+          href="/leaderboard"
+          title="Bảng xếp hạng học tập"
+          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-amber-200 transition hover:bg-amber-400/10 hover:text-amber-100 sm:text-sm"
+        >
+          <Trophy className="h-3.5 w-3.5 text-amber-400" />
+          <span>Bảng xếp hạng</span>
+        </Link>
       </nav>
 
       {/* USER MENU & AUTH */}
