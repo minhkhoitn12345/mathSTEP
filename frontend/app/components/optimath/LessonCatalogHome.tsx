@@ -30,13 +30,11 @@ function normalizeSearchText(value: string): string {
 }
 
 interface LessonCatalogHomeProps {
-  onOpenSimulationLab?: (moduleId: string, lessonId: string) => void;
   onOpenTeacherGuide?: () => void;
   onOpenKnowledgeBase?: () => void;
 }
 
 export const LessonCatalogHome: React.FC<LessonCatalogHomeProps> = ({
-  onOpenSimulationLab,
   onOpenTeacherGuide,
   onOpenKnowledgeBase,
 }) => {
@@ -450,7 +448,6 @@ export const LessonCatalogHome: React.FC<LessonCatalogHomeProps> = ({
           modules={CORE_3_MODULES}
           lessons={filteredLessons}
           progress={userProgress}
-          onOpenSimulation={onOpenSimulationLab}
         />
       )}
     </section>

@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Activity, ArrowRight, BookOpen, Box, Check, CheckCircle2, Clock, Compass, Play } from "lucide-react";
+import { Activity, ArrowRight, BookOpen, Box, Check, CheckCircle2, Clock, Compass } from "lucide-react";
 import type { CoreModuleConfig } from "@/app/types/curriculum";
 import type { LessonStatus, UserLearningProgress } from "@/app/types/learningPath";
 import { getLessonStatus } from "@/app/lib/learningProgressStorage";
+import { MathFormattedText } from "../KatexMath";
 
 interface LessonWithProgress {
   id: string;
@@ -23,7 +24,6 @@ interface LessonPathTracksProps {
   modules: CoreModuleConfig[];
   lessons: LessonWithProgress[];
   progress: UserLearningProgress;
-  onOpenSimulation?: (moduleId: string, lessonId: string) => void;
 }
 
 const moduleTheme = {
@@ -75,7 +75,6 @@ export default function LessonPathTracks({
   modules,
   lessons,
   progress,
-  onOpenSimulation,
 }: LessonPathTracksProps) {
   const visibleModules = modules
     .map((module) => ({
@@ -173,12 +172,11 @@ export default function LessonPathTracks({
                       </span>
                     </div>
 
-                    <div className={`group relative mb-3.5 flex min-w-0 items-center justify-between gap-3 rounded-2xl border p-3.5 transition-all sm:mb-4 sm:p-4 ${status === "in_progress" ? "border-amber-200 bg-amber-50/60 shadow-sm" : "border-slate-200 bg-slate-50/60 hover:bg-white hover:shadow-sm"}`}>
-                      <Link
-                        href={`/learn/${module.id}/${lesson.id}`}
-                        className="absolute inset-0 z-0 rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                        aria-label={`${statusLabel(status)}: ${lesson.title}`}
-                      />
+                    <Link
+                      href={`/learn/${module.id}/${lesson.id}`}
+                      className={`group relative mb-3.5 flex min-w-0 items-center justify-between gap-3 rounded-2xl border p-3.5 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:mb-4 sm:p-4 ${status === "in_progress" ? "border-amber-200 bg-amber-50/60 hover:bg-amber-50 shadow-sm" : "border-slate-200 bg-slate-50/60 hover:bg-white hover:shadow-sm"}`}
+                      aria-label={`${statusLabel(status)}: ${lesson.title}`}
+                    >
                       <div className="relative z-10 pointer-events-none min-w-0">
                         <div className="mb-1 flex flex-wrap items-center gap-1.5">
                           <span className="text-[10px] font-black uppercase tracking-wide text-slate-500">{lesson.code}</span>
@@ -189,32 +187,21 @@ export default function LessonPathTracks({
                           </span>
                         </div>
                         <h3 className="line-clamp-2 text-sm font-extrabold leading-snug text-slate-900 sm:text-[15px]">
-                          {lesson.title}
+                          <MathFormattedText text={lesson.title} />
                         </h3>
                         <p className="mt-1 line-clamp-1 text-xs text-slate-500">
-                          {lesson.subtitle}
+                          <MathFormattedText text={lesson.subtitle} />
                         </p>
                       </div>
 
                       <div className="relative z-10 flex shrink-0 items-center gap-2">
-                        {onOpenSimulation && (
-                          <button
-                            type="button"
-                            onClick={() => onOpenSimulation(module.id, lesson.id)}
-                            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                            aria-label={`Mở mô phỏng cho ${lesson.code}`}
-                            title="Mở mô phỏng"
-                          >
-                            <Play className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
-                          </button>
-                        )}
                         <span className={`hidden items-center gap-1 rounded-xl px-3 py-2 text-xs font-extrabold transition-colors sm:inline-flex ${theme.action}`}>
                           {status === "completed" ? "Ôn lại" : status === "in_progress" ? "Học tiếp" : "Vào học"}
                           <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                         </span>
                         <ArrowRight className="h-4 w-4 text-slate-400 sm:hidden" aria-hidden="true" />
                       </div>
-                    </div>
+                    </Link>
                   </li>
                 );
               })}

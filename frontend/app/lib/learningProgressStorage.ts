@@ -1,6 +1,7 @@
 import { UserLearningProgress, LessonStatus } from "../types/learningPath";
 
 const STORAGE_KEY = "mathstep_learning_progress_v1";
+const THEORY_COMPLETED_KEY = "mathstep_theory_completed_v1";
 
 const DEFAULT_PROGRESS: UserLearningProgress = {
   completedLessonIds: [],
@@ -119,6 +120,29 @@ export function setLastActiveLesson(lessonId: string): void {
     ...current,
     lastActiveLessonId: lessonId,
   });
+}
+
+export function hasCompletedLessonTheory(lessonId: string): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const completed = JSON.parse(localStorage.getItem(THEORY_COMPLETED_KEY) || "[]");
+    return Array.isArray(completed) && completed.includes(lessonId);
+  } catch {
+    return false;
+  }
+}
+
+export function markLessonTheoryCompleted(lessonId: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = JSON.parse(localStorage.getItem(THEORY_COMPLETED_KEY) || "[]");
+    const completed = Array.isArray(raw) ? raw.filter((id): id is string => typeof id === "string") : [];
+    if (!completed.includes(lessonId)) {
+      localStorage.setItem(THEORY_COMPLETED_KEY, JSON.stringify([...completed, lessonId]));
+    }
+  } catch (err) {
+    console.warn("Failed to save theory completion", err);
+  }
 }
 
 export function getLessonStatus(

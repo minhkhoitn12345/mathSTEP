@@ -1,6 +1,8 @@
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { resolveModuleOrStation, CORE_7_MODULES } from "../../lib/modulesCatalogData";
 import { getStationById } from "../../lib/stationCatalogData";
+import { CORE_3_MODULES } from "../../types/curriculum";
 import ModuleLabWorkbenchClient from "../../components/ModuleLabWorkbenchClient";
 
 interface PageProps {
@@ -12,6 +14,10 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   const { moduleId } = await params;
   const { station } = await searchParams;
   const resolved = resolveModuleOrStation(moduleId);
+  const preparedModule = CORE_3_MODULES.find((module) => module.id === resolved.module.id);
+  if (!station && preparedModule && preparedModule.id !== "linear_programming") {
+    redirect(`/learn/${preparedModule.id}/${preparedModule.lessons[0].id}`);
+  }
   const activeStation = station ? getStationById(station) || resolved.station : resolved.station;
 
   return {

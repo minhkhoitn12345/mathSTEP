@@ -2,7 +2,8 @@
 
 import { ArrowRight, BookOpenCheck, CheckCircle2, Lightbulb } from "lucide-react";
 import type { DetailedLessonContent } from "@/app/types/learningPath";
-import { MathFormattedText } from "../KatexMath";
+import KatexMath, { MathFormattedText } from "../KatexMath";
+import { LEARNER_FRIENDLY_EXPLANATIONS } from "@/app/data/learnerFriendlyExplanations";
 
 interface LessonTheoryScreenProps {
   content: DetailedLessonContent;
@@ -22,8 +23,8 @@ export function LessonTheoryScreen({ content, onStartGuidedPractice }: LessonThe
               {content.estimatedMinutes} phút đọc và học
             </span>
           </div>
-          <h1 className="max-w-3xl text-2xl font-black leading-tight sm:text-3xl">{content.title}</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-blue-100">{content.subtitle}</p>
+          <h1 className="max-w-3xl text-2xl font-black leading-tight sm:text-3xl"><MathFormattedText text={content.title} /></h1>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-blue-100"><MathFormattedText text={content.subtitle} /></p>
           <div className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold text-blue-50">
             <BookOpenCheck className="h-4 w-4" aria-hidden="true" />
             Chặng 1 · Nắm lý thuyết trước khi vào quy trình giải
@@ -33,7 +34,7 @@ export function LessonTheoryScreen({ content, onStartGuidedPractice }: LessonThe
         <div className="space-y-6 p-5 sm:p-8">
           <section aria-labelledby="lesson-objectives" className="space-y-3">
             <h2 id="lesson-objectives" className="text-sm font-black uppercase tracking-wide text-slate-500">
-              Sau bài này, em có thể
+              Học xong bài này, em sẽ có thể
             </h2>
             <ul className="space-y-2.5">
               {content.objectives.map((objective, index) => (
@@ -47,24 +48,30 @@ export function LessonTheoryScreen({ content, onStartGuidedPractice }: LessonThe
 
           <section aria-labelledby="lesson-theory" className="space-y-4 border-t border-slate-100 pt-5">
             <div>
-              <h2 id="lesson-theory" className="text-lg font-black text-slate-900">Lý thuyết cốt lõi</h2>
+              <h2 id="lesson-theory" className="text-lg font-black text-slate-900">Hiểu ý chính trước</h2>
+              <p className="mt-1 text-sm leading-relaxed text-slate-600">Mình đọc ý nghĩa bằng lời trước, rồi dùng công thức để tính và kiểm tra.</p>
+              {LEARNER_FRIENDLY_EXPLANATIONS[content.lessonId] && (
+                <div className="mt-3 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm leading-relaxed text-indigo-950">
+                  <strong className="mb-1 block text-indigo-800">Nói dễ hiểu</strong>
+                  <MathFormattedText text={LEARNER_FRIENDLY_EXPLANATIONS[content.lessonId]} />
+                </div>
+              )}
               <div className="mt-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 text-sm leading-relaxed text-slate-700">
+                <strong className="mb-1 block text-blue-900">Mô tả chính xác</strong>
                 <MathFormattedText text={content.theory.coreConcept} />
               </div>
             </div>
 
             {content.theory.formulas.length > 0 && (
               <div className="space-y-3">
-                <h3 className="text-xs font-extrabold uppercase tracking-wide text-slate-500">Công thức và điều kiện áp dụng</h3>
+                <h3 className="text-xs font-extrabold uppercase tracking-wide text-slate-500">Công thức và cách hiểu</h3>
                 {content.theory.formulas.map((item, index) => (
                   <article key={index} className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <div className="overflow-x-auto text-base font-bold text-blue-900">
-                      <MathFormattedText text={`$${item.formula}$`} />
-                    </div>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.meaning}</p>
+                    <KatexMath math={item.formula} display className="text-base font-bold text-blue-900" />
+                    <p className="mt-2 text-sm leading-relaxed text-slate-700"><strong className="text-blue-800">Nói dễ hiểu:</strong> <MathFormattedText text={item.meaning} /></p>
                     {item.conditions && (
                       <p className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
-                        <strong>Điều kiện:</strong> <MathFormattedText text={item.conditions} />
+                        <strong>Dùng công thức này khi:</strong> <MathFormattedText text={item.conditions} />
                       </p>
                     )}
                   </article>
@@ -74,7 +81,7 @@ export function LessonTheoryScreen({ content, onStartGuidedPractice }: LessonThe
 
             {content.theory.notes.length > 0 && (
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <h3 className="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-500">Điều cần nhớ</h3>
+                <h3 className="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-500">Điểm dễ nhầm</h3>
                 <ul className="space-y-2 text-sm leading-relaxed text-slate-700">
                   {content.theory.notes.map((note, index) => (
                     <li key={index} className="flex items-start gap-2">
@@ -88,12 +95,12 @@ export function LessonTheoryScreen({ content, onStartGuidedPractice }: LessonThe
 
             <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950">
               <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden="true" />
-              <div><strong>Mẹo ghi nhớ:</strong> {content.theory.miniTip}</div>
+              <div><strong>Mẹo ghi nhớ:</strong> <MathFormattedText text={content.theory.miniTip} /></div>
             </div>
           </section>
 
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm leading-relaxed text-emerald-950">
-            Đọc kỹ định nghĩa, công thức và điều kiện áp dụng. Khi sẵn sàng, em sẽ giải ví dụ theo từng bước, xem gợi ý rồi tự đối chiếu lời giải.
+            Em hãy thử nói lại ý chính theo cách của mình. Sau đó, mình cùng xem một ví dụ mẫu, làm từng bước và so sánh với lời giải.
           </div>
 
           <button
@@ -101,7 +108,7 @@ export function LessonTheoryScreen({ content, onStartGuidedPractice }: LessonThe
             onClick={onStartGuidedPractice}
             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3.5 text-sm font-extrabold text-white shadow-md transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
           >
-            Bắt đầu quy trình từng bước
+            Mình đã nắm ý chính · Bắt đầu luyện từng bước
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>

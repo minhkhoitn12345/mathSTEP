@@ -3,7 +3,8 @@
 
 import crypto from "crypto";
 
-const FALLBACK_CAPTCHA_SECRET = "mathstep-secret-captcha-key-prod-2026-fallback-32chars";
+const PRODUCTION_FALLBACK_CAPTCHA_SECRET = "mathstep-secret-captcha-key-prod-2026-fallback-32chars";
+const DEVELOPMENT_CAPTCHA_SECRET = "mathstep-secret-captcha-key-dev-2026";
 const CAPTCHA_TTL_SECONDS = 300; // Hiệu lực trong 5 phút
 
 // Bộ nhớ chống tấn công Replay (Single-use token cache)
@@ -12,7 +13,10 @@ const usedTokens = new Set<string>();
 function getCaptchaSecret(): string {
   const configuredSecret = process.env.CAPTCHA_SECRET?.trim();
   if (configuredSecret && configuredSecret.length >= 32) return configuredSecret;
-  return FALLBACK_CAPTCHA_SECRET;
+  if (process.env.NODE_ENV === "production") {
+    return PRODUCTION_FALLBACK_CAPTCHA_SECRET;
+  }
+  return DEVELOPMENT_CAPTCHA_SECRET;
 }
 
 if (typeof setInterval !== "undefined") {

@@ -105,6 +105,7 @@ function OptimathMainContent() {
   // Check URL parameters for view routing
   useEffect(() => {
     const authError = searchParams.get("auth_error");
+    const authAction = searchParams.get("auth");
     if (authError) {
       setAuthModalOpen(true);
       setAuthMode("login");
@@ -113,8 +114,14 @@ function OptimathMainContent() {
           ? "Đăng nhập Google chưa được bật trong cấu hình Supabase. Em có thể dùng email hoặc thử lại sau."
           : "Chưa kết nối được dịch vụ đăng nhập Google. Em có thể dùng email hoặc thử lại sau."
       );
+    } else if (authAction === "login" || authAction === "signup") {
+      setAuthMode(authAction);
+      setAuthModalOpen(true);
+    }
+    if (authError || authAction === "login" || authAction === "signup") {
       const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.delete("auth_error");
+      currentUrl.searchParams.delete("auth");
       window.history.replaceState({}, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
     }
 
@@ -124,6 +131,16 @@ function OptimathMainContent() {
 
     if (returnToParam) {
       setReturnToUrl(decodeURIComponent(returnToParam));
+    }
+
+    if ((viewParam === "spatial_geometry" || viewParam === "trigonometry") && !returnToParam) {
+      const requestedModule = CORE_3_MODULES.find((module) => module.id === viewParam);
+      const requestedLesson = requestedModule?.lessons.find((lesson) => lesson.id === lessonParam);
+      const firstLesson = requestedModule?.lessons[0];
+      if (requestedModule && (requestedLesson || firstLesson)) {
+        window.location.replace(`/learn/${requestedModule.id}/${requestedLesson?.id ?? firstLesson?.id}`);
+        return;
+      }
     }
 
     if (viewParam === "learning_path" || viewParam === "study") {
@@ -249,15 +266,9 @@ function OptimathMainContent() {
       setActiveLessonId("lp-lesson-1");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "spatial_geometry") {
-      setReturnToUrl(null);
-      setCurrentView("spatial_geometry");
-      setActiveLessonId("sg-lesson-1");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.location.assign("/learn/spatial_geometry/sg-lesson-1");
     } else if (modId === "trigonometry") {
-      setReturnToUrl(null);
-      setCurrentView("trigonometry");
-      setActiveLessonId("trig-lesson-1");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.location.assign("/learn/trigonometry/trig-lesson-1");
     } else if (modId === "system") {
       setReturnToUrl(null);
       setCurrentView("linear_programming");
@@ -311,6 +322,11 @@ function OptimathMainContent() {
       // Đã xong bài cuối cùng, quay lại Lộ trình
       window.location.assign("/");
     }
+  };
+
+  const handleRewardLesson = (lessonId: string, scorePercentage: number, xpEarned: number) => {
+    const updated = markLessonCompleted(lessonId, scorePercentage, xpEarned);
+    setUserProgress(updated);
   };
 
   // Mở thẳng đúng một mô phỏng tương ứng của bài học được chọn
@@ -561,9 +577,6 @@ function OptimathMainContent() {
       <main className="flex-1">
         {currentView === "home" ? (
           <LessonCatalogHome
-            onOpenSimulationLab={(modId, lesId) => {
-              handleOpenLesson(modId, lesId, `/learn/${modId}/${lesId}`);
-            }}
             onOpenTeacherGuide={handleOpenTeacherGuide}
             onOpenKnowledgeBase={() => setIsKnowledgeModalOpen(true)}
           />
@@ -601,6 +614,7 @@ function OptimathMainContent() {
               <LessonStudyScreen
                 content={content}
                 onBackToRoadmap={() => setCurrentView("learning_path")}
+                onRewardLesson={handleRewardLesson}
                 onCompleteAndNext={handleCompleteAndNext}
                 onOpenSimulation={handleOpenLesson}
                 isCompleted={userProgress.completedLessonIds.includes(selectedStudyLessonId)}

@@ -2,7 +2,9 @@
 
 import React, { useState, useMemo } from "react";
 import type { DetailedLessonContent } from "../../types/learningPath";
-import { MathFormattedText } from "../KatexMath";
+import { DIFFICULTY_QUIZ_DATA } from "../../data/difficultyQuizData";
+import { LEARNER_FRIENDLY_EXPLANATIONS } from "../../data/learnerFriendlyExplanations";
+import KatexMath, { MathFormattedText } from "../KatexMath";
 import {
   ArrowLeft,
   ArrowRight,
@@ -13,15 +15,47 @@ import {
   Award,
   AlertCircle,
   Play,
+  PartyPopper,
   Send,
   X,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { OptiMascot } from "../optimath/mascot/OptiMascot";
+
+const SOUND_PREFERENCE_KEY = "mathstep_learning_sound_enabled";
+
+function playAchievementSound(enabled: boolean, celebration = false) {
+  if (!enabled || typeof window === "undefined" || !window.AudioContext) return;
+
+  try {
+    const context = new window.AudioContext();
+    const notes = celebration ? [523.25, 659.25, 783.99, 1046.5] : [659.25, 880];
+    notes.forEach((frequency, index) => {
+      const startAt = context.currentTime + index * (celebration ? 0.12 : 0.08);
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, startAt);
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.exponentialRampToValueAtTime(0.07, startAt + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.24);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(startAt);
+      oscillator.stop(startAt + 0.25);
+    });
+    window.setTimeout(() => void context.close(), celebration ? 1200 : 500);
+  } catch {
+    // Audio is an enhancement; blocked or unavailable audio should not interrupt the lesson.
+  }
+}
 
 interface LessonStudyScreenProps {
   content: DetailedLessonContent;
   onBackToTheory?: () => void;
   onBackToRoadmap?: () => void;
+  onRewardLesson?: (lessonId: string, scorePercentage: number, xpEarned: number) => void;
   onCompleteAndNext: (lessonId: string, scorePercentage: number, xpEarned: number) => void;
   onOpenSimulation: (moduleId: string, lessonId: string) => void;
   isCompleted?: boolean;
@@ -32,6 +66,7 @@ export function LessonStudyScreen({
   content,
   onBackToTheory,
   onBackToRoadmap,
+  onRewardLesson,
   onCompleteAndNext,
   onOpenSimulation,
   isCompleted = false,
@@ -44,9 +79,16 @@ export function LessonStudyScreen({
   // Review Quiz state: questionId -> selectedOptionId
   const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
   const [quizSubmitted, setQuizSubmitted] = useState<boolean>(false);
+  const [activeQuizLevel, setActiveQuizLevel] = useState<"basic" | "intermediate" | "advanced">(() =>
+    (DIFFICULTY_QUIZ_DATA[content.lessonId] ?? []).some((item) => item.level === "basic") ? "basic" : "intermediate"
+  );
+  const [passedQuizLevels, setPassedQuizLevels] = useState<Record<string, boolean>>({});
   const [activeWorkedStepIndex, setActiveWorkedStepIndex] = useState(0);
   const [workedHintLevel, setWorkedHintLevel] = useState(0);
   const [workedStepChecked, setWorkedStepChecked] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [showCompletionCelebration, setShowCompletionCelebration] = useState(false);
+  const [alreadyCompletedAtFinish, setAlreadyCompletedAtFinish] = useState(false);
 
   // Optional Socratic AI Assistant Drawer
   const [aiDrawerOpen, setAiDrawerOpen] = useState<boolean>(false);
@@ -59,19 +101,39 @@ export function LessonStudyScreen({
   const [aiInput, setAiInput] = useState<string>("");
   const [aiBusy, setAiBusy] = useState<boolean>(false);
 
+  React.useEffect(() => {
+    try {
+      const savedPreference = window.localStorage.getItem(SOUND_PREFERENCE_KEY);
+      if (savedPreference !== null) setSoundEnabled(savedPreference === "true");
+    } catch {
+      // Keep sound enabled by default if browser storage is unavailable.
+    }
+  }, []);
+
+  const quizItems = useMemo(() => [
+    ...(DIFFICULTY_QUIZ_DATA[content.lessonId] ?? []),
+    ...content.reviewQuiz.map((item) => ({ ...item, level: item.level ?? "intermediate" as const })),
+  ], [content.lessonId, content.reviewQuiz]);
+  const quizLevels = useMemo(
+    () => (["basic", "intermediate", "advanced"] as const).filter((level) => quizItems.some((item) => item.level === level)),
+    [quizItems]
+  );
+  const activeQuizItems = quizItems.filter((item) => item.level === activeQuizLevel);
+  const activeQuizLevelIndex = quizLevels.indexOf(activeQuizLevel);
+
   // Quiz score calculation
   const quizScore = useMemo(() => {
-    if (!content.reviewQuiz || content.reviewQuiz.length === 0) return 100;
+    if (quizItems.length === 0) return 100;
     let correct = 0;
-    content.reviewQuiz.forEach((q) => {
+    quizItems.forEach((q) => {
       const selected = quizAnswers[q.id];
       const correctOpt = q.options.find((o) => o.isCorrect);
       if (selected && correctOpt && selected === correctOpt.id) {
         correct++;
       }
     });
-    return Math.round((correct / content.reviewQuiz.length) * 100);
-  }, [content.reviewQuiz, quizAnswers]);
+    return Math.round((correct / quizItems.length) * 100);
+  }, [quizItems, quizAnswers]);
 
   const activeWorkedStep = content.workedExample.steps[activeWorkedStepIndex];
   const workedStepProgress = activeWorkedStep
@@ -85,7 +147,7 @@ export function LessonStudyScreen({
   const canCompleteLesson =
     workedExampleComplete &&
     checkpointsComplete &&
-    (content.reviewQuiz.length === 0 || quizSubmitted);
+    (quizItems.length === 0 || quizLevels.every((level) => passedQuizLevels[level]));
 
   const handleShowNextWorkedHint = () => {
     setWorkedHintLevel((level) => Math.min(level + 1, 3));
@@ -99,6 +161,10 @@ export function LessonStudyScreen({
 
   // Handle checkpoint option selection
   const handleSelectCheckpointOption = (qId: string, optId: string) => {
+    const checkpoint = content.checkpoints.find((item) => item.id === qId);
+    const wasCorrect = checkpoint?.options.some((option) => option.id === checkpointAnswers[qId] && option.isCorrect);
+    const isCorrect = checkpoint?.options.some((option) => option.id === optId && option.isCorrect);
+    if (isCorrect && !wasCorrect) playAchievementSound(soundEnabled);
     setCheckpointAnswers((prev) => ({ ...prev, [qId]: optId }));
   };
 
@@ -106,6 +172,48 @@ export function LessonStudyScreen({
   const handleSelectQuizOption = (qId: string, optId: string) => {
     if (quizSubmitted) return; // Prevent changing after submit
     setQuizAnswers((prev) => ({ ...prev, [qId]: optId }));
+  };
+
+  const handleSubmitQuizLevel = () => {
+    setQuizSubmitted(true);
+    const allAnswersCorrect = activeQuizItems.every((q) => quizAnswers[q.id] === q.options.find((option) => option.isCorrect)?.id);
+    const passed = content.moduleId === "linear_programming" || allAnswersCorrect;
+    if (passed) {
+      setPassedQuizLevels((previous) => ({ ...previous, [activeQuizLevel]: true }));
+      if (allAnswersCorrect) playAchievementSound(soundEnabled);
+    }
+  };
+
+  const handleToggleSound = () => {
+    const nextEnabled = !soundEnabled;
+    setSoundEnabled(nextEnabled);
+    try {
+      window.localStorage.setItem(SOUND_PREFERENCE_KEY, String(nextEnabled));
+    } catch {
+      // The in-memory setting remains usable when storage is unavailable.
+    }
+  };
+
+  const handleShowCompletionCelebration = () => {
+    setAlreadyCompletedAtFinish(isCompleted);
+    onRewardLesson?.(content.lessonId, quizScore, content.xpReward);
+    setShowCompletionCelebration(true);
+    playAchievementSound(soundEnabled, true);
+  };
+
+  const handleContinueQuiz = () => {
+    const nextLevel = quizLevels[activeQuizLevelIndex + 1];
+    if (nextLevel) setActiveQuizLevel(nextLevel);
+    setQuizSubmitted(false);
+  };
+
+  const handleRetryQuizLevel = () => {
+    setQuizAnswers((previous) => {
+      const next = { ...previous };
+      activeQuizItems.forEach((q) => delete next[q.id]);
+      return next;
+    });
+    setQuizSubmitted(false);
   };
 
   // Handle Socratic AI send message
@@ -181,7 +289,7 @@ export function LessonStudyScreen({
                   {content.code}
                 </span>
                 <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-                  {content.title}
+                  <MathFormattedText text={content.title} />
                 </span>
               </div>
             </div>
@@ -189,6 +297,16 @@ export function LessonStudyScreen({
 
           {/* Quick Actions in Top Bar */}
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleToggleSound}
+              aria-label={soundEnabled ? "Tắt âm thanh phản hồi" : "Bật âm thanh phản hồi"}
+              aria-pressed={soundEnabled}
+              title={soundEnabled ? "Tắt âm thanh phản hồi" : "Bật âm thanh phản hồi"}
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </button>
             {/* Nút Mở phòng mô phỏng bài này */}
             <button
               type="button"
@@ -235,10 +353,10 @@ export function LessonStudyScreen({
           </div>
 
           <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-2">
-            {content.title}
+            <MathFormattedText text={content.title} />
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl">
-            {content.subtitle}
+            <MathFormattedText text={content.subtitle} />
           </p>
 
           {/* Quick simulation banner */}
@@ -266,7 +384,7 @@ export function LessonStudyScreen({
               1
             </div>
             <h2 className="text-base sm:text-lg font-black tracking-tight">
-              Mục Tiêu Bài Học (Learning Objectives)
+              Mục tiêu bài học
             </h2>
           </div>
 
@@ -291,12 +409,18 @@ export function LessonStudyScreen({
               2
             </div>
             <h2 className="text-base sm:text-lg font-black tracking-tight">
-              Lý Thuyết Cốt Lõi & Điều Kiện Áp Dụng
+              Hiểu ý chính trước
             </h2>
           </div>
 
           {/* Core Concept Text */}
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs sm:text-sm text-slate-700 leading-relaxed">
+            {LEARNER_FRIENDLY_EXPLANATIONS[content.lessonId] && (
+              <div className="mb-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-indigo-950">
+                <strong className="mb-1 block text-indigo-800">Nói dễ hiểu</strong>
+                <MathFormattedText text={LEARNER_FRIENDLY_EXPLANATIONS[content.lessonId]} />
+              </div>
+            )}
             <MathFormattedText text={content.theory.coreConcept} />
           </div>
 
@@ -304,7 +428,7 @@ export function LessonStudyScreen({
           {content.theory.formulas.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Công thức & Điều kiện toán học
+                Công thức và cách hiểu
               </h3>
               <div className="grid grid-cols-1 gap-3">
                 {content.theory.formulas.map((item, idx) => (
@@ -312,15 +436,11 @@ export function LessonStudyScreen({
                     key={idx}
                     className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 space-y-1.5"
                   >
-                    <div className="text-sm sm:text-base font-bold text-blue-900">
-                      <MathFormattedText text={`$${item.formula}$`} />
-                    </div>
-                    <div className="text-xs text-slate-600 font-medium">
-                      {item.meaning}
-                    </div>
+                    <KatexMath math={item.formula} display className="text-sm sm:text-base font-bold text-blue-900" />
+                    <div className="text-xs text-slate-700 font-medium"><strong className="text-blue-800">Nói dễ hiểu:</strong> <MathFormattedText text={item.meaning} /></div>
                     {item.conditions && (
                       <div className="text-[11px] text-amber-800 bg-amber-100/60 border border-amber-200/60 px-2 py-1 rounded-lg inline-block">
-                        <strong>Điều kiện:</strong> <MathFormattedText text={item.conditions} />
+                        <strong>Dùng công thức này khi:</strong> <MathFormattedText text={item.conditions} />
                       </div>
                     )}
                   </div>
@@ -352,7 +472,7 @@ export function LessonStudyScreen({
           <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3 text-amber-900 text-xs font-medium">
             <Lightbulb className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <div>
-              <strong>Mẹo nhớ nhanh (Cheat Sheet):</strong> {content.theory.miniTip}
+              <strong>Mẹo ghi nhớ:</strong> <MathFormattedText text={content.theory.miniTip} />
             </div>
           </div>
         </section>
@@ -459,7 +579,7 @@ export function LessonStudyScreen({
                 {showTheorySections ? 4 : 2}
               </div>
               <h2 className="text-base sm:text-lg font-black tracking-tight">
-                Tự Luyện Kiểm Tra Nhanh (Checkpoints)
+              Mình cùng kiểm tra nhanh
               </h2>
             </div>
 
@@ -564,7 +684,7 @@ export function LessonStudyScreen({
         )}
 
         {/* PHẦN 5: BÀI ÔN TẬP NGẮN CUỐI BÀI (MINI REVIEW QUIZ) */}
-        {content.reviewQuiz.length > 0 && workedExampleComplete && checkpointsComplete && (
+        {quizItems.length > 0 && workedExampleComplete && checkpointsComplete && (
           <section className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-5">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 text-slate-900">
@@ -572,16 +692,27 @@ export function LessonStudyScreen({
                 {showTheorySections ? 5 : 3}
                 </div>
                 <h2 className="text-base sm:text-lg font-black tracking-tight">
-                  Bài Ôn Tập Ngắn Cuối Bài (Review Quiz)
+                  Quiz theo cấp độ
                 </h2>
               </div>
               <span className="text-xs text-slate-500 font-medium">
-                {content.reviewQuiz.length} Câu hỏi kiểm tra
+                {quizItems.length} câu hỏi · {quizLevels.length} mức
               </span>
             </div>
 
+            <div className="grid grid-cols-3 gap-2" aria-label="Tiến độ quiz">
+              {quizLevels.map((level, index) => {
+                const labels = { basic: "Cơ bản", intermediate: "Thông hiểu", advanced: "Nâng cao" };
+                const active = level === activeQuizLevel;
+                const passed = passedQuizLevels[level];
+                return <div key={level} className={`rounded-xl border px-2 py-2 text-center text-[11px] font-bold ${passed ? "border-emerald-300 bg-emerald-50 text-emerald-700" : active ? "border-amber-400 bg-amber-50 text-amber-800" : "border-slate-200 bg-slate-50 text-slate-500"}`}>
+                  {index + 1}. {labels[level]} {passed ? "✓" : ""}
+                </div>;
+              })}
+            </div>
+
             <div className="space-y-5">
-              {content.reviewQuiz.map((q, idx) => {
+              {activeQuizItems.map((q, idx) => {
                 const selectedOpt = quizAnswers[q.id];
                 const correctOpt = q.options.find((o) => o.isCorrect);
                 const isCorrect = selectedOpt === correctOpt?.id;
@@ -664,28 +795,23 @@ export function LessonStudyScreen({
             {!quizSubmitted ? (
               <button
                 type="button"
-                onClick={() => setQuizSubmitted(true)}
-                disabled={Object.keys(quizAnswers).length < content.reviewQuiz.length}
+                onClick={handleSubmitQuizLevel}
+                disabled={activeQuizItems.some((q) => !quizAnswers[q.id])}
                 className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold text-xs sm:text-sm transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
               >
                 <Award className="w-4 h-4" />
-                <span>Nộp bài & Xem giải thích chi tiết</span>
+                <span>Nộp mức {activeQuizLevelIndex + 1} & xem giải thích</span>
               </button>
             ) : (
-              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-3">
-                <div className="text-xs text-amber-950">
-                  Điểm số ôn tập của em: <strong>{quizScore}%</strong>
+              <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 ${passedQuizLevels[activeQuizLevel] ? "bg-emerald-50 border-emerald-200" : "bg-rose-50 border-rose-200"}`}>
+                <div className="text-xs text-slate-800">
+                  {passedQuizLevels[activeQuizLevel] ? <>Đạt mức này. Điểm hiện tại: <strong>{quizScore}%</strong></> : <>Cần trả lời đúng toàn bộ câu hỏi để mở mức tiếp theo.</>}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuizSubmitted(false);
-                    setQuizAnswers({});
-                  }}
-                  className="px-3 py-1.5 rounded-xl bg-white border border-amber-300 text-amber-800 text-xs font-bold hover:bg-amber-100 transition-colors cursor-pointer"
-                >
-                  Làm lại bài ôn tập
-                </button>
+                {passedQuizLevels[activeQuizLevel] && activeQuizLevelIndex < quizLevels.length - 1 ? (
+                  <button type="button" onClick={handleContinueQuiz} className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors cursor-pointer">Sang mức {activeQuizLevelIndex + 2} <ArrowRight className="inline w-3.5 h-3.5 ml-1" /></button>
+                ) : !passedQuizLevels[activeQuizLevel] ? (
+                  <button type="button" onClick={handleRetryQuizLevel} className="px-3 py-1.5 rounded-xl bg-white border border-rose-300 text-rose-800 text-xs font-bold hover:bg-rose-100 transition-colors cursor-pointer">Làm lại mức này</button>
+                ) : <span className="text-xs text-emerald-700 font-bold">Đã qua tất cả cấp độ</span>}
               </div>
             )}
           </section>
@@ -720,7 +846,7 @@ export function LessonStudyScreen({
             {/* Nút Hoàn thành và Chuyển bài */}
             <button
               type="button"
-              onClick={() => onCompleteAndNext(content.lessonId, quizScore, content.xpReward)}
+              onClick={handleShowCompletionCelebration}
               className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-white hover:bg-slate-100 text-blue-700 font-black text-xs sm:text-sm transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
               <span>Hoàn thành & Bài tiếp theo</span>
@@ -729,6 +855,53 @@ export function LessonStudyScreen({
           </div>
         </section>}
       </main>
+
+      {showCompletionCelebration && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm" role="presentation">
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="lesson-complete-title"
+            className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/70 bg-white p-7 text-center shadow-2xl sm:p-9"
+          >
+            <button
+              type="button"
+              onClick={() => setShowCompletionCelebration(false)}
+              aria-label="Đóng lời chúc mừng"
+              className="absolute right-4 top-4 rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 flex justify-around text-2xl">
+              <span className="animate-bounce text-amber-400">✦</span>
+              <span className="mt-5 animate-pulse text-pink-500">✦</span>
+              <span className="animate-bounce text-blue-500 [animation-delay:120ms]">✦</span>
+              <span className="mt-4 animate-pulse text-emerald-500 [animation-delay:200ms]">✦</span>
+              <span className="animate-bounce text-purple-500 [animation-delay:300ms]">✦</span>
+            </div>
+            <div className="relative mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-100 via-pink-100 to-indigo-100 text-amber-600 shadow-inner">
+              <PartyPopper className="h-10 w-10" aria-hidden="true" />
+            </div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-600">Bài học hoàn tất</p>
+            <h2 id="lesson-complete-title" className="mt-2 text-2xl font-black text-slate-900">Tuyệt vời! Em làm được rồi!</h2>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">
+              Em đã hoàn thành <strong>{content.code}: {content.title}</strong>. Cùng giữ nhịp học thật tốt nhé!
+            </p>
+            <div className="mx-auto mt-5 inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-3 text-amber-900 shadow-sm">
+              <Sparkles className="h-5 w-5 text-amber-500" aria-hidden="true" />
+              <span className="text-lg font-black">{alreadyCompletedAtFinish ? "Đã nhận XP" : `+${content.xpReward} XP`}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => onCompleteAndNext(content.lessonId, quizScore, content.xpReward)}
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3.5 text-sm font-extrabold text-white shadow-lg transition hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700"
+            >
+              {alreadyCompletedAtFinish ? "Tiếp tục học" : "Nhận XP & sang bài tiếp theo"}
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </section>
+        </div>
+      )}
 
       {/* 3. OPTIONAL SOCRATIC AI DRAWER (EMBEDDED) */}
       {aiDrawerOpen && (

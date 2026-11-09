@@ -16,7 +16,9 @@ import { generateSmartSocraticResponse } from "@/app/lib/smartSocratic";
 import { CORE_3_MODULES } from "@/app/types/curriculum";
 import { getLessonDetailedContent } from "@/app/data/learningPathData";
 import {
+  hasCompletedLessonTheory,
   loadUserLearningProgress,
+  markLessonTheoryCompleted,
   markLessonCompleted,
   setLastActiveLesson,
 } from "@/app/lib/learningProgressStorage";
@@ -59,6 +61,16 @@ export default function LessonStudyClientPage({
   const [userProgress, setUserProgress] = useState<UserLearningProgress>(() =>
     loadUserLearningProgress()
   );
+  const [practiceAccessLessonId, setPracticeAccessLessonId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (stage !== "practice" || !isValidLesson) return;
+    if (!hasCompletedLessonTheory(lessonId)) {
+      router.replace(`/learn/${moduleId}/${lessonId}`);
+      return;
+    }
+    setPracticeAccessLessonId(lessonId);
+  }, [isValidLesson, lessonId, moduleId, router, stage]);
 
   // Sync active lesson on mount
   useEffect(() => {
@@ -165,6 +177,11 @@ export default function LessonStudyClientPage({
     }
   };
 
+  const handleRewardLesson = (lId: string, scorePercentage: number, xpEarned: number) => {
+    const updated = markLessonCompleted(lId, scorePercentage, xpEarned);
+    setUserProgress(updated);
+  };
+
   // Open simulation lab handler
   const handleOpenSimulation = (modId: string, lId: string) => {
     // Navigate to home page with lab view and returnTo parameter
@@ -254,7 +271,11 @@ export default function LessonStudyClientPage({
           currentModule="home"
           onSelectModule={(mod) => {
             if (mod === "home") router.push("/");
-            else router.push(`/?view=${mod}`);
+            else {
+              const firstLessons: Record<string, string> = { spatial_geometry: "sg-lesson-1", trigonometry: "trig-lesson-1", linear_programming: "lp-lesson-1" };
+              const firstLesson = firstLessons[mod];
+              router.push(firstLesson ? `/learn/${mod}/${firstLesson}` : `/?view=${mod}`);
+            }
           }}
           onOpenTeacherGuide={() => setIsTeacherModalOpen(true)}
           session={session}
@@ -324,7 +345,11 @@ export default function LessonStudyClientPage({
         onSelectModule={(mod) => {
           if (mod === "home") router.push("/");
           else if (mod === "learning_path") router.push("/");
-          else router.push(`/?view=${mod}`);
+          else {
+            const firstLessons: Record<string, string> = { spatial_geometry: "sg-lesson-1", trigonometry: "trig-lesson-1", linear_programming: "lp-lesson-1" };
+            const firstLesson = firstLessons[mod];
+            router.push(firstLesson ? `/learn/${mod}/${firstLesson}` : `/?view=${mod}`);
+          }
         }}
         onOpenTeacherGuide={() => setIsTeacherModalOpen(true)}
         onToggleChatDrawer={() => setChatDrawerOpen((prev) => !prev)}
@@ -416,13 +441,21 @@ export default function LessonStudyClientPage({
           <LessonTheoryScreen
             key={`theory-${lessonId}`}
             content={lessonContent}
-            onStartGuidedPractice={() => router.push(`/learn/${moduleId}/${lessonId}/practice`)}
+            onStartGuidedPractice={() => {
+              markLessonTheoryCompleted(lessonId);
+              router.push(`/learn/${moduleId}/${lessonId}/practice`);
+            }}
           />
+        ) : practiceAccessLessonId !== lessonId ? (
+          <div className="mx-auto max-w-2xl px-4 py-20 text-center text-sm font-semibold text-slate-500" role="status">
+            Đang mở phần lý thuyết trước khi luyện tập…
+          </div>
         ) : (
           <LessonStudyScreen
             key={`practice-${lessonId}`}
             content={lessonContent}
             onBackToTheory={() => router.push(`/learn/${moduleId}/${lessonId}`)}
+            onRewardLesson={handleRewardLesson}
             onCompleteAndNext={handleCompleteAndNext}
             onOpenSimulation={handleOpenSimulation}
             isCompleted={isCompleted}

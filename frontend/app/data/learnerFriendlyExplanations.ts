@@ -1,0 +1,18 @@
+/** Plain-language bridges from each lesson's formal definition to the idea students should picture. */
+export const LEARNER_FRIENDLY_EXPLANATIONS: Record<string, string> = {
+  "lp-lesson-1": "Hãy tưởng tượng đường thẳng chia mặt phẳng thành hai phía. Mỗi phía là một vùng gồm rất nhiều điểm; thay tọa độ một điểm vào bất phương trình sẽ cho biết điểm ấy ở phía nghiệm hay phía bị loại.",
+  "lp-lesson-2": "Ta vẽ đường biên trước, rồi thử một điểm nằm ngoài đường đó. Nếu điểm thử làm bất phương trình đúng thì giữ phía chứa điểm; nếu sai thì gạch phía ấy. Dấu có dấu bằng thì nét liền, dấu không có bằng thì nét đứt.",
+  "lp-lesson-3": "Một điểm thuộc miền nghiệm của hệ khi nó vượt qua tất cả điều kiện cùng lúc. Trên hình, đó là phần còn lại sau khi gạch các vùng sai; các góc của vùng này là những điểm cần tìm chính xác.",
+  "lp-lesson-4": "Hãy xem $x,y$ là số sản phẩm cần chọn, các bất phương trình là giới hạn nguyên liệu hoặc thời gian, còn $F(x,y)$ là số tiền cần tối đa hóa. Khi miền nghiệm là đa giác, ta so sánh $F$ tại từng đỉnh để tìm phương án tốt nhất.",
+  "lp-lesson-5": "Khi nhân hoặc chia hai vế với số âm, thứ tự lớn–bé bị đảo nên dấu bất đẳng thức phải lật chiều. Với bài toán đếm người hay sản phẩm, nghiệm còn phải phù hợp thực tế, thường là số nguyên không âm.",
+  "sg-lesson-1": "Đề cho đáy là hình bình hành thì chỉ dùng đúng tính chất của hình bình hành; đừng tự thêm góc vuông như hình chữ nhật. Đỉnh $S$ phải nằm ngoài mặt phẳng đáy, còn hai đường chéo đáy cắt nhau tại trung điểm chung $O$.",
+  "sg-lesson-2": "Tỉ số $SN:NB=2:1$ nghĩa là đoạn $SB$ được chia thành ba phần bằng nhau: $SN$ lấy hai phần, $NB$ lấy một phần. Vì vậy $N$ gần $B$ hơn và $\\vec{SN}=\\frac{2}{3}\\vec{SB}$.",
+  "sg-lesson-3": "Xoay hình chỉ đổi góc nhìn của em, không làm các đường thẳng đổi vị trí thật trong không gian. Nét khuất phụ thuộc mặt nào che trước; muốn biết hai đường có cắt nhau không, hãy kiểm tra chúng có đồng phẳng không rồi mới xét giao điểm.",
+  "sg-lesson-4": "Thiết diện là hình tạo ra khi một mặt phẳng cắt khối chóp. Hãy lần lượt tìm giao tuyến trên từng mặt bên, nối các đoạn chung đúng thứ tự; nếu mặt phẳng song song với đáy thì thiết diện đồng dạng với đáy.",
+  "sg-lesson-5": "Muốn tìm đường đi ngắn nhất trên các mặt bên, hãy mở các mặt ấy ra cùng một mặt phẳng. Đường ngắn nhất lúc này là đoạn thẳng nối điểm đầu với điểm cuối; sau đó kiểm tra đoạn thẳng có đi qua đúng các mặt cần thiết không.",
+  "trig-lesson-1": "Góc dương quay ngược chiều kim đồng hồ, góc âm quay theo chiều kim đồng hồ. Cứ quay thêm hoặc bớt một vòng tròn, tức $360^\\circ$ hay $2\\pi$, thì điểm cuối vẫn nằm đúng chỗ cũ.",
+  "trig-lesson-2": "Trên đường tròn đơn vị, hoành độ của điểm cuối là $\\cos\\alpha$, tung độ là $\\sin\\alpha$. Dấu của hai giá trị phụ thuộc điểm nằm ở góc phần tư nào; còn $\\tan\\alpha=\\frac{\\sin\\alpha}{\\cos\\alpha}$ khi $\\cos\\alpha\\ne0$.",
+  "trig-lesson-3": "Các công thức liên kết đến từ việc soi điểm trên đường tròn qua trục hoặc tâm đối xứng. Khi cần tính góc gấp đôi, dùng $\\sin(2\\alpha)=2\\sin\\alpha\\cos\\alpha$ và một trong các dạng tương đương của $\\cos(2\\alpha)$.",
+  "trig-lesson-4": "Khi góc tăng đều, điểm trên đường tròn quay một vòng rồi trở lại vị trí cũ. Vì thế $\\sin x$ và $\\cos x$ lặp lại sau $2\\pi$; $\\tan x$ và $\\cot x$ lặp lại sau $\\pi$. Đó là chu kỳ, còn đồ thị là cách nhìn những giá trị ấy theo góc quay.",
+  "trig-lesson-5": "Giải phương trình lượng giác là tìm mọi điểm trên đường tròn có tung độ hoặc hoành độ đúng yêu cầu, rồi viết thành các họ nghiệm. Nếu đề giới hạn một khoảng, thay từng họ nghiệm vào khoảng đó để giữ lại nghiệm phù hợp.",
+};

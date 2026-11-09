@@ -25,6 +25,7 @@ export interface CheckpointQuestion {
 
 export interface ReviewQuizItem {
   id: string;
+  level?: "basic" | "intermediate" | "advanced";
   question: string;
   options: {
     id: string;

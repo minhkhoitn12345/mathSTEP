@@ -77,6 +77,7 @@ export function renderKatex(latex: string, displayMode = false): string {
     const cleaned = sanitizeLatex(latex);
     return katex.renderToString(cleaned, {
       throwOnError: false,
+      strict: "ignore",
       displayMode,
     });
   } catch {
@@ -110,7 +111,7 @@ export default function KatexMath({ math, display = false, className = "" }: Kat
   const html = useMemo(() => renderKatex(math, display), [math, display]);
   return (
     <span
-      className={`inline-flex items-baseline mx-1 align-baseline ${className}`}
+      className={`${display ? "my-2 block w-full max-w-full overflow-x-auto py-1 text-center" : "inline-flex items-baseline mx-1 align-baseline"} ${className}`}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
@@ -120,8 +121,8 @@ export function MathFormattedText({ text, className = "" }: { text?: string; cla
   if (!text) return null;
   // Chuẩn hóa khoảng trắng quanh ký hiệu $ trước khi phân tách để chữ không bị dính sát vào công thức
   const normalized = normalizeMathDelimiters(text);
-  // Regex phân tách các biểu thức LaTeX kẹp giữa $...$ hoặc $$...$$
-  const parts = normalized.split(/(\$\$[\s\S]+?\$\$|\$[^\$\n]+?\$)/g);
+  // Keep multiline expressions together (for example, systems and cases in a single $...$ pair).
+  const parts = normalized.split(/(\$\$[\s\S]+?\$\$|\$(?!\$)[\s\S]+?\$(?!\$))/g);
   return (
     <span className={className}>
       {parts.map((part, i) => {
@@ -130,7 +131,8 @@ export function MathFormattedText({ text, className = "" }: { text?: string; cla
           return <KatexMath key={i} math={math} display={true} />;
         } else if (part.startsWith("$") && part.endsWith("$")) {
           const math = part.slice(1, -1);
-          return <KatexMath key={i} math={math} display={false} />;
+          const isBlockExpression = /\\begin\{(?:cases|aligned|matrix|pmatrix|bmatrix)\}/.test(math);
+          return <KatexMath key={i} math={math} display={isBlockExpression} />;
         }
         return <React.Fragment key={i}>{part}</React.Fragment>;
       })}
