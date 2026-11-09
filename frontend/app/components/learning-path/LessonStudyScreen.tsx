@@ -10,17 +10,11 @@ import {
   HelpCircle,
   Lightbulb,
   Sparkles,
-  BookOpen,
   Award,
   AlertCircle,
-  RotateCcw,
-  Compass,
-  Box,
-  Activity,
   Play,
   Send,
   X,
-  ChevronRight,
 } from "lucide-react";
 import { OptiMascot } from "../optimath/mascot/OptiMascot";
 

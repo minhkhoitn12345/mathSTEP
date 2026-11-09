@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
+import Link from "next/link";
 import { CORE_3_MODULES, CoreModuleConfig, LessonUnit } from "../../types/curriculum";
 import { UserLearningProgress, LessonStatus } from "../../types/learningPath";
 import { getLessonStatus } from "../../lib/learningProgressStorage";
@@ -15,11 +16,9 @@ import {
   Box,
   Activity,
   Flame,
-  Award,
   ArrowRight,
   BookOpen,
 } from "lucide-react";
-import { OptiMascot } from "../optimath/mascot/OptiMascot";
 
 interface LearningPathRoadmapProps {
   progress: UserLearningProgress;
@@ -159,7 +158,6 @@ export function LearningPathRoadmap({
         {CORE_3_MODULES.map((mod: CoreModuleConfig) => {
           const isBlue = mod.id === "linear_programming";
           const isEmerald = mod.id === "spatial_geometry";
-          const isPurple = mod.id === "trigonometry";
 
           // Calculate module completed count
           const modCompleted = mod.lessons.filter((l) =>
@@ -329,9 +327,8 @@ export function LearningPathRoadmap({
                         </button>
 
                         {/* Nút Vào học bài này */}
-                        <button
-                          type="button"
-                          onClick={() => onSelectLesson(lesson.id)}
+                        <Link
+                          href={`/learn/${mod.id}/${lesson.id}`}
                           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95 ${
                             isCompleted
                               ? "bg-slate-100 hover:bg-slate-200 text-slate-700"
@@ -356,7 +353,7 @@ export function LearningPathRoadmap({
                               <ArrowRight className="w-3.5 h-3.5" />
                             </>
                           )}
-                        </button>
+                        </Link>
                       </div>
                     </div>
                   );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { OptiMascot } from '@/app/components/optimath/mascot/OptiMascot';
-import { Heart, Smartphone, Monitor, ShieldCheck, Zap } from 'lucide-react';
+import { Smartphone, Monitor, Zap } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (

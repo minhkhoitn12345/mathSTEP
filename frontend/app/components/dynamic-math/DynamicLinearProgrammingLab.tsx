@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useRef } from "react";
-import { Plus, Trash2, Eye, EyeOff, Target, SlidersHorizontal, CheckCircle2, Compass, Layers, Sparkles } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, Target, SlidersHorizontal, CheckCircle2, Compass, Layers } from "lucide-react";
 import { formatVNFloat } from "../KatexMath";
 import { useDynamicMathStore } from "./useDynamicMathStore";
 import { SingleInequalityLab } from "@/app/components/optimath/SingleInequalityLab";

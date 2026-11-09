@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useCallback, Suspense, FormEvent, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Header, SessionData } from "./components/optimath/Header";
-import { Hero } from "./components/optimath/Hero";
-import { ModuleCards } from "./components/optimath/ModuleCards";
+import { LessonCatalogHome } from "./components/optimath/LessonCatalogHome";
 import { SingleInequalityLab } from "./components/optimath/SingleInequalityLab";
 import { SystemInequalityLab } from "./components/optimath/SystemInequalityLab/SystemInequalityLab";
 import { OptimizationLab } from "./components/optimath/OptimizationLab/OptimizationLab";
@@ -30,7 +30,7 @@ import {
 } from "./lib/learningProgressStorage";
 import { getLessonDetailedContent } from "./data/learningPathData";
 import { UserLearningProgress } from "./types/learningPath";
-import { Sparkles, Mail, Lock, User, AlertCircle, RefreshCw, Compass, Layers, Target, Award, ArrowLeft } from "lucide-react";
+import { Sparkles, Mail, Lock, User, AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
 
 type ActiveView =
   | "home"
@@ -51,6 +51,7 @@ function OptimathMainContent() {
   const [currentView, setCurrentView] = useState<ActiveView>("home");
   const [activeLessonId, setActiveLessonId] = useState<string>("lp-lesson-1");
   const [selectedStudyLessonId, setSelectedStudyLessonId] = useState<string>("lp-lesson-1");
+  const [returnToUrl, setReturnToUrl] = useState<string | null>(null);
   const [userProgress, setUserProgress] = useState<UserLearningProgress>(() =>
     loadUserLearningProgress()
   );
@@ -99,6 +100,12 @@ function OptimathMainContent() {
   useEffect(() => {
     const viewParam = searchParams.get("view");
     const lessonParam = searchParams.get("lesson");
+    const returnToParam = searchParams.get("returnTo");
+
+    if (returnToParam) {
+      setReturnToUrl(decodeURIComponent(returnToParam));
+    }
+
     if (viewParam === "learning_path" || viewParam === "study") {
       if (lessonParam) {
         setSelectedStudyLessonId(lessonParam);
@@ -115,6 +122,13 @@ function OptimathMainContent() {
       viewParam === "optimization" ||
       viewParam === "quiz"
     ) {
+      if (lessonParam) {
+        setActiveLessonId(lessonParam);
+        if (lessonParam === "lp-lesson-3") setLpSubTab("system");
+        else if (lessonParam === "lp-lesson-4") setLpSubTab("optimization");
+        else if (lessonParam === "lp-lesson-5") setLpSubTab("practice");
+        else if (lessonParam === "lp-lesson-1" || lessonParam === "lp-lesson-2") setLpSubTab("single");
+      }
       setCurrentView(viewParam as ActiveView);
     }
   }, [searchParams]);
@@ -168,35 +182,42 @@ function OptimathMainContent() {
   // Handle module selection
   const handleSelectModule = (modId: string) => {
     if (modId === "home") {
+      setReturnToUrl(null);
       setCurrentView("home");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "learning_path") {
       setCurrentView("learning_path");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "linear_programming" || modId === "lab") {
+      setReturnToUrl(null);
       setCurrentView("linear_programming");
       setLpSubTab("single");
       setActiveLessonId("lp-lesson-1");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "spatial_geometry") {
+      setReturnToUrl(null);
       setCurrentView("spatial_geometry");
       setActiveLessonId("sg-lesson-1");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "trigonometry") {
+      setReturnToUrl(null);
       setCurrentView("trigonometry");
       setActiveLessonId("trig-lesson-1");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "system") {
+      setReturnToUrl(null);
       setCurrentView("linear_programming");
       setLpSubTab("system");
       setActiveLessonId("lp-lesson-3");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "optimization") {
+      setReturnToUrl(null);
       setCurrentView("linear_programming");
       setLpSubTab("optimization");
       setActiveLessonId("lp-lesson-4");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "quiz") {
+      setReturnToUrl(null);
       setCurrentView("linear_programming");
       setLpSubTab("practice");
       setActiveLessonId("lp-lesson-5");
@@ -244,8 +265,17 @@ function OptimathMainContent() {
   };
 
   // Mở thẳng đúng một mô phỏng tương ứng của bài học được chọn
-  const handleOpenLesson = (moduleId: string, lessonId: string) => {
+  const handleOpenLesson = (
+    moduleId: string,
+    lessonId: string,
+    customReturnTo?: string
+  ) => {
     setActiveLessonId(lessonId);
+    if (customReturnTo) {
+      setReturnToUrl(customReturnTo);
+    } else {
+      setReturnToUrl(`/learn/${moduleId}/${lessonId}`);
+    }
     if (moduleId === "linear_programming") {
       setCurrentView("linear_programming");
       if (lessonId === "lp-lesson-1") {
@@ -287,13 +317,6 @@ function OptimathMainContent() {
       CORE_3_MODULES[0]?.lessons[0]
     );
   }, [activeLessonId]);
-
-  const handleStartExplore = () => {
-    setLearningMode("guided");
-    setCurrentView("linear_programming");
-    setLpSubTab("single");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
 
   const handleOpenTeacherGuide = () => {
     setIsTeacherModalOpen(true);
@@ -483,20 +506,13 @@ function OptimathMainContent() {
       {/* 2. MAIN WORKSPACE CONTENT */}
       <main className="flex-1">
         {currentView === "home" ? (
-          <>
-            {/* Hero Section with Fast Track CTA to Learning Path */}
-            <Hero
-              onStartExplore={handleStartExplore}
-              onOpenTeacherGuide={handleOpenTeacherGuide}
-              onOpenLearningPath={() => setCurrentView("learning_path")}
-            />
-
-            {/* 3 Core Research Modules Cards with direct lesson simulation openers */}
-            <ModuleCards
-              onSelectModule={handleSelectModule}
-              onSelectLesson={handleOpenLesson}
-            />
-          </>
+          <LessonCatalogHome
+            onOpenSimulationLab={(modId, lesId) => {
+              handleOpenLesson(modId, lesId, `/learn/${modId}/${lesId}`);
+            }}
+            onOpenTeacherGuide={handleOpenTeacherGuide}
+            onOpenKnowledgeBase={() => setIsKnowledgeModalOpen(true)}
+          />
         ) : currentView === "learning_path" ? (
           /* =========================================================================
              LUỒNG HỌC TẬP RIÊNG: LỘ TRÌNH 3 CHUYÊN ĐỀ (15 BÀI HỌC BITE-SIZED)
@@ -541,36 +557,107 @@ function OptimathMainContent() {
           /* =========================================================================
              MODULE 2: HÌNH HỌC KHÔNG GIAN 3D (CHUYÊN ĐỀ 2)
              ========================================================================= */
-          <SpatialGeometryLab
-            initialLessonIndex={sgLessonIndex}
-            onBackToHome={() => setCurrentView("home")}
-            onOpenSocraticDrawer={(contextMsg) => {
-              setChatDrawerOpen(true);
-              if (contextMsg) {
-                void handleSendMessage(contextMsg);
-              }
-            }}
-          />
+          <div className="space-y-4">
+            {returnToUrl && (
+              <div className="max-w-7xl mx-auto px-3 sm:px-6 pt-4">
+                <div className="flex items-center justify-between gap-3 p-3 bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 text-white rounded-2xl shadow-md border border-white/10">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                      <ArrowLeft className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold">Phòng Thí Nghiệm Hình Học Không Gian 3D</p>
+                      <p className="text-[10px] text-emerald-200">
+                        Em đang thao tác mô phỏng 3D tương tác. Khi đã nắm chắc, hãy bấm quay lại bài học để tiếp tục.
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href={returnToUrl}
+                    className="px-3.5 py-1.5 rounded-xl bg-white text-emerald-800 hover:bg-emerald-50 font-black text-xs transition-all shadow-xs shrink-0 cursor-pointer"
+                  >
+                    ← Quay lại bài học
+                  </Link>
+                </div>
+              </div>
+            )}
+            <SpatialGeometryLab
+              initialLessonIndex={sgLessonIndex}
+              onBackToHome={() => setCurrentView("home")}
+              onOpenSocraticDrawer={(contextMsg) => {
+                setChatDrawerOpen(true);
+                if (contextMsg) {
+                  void handleSendMessage(contextMsg);
+                }
+              }}
+            />
+          </div>
         ) : currentView === "trigonometry" ? (
           /* =========================================================================
              MODULE 3: LƯỢNG GIÁC TƯƠNG TÁC (CHUYÊN ĐỀ 3)
              ========================================================================= */
-          <TrigonometryLab
-            initialLessonIndex={trigLessonIndex}
-            onBackToHome={() => setCurrentView("home")}
-            onOpenSocraticDrawer={(contextMsg) => {
-              setChatDrawerOpen(true);
-              if (contextMsg) {
-                void handleSendMessage(contextMsg);
-              }
-            }}
-          />
+          <div className="space-y-4">
+            {returnToUrl && (
+              <div className="max-w-7xl mx-auto px-3 sm:px-6 pt-4">
+                <div className="flex items-center justify-between gap-3 p-3 bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 text-white rounded-2xl shadow-md border border-white/10">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                      <ArrowLeft className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold">Phòng Thí Nghiệm Lượng Giác Tương Tác</p>
+                      <p className="text-[10px] text-purple-200">
+                        Em đang khám phá vòng tròn lượng giác và đồ thị sóng sin/cos. Bấm nút để quay lại bài học.
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href={returnToUrl}
+                    className="px-3.5 py-1.5 rounded-xl bg-white text-purple-800 hover:bg-purple-50 font-black text-xs transition-all shadow-xs shrink-0 cursor-pointer"
+                  >
+                    ← Quay lại bài học
+                  </Link>
+                </div>
+              </div>
+            )}
+            <TrigonometryLab
+              initialLessonIndex={trigLessonIndex}
+              onBackToHome={() => setCurrentView("home")}
+              onOpenSocraticDrawer={(contextMsg) => {
+                setChatDrawerOpen(true);
+                if (contextMsg) {
+                  void handleSendMessage(contextMsg);
+                }
+              }}
+            />
+          </div>
         ) : (
           /* =========================================================================
              MODULE 1: BẤT PHƯƠNG TRÌNH & QUY HOẠCH TUYẾN TÍNH (CHUYÊN ĐỀ 1)
              MỞ ĐÚNG MỘT MÔ PHỎNG THEO BÀI ĐƯỢC CHỌN
              ========================================================================= */
           <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4">
+            {returnToUrl && (
+              <div className="flex items-center justify-between gap-3 p-3 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 text-white rounded-2xl shadow-md border border-white/10">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                    <ArrowLeft className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold">Phòng Thí Nghiệm Bất Phương Trình & Tối Ưu</p>
+                    <p className="text-[10px] text-blue-200">
+                      Em đang thực hành mô phỏng nửa mặt phẳng bờ (d) & miền đa giác lồi. Bấm nút để quay lại bài học.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href={returnToUrl}
+                  className="px-3.5 py-1.5 rounded-xl bg-white text-blue-700 hover:bg-blue-50 font-black text-xs transition-all shadow-xs shrink-0 cursor-pointer"
+                >
+                  ← Quay lại bài học
+                </Link>
+              </div>
+            )}
             {/* Thanh điều hướng bài học tinh gọn & nút quay lại trang chủ */}
             <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-200 shadow-xs">
               <div className="flex items-center gap-3">
