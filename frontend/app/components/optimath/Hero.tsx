@@ -1,15 +1,17 @@
 import React from 'react';
 import { OptiMascot } from '@/app/components/optimath/mascot/OptiMascot';
-import { Sparkles, Compass, Box, Activity } from 'lucide-react';
+import { Sparkles, Compass, Box, Activity, GraduationCap, ArrowRight } from 'lucide-react';
 
 interface HeroProps {
   onStartExplore: () => void;
   onOpenTeacherGuide: () => void;
+  onOpenLearningPath?: () => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({
   onStartExplore: _onStartExplore,
   onOpenTeacherGuide: _onOpenTeacherGuide,
+  onOpenLearningPath,
 }) => {
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-[#0B132B] to-slate-900 text-white pt-6 pb-8 sm:pt-8 sm:pb-10 border-b border-white/10 select-none">
@@ -37,11 +39,11 @@ export const Hero: React.FC<HeroProps> = ({
 
             {/* Subtitle - Tối giản chữ, tập trung hành động */}
             <p className="text-xs sm:text-sm text-slate-300 max-w-xl font-normal leading-relaxed mb-4">
-              Nhấn vào từng bài học bên dưới để mở ngay <strong>mô phỏng tương tác chuyên biệt</strong>. Thao tác đồ thị 2D, xoay hình không gian 3D và đối thoại cùng <strong>Socratic AI</strong>.
+              Nhấn vào từng bài học bên dưới để mở ngay <strong>mô phỏng tương tác chuyên biệt</strong> hoặc tham gia <strong>Lộ trình học tập từng bước</strong> cùng Trợ lý Socratic AI.
             </p>
 
-            {/* 3 Quick Visual Pills */}
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-xs font-semibold">
+            {/* 3 Quick Visual Pills + Callout to Learning Track */}
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-xs font-semibold mb-3">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300">
                 <Compass className="w-3.5 h-3.5 text-blue-400" />
                 CĐ1: BPT & Tối Ưu Oxy
@@ -55,6 +57,21 @@ export const Hero: React.FC<HeroProps> = ({
                 CĐ3: Lượng Giác Tương Tác
               </span>
             </div>
+
+            {/* Fast Track Button to Learning Roadmap */}
+            {onOpenLearningPath && (
+              <div className="flex justify-center md:justify-start pt-1">
+                <button
+                  type="button"
+                  onClick={onOpenLearningPath}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/30 transition-all cursor-pointer active:scale-95 group"
+                >
+                  <GraduationCap className="w-4 h-4 text-white" />
+                  <span>Vào Lộ Trình Học Tập Từng Bước (15 Bài)</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Right: Friendly mascot compact banner */}
@@ -65,7 +82,7 @@ export const Hero: React.FC<HeroProps> = ({
             <div className="text-left pr-2">
               <div className="text-xs font-bold text-blue-300">Trợ lý Socratic Opti</div>
               <p className="text-[11px] text-slate-300 max-w-[180px] leading-snug mt-0.5">
-                "Chào em! Chọn bài học bên dưới để bắt đầu thí nghiệm nhé!"
+                "Chào em! Chọn bài học bên dưới hoặc vào Lộ trình học nhé!"
               </p>
             </div>
           </div>

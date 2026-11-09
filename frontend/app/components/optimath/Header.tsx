@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   BookOpen,
+  GraduationCap,
 } from "lucide-react";
 
 export interface SessionData {
@@ -124,6 +125,24 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             Trang chủ
+          </button>
+
+          {/* Luồng học tập riêng: Lộ trình 3 Chuyên đề (15 Bài) */}
+          <button
+            type="button"
+            onClick={() => onSelectModule("learning_path")}
+            className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
+              currentModule === "learning_path" || currentModule === "lesson_study"
+                ? "bg-emerald-600/90 text-white font-bold shadow-xs ring-1 ring-emerald-400/50"
+                : "text-emerald-300 hover:text-white hover:bg-white/5"
+            }`}
+            title="Mở Lộ trình học tập từng bước (Bite-sized track)"
+          >
+            <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Lộ trình học</span>
+            <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-extrabold">
+              15 Bài
+            </span>
           </button>
 
           {/* Chuyên đề 1: BPT & Tối ưu (Toán 10) */}
@@ -374,6 +393,21 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             Trang chủ
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onSelectModule("learning_path");
+              setMobileMenuOpen(false);
+            }}
+            className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-colors ${
+              currentModule === "learning_path" || currentModule === "lesson_study"
+                ? "bg-emerald-600/30 text-emerald-300 font-bold"
+                : "text-emerald-300 hover:bg-white/5"
+            }`}
+          >
+            <GraduationCap className="w-4 h-4 text-emerald-400" />
+            <span>Lộ trình học tập (15 Bài học)</span>
           </button>
           <button
             type="button"

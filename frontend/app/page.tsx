@@ -21,10 +21,21 @@ import ChatHistoryModal from "./components/ChatHistoryModal";
 import { generateSmartSocraticResponse } from "./lib/smartSocratic";
 import { LearningMode } from "./types/math";
 import { CORE_3_MODULES } from "./types/curriculum";
+import { LearningPathRoadmap } from "./components/learning-path/LearningPathRoadmap";
+import { LessonStudyScreen } from "./components/learning-path/LessonStudyScreen";
+import {
+  loadUserLearningProgress,
+  markLessonCompleted,
+  setLastActiveLesson,
+} from "./lib/learningProgressStorage";
+import { getLessonDetailedContent } from "./data/learningPathData";
+import { UserLearningProgress } from "./types/learningPath";
 import { Sparkles, Mail, Lock, User, AlertCircle, RefreshCw, Compass, Layers, Target, Award, ArrowLeft } from "lucide-react";
 
 type ActiveView =
   | "home"
+  | "learning_path"
+  | "lesson_study"
   | "linear_programming"
   | "spatial_geometry"
   | "trigonometry"
@@ -39,6 +50,10 @@ function OptimathMainContent() {
   // 1. Navigation state
   const [currentView, setCurrentView] = useState<ActiveView>("home");
   const [activeLessonId, setActiveLessonId] = useState<string>("lp-lesson-1");
+  const [selectedStudyLessonId, setSelectedStudyLessonId] = useState<string>("lp-lesson-1");
+  const [userProgress, setUserProgress] = useState<UserLearningProgress>(() =>
+    loadUserLearningProgress()
+  );
   const [learningMode, setLearningMode] = useState<LearningMode>("guided");
   const [lpSubTab, setLpSubTab] = useState<"single" | "system" | "optimization" | "practice">("single");
 
@@ -83,7 +98,15 @@ function OptimathMainContent() {
   // Check URL parameters for view routing
   useEffect(() => {
     const viewParam = searchParams.get("view");
-    if (
+    const lessonParam = searchParams.get("lesson");
+    if (viewParam === "learning_path" || viewParam === "study") {
+      if (lessonParam) {
+        setSelectedStudyLessonId(lessonParam);
+        setCurrentView("lesson_study");
+      } else {
+        setCurrentView("learning_path");
+      }
+    } else if (
       viewParam === "linear_programming" ||
       viewParam === "spatial_geometry" ||
       viewParam === "trigonometry" ||
@@ -147,6 +170,9 @@ function OptimathMainContent() {
     if (modId === "home") {
       setCurrentView("home");
       window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (modId === "learning_path") {
+      setCurrentView("learning_path");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "linear_programming" || modId === "lab") {
       setCurrentView("linear_programming");
       setLpSubTab("single");
@@ -177,6 +203,43 @@ function OptimathMainContent() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (modId === "knowledge") {
       setIsKnowledgeModalOpen(true);
+    }
+  };
+
+  // Chọn bài học trong Lộ trình học (Bite-sized Track)
+  const handleSelectStudyLesson = (lessonId: string) => {
+    setSelectedStudyLessonId(lessonId);
+    setLastActiveLesson(lessonId);
+    setUserProgress(loadUserLearningProgress());
+    setCurrentView("lesson_study");
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  // Hoàn thành bài học và chuyển tiếp
+  const handleCompleteAndNext = (
+    lessonId: string,
+    scorePercentage: number,
+    xpEarned: number
+  ) => {
+    const updated = markLessonCompleted(lessonId, scorePercentage, xpEarned);
+    setUserProgress(updated);
+
+    // Tìm bài học tiếp theo trong toàn bộ 15 bài
+    const allLessons = CORE_3_MODULES.flatMap((m) => m.lessons);
+    const currentIndex = allLessons.findIndex((l) => l.id === lessonId);
+    if (currentIndex >= 0 && currentIndex < allLessons.length - 1) {
+      const nextLesson = allLessons[currentIndex + 1];
+      setSelectedStudyLessonId(nextLesson.id);
+      setLastActiveLesson(nextLesson.id);
+      setCurrentView("lesson_study");
+    } else {
+      // Đã xong bài cuối cùng, quay lại Lộ trình
+      setCurrentView("learning_path");
+    }
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -421,8 +484,12 @@ function OptimathMainContent() {
       <main className="flex-1">
         {currentView === "home" ? (
           <>
-            {/* Hero Section */}
-            <Hero onStartExplore={handleStartExplore} onOpenTeacherGuide={handleOpenTeacherGuide} />
+            {/* Hero Section with Fast Track CTA to Learning Path */}
+            <Hero
+              onStartExplore={handleStartExplore}
+              onOpenTeacherGuide={handleOpenTeacherGuide}
+              onOpenLearningPath={() => setCurrentView("learning_path")}
+            />
 
             {/* 3 Core Research Modules Cards with direct lesson simulation openers */}
             <ModuleCards
@@ -430,6 +497,46 @@ function OptimathMainContent() {
               onSelectLesson={handleOpenLesson}
             />
           </>
+        ) : currentView === "learning_path" ? (
+          /* =========================================================================
+             LUỒNG HỌC TẬP RIÊNG: LỘ TRÌNH 3 CHUYÊN ĐỀ (15 BÀI HỌC BITE-SIZED)
+             ========================================================================= */
+          <LearningPathRoadmap
+            progress={userProgress}
+            onSelectLesson={handleSelectStudyLesson}
+            onOpenSimulation={handleOpenLesson}
+            onBackToHome={() => setCurrentView("home")}
+          />
+        ) : currentView === "lesson_study" ? (
+          /* =========================================================================
+             MÀN HÌNH BÀI HỌC CHI TIẾT (7 PHẦN CHUẨN GDPT 2018)
+             ========================================================================= */
+          (() => {
+            const content = getLessonDetailedContent(selectedStudyLessonId);
+            if (!content) {
+              return (
+                <div className="max-w-xl mx-auto py-16 text-center space-y-4">
+                  <p className="text-sm text-slate-600">Đang tải nội dung bài học...</p>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentView("learning_path")}
+                    className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs cursor-pointer"
+                  >
+                    Về lộ trình học
+                  </button>
+                </div>
+              );
+            }
+            return (
+              <LessonStudyScreen
+                content={content}
+                onBackToRoadmap={() => setCurrentView("learning_path")}
+                onCompleteAndNext={handleCompleteAndNext}
+                onOpenSimulation={handleOpenLesson}
+                isCompleted={userProgress.completedLessonIds.includes(selectedStudyLessonId)}
+              />
+            );
+          })()
         ) : currentView === "spatial_geometry" ? (
           /* =========================================================================
              MODULE 2: HÌNH HỌC KHÔNG GIAN 3D (CHUYÊN ĐỀ 2)
