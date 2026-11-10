@@ -51,7 +51,13 @@ export const SystemTeacherControls: React.FC<SystemTeacherControlsProps> = ({
     },
     {
       q: 'Hỏi học sinh: Miền nghiệm của hệ là miền bị chặn hay không bị chặn?',
-      a: analysis.regionType === 'bounded_polygon' ? 'Miền bị chặn (đa giác đóng).' : 'Miền không bị chặn (kéo dài vô tận).'
+      a: analysis.regionType === 'bounded_polygon'
+        ? 'Miền bị chặn; nếu không suy biến thì có dạng đa giác.'
+        : analysis.regionType === 'unbounded'
+        ? 'Miền không bị chặn, kéo dài vô hạn về ít nhất một phía.'
+        : analysis.regionType === 'empty'
+        ? 'Miền nghiệm rỗng; hệ vô nghiệm.'
+        : 'Miền nghiệm suy biến, chỉ gồm một điểm, đoạn thẳng hoặc đường thẳng.'
     }
   ];
 

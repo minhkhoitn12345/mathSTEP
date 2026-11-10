@@ -197,7 +197,7 @@ export const PracticeLab: React.FC<PracticeLabProps> = ({
               }`}
             >
               <AlertTriangle className="w-3.5 h-3.5" />
-              <span>3. Phân tích Lỗi (E01 – E10)</span>
+              <span>3. Lỗi thường gặp</span>
             </button>
 
             <button

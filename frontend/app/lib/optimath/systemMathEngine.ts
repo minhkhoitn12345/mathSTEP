@@ -589,7 +589,7 @@ export function analyzeSystemFeasibleRegion(system: SystemInequality[]): SystemA
     orderedPolygon = sortPointsCounterClockwise(cornerSource);
     const labeled = assignPolygonVertexLabels(orderedPolygon);
     const labeledText = labeled.map(item => `${item.label}${formatPointCoord(item.point)}`).join(', ');
-    description = `Miền nghiệm là một miền đa giác mở không bị chặn (kéo dài vô tận về một phía của mặt phẳng tọa độ).`;
+    description = `Miền nghiệm không bị chặn, tức là kéo dài vô hạn trên mặt phẳng tọa độ.`;
     sgkSummary = `Kết luận: Miền nghiệm của hệ là miền không bị chặn có các đỉnh biên: ${
       labeled.length > 0 ? labeledText : 'trải dài trên mặt phẳng'
     }.`;

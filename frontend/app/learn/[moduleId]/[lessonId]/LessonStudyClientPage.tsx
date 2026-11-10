@@ -120,6 +120,8 @@ export default function LessonStudyClientPage({
 
   // Initialize Socratic welcome message for this lesson
   useEffect(() => {
+    localStorage.removeItem("mathstep:custom_ai_config");
+    localStorage.removeItem("mathstep:user_profile");
     setConversationId(`opti-${lessonId}-${Date.now()}`);
     if (lessonContent) {
       setChatMessages([
@@ -159,18 +161,6 @@ export default function LessonStudyClientPage({
 
   useEffect(() => {
     void checkSession();
-    fetch("/api/account/api-key")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.configured) {
-          setCustomAiConfig({
-            provider: "gemini",
-            model: data.model || "gemini-2.5-flash",
-            apiKey: data.apiKeyMasked || "",
-          });
-        }
-      })
-      .catch(() => {});
   }, [checkSession]);
 
   // Complete and Next Lesson handler
@@ -234,7 +224,11 @@ export default function LessonStudyClientPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           conversation_id: conversationId || `opti-${lessonId}`,
-          message: `[Ngữ cảnh học sinh đang học ${lessonContent?.code}: ${lessonContent?.title} - Chuyên đề ${parentModule?.title}]\n${text}`,
+          message: text,
+          learning_context: {
+            module: moduleId,
+            lesson_id: lessonId,
+          },
           custom_ai: customAiConfig || undefined,
           history: chatMessages.slice(-6).map((m) => ({
             role: m.role,

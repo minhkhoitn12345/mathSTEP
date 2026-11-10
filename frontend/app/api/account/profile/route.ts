@@ -57,6 +57,8 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
+    const contentLength = Number(request.headers.get("content-length") || 0);
+    if (contentLength > 8192) return jsonError("REQUEST_TOO_LARGE", "Dữ liệu hồ sơ quá lớn.", 413);
     const { token, refreshed } = await getAccessToken(request);
     if (!token) return jsonError("UNAUTHORIZED", "Vui lòng đăng nhập để cập nhật thông tin.", 401);
 

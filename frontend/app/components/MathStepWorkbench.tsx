@@ -132,7 +132,7 @@ const MODULE_META: Record<
   linear_programming: {
     title: "Hệ bất phương trình & Quy hoạch tuyến tính",
     source: "KNTT Toán 10 Tập 1 Bài 4, tr.26",
-    goal: "Nghiệm của hệ là miền đa giác giao nhau; giá trị tối ưu luôn đạt tại các đỉnh của đa giác miền nghiệm.",
+    goal: "Miền nghiệm là phần chung của các miền riêng. Nếu miền phương án là đa giác lồi bị chặn, tìm giá trị tối ưu bằng cách xét các đỉnh.",
     simulation: "2D: Chồng miền nghiệm Oxy; di chuyển đường mức mục tiêu F(x, y) = ux + vy; tìm điểm tối ưu và điểm nguyên.",
     is3D: false,
   },

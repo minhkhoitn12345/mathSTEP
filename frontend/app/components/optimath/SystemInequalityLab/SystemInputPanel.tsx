@@ -118,7 +118,7 @@ export const SystemInputPanel: React.FC<SystemInputPanelProps> = ({
                       ? 'bg-blue-50 border-blue-200 text-blue-700'
                       : 'bg-slate-100 border-slate-200 text-slate-400'
                   }`}
-                  title={ineq.showLine !== false ? 'Đang hiện đường biên bờ' : 'Đang ẩn đường biên bờ'}
+                  title={ineq.showLine !== false ? 'Đang hiện đường thẳng bờ' : 'Đang ẩn đường thẳng bờ'}
                 >
                   {ineq.showLine !== false ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 </button>

@@ -20,7 +20,7 @@ const PRESET_INEQUALITIES: {
   suggestedPoints?: { label: string; pt: Point2D }[];
 }[] = [
   {
-    label: 'Ca A: 2x + y ≤ 6',
+    label: 'Ví dụ A: 2x + y ≤ 6',
     tag: 'Chuẩn SGK',
     ineq: { id: 'preset-a', a: 2, b: 1, op: '<=', c: 6 },
     suggestedPoints: [
@@ -29,7 +29,7 @@ const PRESET_INEQUALITIES: {
     ]
   },
   {
-    label: 'Ca B: x + y < 4',
+    label: 'Ví dụ B: x + y < 4',
     tag: 'Nét đứt, thử M(2;2)',
     ineq: { id: 'preset-b', a: 1, b: 1, op: '<', c: 4 },
     suggestedPoints: [
@@ -38,7 +38,7 @@ const PRESET_INEQUALITIES: {
     ]
   },
   {
-    label: 'Ca C: x ≤ 3',
+    label: 'Ví dụ C: x ≤ 3',
     tag: 'Đường thẳng đứng',
     ineq: { id: 'preset-c', a: 1, b: 0, op: '<=', c: 3 },
     suggestedPoints: [
@@ -47,7 +47,7 @@ const PRESET_INEQUALITIES: {
     ]
   },
   {
-    label: 'Ca D: y ≥ -2',
+    label: 'Ví dụ D: y ≥ -2',
     tag: 'Đường nằm ngang',
     ineq: { id: 'preset-d', a: 0, b: 1, op: '>=', c: -2 },
     suggestedPoints: [
@@ -56,7 +56,7 @@ const PRESET_INEQUALITIES: {
     ]
   },
   {
-    label: 'Ca E: x + y > 0',
+    label: 'Ví dụ E: x + y > 0',
     tag: 'Đi qua O(0;0)',
     ineq: { id: 'preset-e', a: 1, b: 1, op: '>', c: 0 },
     suggestedPoints: [

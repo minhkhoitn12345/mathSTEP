@@ -233,22 +233,11 @@ function OptimathMainContent() {
   }, []);
 
   useEffect(() => {
+    localStorage.removeItem("mathstep:custom_ai_config");
+    localStorage.removeItem("mathstep:user_profile");
     void checkSession();
     setConversationId(`opti-${Date.now()}`);
 
-    // Load custom AI key if configured
-    fetch("/api/account/api-key")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.configured) {
-          setCustomAiConfig({
-            provider: "gemini",
-            model: data.model || "gemini-2.5-flash",
-            apiKey: data.apiKeyMasked || "",
-          });
-        }
-      })
-      .catch(() => {});
   }, [checkSession]);
 
   // Handle module selection

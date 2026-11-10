@@ -82,12 +82,15 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const contentLength = Number(request.headers.get("content-length") || 0);
+    if (contentLength > 16_000) return jsonError("REQUEST_TOO_LARGE", "Yêu cầu quá lớn.", 413);
     const body = await request.json().catch(() => null);
     const { prompt, custom_ai } = body || {};
 
     if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
       return jsonError("MISSING_PROMPT", "Vui lòng nhập đề bài hình học không gian.", 400);
     }
+    if (prompt.length > 8_000) return jsonError("PROMPT_TOO_LARGE", "Đề bài tối đa 8.000 ký tự.", 413);
 
     // 2. XSS & PROMPT INJECTION SANITIZATION
     const cleanPrompt = sanitizeUserText(prompt).trim();
@@ -97,13 +100,12 @@ export async function POST(request: NextRequest) {
     }
 
     const trimmedPrompt = cleanPrompt;
-    const hasCustomKey = Boolean(
-      custom_ai?.apiKey && typeof custom_ai.apiKey === "string" && custom_ai.apiKey.trim().length > 10
-    );
+    const keyCandidate = typeof custom_ai?.apiKey === "string" ? custom_ai.apiKey.trim() : "";
+    const hasCustomKey = keyCandidate.length >= 20 && keyCandidate.length <= 512 && /^[\x21-\x7E]+$/.test(keyCandidate);
 
     // 1. NẾU CÓ USER API KEY (Client-side Configured Key)
     if (hasCustomKey) {
-      const apiKey = custom_ai.apiKey.trim();
+      const apiKey = keyCandidate;
       const provider = custom_ai.provider || "gemini";
 
       // A. GOOGLE GEMINI API
@@ -111,10 +113,10 @@ export async function POST(request: NextRequest) {
         const rawModel = custom_ai.model || "gemini-2.5-flash";
         const model = rawModel.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 64) || "gemini-2.5-flash";
         const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
             body: JSON.stringify({
               system_instruction: { parts: [{ text: GEOMETRY_PARSER_SYSTEM_PROMPT }] },
               contents: [
@@ -147,7 +149,7 @@ export async function POST(request: NextRequest) {
               solid: parsed,
               source: "custom_gemini",
               modelUsed: model,
-            });
+            }, { headers: { "Cache-Control": "no-store" } });
           }
         }
       }
@@ -158,7 +160,8 @@ export async function POST(request: NextRequest) {
           provider === "deepseek"
             ? "https://api.deepseek.com/chat/completions"
             : "https://api.openai.com/v1/chat/completions";
-        const model = custom_ai.model || "gpt-4o-mini";
+        const rawModel = typeof custom_ai.model === "string" ? custom_ai.model : "gpt-4o-mini";
+        const model = rawModel.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 64) || "gpt-4o-mini";
         const openaiRes = await fetch(baseUrl, {
           method: "POST",
           headers: {
@@ -191,7 +194,7 @@ export async function POST(request: NextRequest) {
               solid: parsed,
               source: `custom_${provider}`,
               modelUsed: model,
-            });
+            }, { headers: { "Cache-Control": "no-store" } });
           }
         }
       }
@@ -209,7 +212,7 @@ export async function POST(request: NextRequest) {
       },
       source: "project_template_preset",
       modelUsed: "mathstep-geometry-engine-v2",
-    });
+    }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("[Geometry Parser API Error]:", error);
     return jsonError("PARSER_ERROR", "Chưa thể phân tích đề bài lúc này. Vui lòng thử lại.", 500);

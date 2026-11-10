@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jsonError } from "@/lib/security";
 import { getAccessToken, responseWithSessionCookies } from "@/lib/supabase";
+import { getFastApiBaseUrl } from "@/lib/fastapi";
 
 export const runtime = "nodejs";
 
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
   catch { return jsonError("SUPABASE_UNAVAILABLE", "Chưa xác minh được phiên đăng nhập.", 502); }
   const { token, refreshed } = session;
   if (!token) return jsonError("UNAUTHORIZED", "Vui lòng đăng nhập để xem lịch sử.", 401);
-  const baseUrl = process.env.FASTAPI_BASE_URL?.replace(/\/$/, "");
+  const baseUrl = getFastApiBaseUrl();
   if (!baseUrl) return responseWithSessionCookies(jsonError("FASTAPI_NOT_CONFIGURED", "Chưa cấu hình địa chỉ FastAPI.", 503), refreshed);
   try {
     const limit = Number(request.nextUrl.searchParams.get("limit") ?? 20);

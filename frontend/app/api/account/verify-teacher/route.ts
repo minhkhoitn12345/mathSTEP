@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { isJsonRequest, isSameOrigin, jsonError } from "@/lib/security";
 import { getAccessToken, getSupabaseUser } from "@/lib/supabase";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { clearTeacherRoleCookie, isValidTeacherCode, setTeacherRoleCookie } from "@/lib/teacherRole";
 
 export const runtime = "nodejs";
-
-const DEFAULT_TEACHER_CODE = process.env.TEACHER_ACCESS_CODE || "MATHSTEP-GV-2026";
 
 /**
  * POST /api/account/verify-teacher
@@ -35,19 +34,11 @@ export async function POST(request: NextRequest) {
       return jsonError("UNAUTHORIZED", "Phiên đăng nhập không hợp lệ hoặc đã hết hạn.", 401);
     }
 
-    const body = await request.json().catch(() => null);
+    const rawBody = await request.text();
+    if (rawBody.length > 2048) return jsonError("REQUEST_TOO_LARGE", "Yêu cầu quá lớn.", 413);
+    const body = JSON.parse(rawBody);
     const teacherCode = typeof body?.teacherCode === "string" ? body.teacherCode.trim() : "";
-
-    const userEmail = (user.email || "").toLowerCase();
-    const isEducationalEmail =
-      userEmail.endsWith("@teacher.mathstep.edu.vn") ||
-      userEmail.endsWith("@giaovien.edu.vn") ||
-      userEmail.endsWith(".edu.vn");
-
-    // Kiểm tra tính hợp lệ của mã Sư phạm hoặc email ngành giáo dục
-    const isValidCode = teacherCode === DEFAULT_TEACHER_CODE || (isEducationalEmail && teacherCode.length > 0);
-
-    if (!isValidCode) {
+    if (!isValidTeacherCode(teacherCode)) {
       return jsonError(
         "INVALID_TEACHER_CODE",
         "Mã xác thực Sư phạm không chính xác. Vui lòng liên hệ ban quản trị hoặc nhập đúng mã được cấp cho giáo viên.",
@@ -60,15 +51,8 @@ export async function POST(request: NextRequest) {
       role: "teacher",
       message: "Chúc mừng quý thầy/cô! Đã kích hoạt thành công quyền Giáo viên Toán THPT.",
     });
-
-    const isProd = process.env.NODE_ENV === "production";
-    response.cookies.set("mathstep_teacher_role", "teacher", {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30, // 30 ngày
-    });
+    response.headers.set("Cache-Control", "private, no-store");
+    setTeacherRoleCookie(response);
 
     return response;
   } catch {
@@ -89,14 +73,8 @@ export async function DELETE(request: NextRequest) {
     message: "Đã chuyển đổi thành công về góc nhìn Học sinh.",
   });
 
-  const isProd = process.env.NODE_ENV === "production";
-  response.cookies.set("mathstep_teacher_role", "", {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 0,
-  });
+  response.headers.set("Cache-Control", "private, no-store");
+  clearTeacherRoleCookie(response);
 
   return response;
 }

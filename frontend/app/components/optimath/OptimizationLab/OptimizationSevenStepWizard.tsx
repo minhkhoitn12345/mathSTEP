@@ -300,10 +300,10 @@ ${result.practicalAnswer}`;
         };
       case 5:
         return {
-          text: 'Theo định lý quy hoạch tuyến tính, cực trị của hàm mục tiêu trên miền đa giác lồi đạt tại các đỉnh! Hãy kiểm tra đầy đủ tất cả các đỉnh giao điểm.',
+          text: 'Vì miền phương án là đa giác lồi bị chặn, giá trị lớn nhất hoặc nhỏ nhất của hàm mục tiêu đạt tại ít nhất một đỉnh. Hãy kiểm tra tất cả các đỉnh thỏa mãn hệ.',
           hints: {
             tier1: 'Các đỉnh là giao điểm của các cặp đường thẳng biên bờ thỏa mãn toàn bộ hệ.',
-            tier2: 'Lưu ý: Giao điểm của hai đường bờ nghiêng (d1) và (d2) có thể có tọa độ phân số (như 8/3; 8/3) — tuyệt đối không bỏ sót đỉnh này!',
+          tier2: 'Giao điểm của hai đường thẳng bờ có thể có tọa độ phân số, chẳng hạn (8/3; 8/3). Hãy giữ nguyên tọa độ chính xác khi tính.',
             tier3: `Các đỉnh của miền khả thi là: ${verticesText}.`
           }
         };
@@ -806,9 +806,9 @@ ${result.practicalAnswer}`;
                             : `${vertexEvaluations.length} đỉnh`
                         } ${vertexEvaluations.map(ve => ve.label).join('')}), giới hạn bởi ${
                           vertexEvaluations.length
-                        } đỉnh cực biên.`
+                        } đỉnh của miền.`
                       : result.regionType === 'unbounded'
-                      ? `Miền phương án khả thi là một miền mở không bị chặn có ${vertexEvaluations.length} đỉnh hữu hạn.`
+                      ? `Miền phương án không bị chặn, kéo dài vô hạn; tìm được ${vertexEvaluations.length} đỉnh hữu hạn để xét.`
                       : 'Miền khả thi rỗng hoặc suy biến.'}
                   </p>
                 </div>
@@ -846,7 +846,7 @@ ${result.practicalAnswer}`;
             {currentStep === 5 && (
               <div className="space-y-3.5">
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Tọa độ đầy đủ <strong>{vertexEvaluations.length} đỉnh cực biên</strong> của miền phương án khả thi (tìm bằng giao điểm từng cặp đường biên thỏa mãn hệ):
+                  Tọa độ các <strong>{vertexEvaluations.length} đỉnh của miền phương án khả thi</strong> (tìm bằng giao điểm các cặp đường thẳng biên và giữ những điểm thỏa mãn toàn bộ hệ):
                 </p>
 
                 <div className="grid grid-cols-2 gap-2">

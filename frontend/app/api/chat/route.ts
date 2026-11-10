@@ -5,6 +5,8 @@ import { checkRateLimit, getClientIp, RATE_LIMIT_RULES } from "@/lib/rateLimit";
 import { sanitizeUserText } from "@/lib/xssSanitizer";
 import { detectPromptInjection, getSafeSocraticFallback, wrapDefensivePrompt } from "@/lib/promptSecurity";
 import { retrieveMathKnowledge } from "@/lib/mathRagEngine";
+import { DETAILED_LESSONS_CONTENT } from "@/app/data/learningPathData";
+import { getFastApiBaseUrl } from "@/lib/fastapi";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -49,6 +51,12 @@ CÁC NGUYÊN TẮC SƯ PHẠM BẮT BUỘC:
    - Luôn chừa đúng 1 dấu cách trước và sau dấu $: "điểm $M(2; 3)$ thuộc" (KHÔNG viết dính liền "điểm$M(2; 3)$thuộc").
    - Thêm khoảng trống nhỏ \\, trước dấu mở ngoặc: $N\\,\\left(\\frac{2}{3}\\right)$, $SH \\perp (ABCD)$.
 6. GIỌNG ĐIỆU SƯ PHẠM: Thân thiện, khích lệ, xưng "thầy" và "em" (Linh vật Opti).`;
+
+const MODULE_SCOPE_NAMES: Record<string, string> = {
+  linear_programming: "Bất phương trình bậc nhất hai ẩn và quy hoạch tuyến tính (Toán 10)",
+  spatial_geometry: "Hình học không gian: hình chóp, quan hệ giữa các đường và mặt phẳng, thiết diện (Toán 11)",
+  trigonometry: "Lượng giác: đường tròn lượng giác, công thức, đồ thị và phương trình lượng giác (Toán 11)",
+};
 
 export async function POST(request: NextRequest) {
   if (!isSameOrigin(request)) return jsonError("FORBIDDEN", "Yêu cầu không hợp lệ.", 403);
@@ -105,7 +113,7 @@ export async function POST(request: NextRequest) {
     const customApiKeyCandidate = typeof customAi?.apiKey === "string" ? customAi.apiKey.trim() : "";
     const hasCustomKey = Boolean(
       customApiKeyCandidate &&
-      customApiKeyCandidate.length >= 15 &&
+      customApiKeyCandidate.length >= 20 &&
       customApiKeyCandidate.length <= 512 &&
       /^[\x21-\x7E]+$/.test(customApiKeyCandidate)
     );
@@ -139,7 +147,18 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. RAG KNOWLEDGE RETRIEVAL: Rút trích tri thức SGK KNTT tương ứng với trạm học
-    const moduleId = payload.learning_context?.module || "spatial_geometry";
+    const requestedModule = payload.learning_context?.module;
+    const moduleId = typeof requestedModule === "string" && Object.prototype.hasOwnProperty.call(MODULE_SCOPE_NAMES, requestedModule)
+      ? requestedModule
+      : "spatial_geometry";
+    const requestedLessonId = payload.learning_context?.lesson_id;
+    const activeLesson = typeof requestedLessonId === "string" && Object.prototype.hasOwnProperty.call(DETAILED_LESSONS_CONTENT, requestedLessonId)
+      ? DETAILED_LESSONS_CONTENT[requestedLessonId]
+      : undefined;
+    const activeLessonTitle = activeLesson?.moduleId === moduleId ? activeLesson.title : undefined;
+    const activeScope = activeLessonTitle
+      ? `${MODULE_SCOPE_NAMES[moduleId]}, bài: ${activeLessonTitle}`
+      : MODULE_SCOPE_NAMES[moduleId];
     const stationId = payload.learning_context?.station_id;
     const learningStage = payload.learning_context?.learning_stage;
     const ragContext = retrieveMathKnowledge(
@@ -150,8 +169,16 @@ export async function POST(request: NextRequest) {
     );
 
     // 5. DEFENSIVE PROMPT WRAPPING: Đóng gói prompt với hàng rào cô lập dữ liệu
+    const scopedSystemPrompt = `${BASE_SOCRATIC_SYSTEM_PROMPT}
+
+7. GIỚI HẠN PHẠM VI VÀ CÁCH LÁI VỀ BÀI HỌC:
+   - Opti chỉ hỗ trợ ba chuyên đề Toán đã nêu. Chuyên đề học sinh đang mở là: ${activeScope}.
+   - Nếu câu hỏi không liên quan đến bài/chuyên đề đang mở hoặc nằm ngoài ba chuyên đề này, hãy nói thẳng: "Câu hỏi này nằm ngoài phạm vi bài học hiện tại của Opti." Không trả lời phần ngoài phạm vi.
+   - Sau đó nối tự nhiên bằng một câu cụ thể về bài/chuyên đề đang mở, chẳng hạn: "Opti đang hỗ trợ em học ${activeScope}. Em muốn hỏi phần nào trong bài này?" Tránh chuyển đề tài đột ngột hoặc giả vờ rằng câu hỏi ngoài lề có liên quan.
+   - Nếu chưa rõ câu hỏi có thuộc phạm vi hay không, hỏi lại học sinh muốn liên hệ câu hỏi đó với bài/chuyên đề nào; không vội kết luận ngoài phạm vi.
+   - Không nhắc mã lỗi, mã nhiệm vụ hay thuật ngữ nội bộ với học sinh.`;
     const { systemPrompt, userPrompt } = wrapDefensivePrompt(
-      BASE_SOCRATIC_SYSTEM_PROMPT,
+      scopedSystemPrompt,
       cleanUserMessage,
       ragContext
     );
@@ -177,10 +204,10 @@ export async function POST(request: NextRequest) {
         for (const candidateModel of candidateModels) {
           try {
             const geminiRes = await fetch(
-              `https://generativelanguage.googleapis.com/v1beta/models/${candidateModel}:generateContent?key=${encodeURIComponent(key)}`,
+              `https://generativelanguage.googleapis.com/v1beta/models/${candidateModel}:generateContent`,
               {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "x-goog-api-key": key },
                 body: JSON.stringify({
                   system_instruction: { parts: [{ text: systemPrompt }] },
                   contents: [
@@ -266,7 +293,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 7. NẾU CÓ DỊCH VỤ FASTAPI BACKEND
-    const baseUrl = process.env.FASTAPI_BASE_URL?.replace(/\/$/, "");
+    const baseUrl = getFastApiBaseUrl();
     if (!baseUrl) {
       return responseWithSessionCookies(
         jsonError(

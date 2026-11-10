@@ -88,7 +88,7 @@ export const PersonalizedPathView: React.FC<PersonalizedPathViewProps> = ({
 
         <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5">
           <span className="text-xs font-medium text-slate-500 block">
-            Mã lỗi cần lưu ý khắc phục
+            Nhóm lỗi cần ôn lại
           </span>
           <div className="mt-2 flex items-baseline gap-2 font-mono tabular-nums">
             <span className="text-2xl sm:text-3xl font-extrabold text-amber-700">
@@ -98,7 +98,7 @@ export const PersonalizedPathView: React.FC<PersonalizedPathViewProps> = ({
           </div>
           <p className="text-[11px] text-slate-500 mt-1.5">
             {personalErrors.length > 0
-              ? `Hay gặp nhất: ${personalErrors[0].code} (${ERROR_CODE_CATALOG[personalErrors[0].code].title})`
+              ? `Hay gặp nhất: ${ERROR_CODE_CATALOG[personalErrors[0].code].title}`
               : 'Chưa phát sinh lỗi lặp lại'}
           </p>
         </div>

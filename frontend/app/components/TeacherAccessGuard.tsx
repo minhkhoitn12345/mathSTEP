@@ -131,7 +131,7 @@ export default function TeacherAccessGuard({
                   type="text"
                   value={teacherCode}
                   onChange={(e) => setTeacherCode(e.target.value)}
-                  placeholder="Ví dụ: MATHSTEP-GV-2026"
+                  placeholder="Nhập mã giáo viên được cấp riêng"
                   disabled={busy}
                   className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-500 font-mono"
                   autoFocus

@@ -15,12 +15,6 @@ import {
 import { ParsedGeometrySolid } from "../lib/geometryParserPrompt";
 import { GEOMETRY_PRESET_TEMPLATES, resolveGeometrySolid, ResolvedGeometryScene } from "../lib/geometrySolver";
 
-interface CustomAiConfig {
-  provider: "gemini" | "openai" | "deepseek";
-  model: string;
-  apiKey: string;
-}
-
 interface NaturalLanguageGeometryPanelProps {
   onModelGenerated: (scene: ResolvedGeometryScene, rawSolid: ParsedGeometrySolid) => void;
   onAskTutor?: (prompt: string) => void;
@@ -46,22 +40,11 @@ export default function NaturalLanguageGeometryPanel({
   const [keyTesting, setKeyTesting] = useState<boolean>(false);
   const [keyTestStatus, setKeyTestStatus] = useState<{ ok: boolean; message: string } | null>(null);
 
-  // Tải cấu hình từ localStorage khi khởi động
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("mathstep:custom_ai_config");
-      if (stored) {
-        const parsed: CustomAiConfig = JSON.parse(stored);
-        if (parsed.apiKey && parsed.apiKey.trim().length > 10) {
-          setApiKey(parsed.apiKey);
-          setProvider(parsed.provider === "openai" ? "openai" : "gemini");
-          setIsUsingProjectKey(false);
-        }
-      }
-    } catch {}
+    localStorage.removeItem("mathstep:custom_ai_config");
   }, []);
 
-  // Lưu cấu hình API Key vào localStorage
+  // API key chỉ được giữ trong trạng thái trang hiện tại.
   const handleSaveApiKey = () => {
     if (!apiKey.trim()) {
       setIsUsingProjectKey(true);
@@ -73,16 +56,8 @@ export default function NaturalLanguageGeometryPanel({
       return;
     }
 
-    const config: CustomAiConfig = {
-      provider,
-      model: provider === "gemini" ? "gemini-2.5-flash" : "gpt-4o-mini",
-      apiKey: apiKey.trim(),
-    };
-    try {
-      localStorage.setItem("mathstep:custom_ai_config", JSON.stringify(config));
-    } catch {}
     setIsUsingProjectKey(false);
-    setSuccessNotice(`Đã lưu khóa cá nhân ${provider.toUpperCase()} an toàn trong trình duyệt!`);
+    setSuccessNotice(`Đã giữ khóa ${provider.toUpperCase()} trong phiên hiện tại; khóa sẽ bị xóa khi đóng trang.`);
     setTimeout(() => setSuccessNotice(null), 3000);
   };
 

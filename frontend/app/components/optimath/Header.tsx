@@ -369,7 +369,7 @@ export const Header: React.FC<HeaderProps> = ({
                   ? "bg-blue-600 text-white border-blue-400 shadow-blue-500/30"
                   : "bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 hover:text-white border-blue-500/30 hover:border-blue-400"
               }`}
-              title="Mở Trợ lý Socratic Opti"
+              title="Mở trợ lý học tập Opti"
             >
               <OptiMascot expression="happy" size={20} animate={false} />
               <span className="font-bold">Hỏi Opti</span>

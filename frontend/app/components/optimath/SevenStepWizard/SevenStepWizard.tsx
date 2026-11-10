@@ -64,36 +64,36 @@ const STEP_TITLES: { num: StepNumber; title: string; desc: string; short: string
   { num: 4, title: 'Chọn điểm thử M', desc: 'Chọn M(xM; yM) không thuộc bờ', short: '4. Điểm thử M' },
   { num: 5, title: 'Thay điểm M & Tính toán', desc: 'Thay số vế trái & So sánh với c', short: '5. Tính toán' },
   { num: 6, title: 'Kết luận & Biểu diễn', desc: 'Chọn nửa mặt phẳng nghiệm & Tô miền', short: '6. Miền nghiệm' },
-  { num: 7, title: 'Tổng kết & Luyện tập', desc: 'Kết luận chuẩn SGK & 5 ca kiểm thử', short: '7. Tổng kết' }
+  { num: 7, title: 'Tổng kết & Luyện tập', desc: 'Củng cố kiến thức qua 5 bài tập mẫu', short: '7. Tổng kết' }
 ];
 
 export const TEST_PRESETS: { name: string; tag: string; ineq: Inequality; testHint: string }[] = [
   {
-    name: 'Ca A: 2x + y ≤ 6',
+    name: 'Ví dụ A: 2x + y ≤ 6',
     tag: 'SGK Chuẩn (lấy bờ)',
     ineq: { id: 'test-a', a: 2, b: 1, op: '<=', c: 6 },
     testHint: 'Thử M(2;1) thuộc miền nghiệm; M(3;2) không thuộc.'
   },
   {
-    name: 'Ca B: x + y < 4',
+    name: 'Ví dụ B: x + y < 4',
     tag: 'Nét đứt (thử M(2;2))',
     ineq: { id: 'test-b', a: 1, b: 1, op: '<', c: 4 },
     testHint: 'Đường biên nét đứt. Thử M(2;2): 4 < 4 là sai (không thuộc miền nghiệm).'
   },
   {
-    name: 'Ca C: x ≤ 3',
+    name: 'Ví dụ C: x ≤ 3',
     tag: 'Đường thẳng đứng',
     ineq: { id: 'test-c', a: 1, b: 0, op: '<=', c: 3 },
     testHint: 'Đường biên x = 3 thẳng đứng. Miền nghiệm nằm bên trái bờ.'
   },
   {
-    name: 'Ca D: y ≥ -2',
+    name: 'Ví dụ D: y ≥ -2',
     tag: 'Đường nằm ngang',
     ineq: { id: 'test-d', a: 0, b: 1, op: '>=', c: -2 },
     testHint: 'Đường biên y = -2 nằm ngang. Miền nghiệm nằm phía trên bờ.'
   },
   {
-    name: 'Ca E: x + y > 0',
+    name: 'Ví dụ E: x + y > 0',
     tag: 'Đi qua gốc O(0;0)',
     ineq: { id: 'test-e', a: 1, b: 1, op: '>', c: 0 },
     testHint: 'O(0;0) nằm trên bờ! Phải dùng điểm thử khác như P(1;0) hoặc Q(0;1).'
@@ -218,7 +218,7 @@ export const SevenStepWizard: React.FC<SevenStepWizardProps> = ({
       case 2:
         return {
           tier1: 'Dấu so sánh trong bài là gì? Nó có dấu gạch bằng "=" ở dưới không?',
-          tier2: 'Nếu có dấu "=" (≤ hoặc ≥), miền nghiệm lấy cả bờ (nét liền, miền đóng). Nếu là dấu nghiêm ngặt (< hoặc >), không lấy bờ (nét đứt, miền mở).',
+          tier2: 'Nếu dấu bất đẳng thức có kèm dấu bằng (≤ hoặc ≥), đường thẳng bờ thuộc miền nghiệm và được vẽ bằng nét liền. Với dấu < hoặc >, đường thẳng bờ không thuộc miền nghiệm và được vẽ bằng nét đứt.',
           tier3: `Bất phương trình mang dấu "${getOperatorSymbol(ineq.op)}". Do đó phương trình đường biên là (d): ${formatBoundaryLine(ineq.a, ineq.b, ineq.c)} và biểu diễn bằng nét ${expectedLineStyle === 'solid' ? 'liền' : 'đứt'}.`
         };
       case 3:
@@ -251,9 +251,9 @@ export const SevenStepWizard: React.FC<SevenStepWizardProps> = ({
         };
       case 7:
         return {
-          tier1: 'Đã hoàn thành 6 bước! Đọc lại bản kết luận chuẩn mực SGK Toán 10.',
+          tier1: 'Đã hoàn thành 6 bước! Hãy đọc lại kết luận và đối chiếu với hình vẽ.',
           tier2: 'Miền nghiệm là nửa mặt phẳng bờ (d) (kể cả bờ hoặc không kể bờ) chứa hoặc không chứa điểm thử M.',
-          tier3: `Bất phương trình ${formatInequality(ineq)} có miền nghiệm là nửa mặt phẳng ${isClosed ? 'đóng (kể cả bờ)' : 'mở (không kể bờ)'} ${testEval.satisfies ? `chứa điểm M(${testPoint.x}; ${testPoint.y})` : `không chứa điểm M(${testPoint.x}; ${testPoint.y})`}.`
+          tier3: `Bất phương trình ${formatInequality(ineq)} có miền nghiệm là nửa mặt phẳng ${testEval.satisfies ? `chứa điểm M(${testPoint.x}; ${testPoint.y})` : `không chứa điểm M(${testPoint.x}; ${testPoint.y})`}. ${isClosed ? 'Đường thẳng bờ thuộc miền nghiệm.' : 'Đường thẳng bờ không thuộc miền nghiệm.'}`
         };
     }
   }, [currentStep, ineq, expectedLineStyle, pointA, pointB, isThroughOrigin, testPoint, isTestPointOnLine, testSub, testEval, isClosed]);
@@ -289,7 +289,7 @@ export const SevenStepWizard: React.FC<SevenStepWizardProps> = ({
     switch (currentStep) {
       case 1:
         return {
-          text: 'Chào bạn! Hãy cùng Opti nhận diện hệ số a, b, c và phân loại miền đóng hay mở nhé.',
+          text: 'Hãy xác định các hệ số a, b, c và xem đường thẳng bờ có thuộc miền nghiệm hay không.',
           expression: 'happy',
           actionState: 'nod'
         };
@@ -392,7 +392,7 @@ export const SevenStepWizard: React.FC<SevenStepWizardProps> = ({
       setStep2Feedback({
         isCorrect: true,
         message: `Chính xác! Bất phương trình mang dấu "${getOperatorSymbol(ineq.op)}", nên miền nghiệm ${
-          isClosed ? 'lấy cả bờ (d) (vẽ nét liền, miền đóng)' : 'không lấy bờ (d) (vẽ nét đứt, miền mở)'
+          isClosed ? 'lấy cả đường thẳng bờ (vẽ nét liền)' : 'không lấy đường thẳng bờ (vẽ nét đứt)'
         }.`
       });
       setCompletedSteps(prev => new Set(prev).add(2));
@@ -581,14 +581,14 @@ export const SevenStepWizard: React.FC<SevenStepWizardProps> = ({
   const handleCopyConclusion = () => {
     const formalText = `KẾT LUẬN MIỀN NGHIỆM CỦA BẤT PHƯƠNG TRÌNH BẬC NHẤT HAI ẨN: ${formatInequality(ineq)}
 1. Vẽ đường thẳng bờ (d): ${formatBoundaryLine(ineq.a, ineq.b, ineq.c)} đi qua hai điểm A(${pointA.x}; ${pointA.y}) và B(${pointB.x}; ${pointB.y}).
-2. Kiểu đường biên: Nét ${expectedLineStyle === 'solid' ? 'liền (kể cả bờ, miền nghiệm đóng)' : 'đứt (không kể bờ, miền nghiệm mở)'}.
+2. Kiểu đường thẳng bờ: Nét ${expectedLineStyle === 'solid' ? 'liền (lấy cả bờ)' : 'đứt (không lấy bờ)'}.
 3. Điểm thử kiểm tra: M(${testPoint.x}; ${testPoint.y}) không thuộc đường thẳng bờ (d).
 4. Thay số và tính toán: ${testSub.exprWithMul} = ${testSub.totalLhs} ${getOperatorSymbol(ineq.op)} ${ineq.c} (${testEval.satisfies ? 'Mệnh đề ĐÚNG' : 'Mệnh đề SAI'}).
-5. Kết luận chuẩn SGK: Miền nghiệm của bất phương trình đã cho là nửa mặt phẳng bờ (d) ${expectedLineStyle === 'solid' ? '(kể cả bờ d)' : '(không kể bờ d)'} ${testEval.satisfies ? `chứa điểm M(${testPoint.x}; ${testPoint.y})` : `không chứa điểm M(${testPoint.x}; ${testPoint.y})`}.`;
+5. Kết luận: Miền nghiệm của bất phương trình đã cho là nửa mặt phẳng bờ (d) ${expectedLineStyle === 'solid' ? '(kể cả bờ d)' : '(không kể bờ d)'} ${testEval.satisfies ? `chứa điểm M(${testPoint.x}; ${testPoint.y})` : `không chứa điểm M(${testPoint.x}; ${testPoint.y})`}.`;
 
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(formalText);
-      setCopyToast('Đã sao chép kết luận chuẩn SGK Toán 10 vào bộ nhớ tạm!');
+      setCopyToast('Đã sao chép kết luận miền nghiệm.');
       setTimeout(() => setCopyToast(null), 3000);
     }
   };
@@ -1621,7 +1621,7 @@ export const SevenStepWizard: React.FC<SevenStepWizardProps> = ({
                 <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-200 text-emerald-950 text-xs">
                   <div className="flex items-center gap-2 font-bold text-sm mb-2 text-emerald-900">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                    <span>Kết luận miền nghiệm chuẩn SGK Toán 10</span>
+                    <span>Kết luận miền nghiệm</span>
                   </div>
                   <p className="leading-relaxed mb-2">
                     Miền nghiệm của bất phương trình <strong className="font-mono">{formatInequality(ineq)}</strong> là nửa mặt phẳng bờ (d):{' '}
@@ -1800,7 +1800,7 @@ export const SevenStepWizard: React.FC<SevenStepWizardProps> = ({
             <div className="bg-white rounded-2xl border border-slate-200 p-3.5 shadow-xs">
               <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5 mb-2">
                 <Sliders className="w-3.5 h-3.5 text-blue-600" />
-                Kiểm thử 5 ca mẫu SGK
+              Thử sức với 5 bài tập mẫu
               </span>
               <div className="flex flex-col gap-1.5">
                 {TEST_PRESETS.map((tp, idx) => (

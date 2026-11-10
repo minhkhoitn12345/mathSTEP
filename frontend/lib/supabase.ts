@@ -10,6 +10,10 @@ export function getSupabaseConfig() {
   const url = process.env.SUPABASE_URL?.replace(/\/$/, "");
   const anonKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
   if (!url || !anonKey) throw new Error("Supabase chưa được cấu hình.");
+  const parsedUrl = new URL(url);
+  if (process.env.NODE_ENV === "production" && parsedUrl.protocol !== "https:") {
+    throw new Error("Supabase URL must use HTTPS in production.");
+  }
   return { url, anonKey };
 }
 

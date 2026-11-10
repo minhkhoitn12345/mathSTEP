@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jsonError } from "@/lib/security";
 import { getAccessToken, responseWithSessionCookies } from "@/lib/supabase";
+import { getFastApiBaseUrl } from "@/lib/fastapi";
 
 export const runtime = "nodejs";
 
@@ -17,7 +18,7 @@ export async function GET(
   const { conversationId } = await params;
   if (!token) return jsonError("UNAUTHORIZED", "Vui lòng đăng nhập để mở hội thoại.", 401);
   if (!UUID_PATTERN.test(conversationId)) return jsonError("INVALID_CONVERSATION_ID", "Mã hội thoại không hợp lệ.", 400);
-  const baseUrl = process.env.FASTAPI_BASE_URL?.replace(/\/$/, "");
+  const baseUrl = getFastApiBaseUrl();
   if (!baseUrl) return responseWithSessionCookies(jsonError("FASTAPI_NOT_CONFIGURED", "Chưa cấu hình địa chỉ FastAPI.", 503), refreshed);
   try {
     const upstream = await fetch(`${baseUrl}/assistant/conversations/${conversationId}`, {

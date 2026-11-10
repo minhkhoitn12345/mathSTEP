@@ -133,6 +133,7 @@ export default function AccountSettingsModal({
   const [provider, setProvider] = useState<"gemini" | "openai" | "deepseek">("gemini");
   const [selectedModel, setSelectedModel] = useState<string>("gemini-3-flash-preview");
   const [apiKey, setApiKey] = useState<string>("");
+  const [savedApiKeyConfigured, setSavedApiKeyConfigured] = useState(false);
   const [showApiKey, setShowApiKey] = useState<boolean>(false);
   const [testingKey, setTestingKey] = useState<boolean>(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
@@ -142,20 +143,12 @@ export default function AccountSettingsModal({
   // Nạp dữ liệu khi modal mở ra
   useEffect(() => {
     if (!isOpen) return;
+    localStorage.removeItem("mathstep:custom_ai_config");
+    localStorage.removeItem("mathstep:user_profile");
     setActiveTab(initialTab);
 
     // 1. Tải hồ sơ từ server / localStorage
     setName(currentSession?.name || "");
-    const localProfile = localStorage.getItem("mathstep:user_profile");
-    if (localProfile) {
-      try {
-        const parsed = JSON.parse(localProfile);
-        if (parsed.grade) setGrade(parsed.grade);
-        if (parsed.school) setSchool(parsed.school);
-        if (parsed.target) setTarget(parsed.target);
-      } catch {}
-    }
-
     if (currentSession?.authenticated) {
       void fetch("/api/account/profile")
         .then((res) => (res.ok ? res.json() : null))
@@ -170,15 +163,14 @@ export default function AccountSettingsModal({
         .catch(() => {});
     }
 
-    // 2. Tải cấu hình AI từ localStorage
-    const localAi = localStorage.getItem("mathstep:custom_ai_config");
-    if (localAi) {
-      try {
-        const parsed: CustomAiConfig = JSON.parse(localAi);
-        if (parsed.provider) setProvider(parsed.provider);
-        if (parsed.model) setSelectedModel(parsed.model);
-        if (parsed.apiKey) setApiKey(parsed.apiKey);
-      } catch {}
+    // Chỉ đọc trạng thái đã lưu; tuyệt đối không lấy lại API key từ trình duyệt.
+    if (currentSession?.authenticated) {
+      void fetch("/api/account/api-key", { cache: "no-store" })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => setSavedApiKeyConfigured(Boolean(data?.configured)))
+        .catch(() => setSavedApiKeyConfigured(false));
+    } else {
+      setSavedApiKeyConfigured(false);
     }
   }, [isOpen, initialTab, currentSession]);
 
@@ -200,8 +192,6 @@ export default function AccountSettingsModal({
     try {
       const trimmedName = name.trim();
       const updatedProfile = { name: trimmedName, grade, school: school.trim(), target: target.trim() };
-      localStorage.setItem("mathstep:user_profile", JSON.stringify(updatedProfile));
-
       if (currentSession?.authenticated) {
         const res = await fetch("/api/account/profile", {
           method: "PUT",
@@ -310,26 +300,39 @@ export default function AccountSettingsModal({
     setAiNotice("");
 
     try {
-      const config: CustomAiConfig = {
-        provider,
-        model: selectedModel,
-        apiKey: trimmedKey,
-      };
+      if (!currentSession?.authenticated) throw new Error("Vui lòng đăng nhập để lưu API key an toàn vào tài khoản.");
+      const res = await fetch("/api/account/api-key", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ api_key: trimmedKey }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.detail?.message || "Không lưu được API key vào tài khoản.");
 
-      localStorage.setItem("mathstep:custom_ai_config", JSON.stringify(config));
-      onAiConfigUpdated?.(config);
-
-      setAiNotice(`Đã kích hoạt thành công mô hình ${selectedModel}! Trợ lý học tập sẽ sử dụng mô hình này.`);
+      setSavedApiKeyConfigured(true);
+      setApiKey("");
+      // Keep it only in app memory for the current page session so the selected provider still works.
+      onAiConfigUpdated?.({ provider, model: selectedModel, apiKey: trimmedKey });
+      setAiNotice("API key đã được lưu an toàn vào tài khoản. Khóa không được lưu trong trình duyệt.");
       setTimeout(() => setAiNotice(""), 4000);
+    } catch (err) {
+      setTestResult({ ok: false, message: err instanceof Error ? err.message : "Không lưu được API key." });
     } finally {
       setAiSaving(false);
     }
   };
 
   // Xóa API Key về mô hình mặc định
-  const handleClearAiConfig = () => {
+  const handleClearAiConfig = async () => {
     if (confirm("Em có muốn xóa API key cá nhân và quay về sử dụng mô hình trợ lý mặc định?")) {
-      localStorage.removeItem("mathstep:custom_ai_config");
+      if (currentSession?.authenticated) {
+        const res = await fetch("/api/account/api-key", { method: "DELETE" });
+        if (!res.ok) {
+          setTestResult({ ok: false, message: "Không xóa được API key khỏi tài khoản." });
+          return;
+        }
+      }
+      setSavedApiKeyConfigured(false);
       setApiKey("");
       setTestResult(null);
       onAiConfigUpdated?.(null);
@@ -559,7 +562,7 @@ export default function AccountSettingsModal({
                         type="text"
                         value={teacherCode}
                         onChange={(e) => setTeacherCode(e.target.value)}
-                        placeholder="Mã Sư phạm (vd: MATHSTEP-GV-2026)"
+                        placeholder="Nhập mã giáo viên được cấp riêng"
                         disabled={verifyingTeacher}
                         className="flex-1 p-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 font-mono focus:outline-none focus:border-amber-500"
                       />
@@ -791,8 +794,11 @@ export default function AccountSettingsModal({
 
                 <div className="flex items-center gap-1.5 mt-1.5 text-[10px] text-slate-400">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span>Key được lưu bảo mật trong trình duyệt, chỉ dùng để gọi AI trong phiên học của em.</span>
+                  <span>Key được gửi qua HTTPS và lưu phía máy chủ trong Supabase Vault. Ứng dụng chỉ giữ key trong bộ nhớ phiên hiện tại, không ghi vào localStorage.</span>
                 </div>
+                {savedApiKeyConfigured && (
+                  <p className="mt-1 text-[10px] text-emerald-300">Tài khoản hiện đã có API key được lưu. Nhập key mới để thay thế.</p>
+                )}
               </div>
 
               {/* Test Result Message */}
@@ -842,7 +848,7 @@ export default function AccountSettingsModal({
                   <span>{aiSaving ? "Đang kích hoạt..." : "Kích hoạt Model này"}</span>
                 </button>
 
-                {apiKey.trim() && (
+                {(apiKey.trim() || savedApiKeyConfigured) && (
                   <button
                     type="button"
                     onClick={handleClearAiConfig}

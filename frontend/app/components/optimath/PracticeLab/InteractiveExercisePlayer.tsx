@@ -20,6 +20,7 @@ import { GraphCanvas } from '@/app/components/optimath/graph/GraphCanvas';
 import { SystemGraphCanvas } from '@/app/components/optimath/graph/SystemGraphCanvas';
 import { OptimizationGraphCanvas } from '@/app/components/optimath/graph/OptimizationGraphCanvas';
 import { OptiMascot } from '@/app/components/optimath/mascot/OptiMascot';
+import { MathFormattedText } from '@/app/components/KatexMath';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -466,7 +467,7 @@ export const InteractiveExercisePlayer: React.FC<InteractiveExercisePlayerProps>
             </div>
 
             <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-line font-medium">
-              {exercise.questionText}
+              <MathFormattedText text={exercise.questionText} />
             </p>
 
             {/* Step Progress Tabs */}
@@ -503,7 +504,7 @@ export const InteractiveExercisePlayer: React.FC<InteractiveExercisePlayerProps>
             <div>
               <h3 className="text-sm font-bold text-slate-900">{activeStep.title}</h3>
               <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                {activeStep.instruction}
+                <MathFormattedText text={activeStep.instruction} />
               </p>
             </div>
 
@@ -717,7 +718,7 @@ export const InteractiveExercisePlayer: React.FC<InteractiveExercisePlayerProps>
                 />
                 <div>
                   <h4 className="text-xs font-bold text-slate-900">
-                    Trợ lý Socratic Opti
+                    Gợi ý từ Opti
                   </h4>
                   <p className="text-[11px] text-slate-500">
                     Gợi mở từng bước · Không tiết lộ đáp án sẵn
@@ -751,9 +752,9 @@ export const InteractiveExercisePlayer: React.FC<InteractiveExercisePlayerProps>
               <div className="space-y-2 text-xs">
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
                   <span className="font-bold text-indigo-800 block mb-0.5">
-                    Gợi ý cấp 1 (Câu hỏi định hướng Socratic):
+                    Gợi ý cấp 1 (Định hướng):
                   </span>
-                  <p className="text-slate-700 leading-relaxed">{exercise.hints.tier1}</p>
+                  <p className="text-slate-700 leading-relaxed"><MathFormattedText text={exercise.hints.tier1} /></p>
                 </div>
 
                 {unlockedHintTier >= 2 && (
@@ -761,7 +762,7 @@ export const InteractiveExercisePlayer: React.FC<InteractiveExercisePlayerProps>
                     <span className="font-bold text-blue-800 block mb-0.5">
                       Gợi ý cấp 2 (Phương pháp Toán học):
                     </span>
-                    <p className="text-slate-700 leading-relaxed">{exercise.hints.tier2}</p>
+                    <p className="text-slate-700 leading-relaxed"><MathFormattedText text={exercise.hints.tier2} /></p>
                   </div>
                 )}
 
@@ -770,7 +771,7 @@ export const InteractiveExercisePlayer: React.FC<InteractiveExercisePlayerProps>
                     <span className="font-bold text-emerald-800 block mb-0.5">
                       Gợi ý cấp 3 (Hướng dẫn tính toán cụ thể):
                     </span>
-                    <p className="text-slate-700 leading-relaxed">{exercise.hints.tier3}</p>
+                    <p className="text-slate-700 leading-relaxed"><MathFormattedText text={exercise.hints.tier3} /></p>
                   </div>
                 )}
               </div>

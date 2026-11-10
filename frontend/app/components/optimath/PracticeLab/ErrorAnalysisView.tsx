@@ -43,10 +43,10 @@ export const ErrorAnalysisView: React.FC<ErrorAnalysisViewProps> = ({
       <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <h2 className="text-base sm:text-lg font-bold text-slate-900">
-            Hệ thống Chẩn đoán & Phân tích 10 Mã Lỗi Điển Hình (E01 – E10)
+            Những lỗi thường gặp và cách khắc phục
           </h2>
           <p className="text-xs text-slate-600">
-            Mỗi mã lỗi đều đi kèm phân tích nguyên nhân gốc rễ, câu hỏi gợi mở Socratic của Opti và bài tập khắc phục trực tiếp
+            Xem nguyên nhân, đọc gợi ý của Opti và làm bài tập để củng cố phần còn nhầm lẫn.
           </p>
         </div>
 
@@ -62,10 +62,10 @@ export const ErrorAnalysisView: React.FC<ErrorAnalysisViewProps> = ({
 
       {/* Main Split Grid: Left 10 Error Codes List + Right Deep Diagnostic Card */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* Left List of E01 - E10 (5 cols) */}
+        {/* Danh sách lỗi thường gặp */}
         <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 space-y-2">
           <div className="px-2 py-1 flex items-center justify-between text-xs font-bold text-slate-500">
-            <span>Danh mục mã lỗi (E01 – E10)</span>
+            <span>Các lỗi thường gặp</span>
             <span>Số lần gặp</span>
           </div>
 
@@ -88,8 +88,6 @@ export const ErrorAnalysisView: React.FC<ErrorAnalysisViewProps> = ({
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="font-mono font-bold text-indigo-700">{code}</span>
-                    <span aria-hidden="true">·</span>
                     <span className="font-bold truncate">{def.title}</span>
                   </div>
                   <p className="text-[11px] text-slate-500 truncate mt-0.5">
@@ -114,14 +112,10 @@ export const ErrorAnalysisView: React.FC<ErrorAnalysisViewProps> = ({
           <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-                <span className="font-mono font-bold text-indigo-700">
-                  Mã lỗi {activeErrorDef.code}
-                </span>
-                <span aria-hidden="true">·</span>
                 <span>{TOPIC_METADATA[activeErrorDef.topic].name}</span>
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-slate-900">
-                {activeErrorDef.code}: {activeErrorDef.title}
+                {activeErrorDef.title}
               </h3>
             </div>
 
@@ -164,13 +158,13 @@ export const ErrorAnalysisView: React.FC<ErrorAnalysisViewProps> = ({
             </ul>
           </div>
 
-          {/* 3. Socratic Question from Opti */}
+          {/* Gợi ý từ Opti */}
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3">
             <OptiMascot expression="thinking" size={40} animate={false} />
             <div className="space-y-1 text-xs">
               <span className="font-bold text-indigo-900 flex items-center gap-1.5">
                 <HelpCircle className="w-3.5 h-3.5 text-indigo-600" />
-                <span>Câu hỏi gợi mở Socratic từ Opti:</span>
+                <span>Gợi ý từ Opti:</span>
               </span>
               <p className="text-slate-800 font-medium leading-relaxed">
                 “{activeErrorDef.socraticQuestion}”
@@ -186,7 +180,7 @@ export const ErrorAnalysisView: React.FC<ErrorAnalysisViewProps> = ({
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                 <BookOpen className="w-4 h-4 text-indigo-600" />
-                <span>Bài tập khắc phục trực tiếp lỗi {activeErrorDef.code}</span>
+                <span>Bài tập ôn lại nội dung này</span>
               </h4>
               <span className="text-[11px] text-slate-500">
                 Chọn 1 bài để rèn luyện ngay

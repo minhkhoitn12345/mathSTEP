@@ -51,7 +51,13 @@ export const SystemIntersectionTable: React.FC<SystemIntersectionTableProps> = (
         </div>
 
         <span className="text-[11px] font-mono text-slate-500 font-semibold hidden sm:inline">
-          {regionType === 'bounded_polygon' ? 'Đa giác bị chặn' : regionType === 'unbounded' ? 'Không bị chặn' : 'Miền rỗng'}
+          {regionType === 'bounded_polygon'
+            ? 'Đa giác bị chặn'
+            : regionType === 'unbounded'
+            ? 'Không bị chặn'
+            : regionType === 'empty'
+            ? 'Tập rỗng'
+            : 'Miền suy biến'}
         </span>
       </div>
 
@@ -91,7 +97,7 @@ export const SystemIntersectionTable: React.FC<SystemIntersectionTableProps> = (
                       <td className="py-2.5 px-2.5 text-center">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold text-[10px]">
                           <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                          <span>Thỏa mãn 100%</span>
+                          <span>Thỏa mãn hệ</span>
                         </span>
                       </td>
                     </tr>
@@ -107,7 +113,11 @@ export const SystemIntersectionTable: React.FC<SystemIntersectionTableProps> = (
                 <span>
                   {regionType === 'empty'
                     ? 'Hệ bất phương trình có miền nghiệm rỗng (vô nghiệm). Các nửa mặt phẳng không có giao điểm chung nào.'
-                    : 'Miền nghiệm của hệ không bị chặn hoặc các đường bờ song song không cắt nhau tạo thành đỉnh đóng.'}
+                    : regionType === 'unbounded'
+                    ? 'Miền nghiệm không bị chặn, tức là kéo dài vô hạn về ít nhất một phía.'
+                    : regionType === 'bounded_polygon'
+                    ? 'Không có giao điểm nào thuộc miền nghiệm. Nếu bất phương trình có dấu nghiêm ngặt, các điểm trên đường thẳng bờ không được tính vào miền nghiệm.'
+                    : 'Miền nghiệm suy biến thành một điểm, đoạn thẳng hoặc đường thẳng; xem kết luận bên dưới để biết dạng cụ thể.'}
                 </span>
               </div>
             </div>
@@ -168,7 +178,7 @@ export const SystemIntersectionTable: React.FC<SystemIntersectionTableProps> = (
                     <td className="py-2.5 px-2.5 text-slate-600 text-[11px]">
                       {inter.isFeasible ? (
                         <div className="flex flex-col">
-                          <span className="text-emerald-700 font-semibold">Thỏa mãn 100% tất cả các BPT trong hệ</span>
+                          <span className="text-emerald-700 font-semibold">Thỏa mãn tất cả bất phương trình trong hệ</span>
                           {inter.cramerSteps && (
                             <span className="text-[10px] text-slate-400 font-mono mt-0.5">
                               D={inter.cramerSteps.D}, Dx={inter.cramerSteps.Dx}, Dy={inter.cramerSteps.Dy}

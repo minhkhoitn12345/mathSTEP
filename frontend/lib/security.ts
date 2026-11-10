@@ -2,10 +2,10 @@ import type { NextRequest } from "next/server";
 
 export function isSameOrigin(request: NextRequest): boolean {
   const origin = request.headers.get("origin");
-  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-  if (!origin || !host) return false;
+  if (!origin) return false;
   try {
-    return new URL(origin).host.toLowerCase() === host.toLowerCase();
+    const parsedOrigin = new URL(origin);
+    return parsedOrigin.origin === request.nextUrl.origin;
   } catch {
     return false;
   }

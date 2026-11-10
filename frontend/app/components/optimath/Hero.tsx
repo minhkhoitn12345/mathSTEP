@@ -39,7 +39,7 @@ export const Hero: React.FC<HeroProps> = ({
 
             {/* Subtitle - Tối giản chữ, tập trung hành động */}
             <p className="text-xs sm:text-sm text-slate-300 max-w-xl font-normal leading-relaxed mb-4">
-              Nhấn vào từng bài học bên dưới để mở ngay <strong>mô phỏng tương tác chuyên biệt</strong> hoặc tham gia <strong>Lộ trình học tập từng bước</strong> cùng Trợ lý Socratic AI.
+              Chọn một bài học để bắt đầu phần lý thuyết, luyện tập từng bước hoặc mở mô phỏng tương tác.
             </p>
 
             {/* 3 Quick Visual Pills + Callout to Learning Track */}
@@ -80,7 +80,7 @@ export const Hero: React.FC<HeroProps> = ({
               <OptiMascot expression="happy" pose="waving" size={72} />
             </div>
             <div className="text-left pr-2">
-              <div className="text-xs font-bold text-blue-300">Trợ lý Socratic Opti</div>
+              <div className="text-xs font-bold text-blue-300">Trợ lý học tập Opti</div>
               <p className="text-[11px] text-slate-300 max-w-[180px] leading-snug mt-0.5">
                 "Chào em! Chọn bài học bên dưới hoặc vào Lộ trình học nhé!"
               </p>

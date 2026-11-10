@@ -145,7 +145,7 @@ export const SingleInequalityLab: React.FC<SingleInequalityLabProps> = ({
     // Point O(0,0) when c != 0 and satisfies
     if (isOrigin && !isThroughOrigin && evalResult.satisfies) {
       return {
-        text: 'Rất thông minh! Điểm gốc O(0; 0) là "điểm thử vàng" trong SGK Toán 10 vì thay vào là tính được ngay mà không lo nhầm số!',
+        text: 'Đúng vậy. Khi gốc tọa độ không nằm trên đường thẳng bờ, có thể chọn O(0; 0) làm điểm thử vì phép tính thường đơn giản.',
         expression: 'cheering' as OptiExpression,
         theme: 'green' as const,
         badge: 'Điểm thử kinh điển O(0;0)',

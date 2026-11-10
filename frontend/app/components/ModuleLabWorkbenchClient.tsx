@@ -77,20 +77,6 @@ export default function ModuleLabWorkbenchClient({
     setError("");
 
     try {
-      // 1. Nạp cấu hình Custom AI Key từ localStorage (nếu có)
-      let customAiConfig: unknown = undefined;
-      if (typeof window !== "undefined") {
-        try {
-          const stored = localStorage.getItem("mathstep:custom_ai_config");
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            if (parsed?.apiKey && typeof parsed.apiKey === "string" && parsed.apiKey.trim().length > 10) {
-              customAiConfig = parsed;
-            }
-          }
-        } catch {}
-      }
-
       // 2. Thử gọi API backend /api/chat
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -105,7 +91,6 @@ export default function ModuleLabWorkbenchClient({
             learning_stage: currentStep,
           },
           hint_level: 1,
-          custom_ai: customAiConfig,
         }),
       });
 

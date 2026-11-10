@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAccessToken, getSupabaseUser, SupabaseUser } from "./supabase";
 import { jsonError } from "./security";
+import { verifyTeacherRole } from "./teacherRole";
 
 export type UserRole = "guest" | "student" | "teacher" | "researcher" | "admin";
 
@@ -61,13 +62,8 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 export function extractUserRole(user: SupabaseUser | null, request?: NextRequest): UserRole {
   if (!user) return "guest";
 
-  // 1. Kiểm tra cookie xác thực giáo viên hợp lệ
-  if (request) {
-    const teacherCookie = request.cookies.get("mathstep_teacher_role")?.value;
-    if (teacherCookie === "teacher") {
-      return "teacher";
-    }
-  }
+  // Cookie vai trò giáo viên phải có chữ ký HMAC hợp lệ và còn hạn.
+  if (request && verifyTeacherRole(request)) return "teacher";
 
   // 2. Kiểm tra app_metadata (chỉ Supabase Admin Service Key mới sửa được)
   const appRole = user.app_metadata?.role as string | undefined;
@@ -75,19 +71,7 @@ export function extractUserRole(user: SupabaseUser | null, request?: NextRequest
     return appRole as UserRole;
   }
 
-  // 3. Kiểm tra email quản trị viên đặc biệt hoặc giáo viên trường (Bảo mật: TUYỆT ĐỐI không đọc role từ user_metadata)
-  const email = user.email?.toLowerCase() || "";
-  if (email.endsWith("@admin.mathstep.edu.vn") || email === "admin@mathstep.vn") {
-    return "admin";
-  }
-  if (
-    email.endsWith("@teacher.mathstep.edu.vn") ||
-    email.endsWith("@giaovien.edu.vn") ||
-    user.app_metadata?.role === "teacher"
-  ) {
-    return "teacher";
-  }
-
+  // Quyền quản trị/giáo viên chỉ đến từ app_metadata do quản trị viên gán.
   return "student";
 }
 

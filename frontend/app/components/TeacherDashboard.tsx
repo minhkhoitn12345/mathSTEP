@@ -696,7 +696,7 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
                       <span className="font-medium text-blue-400 text-[11px]">Tự giải thích B6 (Sau can thiệp Socratic):</span>
                       <p className="text-slate-300 italic text-[11px]">
                         {s.currentStation === "10.03"
-                          ? `"Sau khi kéo đường mức F và kiểm tra MiniCAS, em nhận ra giá trị lớn nhất luôn đạt tại đỉnh của đa giác miền nghiệm (định lý quy hoạch tuyến tính)."`
+                          ? `"Vì miền phương án là đa giác lồi bị chặn, em chỉ cần tính hàm mục tiêu tại các đỉnh để tìm giá trị lớn nhất hoặc nhỏ nhất."`
                           : `"Sau khi xoay mô hình 3D, em thấy SA và CD chéo nhau vì chúng không cùng nằm trong bất kỳ mặt phẳng nào."`}
                       </p>
                     </div>
@@ -951,7 +951,7 @@ export default function TeacherDashboard({ onLaunchStation, onOpenWorkbench }: T
                           </td>
                           <td className="p-2 border-r border-slate-200 text-slate-800">
                             {s.currentStation === "10.03"
-                              ? "Điểm tối ưu luôn đạt tại các đỉnh của miền đa giác nghiệm, không nằm trong phần gạch sọc."
+                              ? "Với miền phương án là đa giác lồi bị chặn, ít nhất một đỉnh cho giá trị tối ưu; các điểm trong miền gạch bỏ không phải phương án khả thi."
                               : "SA và CD chéo nhau do không cùng thuộc bất kỳ mặt phẳng nào."}
                           </td>
                           <td className="p-2 text-center font-bold text-emerald-700 font-mono">

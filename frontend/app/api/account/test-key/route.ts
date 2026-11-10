@@ -4,6 +4,10 @@ import { checkRateLimit, getClientIp, RATE_LIMIT_RULES } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
+function testKeyError(code: string, message: string, status: number) {
+  return NextResponse.json({ detail: { code, message } }, { status, headers: NO_CACHE_HEADERS });
+}
+
 const NO_CACHE_HEADERS = {
   "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
   Pragma: "no-cache",
@@ -24,16 +28,22 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const contentLength = Number(request.headers.get("content-length") || 0);
+    if (contentLength > 4096) return testKeyError("REQUEST_TOO_LARGE", "Yêu cầu quá lớn.", 413);
     const body = await request.json().catch(() => null);
     const { provider, model, apiKey } = body || {};
 
     if (!apiKey || typeof apiKey !== "string") {
-      return jsonError("MISSING_KEY", "Vui lòng nhập API key.", 400);
+      return testKeyError("MISSING_KEY", "Vui lòng nhập API key.", 400);
     }
 
     const key = apiKey.trim();
-    if (key.length < 15 || key.length > 512 || !/^[\x21-\x7E]+$/.test(key)) {
-      return jsonError("KEY_INVALID_FORMAT", "API key không hợp lệ hoặc chứa ký tự đặc biệt không được phép.", 400);
+    if (key.length < 20 || key.length > 512 || !/^[\x21-\x7E]+$/.test(key)) {
+      return testKeyError("KEY_INVALID_FORMAT", "API key không hợp lệ hoặc chứa ký tự đặc biệt không được phép.", 400);
+    }
+
+    if (!new Set(["gemini", "openai", "deepseek"]).has(provider)) {
+      return testKeyError("UNSUPPORTED_PROVIDER", "Nhà cung cấp chưa được hỗ trợ.", 400);
     }
 
     if (provider === "gemini") {
@@ -48,10 +58,10 @@ export async function POST(request: NextRequest) {
       for (const m of candidateModels) {
         try {
           const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(key)}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,
             {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: { "Content-Type": "application/json", "x-goog-api-key": key },
               body: JSON.stringify({
                 contents: [{ parts: [{ text: "Hãy trả lời đúng 2 từ: 'SẴN SÀNG'." }] }],
                 generationConfig: { maxOutputTokens: 20 },
@@ -67,7 +77,7 @@ export async function POST(request: NextRequest) {
           }
         } catch {}
       }
-      return jsonError("KEY_INVALID", lastError || "Google API key không hợp lệ hoặc model không khả dụng.", 400);
+      return testKeyError("KEY_INVALID", lastError || "Google API key không hợp lệ hoặc model không khả dụng.", 400);
     }
 
     if (provider === "openai" || provider === "deepseek") {
@@ -93,15 +103,15 @@ export async function POST(request: NextRequest) {
       });
       const data = await res.json();
       if (!res.ok) {
-        return jsonError("KEY_INVALID", data.error?.message || "API key không hợp lệ.", 400);
+        return testKeyError("KEY_INVALID", data.error?.message || "API key không hợp lệ.", 400);
       }
       return NextResponse.json({ ok: true, message: `Kết nối thành công với ${modelName}!` }, { headers: NO_CACHE_HEADERS });
     }
 
-    return jsonError("UNSUPPORTED_PROVIDER", "Nhà cung cấp chưa được hỗ trợ.", 400);
+    return testKeyError("UNSUPPORTED_PROVIDER", "Nhà cung cấp chưa được hỗ trợ.", 400);
   } catch {
     // Bảo mật: Không trả về raw error message / stack trace cho phía client
-    return jsonError(
+    return testKeyError(
       "TEST_FAILED",
       "Không thể kết nối đến máy chủ AI. Vui lòng kiểm tra lại kết nối mạng hoặc tính hợp lệ của API Key.",
       500

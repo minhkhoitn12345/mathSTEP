@@ -13,6 +13,7 @@ import {
   TOPIC_METADATA
 } from '@/app/lib/optimath/assessmentBank';
 import { CheckCircle2, Search, Play, AlertCircle, Filter } from 'lucide-react';
+import { MathFormattedText } from '@/app/components/KatexMath';
 
 interface ExerciseBankViewProps {
   attempts: ExerciseAttemptRecord[];
@@ -236,7 +237,7 @@ export const ExerciseBankView: React.FC<ExerciseBankViewProps> = ({
                 <h3 className="text-base font-bold text-slate-900">{ex.title}</h3>
 
                 <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                  {ex.questionText}
+                  <MathFormattedText text={ex.questionText} />
                 </p>
 
                 <div className="pt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
@@ -244,9 +245,6 @@ export const ExerciseBankView: React.FC<ExerciseBankViewProps> = ({
                   <span aria-hidden="true">·</span>
                   <span>Số bước: {ex.steps.length} bước</span>
                   <span aria-hidden="true">·</span>
-                  <span className="font-mono">
-                    Mã lỗi kiểm tra: {ex.commonErrorCodes.join(', ')}
-                  </span>
                 </div>
               </div>
 

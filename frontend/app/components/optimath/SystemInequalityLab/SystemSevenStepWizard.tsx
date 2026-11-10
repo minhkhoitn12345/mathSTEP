@@ -43,7 +43,7 @@ const SYSTEM_STEP_TITLES = [
   { num: 3, title: 'Dự đoán miền nghiệm chung', desc: 'Phỏng đoán đặc điểm: bị chặn, không bị chặn, rỗng hay suy biến', short: '3. Dự đoán' },
   { num: 4, title: 'Tìm tọa độ giao điểm các đường bờ', desc: 'Học sinh tự tính tọa độ giao điểm của các cặp bờ', short: '4. Tính giao điểm' },
   { num: 5, title: 'Kiểm tra & Lọc các giao điểm', desc: 'Học sinh tự lọc điểm hợp lệ hoặc bị loại', short: '5. Lọc đỉnh' },
-  { num: 6, title: 'Xác định các đỉnh & Phân loại miền', desc: 'Nhận diện đa giác bị chặn, miền mở hoặc suy biến', short: '6. Các đỉnh' },
+  { num: 6, title: 'Xác định các đỉnh & Phân loại miền', desc: 'Phân biệt miền bị chặn, không bị chặn, rỗng hoặc suy biến', short: '6. Các đỉnh' },
   { num: 7, title: 'Tổng kết & Kết luận chuẩn SGK', desc: 'Bản kết luận sư phạm Toán 10 và luyện tập', short: '7. Kết luận' }
 ];
 
@@ -352,7 +352,7 @@ Các đỉnh của miền nghiệm: ${
 
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(formalText);
-      setCopyToast('Đã sao chép kết luận chuẩn SGK Toán 10 vào bộ nhớ tạm!');
+      setCopyToast('Đã sao chép kết luận về miền nghiệm.');
       setTimeout(() => setCopyToast(null), 3000);
     }
   };
@@ -378,7 +378,7 @@ Các đỉnh của miền nghiệm: ${
     switch (currentStep) {
       case 1:
         return {
-          text: 'Chào bạn! Hãy phân biệt rõ giữa Bất phương trình ràng buộc (mang dấu ≤, <, ≥, >) và Phương trình đường biên bờ (dấu bằng =). Đường bờ là nét liền hay nét đứt sẽ quyết định miền nghiệm có lấy bờ hay không.',
+          text: 'Hãy phân biệt bất phương trình với phương trình đường thẳng bờ. Bất phương trình có dấu ≤, <, ≥ hoặc >; đường thẳng bờ được xác định bằng cách thay dấu bất đẳng thức bằng dấu =. Nét liền hay nét đứt cho biết đường thẳng bờ có thuộc miền nghiệm hay không.',
           hints: {
             tier1: 'Kiểm tra hệ số a và b của các bất phương trình có đồng thời bằng 0 không?',
             tier2: 'Mỗi bất phương trình có dạng ax + by ≤ c, đường thẳng bờ tương ứng là ax + by = c.',
@@ -396,7 +396,7 @@ Các đỉnh của miền nghiệm: ${
         };
       case 3:
         return {
-          text: 'Dựa vào vị trí các đường biên và hướng nửa mặt phẳng, bạn hãy dự đoán xem miền giao chung có đặc điểm gì: là Đa giác bị chặn, Miền mở không bị chặn, Miền rỗng ∅ hay Miền suy biến?',
+          text: 'Dựa vào vị trí các đường thẳng bờ và các nửa mặt phẳng nghiệm, hãy dự đoán miền nghiệm chung là miền đa giác bị chặn, miền không bị chặn, tập rỗng hay một miền suy biến (đoạn thẳng hoặc điểm).',
           hints: {
             tier1: 'Quan sát phần màu chồng lấn trên hệ trục Oxy.',
             tier2: 'Nếu các đường bờ bao kín một vùng hữu hạn, đó là miền đa giác bị chặn (tam giác, tứ giác...).',
@@ -405,7 +405,7 @@ Các đỉnh của miền nghiệm: ${
         };
       case 4:
         return {
-          text: 'Bây giờ là lúc tự tay tính toán! Hãy chọn từng cặp đường thẳng bờ, giải hệ phương trình 2 ẩn để tìm tọa độ giao điểm (x; y). Bạn có thể bấm "Xem gợi ý" nếu cần trợ giúp.',
+          text: 'Hãy chọn từng cặp đường thẳng bờ, giải hệ hai phương trình để tìm tọa độ giao điểm. Nếu cần, bấm “Xem gợi ý”.',
           hints: {
             tier1: 'Làm thế nào để tìm giao điểm của hai đường thẳng bờ (di) và (dj)?',
             tier2: 'Giải hệ 2 phương trình: a1*x + b1*y = c1 và a2*x + b2*y = c2 bằng phương pháp thế hoặc cộng đại số.',
@@ -432,7 +432,7 @@ Các đỉnh của miền nghiệm: ${
         };
       case 7:
         return {
-          text: 'Chúc mừng bạn đã hoàn thành xuất sắc 7 bước! Hãy đọc kỹ bản kết luận chuẩn mực SGK Toán 10 và bấm "Sao chép kết luận" để lưu lại bài học nhé.',
+          text: 'Chúc mừng bạn đã hoàn thành 7 bước! Hãy đọc kết luận và bấm “Sao chép kết luận” để lưu lại.',
           hints: {
             tier1: 'Cần ghi nhớ gì trong bản kết luận SGK?',
             tier2: 'Kết luận phải nêu rõ miền nghiệm là hình gì (tam giác, tứ giác...), tọa độ các đỉnh và tính chất lấy bờ hay không lấy bờ.',
@@ -596,7 +596,7 @@ Các đỉnh của miền nghiệm: ${
                 <p className="text-xs text-slate-600 leading-relaxed">
                   Hệ hiện tại gồm <strong>{system.length} bất phương trình</strong>. Quan sát sự phân biệt rõ ràng giữa{' '}
                   <span className="font-bold text-blue-700">Bất phương trình ràng buộc</span> và{' '}
-                  <span className="font-bold text-slate-800">Phương trình đường biên bờ</span>:
+                  <span className="font-bold text-slate-800">Phương trình đường thẳng bờ</span>:
                 </p>
 
                 <div className="flex flex-col gap-2">
@@ -740,7 +740,7 @@ Các đỉnh của miền nghiệm: ${
                     }`}
                   >
                     <div className="font-bold text-emerald-900">A. Miền đa giác bị chặn (tam giác, tứ giác, ngũ giác)</div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">Các nửa mặt phẳng giao nhau tạo thành một hình đa giác đóng kín có chu vi hữu hạn.</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Miền nghiệm nằm gọn trong một vùng hữu hạn của mặt phẳng.</div>
                   </button>
 
                   <button
@@ -752,8 +752,8 @@ Các đỉnh của miền nghiệm: ${
                         : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    <div className="font-bold text-amber-900">B. Miền mở không bị chặn (kéo dài vô tận)</div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">Miền nghiệm mở rộng vô hạn về ít nhất một phía của mặt phẳng Oxy.</div>
+                    <div className="font-bold text-amber-900">B. Miền không bị chặn (kéo dài vô hạn)</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Miền nghiệm kéo dài vô hạn về ít nhất một phía trên mặt phẳng Oxy.</div>
                   </button>
 
                   <button
@@ -1228,7 +1228,7 @@ Các đỉnh của miền nghiệm: ${
                   <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950 space-y-2">
                     <div className="flex items-center gap-2 font-bold text-amber-900">
                       <Compass className="w-4 h-4 text-amber-600" />
-                      <span>Miền nghiệm mở không bị chặn</span>
+                      <span>Miền nghiệm không bị chặn</span>
                     </div>
                     <p className="leading-relaxed">{analysis.description}</p>
                     {analysis.feasibleVertices.length > 0 && (
@@ -1302,7 +1302,7 @@ Các đỉnh của miền nghiệm: ${
                     <div className="text-emerald-900">
                       {analysis.feasibleVertices.length > 0
                         ? analysis.feasibleVertices.map((p, i) => `Đỉnh ${i + 1}(${p.x}; ${p.y})`).join(', ')
-                        : 'Không có đỉnh hữu hạn (miền mở hoặc rỗng)'}
+                        : 'Không có đỉnh hữu hạn; miền nghiệm có thể rỗng hoặc suy biến.'}
                     </div>
                   </div>
 
@@ -1393,7 +1393,7 @@ Các đỉnh của miền nghiệm: ${
           <div className="bg-white rounded-2xl border border-slate-200 p-3.5 shadow-xs">
             <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5 mb-2">
               <Sliders className="w-3.5 h-3.5 text-blue-600" />
-              Thử nghiệm 5 ca mẫu SGK:
+              Thử 5 bài tập mẫu:
             </span>
             <div className="flex flex-col gap-1.5">
               {[

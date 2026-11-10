@@ -32,8 +32,8 @@ export const OptimizationTeacherControls: React.FC<OptimizationTeacherControlsPr
 
   const socratesQuestions = [
     {
-      q: 'Hỏi học sinh: Tại sao giá trị lớn nhất hoặc nhỏ nhất của hàm mục tiêu F(x;y) luôn đạt tại một trong các đỉnh của miền đa giác lồi?',
-      a: 'Vì đường mức ax + by = k là một đường thẳng. Khi tịnh tiến song song qua miền đa giác lồi, điểm tiếp xúc đầu tiên và cuối cùng của đường thẳng với miền đa giác luôn rơi vào các đỉnh (hoặc cả một cạnh biên) của đa giác.'
+      q: 'Nếu miền phương án là đa giác lồi bị chặn, vì sao ta chỉ cần xét các đỉnh để tìm giá trị lớn nhất hoặc nhỏ nhất của hàm mục tiêu?',
+      a: 'Các đường mức của hàm mục tiêu là những đường thẳng song song. Khi tịnh tiến đường mức trên một đa giác lồi bị chặn, giá trị cực đại hoặc cực tiểu đạt tại ít nhất một đỉnh. Nếu hai đỉnh kề nhau cùng cho giá trị cực trị thì mọi điểm trên cạnh nối chúng cũng cho giá trị ấy.'
     },
     {
       q: 'Hỏi học sinh: Khi nào bài toán quy hoạch tuyến tính có vô số phương án tối ưu?',

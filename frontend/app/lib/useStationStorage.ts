@@ -194,9 +194,6 @@ export function exportStudentProgressJson(): string {
   };
 
   try {
-    const rawProfile = localStorage.getItem("mathstep:user_profile");
-    if (rawProfile) allData.profile = JSON.parse(rawProfile);
-
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && key.startsWith(STORAGE_PREFIX)) {

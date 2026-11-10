@@ -1,3 +1,5 @@
+import { DETAILED_LESSONS_CONTENT } from "@/app/data/learningPathData";
+
 /**
  * Smart Socratic Pedagogical Engine
  * Cung cấp phản hồi sư phạm gợi mở theo phương pháp Socratic chuẩn GDPT 2018.
@@ -52,12 +54,12 @@ export function generateSmartSocraticResponse(
       return {
         answer: `Miền nghiệm của hệ bất phương trình bậc nhất hai ẩn là **phần mặt phẳng giao nhau** của tất cả các nửa mặt phẳng nghiệm thành phần.\n\n*Gợi mở:* Khi em kéo thử điểm $M(x, y)$ vào trong vùng đa giác màu xanh, hãy nhìn vào chỉ số: điểm đó có thỏa mãn đồng thời tất cả các bất phương trình không?`,
         intent: "explain",
-        nextQuestion: "Tại sao điểm tối ưu luôn nằm ở các đỉnh của đa giác?",
+        nextQuestion: "Nếu miền phương án là đa giác lồi bị chặn, vì sao có thể tìm giá trị tối ưu bằng cách xét các đỉnh?",
       };
     }
     if (q.includes("tối ưu") || q.includes("gtln") || q.includes("gtnn") || q.includes("đường mức")) {
       return {
-        answer: `Theo **Định lý cơ bản của Quy hoạch tuyến tính**, giá trị lớn nhất (GTLN) và nhỏ nhất (GTNN) của hàm mục tiêu $F(x, y) = ax + by$ trên một miền đa giác lồi luôn đạt tại **một trong các ĐỈNH** của đa giác đó.\n\nEm hãy quan sát đường mức $F(x, y) = k$: khi $k$ tăng dần, đường thẳng dịch chuyển song song và rời khỏi miền nghiệm tại đỉnh nào cuối cùng?`,
+        answer: `Với miền phương án là đa giác lồi bị chặn, giá trị lớn nhất hoặc nhỏ nhất của hàm mục tiêu tuyến tính đạt tại ít nhất một đỉnh. Ta tính hàm mục tiêu tại từng đỉnh rồi so sánh. Nếu miền không bị chặn, cần kiểm tra riêng xem giá trị cực trị có tồn tại hay không.\n\nEm hãy tìm các đỉnh thỏa mãn toàn bộ hệ rồi tính giá trị hàm mục tiêu tại từng đỉnh.`,
         intent: "hint",
         hintLevel,
         nextQuestion: "Làm sao tìm tọa độ chính xác của các đỉnh?",
@@ -68,14 +70,14 @@ export function generateSmartSocraticResponse(
   if (moduleId === "spatial_geometry") {
     if (q.includes("hình bình hành") || q.includes("đỉnh d") || q.includes("tâm o") || q.includes("giả thiết")) {
       return {
-        answer: `Quy tắc dựng hình chóp $S.ABCD$ đúng chuẩn GDPT 2018:\n- **Đáy hình bình hành tổng quát:** Tọa độ đỉnh $D$ xác định bởi $\\vec{AD} = \\vec{BC} \\iff D = A + C - B$. Tâm $O$ là trung điểm chung của $AC$ và $BD$.\n- **Cảnh báo lỗi nhận thức SG02:** Tuyệt đối không tự ý vẽ đáy thành hình chữ nhật hay hình vuông, và không tự thêm $SA \\perp (ABCD)$ nếu đề không cho!`,
+        answer: `Với hình chóp $S.ABCD$ có đáy là hình bình hành, ta có $\\vec{AD} = \\vec{BC}$, nên $D = A + C - B$ khi dùng tọa độ. Hai đường chéo $AC$ và $BD$ cắt nhau tại trung điểm chung $O$.\n\nHình vẽ chỉ minh họa giả thiết: không mặc định đáy là hình chữ nhật hoặc hình vuông, cũng không kết luận $SA \\perp (ABCD)$ nếu đề bài chưa cho.`,
         intent: "explain",
         nextQuestion: "Vì sao hình bình hành trong phép chiếu song song vẫn là hình bình hành?",
       };
     }
     if (q.includes("trung điểm") || q.includes("tỉ số") || q.includes("điểm n") || q.includes("2:1")) {
       return {
-        answer: `Quy tắc điểm chia đoạn thẳng theo tỉ số:\n- $M$ là trung điểm $SA \\iff M = \\frac{S + A}{2}$.\n- Điểm $N$ chia cạnh $SB$ theo tỉ số $SN : NB = 2 : 1$ nghĩa là đoạn $SB$ chia làm 3 phần bằng nhau: $SN$ chiếm 2 phần, $NB$ chiếm 1 phần $\\implies \\vec{SN} = \\frac{2}{3}\\vec{SB}$. Điểm $N$ nằm **gần đỉnh B hơn đỉnh S** (Lỗi SG05).`,
+        answer: `Quy tắc điểm chia đoạn thẳng theo tỉ số:\n- $M$ là trung điểm $SA \\iff M = \\frac{S + A}{2}$.\n- Nếu $SN : NB = 2 : 1$, đoạn $SB$ được chia thành 3 phần bằng nhau: $SN$ gồm 2 phần, $NB$ gồm 1 phần. Do đó $\\vec{SN} = \\frac{2}{3}\\vec{SB}$ và $N$ nằm gần $B$ hơn $S$.`,
         intent: "hint",
         nextQuestion: "Khi kéo đỉnh S dịch chuyển thì tọa độ điểm N có tự động cập nhật không?",
       };
@@ -96,7 +98,7 @@ export function generateSmartSocraticResponse(
     }
     if (q.includes("trải phẳng") || q.includes("unfold") || q.includes("diện tích mặt") || q.includes("đường đi ngắn nhất")) {
       return {
-        answer: `Kỹ thuật trải phẳng (Unfolding):\n- Trải các mặt bên $\\Delta SAB, \\Delta SBC, \\Delta SCD, \\Delta SDA$ quay quanh các cạnh đáy phẳng ra mặt đất $z = 0$.\n- **Bảo toàn hình học:** Đây là phép biến hình cứng, toàn bộ độ dài cạnh và số đo góc của từng tam giác được giữ nguyên 100% (không méo, không chồng lấn). Quỹ đạo ngắn nhất nối hai điểm trên khối chóp sẽ biến thành đoạn thẳng trên bản trải phẳng!`,
+        answer: `Khi trải các mặt của hình chóp ra một mặt phẳng, mỗi mặt giữ nguyên độ dài các cạnh và số đo các góc. Nếu hai điểm nằm trên các mặt đã trải và đường thẳng nối chúng nằm trên phần hình trải, đoạn thẳng đó biểu diễn đường đi ngắn nhất trên các mặt tương ứng.`,
         intent: "hint",
         nextQuestion: "Diện tích toàn phần của khối chóp bằng tổng diện tích những mặt nào?",
       };
@@ -111,16 +113,16 @@ export function generateSmartSocraticResponse(
         nextQuestion: "Hai góc lượng giác có cùng điểm biểu diễn thì số đo hơn kém nhau bao nhiêu?",
       };
     }
-    if (q.includes("xét dấu") || q.includes("góc phần tư") || q.includes("sin") || q.includes("cos") || q.includes("tan") || q.includes("cot")) {
+    if (q.includes("xét dấu") || q.includes("góc phần tư") || /\b(sin|cos|tan|cot)\b/.test(q)) {
       return {
-        answer: `Định nghĩa trên đường tròn đơn vị và thần chú xét dấu:\n- Hoành độ điểm ngọn là $\\cos \\alpha$, tung độ là $\\sin \\alpha$.\n- **Thần chú 4 góc phần tư:**\n  + Góc phần tư I: **Nhất CẢ** (tất cả đều dương).\n  + Góc phần tư II: **Nhì SIN** (chỉ sin dương).\n  + Góc phần tư III: **Tam TAN** (chỉ tan, cot dương).\n  + Góc phần tư IV: **Tứ COS** (chỉ cos dương).\n- Tại $\\alpha = -765^\\circ$ (góc phần tư IV): $\\cos > 0$ ($+\\frac{\\sqrt{2}}{2}$), $\\sin < 0$ ($-\\frac{\\sqrt{2}}{2}$), $\\tan = -1, \\cot = -1$.`,
+        answer: `Trên đường tròn lượng giác đơn vị, hoành độ điểm biểu diễn là $\\cos \\alpha$, tung độ là $\\sin \\alpha$.\n\nDấu các giá trị lượng giác theo góc phần tư:\n- I: sin, cos, tan và cot đều dương.\n- II: sin dương; cos, tan và cot âm.\n- III: tan và cot dương; sin và cos âm.\n- IV: cos dương; sin, tan và cot âm.\n\nVới $\\alpha=-765^\\circ$, góc cùng điểm biểu diễn là $-45^\\circ$ (hoặc $315^\\circ$), nên $\\cos \\alpha=\\frac{\\sqrt2}{2}$, $\\sin \\alpha=-\\frac{\\sqrt2}{2}$ và $\\tan \\alpha=\\cot \\alpha=-1$.`,
         intent: "explain",
         nextQuestion: "Vì sao sin²α + cos²α luôn luôn bằng 1 với mọi góc α?",
       };
     }
     if (q.includes("cung liên kết") || q.includes("nhân đôi") || q.includes("công thức") || q.includes("sin(2a)")) {
       return {
-        answer: `Hệ thống công thức lượng giác cốt lõi:\n- **Cung liên kết:** 'Cos đối, Sin bù, Phụ chéo, Hơn kém pi Tang'. Ví dụ: $\\sin(\\pi - \\alpha) = \\sin \\alpha$, $\\cos(-\\alpha) = \\cos \\alpha$.\n- **Công thức nhân đôi:** $\\sin(2\\alpha) = 2\\sin\\alpha\\cos\\alpha$.\n- **Cảnh báo lỗi E08:** Tuyệt đối KHÔNG phân phối $\\sin(a+b) = \\sin a + \\sin b$! Vì $\\sin$ là hàm số phi tuyến.`,
+        answer: `Một số công thức cần nhớ:\n- $\\sin(\\pi-\\alpha)=\\sin\\alpha$ và $\\cos(-\\alpha)=\\cos\\alpha$.\n- $\\sin(2\\alpha)=2\\sin\\alpha\\cos\\alpha$.\n- Không được tách $\\sin(a+b)$ thành $\\sin a+\\sin b$. Công thức cộng đúng là $\\sin(a+b)=\\sin a\\cos b+\\cos a\\sin b$.`,
         intent: "hint",
         nextQuestion: "Nếu cos(α) = 0 thì sin(2α) bằng bao nhiêu?",
       };
@@ -184,7 +186,7 @@ export function generateSmartSocraticResponse(
   // 3. Xử lý các câu hỏi giao tiếp cơ bản (Chào hỏi, giới thiệu vai trò)
   if (/^(chào|hello|hi|xin chào|hey|alo|bạn là ai|giới thiệu|ai đó)/i.test(q)) {
     return {
-      answer: `Chào em! Thầy là **Trợ lý gợi mở Socratic MathSTEP** — gia sư toán học tương tác đồng hành cùng em trong chương trình GDPT 2018.\n\nThầy có thể giúp em:\n1. Giải thích ý nghĩa hình học và bản chất các công thức Toán THPT (Lớp 10 - 12).\n2. Gợi ý từng bước tư duy thông qua các mô hình mô phỏng tương tác 2D & 3D.\n3. Nhận xét dự đoán và cùng em rút ra quy luật toán học.\n\nEm đang học trạm nào hoặc có chỗ nào cần thầy hỗ trợ gợi mở không?`,
+      answer: `Chào em! Thầy là Opti, trợ lý học Toán. Thầy có thể giải thích công thức, gợi ý từng bước và cùng em kiểm tra cách làm. Em đang học phần nào?`,
       intent: "greet",
       nextQuestion: "Em muốn bắt đầu tìm hiểu trạm nào trước?",
     };
@@ -199,27 +201,40 @@ export function generateSmartSocraticResponse(
     };
   }
 
-  // 5. Phản hồi chung gợi mở tư duy (Generic Socratic Scaffolding)
-  const defaultResponses = [
-    {
-      answer: `Câu hỏi rất hay! Để trả lời được câu này, em hãy thử quan sát mô hình trực quan ở khung vẽ bên cạnh: khi em thay đổi tham số, yếu tố nào vẫn giữ nguyên và yếu tố nào biến đổi đồng thời?`,
-      nextQuestion: "Thử kéo điểm điều khiển trên mô phỏng xem sao?",
+  // Khi không khớp nội dung bài học, không bịa câu trả lời chung chung.
+  const scopeByModule: Record<string, { title: string; examples: string }> = {
+    linear_programming: {
+      title: "bất phương trình bậc nhất hai ẩn và quy hoạch tuyến tính",
+      examples: "miền nghiệm, hệ bất phương trình hoặc tìm giá trị lớn nhất/nhỏ nhất",
     },
-    {
-      answer: `Trong phương pháp toán học thực nghiệm, việc đặt giả thuyết là bước quan trọng nhất. Em hãy viết suy nghĩ của mình vào ô **Dự đoán** ở Bước 2, rồi chúng ta sẽ cùng kiểm chứng bằng các phép đo trên mô hình nhé!`,
-      nextQuestion: "Quy luật nào chi phối hiện tượng này?",
+    spatial_geometry: {
+      title: "hình học không gian",
+      examples: "hình chóp, quan hệ song song/chéo nhau, thiết diện hoặc trải hình",
     },
-    {
-      answer: `Em hãy liên hệ với các định nghĩa và định lý cơ bản trong SGK: bài toán này có cấu trúc tương tự bài tập nào em từng gặp? Em hãy thử chia nhỏ bài toán thành 2 bước đơn giản hơn xem sao!`,
-      nextQuestion: "Xem gợi ý cấp 1 về định lý liên quan",
+    trigonometry: {
+      title: "lượng giác",
+      examples: "đường tròn lượng giác, công thức, đồ thị hoặc phương trình lượng giác",
     },
-  ];
+  };
+  const moduleScope = scopeByModule[moduleId];
+  const activeLesson = DETAILED_LESSONS_CONTENT[stageId];
+  const currentScope = moduleScope
+    ? {
+        ...moduleScope,
+        title: activeLesson?.moduleId === moduleId
+          ? `${moduleScope.title} — bài “${activeLesson.title}”`
+          : moduleScope.title,
+      }
+    : undefined;
+  if (!currentScope) {
+    return {
+      answer: "Câu hỏi này nằm ngoài phạm vi hỗ trợ hiện tại của Opti. Opti đang hỗ trợ ba chuyên đề: bất phương trình và quy hoạch tuyến tính, hình học không gian, lượng giác. Em muốn hỏi phần nào trong một trong ba chuyên đề đó?",
+      intent: "out_of_scope",
+    };
+  }
 
-  const picked = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
   return {
-    answer: `${picked.answer}\n\n> 💡 *Mẹo:* Hiện em đang dùng bộ gợi mở nội bộ. Để trò chuyện với **AI Socratic thế hệ mới (Gemini/OpenAI)** phân tích sâu theo thời gian thực, em hãy mở **Cài đặt ⚙️** (góc trên bên phải) và dán API Key cá nhân miễn phí vào nhé!`,
-    intent: "hint",
-    hintLevel,
-    nextQuestion: picked.nextQuestion,
+    answer: `Câu hỏi này nằm ngoài phạm vi bài học hiện tại của Opti. Opti đang hỗ trợ em về ${currentScope.title}, chẳng hạn như ${currentScope.examples}. Em muốn hỏi phần nào trong bài này?`,
+    intent: "out_of_scope",
   };
 }

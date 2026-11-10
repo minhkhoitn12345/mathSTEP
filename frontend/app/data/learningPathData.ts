@@ -11,13 +11,13 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     order: 1,
     code: "BÀI 1",
     title: "Bất phương trình bậc nhất hai ẩn & Nửa mặt phẳng bờ (d)",
-    subtitle: "Nhận diện cấu trúc đại số và bản chất vô số nghiệm lấp đầy trên Oxy",
+    subtitle: "Nhận biết bất phương trình bậc nhất hai ẩn và biểu diễn tập nghiệm trên mặt phẳng tọa độ",
     grade: 10,
     estimatedMinutes: 15,
     xpReward: 50,
     objectives: [
       "Nhận diện chính xác dạng tổng quát của bất phương trình bậc nhất hai ẩn $ax + by \\le c$ ($a^2 + b^2 > 0$).",
-      "Hiểu rõ bản chất hình học: tập nghiệm không phải là một điểm đơn lẻ mà là cả một nửa mặt phẳng lấp đầy trên Oxy.",
+      "Hiểu rằng tập nghiệm được biểu diễn bởi một nửa mặt phẳng có bờ là đường thẳng tương ứng.",
       "Thực hiện thành thạo phép thử điểm $M(x_0; y_0)$ để kiểm tra tính thỏa mãn của nghiệm.",
     ],
     theory: {
@@ -27,7 +27,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         {
           formula: "ax + by \\le c \\quad (\\text{hoặc } <, \\ge, >)",
           meaning: "Dạng tổng quát bất phương trình bậc nhất hai ẩn",
-          conditions: "a^2 + b^2 > 0 \\text{ (ít nhất một trong hai hệ số } a, b \\text{ khác 0)}",
+          conditions: "$a^2 + b^2 > 0$ (ít nhất một trong hai hệ số $a, b$ khác 0).",
         },
       ],
       notes: [
@@ -43,7 +43,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
           stepNumber: 1,
           title: "Xác định các hệ số đại số",
           mathExpression: "a = 2, \\, b = -1, \\, c = 4 \\implies a^2 + b^2 = 2^2 + (-1)^2 = 5 > 0",
-          explanation: "Khẳng định đây là bất phương trình bậc nhất hai ẩn hợp lệ theo chuẩn SGK.",
+          explanation: "Các hệ số của hai ẩn không đồng thời bằng 0, nên đây là bất phương trình bậc nhất hai ẩn.",
           rationale: "Bước nhận dạng giúp loại trừ các trường hợp phương trình suy biến (khi cả $a = b = 0$).",
         },
         {
@@ -51,7 +51,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
           title: "Kiểm tra điểm gốc tọa độ O(0; 0)",
           mathExpression: "\\text{LHS} = 2(0) - (0) = 0 \\le 4 \\implies \\text{Mệnh đề ĐÚNG}",
           explanation: "Thay $x = 0, y = 0$ vào vế trái, ta được $0 \\le 4$. Đây là một khẳng định toán học chính xác.",
-          rationale: "Điểm $O(0; 0)$ là điểm thử nghiệm thuận tiện nhất vì tính toán đại số đơn giản nhất.",
+          rationale: "Khi gốc tọa độ không nằm trên đường thẳng bờ, thay tọa độ điểm này thường giúp kiểm tra nhanh nửa mặt phẳng nghiệm.",
         },
         {
           stepNumber: 3,
@@ -68,10 +68,10 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         id: "cp-lp1-1",
         question: "Biểu thức nào sau đây KHÔNG PHẢI là bất phương trình bậc nhất hai ẩn?",
         options: [
-          { id: "A", text: "3x - 5y > 10", isCorrect: false },
-          { id: "B", text: "2x + y^2 <= 4", isCorrect: true },
-          { id: "C", text: "x - 4y >= 0", isCorrect: false },
-          { id: "D", text: "-x + 2y < -3", isCorrect: false },
+          { id: "A", text: "$3x - 5y > 10$", isCorrect: false },
+          { id: "B", text: "$2x + y^2 \le 4$", isCorrect: true },
+          { id: "C", text: "$x - 4y \ge 0$", isCorrect: false },
+          { id: "D", text: "$-x + 2y < -3$", isCorrect: false },
         ],
         explanationCorrect: "Chính xác! Biểu thức $2x + y^2 \\le 4$ chứa ẩn $y$ với số mũ bằng 2 (bậc hai), nên không phải bậc nhất hai ẩn.",
         explanationIncorrect: "Hãy nhìn kỹ số mũ của từng ẩn $x$ và $y$. BPT bậc nhất hai ẩn bắt buộc số mũ của cả hai ẩn phải bằng 1.",
@@ -98,11 +98,11 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         options: [
           { id: "A", text: "Một đường thẳng duy nhất", isCorrect: false },
           { id: "B", text: "Một đoạn thẳng hữu hạn", isCorrect: false },
-          { id: "C", text: "Một nửa mặt phẳng có bờ là đường thẳng ax + by = c (kể cả bờ)", isCorrect: true },
+          { id: "C", text: "Một nửa mặt phẳng có bờ là đường thẳng $ax + by = c$ (kể cả bờ)", isCorrect: true },
           { id: "D", text: "Một hình tròn tâm O", isCorrect: false },
         ],
         explanationCorrect: "Chính xác! Dấu $\\ge$ có chứa dấu bằng nên miền nghiệm là nửa mặt phẳng bao gồm cả đường ranh giới bờ.",
-        explanationIncorrect: "Phương trình $ax + by = c$ mới là đường thẳng; còn bất phương trình mở rộng ra toàn bộ nửa mặt phẳng lấp đầy một phía của đường thẳng đó.",
+        explanationIncorrect: "Phương trình $ax + by = c$ biểu diễn đường thẳng; bất phương trình biểu diễn một nửa mặt phẳng có bờ là đường thẳng đó.",
         errorTag: "M04",
       },
     ],
@@ -120,7 +120,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     moduleId: "linear_programming",
     order: 2,
     code: "BÀI 2",
-    title: "Quy trình 7 bước biểu diễn miền nghiệm chuẩn SGK",
+    title: "Biểu diễn miền nghiệm của bất phương trình",
     subtitle: "Thao tác vẽ đường bờ nét liền/đứt và gạch bỏ phần không thỏa mãn",
     grade: 10,
     estimatedMinutes: 18,
@@ -128,21 +128,21 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     objectives: [
       "Làm chủ 7 bước tuần tự biểu diễn miền nghiệm theo đúng quy ước sách giáo khoa mới GDPT 2018.",
       "Phân biệt chính xác quy ước vẽ đường bờ: Nét liền (khi có dấu $\\le, \\ge$) và Nét đứt (khi dấu ngặt $<, >$).",
-      "Khắc phục triệt để bẫy sai lầm M08 khi đường bờ đi qua gốc tọa độ $O(0; 0)$.",
+      "Biết chọn điểm thử khác khi đường thẳng bờ đi qua gốc tọa độ $O(0; 0)$.",
     ],
     theory: {
       coreConcept:
-        "Quy trình 7 bước SGK gồm: (1) Nhận dạng hệ số $\\to$ (2) Xác định nét vẽ bờ liền/đứt $\\to$ (3) Tìm 2 điểm trên bờ $\\to$ (4) Vẽ đường bờ kéo dài $\\to$ (5) Chọn điểm thử nghiệm $\\to$ (6) Kiểm tra đúng/sai $\\to$ (7) Kết luận miền nghiệm (giữ trắng miền nghiệm, gạch bỏ miền sai).",
+        "Để biểu diễn miền nghiệm: viết phương trình đường thẳng bờ; chọn nét liền hoặc nét đứt; xác định hai điểm để vẽ đường thẳng; chọn điểm thử nằm ngoài bờ; thay tọa độ vào bất phương trình; giữ nửa mặt phẳng thỏa mãn và gạch bỏ nửa mặt phẳng còn lại. Dấu $\\le, \\ge$ lấy cả bờ; dấu $<, >$ không lấy bờ.",
       formulas: [
         {
           formula: "d: ax + by = c",
           meaning: "Phương trình đường thẳng bờ chia đôi mặt phẳng Oxy",
-          conditions: "Nét liền nếu dấu <= hoặc >=; Nét đứt nếu dấu < hoặc >",
+          conditions: "Vẽ nét liền nếu bất phương trình có dấu $\\le$ hoặc $\\ge$; vẽ nét đứt nếu có dấu $<$ hoặc $>$.",
         },
       ],
       notes: [
-        "Nếu $c \\ne 0$, luôn ưu tiên chọn $O(0; 0)$ làm điểm thử nghiệm để tối ưu hóa thời gian tính toán.",
-        "Nếu $c = 0$, đường thẳng đi qua chính gốc tọa độ $O$, BẮT BUỘC phải chọn điểm phụ nằm ngoài đường bờ như $M(1; 0)$ hoặc $M(0; 1)$ (Tránh bẫy M08).",
+        "Nếu $c \\ne 0$, gốc tọa độ $O(0;0)$ không nằm trên đường thẳng bờ nên có thể dùng làm điểm thử.",
+        "Nếu $c = 0$, đường thẳng bờ đi qua gốc tọa độ. Hãy chọn điểm thử khác, chẳng hạn $M(1;0)$ hoặc $M(0;1)$.",
       ],
       miniTip: "Mẹo nhớ: 'Có bằng thì NÉT LIỀN, Không bằng thì NÉT ĐỨT; Thử O ra Đúng thì LẤY, ra Sai thì GẠCH!'",
     },
@@ -161,7 +161,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
           title: "Tìm 2 điểm phân biệt để vẽ bờ",
           mathExpression: "x = 0 \\implies y = 3 \\implies A(0; 3); \\quad y = 0 \\implies x = 2 \\implies B(2; 0)",
           explanation: "Chọn 2 giao điểm của đường thẳng với hai trục tọa độ để vẽ chuẩn xác nhất.",
-          rationale: "Tìm giao điểm với trục giúp dựng hình nhanh và chuẩn xác tuyệt đối.",
+          rationale: "Tìm giao điểm với các trục tọa độ giúp xác định hai điểm để vẽ đường thẳng.",
         },
         {
           stepNumber: 3,
@@ -174,8 +174,8 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
           stepNumber: 4,
           title: "Kết luận miền nghiệm",
           mathExpression: "\\text{Miền nghiệm là nửa mặt phẳng bờ } d \\text{ không chứa } O(0; 0), \\text{ không kể bờ } d.",
-          explanation: "Gạch bỏ nửa mặt phẳng chứa điểm $O$, phần mặt phẳng còn lại (giữ trắng) là miền nghiệm.",
-          rationale: "Tuân thủ nghiêm ngặt quy ước SGK Việt Nam: Giữ trắng miền nghiệm, gạch chéo phần loại bỏ.",
+          explanation: "Điểm $O$ không thỏa mãn bất phương trình, nên gạch bỏ nửa mặt phẳng chứa $O$. Phần không bị gạch là miền nghiệm.",
+          rationale: "Phần không bị gạch biểu diễn các điểm thỏa mãn bất phương trình; phần bị gạch là các điểm bị loại.",
         },
       ],
       conclusion: "Miền nghiệm đã được biểu diễn hoàn chỉnh: Nét đứt, không chứa gốc tọa độ O.",
@@ -183,13 +183,13 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     checkpoints: [
       {
         id: "cp-lp2-1",
-        question: "Khi biểu diễn bất phương trình $2x - y \\ge 0$, tại sao KHÔNG ĐƯỢC chọn điểm O(0; 0) làm điểm thử?",
+        question: "Khi biểu diễn bất phương trình $2x - y \\ge 0$, vì sao không chọn điểm $O(0; 0)$ làm điểm thử?",
         options: [
           { id: "A", text: "Vì điểm O có tọa độ bằng 0 nên không tính được", isCorrect: false },
-          { id: "B", text: "Vì đường thẳng bờ 2x - y = 0 đi qua chính gốc O, không phân biệt được 2 nửa mặt phẳng", isCorrect: true },
-          { id: "C", text: "Vì bất phương trình có dấu >= nên không được thử", isCorrect: false },
+          { id: "B", text: "Vì đường thẳng bờ $2x - y = 0$ đi qua gốc $O$, nên điểm này không giúp phân biệt hai nửa mặt phẳng", isCorrect: true },
+          { id: "C", text: "Vì bất phương trình có dấu $\\ge$ nên không được thử", isCorrect: false },
         ],
-        explanationCorrect: "Chính xác! Điểm thử phải nằm hẳn về một bên của đường thẳng bờ. Khi đường bờ đi qua O, điểm O nằm ngay trên ranh giới nên vô dụng trong việc phân chia hai nửa mặt phẳng (Bẫy M08).",
+        explanationCorrect: "Đúng. Điểm thử phải nằm ngoài đường thẳng bờ. Vì đường thẳng $2x-y=0$ đi qua $O(0;0)$, thay tọa độ $O$ chỉ cho biết điểm nằm trên bờ, chưa giúp xác định nửa mặt phẳng nghiệm.",
         explanationIncorrect: "Hãy thay tọa độ (0; 0) vào phương trình đường bờ: $2(0) - 0 = 0$, nghĩa là điểm O nằm trên đường thẳng!",
         socraticHint: "Điểm thử nghiệm có được phép nằm ngay trên đường ranh giới bờ không?",
       },
@@ -197,7 +197,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     reviewQuiz: [
       {
         id: "rq-lp2-1",
-        question: "Biểu diễn miền nghiệm của $x - 3y < 0$. Điểm nào sau đây là điểm thử nghiệm hợp lệ?",
+        question: "Biểu diễn miền nghiệm của $x - 3y < 0$. Điểm nào sau đây có thể dùng làm điểm thử?",
         options: [
           { id: "A", text: "O(0; 0)", isCorrect: false },
           { id: "B", text: "M(1; 0)", isCorrect: true },
@@ -210,14 +210,14 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
       },
       {
         id: "rq-lp2-2",
-        question: "Trong quy ước SGK Toán 10 Việt Nam, phần mặt phẳng nào được gạch bỏ?",
+        question: "Khi dùng cách gạch bỏ để biểu diễn bất phương trình, phần mặt phẳng nào được gạch?",
         options: [
           { id: "A", text: "Phần mặt phẳng chứa các điểm không phải là nghiệm", isCorrect: true },
           { id: "B", text: "Phần mặt phẳng chứa các điểm là nghiệm", isCorrect: false },
           { id: "C", text: "Toàn bộ cả hai nửa mặt phẳng", isCorrect: false },
         ],
-        explanationCorrect: "Chính xác! Quy ước SGK Việt Nam là 'Gạch bỏ miền không thỏa mãn, giữ trắng miền nghiệm'.",
-        explanationIncorrect: "SGK Việt Nam quy ước giữ phần trắng sạch sẽ cho miền nghiệm, gạch sọc chéo phần bị loại.",
+        explanationCorrect: "Chính xác! Gạch phần không thỏa mãn bất phương trình; miền không bị gạch là miền nghiệm.",
+        explanationIncorrect: "Hãy thay tọa độ một điểm vào bất phương trình: miền chứa các điểm thỏa mãn là miền nghiệm, phần còn lại bị gạch bỏ.",
         errorTag: "M07",
       },
     ],
@@ -242,7 +242,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     xpReward: 70,
     objectives: [
       "Xác định miền nghiệm của một hệ bất phương trình gồm từ 2 đến 5 ràng buộc tuyến tính.",
-      "Thực hiện phép giao hình học của các nửa mặt phẳng để hình thành miền đa giác lồi đóng.",
+      "Lấy phần chung của các nửa mặt phẳng để xác định miền nghiệm; miền này có thể bị chặn, không bị chặn, rỗng hoặc suy biến.",
       "Tìm tọa độ các đỉnh của miền đa giác bằng cách giải các hệ phương trình bậc nhất hai ẩn tương ứng.",
     ],
     theory: {
@@ -252,7 +252,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         {
           formula: "\\begin{cases} a_1 x + b_1 y \\le c_1 \\\\ a_2 x + b_2 y \\le c_2 \\\\ x \\ge 0, \\, y \\ge 0 \\end{cases}",
           meaning: "Hệ bất phương trình bậc nhất hai ẩn có ràng buộc không âm",
-          conditions: "Tập nghiệm S = S_1 \\cap S_2 \\cap S_3 \\cap S_4",
+          conditions: "Tập nghiệm $S = S_1 \\cap S_2 \\cap S_3 \\cap S_4$.",
         },
       ],
       notes: [
@@ -296,7 +296,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
           { id: "A", text: "Có, vì thỏa mãn đa số", isCorrect: false },
           { id: "B", text: "Không, vì phải thỏa mãn đồng thời tất cả các bất phương trình trong hệ", isCorrect: true },
         ],
-        explanationCorrect: "Chính xác! Miền nghiệm của hệ là phép giao tập hợp, đòi hỏi điểm phải thỏa mãn 100% tất cả các ràng buộc.",
+        explanationCorrect: "Đúng rồi. Một điểm thuộc miền nghiệm của hệ khi nó thỏa mãn đồng thời từng bất phương trình trong hệ.",
         explanationIncorrect: "Hệ bất phương trình có dấu ngoặc nhọn đồng nghĩa với liên từ 'VÀ'. Thiếu một điều kiện là bị loại ngay.",
         socraticHint: "Dấu ngoặc nhọn trong hệ phương trình có nghĩa là gì?",
       },
@@ -330,18 +330,18 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     order: 4,
     code: "BÀI 4",
     title: "Mô hình hóa thực tiễn: Bài toán Xưởng mộc tối ưu",
-    subtitle: "Bài toán thực tiễn chuẩn SGK Kết nối tri thức (Trang 26-30)",
+    subtitle: "Mô hình hóa bài toán sản xuất bàn ghế bằng hệ bất phương trình",
     grade: 10,
     estimatedMinutes: 22,
     xpReward: 80,
     objectives: [
-      "Biết cách chuyển đổi ngôn ngữ thực tế (giờ công, vật liệu, tiền lãi) sang hệ bất phương trình toán học chuẩn mực.",
+      "Biết chuyển các điều kiện thực tế (giờ công, vật liệu, tiền lãi) thành một hệ bất phương trình.",
       "Thiết lập hàm mục tiêu $F(x, y) = ax + by$ biểu thị lợi nhuận cần tối đa hóa.",
-      "Vận dụng định lý quy hoạch tuyến tính: Giá trị lớn nhất/nhỏ nhất luôn đạt tại một trong các đỉnh của miền đa giác lồi.",
+      "Với miền nghiệm là đa giác lồi bị chặn, tìm giá trị lớn nhất hoặc nhỏ nhất của hàm mục tiêu bằng cách tính tại các đỉnh.",
     ],
     theory: {
       coreConcept:
-        "Quy hoạch tuyến tính là phương pháp toán học tìm phương án tối ưu (lợi nhuận cao nhất hoặc chi phí thấp nhất) thỏa mãn các điều kiện ràng buộc tài nguyên. Với miền nghiệm là đa giác lồi $A_1A_2...A_n$, giá trị lớn nhất của $F(x, y)$ luôn đạt tại một trong các đỉnh $A_i$.",
+        "Quy hoạch tuyến tính dùng một hàm mục tiêu tuyến tính để tìm phương án có giá trị lớn nhất hoặc nhỏ nhất trong miền thỏa mãn các điều kiện. Nếu miền phương án là đa giác lồi bị chặn, giá trị cực trị đạt tại ít nhất một đỉnh. Vì vậy, ta tính hàm mục tiêu tại tất cả các đỉnh rồi so sánh.",
       formulas: [
         {
           formula: "F(x, y) = ax + by \\implies \\max F(x, y) = \\max \\{F(A_1), F(A_2), \\dots, F(A_n)\\}",
@@ -353,7 +353,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         "Bước 1: Gọi ẩn $x, y$ kèm đơn vị và điều kiện thực tế ($x, y \\ge 0$, đôi khi $x, y \\in \\mathbb{N}$).",
         "Bước 2: Lập bảng phân tích số liệu để tránh sót ràng buộc.",
         "Bước 3: Vẽ miền đa giác nghiệm, tìm tọa độ chính xác các đỉnh.",
-        "Bước 4: Lập bảng tính giá trị $F(x, y)$ tại từng đỉnh và kết luận bằng ngôn ngữ thực tế.",
+        "Bước 4: Tính $F(x, y)$ tại từng đỉnh và diễn đạt kết quả theo bối cảnh bài toán.",
       ],
       miniTip: "Mẹo nhớ: 'Tìm cực trị trên miền đa giác, chỉ cần thử tọa độ TẤT CẢ CÁC ĐỈNH!'",
     },
@@ -379,7 +379,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
           title: "Tính giá trị hàm lợi nhuận F(x, y) tại 4 đỉnh",
           mathExpression: "F(O) = 0, \\quad F(A) = 9.600, \\quad F(B) = 10.200, \\quad F(C) = 8.700",
           explanation: "Tính cụ thể: $F(A) = 600(16) + 450(0) = 9.600$; $F(B) = 600(8) + 450(12) = 10.200$; $F(C) = 600(4) + 450(14) = 8.700$ nghìn đồng. Giá trị lớn nhất là 10.200 nghìn đồng tại đỉnh $B(8; 12)$.",
-          rationale: "Định lý quy hoạch tuyến tính bảo đảm cực trị luôn đạt tại đỉnh của miền đa giác lồi.",
+          rationale: "Với miền phương án là đa giác lồi bị chặn, chỉ cần tính hàm mục tiêu tại các đỉnh để tìm giá trị lớn nhất hoặc nhỏ nhất.",
         },
       ],
       conclusion: "Xưởng nên sản xuất 8 chiếc bàn và 12 chiếc ghế để đạt lợi nhuận tối đa là 10.200.000 đồng.",
@@ -387,13 +387,13 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     checkpoints: [
       {
         id: "cp-lp4-1",
-        question: "Vì sao ta chỉ cần tính giá trị hàm mục tiêu F(x, y) tại các đỉnh của miền đa giác mà không cần tính ở các điểm nằm giữa?",
+        question: "Vì sao trong bài toán này chỉ cần tính giá trị hàm mục tiêu $F(x; y)$ tại các đỉnh của miền đa giác nghiệm?",
         options: [
           { id: "A", text: "Vì các điểm ở giữa luôn cho giá trị bằng 0", isCorrect: false },
-          { id: "B", text: "Vì theo định lý toán học, hàm tuyến tính F(x, y) trên tập lồi luôn đạt giá trị cực trị tại các điểm biên cực biên (đỉnh)", isCorrect: true },
+          { id: "B", text: "Vì miền phương án là đa giác lồi bị chặn, hàm mục tiêu tuyến tính đạt giá trị lớn nhất hoặc nhỏ nhất tại ít nhất một đỉnh", isCorrect: true },
         ],
-        explanationCorrect: "Hoàn toàn chính xác! Đường mức của hàm $F(x,y)$ là các đường thẳng song song, khi tịnh tiến sẽ quét qua miền đa giác và luôn rời khỏi miền tại một đỉnh cuối cùng.",
-        explanationIncorrect: "Đây là định lý nền tảng của quy hoạch tuyến tính được phát minh bởi các nhà toán học giải thưởng Nobel.",
+        explanationCorrect: "Đúng. Với miền đa giác lồi bị chặn, ta tính giá trị hàm mục tiêu tại tất cả các đỉnh. Giá trị lớn nhất hoặc nhỏ nhất trong các kết quả đó là đáp án.",
+        explanationIncorrect: "Hãy xét các đỉnh của miền phương án. Với một hàm mục tiêu tuyến tính trên đa giác lồi bị chặn, ít nhất một đỉnh cho giá trị cực trị.",
         socraticHint: "Đường mức di chuyển tiếp xúc với đa giác ở đâu đầu tiên và sau cùng?",
       },
     ],
@@ -412,9 +412,9 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
       },
       {
         id: "rq-lp4-2",
-        question: "Trong bài toán Xưởng mộc, vì sao điểm (0; 16) - giao điểm của đường x + 2y = 32 với trục Oy - KHÔNG phải là một đỉnh của miền nghiệm khả thi?",
+        question: "Trong bài toán xưởng mộc, vì sao điểm $(0; 16)$, giao điểm của đường thẳng $x + 2y = 32$ với trục $Oy$, không thuộc miền nghiệm?",
         options: [
-          { id: "A", text: "Vì điểm (0; 16) vi phạm điều kiện tỷ lệ sản xuất y <= 3,5x (do 16 > 3,5 x 0)", isCorrect: true },
+          { id: "A", text: "Vì $(0; 16)$ không thỏa mãn điều kiện $y \le 3{,}5x$; tại điểm đó, $16 > 3{,}5 \cdot 0$.", isCorrect: true },
           { id: "B", text: "Vì tiền lãi tại (0; 16) bằng 0", isCorrect: false },
           { id: "C", text: "Vì điểm (0; 16) có tọa độ không nguyên", isCorrect: false },
         ],
@@ -437,30 +437,30 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     moduleId: "linear_programming",
     order: 5,
     code: "BÀI 5",
-    title: "Luyện tập & Chẩn đoán lỗi nhận thức",
-    subtitle: "Hệ thống bài tập chẩn đoán tự động và phản tư sai lầm M01-M17",
+    title: "Luyện tập tổng hợp và sửa lỗi thường gặp",
+    subtitle: "Luyện tập tổng hợp và nhận biết những lỗi thường gặp",
     grade: 10,
     estimatedMinutes: 20,
     xpReward: 90,
     objectives: [
       "Hệ thống hóa toàn bộ kiến thức chuyên đề Bất phương trình và Quy hoạch tuyến tính.",
-      "Tự phát hiện và sửa chữa các lỗi sai kinh điển từ M01 đến M17 (lỗi đổi dấu, lỗi bờ qua O, lỗi đọc đề thiếu điều kiện tự nhiên).",
+      "Tự phát hiện và sửa các lỗi thường gặp như quên đổi chiều bất đẳng thức, chọn điểm thử nằm trên đường thẳng bờ hoặc bỏ sót điều kiện thực tế.",
       "Rèn luyện tư duy phản biện và khả năng giải trình toán học mạch lạc.",
     ],
     theory: {
       coreConcept:
-        "Chẩn đoán lỗi nhận thức (Misconception Diagnosis) giúp học sinh hiểu sâu bản chất toán học thông qua việc phân tích 'Tại sao cách làm này lại sai?'. Các lỗi phổ biến nhất gồm: Quên đổi chiều BPT khi nhân/chia số âm, vẽ nhầm nét liền thành nét đứt, và nhầm lẫn giữa điểm thuộc miền nghiệm với điểm nằm ngoài.",
+        "Khi xem lại một lời giải sai, hãy tìm đúng bước sai và giải thích vì sao. Những lỗi thường gặp gồm quên đổi chiều bất đẳng thức khi chia cho số âm, vẽ sai kiểu nét của đường thẳng bờ, hoặc xác định nhầm điểm thuộc miền nghiệm.",
       formulas: [
         {
           formula: "-2x \\le 4 \\iff x \\ge -2",
           meaning: "Quy tắc đảo chiều bất đẳng thức khi nhân/chia cho số âm",
-          conditions: "Bắt buộc đổi chiều: <= thành >=, < thành >",
+          conditions: "Khi chia cho số âm, đổi chiều bất đẳng thức: $\\le$ thành $\\ge$, $<$ thành $>$ (và ngược lại).",
         },
       ],
       notes: [
-        "Lỗi M05: Quên đảo chiều khi chia cho hệ số âm của biến.",
-        "Lỗi M08: Chọn gốc O(0; 0) làm điểm thử khi đường thẳng có c = 0.",
-        "Lỗi M12: Bài toán thực tế quên điều kiện số nguyên không âm $x, y \\in \\mathbb{N}$.",
+        "Khi chia hai vế của bất đẳng thức cho số âm, phải đổi chiều bất đẳng thức.",
+        "Nếu đường thẳng bờ đi qua $O(0; 0)$, hãy chọn một điểm thử khác không nằm trên đường thẳng đó.",
+        "Với đại lượng đếm được như số người hoặc số sản phẩm, cần xét điều kiện nguyên và không âm (hoặc nguyên dương, tùy ý nghĩa đại lượng).",
       ],
       miniTip: "Mẹo nhớ: 'Chia cho số âm phải lật ngược dấu; Đường bờ qua O phải chọn điểm phụ!'",
     },
@@ -479,7 +479,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
           title: "Chẩn đoán bước chia cho -3",
           mathExpression: "-3x \\le -6 \\iff x \\ge \\frac{-6}{-3} \\iff x \\ge 2",
           explanation: "Người giải đã chia cả hai vế cho $-3$ (số âm) nhưng GIỮ NGUYÊN chiều $\\le$, dẫn đến kết quả sai $x \\le 2$.",
-          rationale: "Đây chính là lỗi nhận thức cơ bản M05.",
+          rationale: "Lỗi nằm ở bước chia hai vế cho số âm mà không đổi chiều bất đẳng thức.",
         },
       ],
       conclusion: "Lời giải đúng phải là $x \\ge 2$ (đảo chiều bất đẳng thức khi chia cho số âm -3).",
@@ -491,7 +491,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         options: [
           { id: "A", text: "x < -5", isCorrect: false },
           { id: "B", text: "x > -5", isCorrect: true },
-          { id: "C", text: "x <= -5", isCorrect: false },
+          { id: "C", text: "$x \\le -5$", isCorrect: false },
         ],
         explanationCorrect: "Chính xác! Nhân với số âm $-1$ bắt buộc phải đổi chiều từ '$<$' sang '$>$'.",
         explanationIncorrect: "Nhân hoặc chia cho số âm bắt buộc phải đảo chiều bất đẳng thức.",
@@ -501,10 +501,10 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     reviewQuiz: [
       {
         id: "rq-lp5-1",
-        question: "Một bạn giải bài toán số người đi xe buýt và ra nghiệm $x = 3{,}5$. Lỗi nhận thức ở đây là gì?",
+        question: "Một bạn giải bài toán về số người đi xe buýt và nhận được $x = 3{,}5$. Bạn ấy cần xem lại điều gì?",
         options: [
           { id: "A", text: "Tính sai số học", isCorrect: false },
-          { id: "B", text: "Lỗi M12: Quên điều kiện thực tế đối tượng 'người' phải là số nguyên dương", isCorrect: true },
+          { id: "B", text: "Quên rằng số người phải là số nguyên không âm (và trong ngữ cảnh này phải dương)", isCorrect: true },
           { id: "C", text: "Phương trình vô nghiệm", isCorrect: false },
         ],
         explanationCorrect: "Tuyệt vời! Đối tượng người, xe, sản phẩm nguyên chiếc bắt buộc phải có điều kiện $x \\in \\mathbb{N}^*$.",
@@ -516,8 +516,8 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
       moduleId: "linear_programming",
       simulationType: "practice",
       lessonIndex: 4,
-      labName: "Ngân Hàng Bài Tập Chẩn Đoán Lỗi M01-M17",
-      actionPrompt: "Mở phòng thực hành để thử sức với các tình huống gài bẫy và nhận phản hồi gợi mở từ Socratic AI.",
+      labName: "Bài tập luyện tập tổng hợp",
+      actionPrompt: "Mở phần luyện tập để làm các bài tổng hợp và xem gợi ý từng bước khi cần.",
     },
   },
 
@@ -531,13 +531,13 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     order: 1,
     code: "BÀI 1",
     title: "Đọc đề & Dựng hình chóp S.ABCD đúng giả thiết",
-    subtitle: "Nhiệm vụ chuẩn SG-M2-01: Bảo toàn quan hệ hình bình hành không suy biến",
+    subtitle: "Dựng hình theo giả thiết và giữ đúng các quan hệ hình học",
     grade: 11,
     estimatedMinutes: 18,
     xpReward: 60,
     objectives: [
       "Đọc đề bài chính xác và chuyển đổi giả thiết hình học thành các quan hệ đồng phẳng và không gian đúng đắn.",
-      "Dựng hình chóp $S.ABCD$ với đáy là hình bình hành tổng quát, tránh lỗi tự ý vẽ thành hình chữ nhật hay hình vuông (Lỗi SG02).",
+      "Dựng hình chóp $S.ABCD$ có đáy là hình bình hành; không tự thêm giả thiết đáy là hình chữ nhật hoặc hình vuông.",
       "Xác định tâm đối xứng $O$ của đáy hình bình hành là giao điểm của hai đường chéo $AC$ và $BD$.",
     ],
     theory: {
@@ -555,7 +555,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         },
       ],
       notes: [
-        "Không được tự thêm giả thiết: Đề cho đáy hình bình hành thì không được vẽ góc vuông đặc biệt (Lỗi SG02).",
+        "Không tự thêm giả thiết: đề cho đáy là hình bình hành thì không được mặc định có góc vuông.",
         "Đỉnh $S$ không được vẽ nằm trên đường vuông góc đặc biệt từ tâm nếu đề không cho $S.ABCD$ là chóp đều.",
       ],
       miniTip: "Mẹo nhớ: 'Vẽ hình tổng quát trước, đặc biệt hóa sau; Song song phải giữ song song!'",
@@ -597,13 +597,13 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     reviewQuiz: [
       {
         id: "rq-sg1-1",
-        question: "Học sinh A vẽ đáy hình bình hành thành hình chữ nhật với 4 góc vuông để 'dễ nhìn'. Lỗi nhận thức này được mã hóa là gì?",
+        question: "Một bạn vẽ đáy hình bình hành thành hình chữ nhật có bốn góc vuông. Bạn ấy đã tự thêm giả thiết nào?",
         options: [
-          { id: "A", text: "Lỗi SG01 (Sai đối tượng)", isCorrect: false },
-          { id: "B", text: "Lỗi SG02 (Tự tiện thêm tính chất đặc biệt - vuông góc)", isCorrect: true },
-          { id: "C", text: "Lỗi SG05 (Sai tỉ số)", isCorrect: false },
+          { id: "A", text: "Nhận diện sai hình", isCorrect: false },
+          { id: "B", text: "Tự thêm tính chất vuông góc không có trong giả thiết", isCorrect: true },
+          { id: "C", text: "Tính sai tỉ số đoạn thẳng", isCorrect: false },
         ],
-        explanationCorrect: "Chính xác! Lỗi SG02 là lỗi tư duy suy diễn sai khi tự ý áp đặt tính chất đặc biệt lên hình vẽ tổng quát.",
+        explanationCorrect: "Chính xác! Hình vẽ chỉ minh họa giả thiết, không cho phép kết luận thêm rằng hình bình hành có góc vuông.",
         explanationIncorrect: "Vẽ đáy thành hình chữ nhật sẽ dẫn đến các kết luận sai lầm về quan hệ vuông góc không có trong đề bài.",
         errorTag: "SG02",
       },
@@ -647,8 +647,8 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         },
       ],
       notes: [
-        "Lỗi SG04: Nhầm lẫn tỉ số $SN : NB = 2 : 1$ thành $SN = \\frac{1}{2} SB$ (nhầm tỉ số đoạn với tỉ số tổng).",
-        "Lỗi SG05: Dựng điểm $N$ nằm ngoài đoạn thẳng $SB$ trên đường thẳng kéo dài.",
+        "Với tỉ số $SN : NB = 2 : 1$, ta có $SN = \\frac{2}{3}SB$; không được nhầm thành $\\frac{1}{2}SB$.",
+        "Khi đề bài nói $N$ thuộc đoạn thẳng $SB$, điểm $N$ phải nằm giữa $S$ và $B$.",
       ],
       miniTip: "Mẹo nhớ: Tỉ số $2:1$ nghĩa là chia đoạn thành 3 phần bằng nhau: $SN$ lấy 2 phần, $NB$ lấy 1 phần.",
     },
@@ -691,8 +691,8 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         id: "rq-sg2-1",
         question: "Học sinh tính ra $N = S + \\frac{1}{2}(B - S)$. Lỗi nhận thức ở đây là gì?",
         options: [
-          { id: "A", text: "Lỗi SG04: Nhầm lẫn tỉ số chia 2:1 thành trung điểm 1:1", isCorrect: true },
-          { id: "B", text: "Lỗi SG01: Vẽ sai đối tượng", isCorrect: false },
+          { id: "A", text: "Nhầm tỉ số $2:1$ thành tỉ số $1:1$ của trung điểm", isCorrect: true },
+          { id: "B", text: "Vẽ sai hình chóp", isCorrect: false },
         ],
         explanationCorrect: "Rất tốt! Tỉ số 2:1 cần chia làm 3 phần chứ không phải 2 phần.",
         explanationIncorrect: "Tỉ số $\\frac{1}{2}$ là trung điểm (tỉ số 1:1).",
@@ -721,7 +721,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     objectives: [
       "Hiểu rõ quy ước nét thấy (Nét liền) và nét khuất (Nét đứt) trong hình học biểu diễn không gian.",
       "Nhận thức được nét khuất phụ thuộc vào góc nhìn của người quan sát, không phải thuộc tính bất biến của đoạn thẳng.",
-      "Phát hiện phản ví dụ trực giác: Hai đường thẳng chéo nhau nhìn trên màn hình có thể giống như cắt nhau (Lỗi SG16).",
+      "Giải thích vì sao hai đường thẳng chéo nhau có thể trông như cắt nhau trên hình biểu diễn nhưng không có điểm chung trong không gian.",
     ],
     theory: {
       coreConcept:
@@ -733,8 +733,8 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         },
       ],
       notes: [
-        "Lỗi SG08: Nhầm tưởng nét đứt là ký hiệu của quan hệ song song.",
-        "Lỗi SG16: Nhìn thấy 2 đường chéo nhau cắt nhau trên màn chiếu 2D liền vội vàng kết luận chúng có giao điểm.",
+        "Không nhầm nét đứt biểu diễn cạnh khuất với ký hiệu hai đường thẳng song song.",
+        "Không kết luận hai đường thẳng cắt nhau chỉ dựa vào hình vẽ phối cảnh; cần kiểm tra chúng có đồng phẳng hay không.",
       ],
       miniTip: "Mẹo nhớ: 'Nét đứt là do BỊ CHE; Hai đường cắt nhau trên màn hình chưa chắc cắt nhau ngoài đời!'",
     },
@@ -827,7 +827,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         },
       ],
       notes: [
-        "Các đỉnh của thiết diện bắt buộc phải nằm trên các cạnh của hình chóp, không được lấy điểm nằm trên phần kéo dài ngoài cạnh (Lỗi SG10).",
+        "Các đỉnh của thiết diện nằm trên các cạnh của hình chóp; không lấy giao điểm trên phần kéo dài của cạnh.",
         "Đa giác thiết diện phải khép kín hoàn toàn và có diện tích dương.",
       ],
       miniTip: "Mẹo nhớ: 'Mặt phẳng cắt song song đáy thì thiết diện sinh ra đồng dạng với đáy!'",
@@ -920,8 +920,8 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         },
       ],
       notes: [
-        "Lỗi SG13: Trải hình làm méo mó kích thước các mặt (vi phạm bảo toàn kích thước cứng).",
-        "Lỗi SG14: Các mặt bên sau khi mở ra bị chồng lấn lên nhau do chọn cạnh cắt không hợp lý.",
+        "Khi trải một mặt ra, độ dài các cạnh và số đo các góc của mặt đó không thay đổi.",
+        "Nếu các mặt bị chồng lên nhau khi trải, hãy chọn lại các cạnh cần cắt để thể hiện đúng phần mặt đang xét.",
       ],
       miniTip: "Mẹo nhớ: 'Muốn tìm đường đi ngắn nhất trên khối chóp, hãy trải phẳng các mặt ra một tờ giấy!'",
     },
@@ -953,7 +953,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
           { id: "A", text: "Có thay đổi tùy vào góc mở", isCorrect: false },
           { id: "B", text: "Tuyệt đối không đổi vì đây là chuyển động cứng bảo toàn kích thước từng mặt", isCorrect: true },
         ],
-        explanationCorrect: "Chính xác! Giống như mở nắp một chiếc hộp giấy, hình dạng và kích thước của mỗi mảnh bìa được giữ nguyên 100%.",
+        explanationCorrect: "Chính xác! Khi trải một mặt phẳng ra, hình dạng và kích thước của mặt đó được giữ nguyên.",
         explanationIncorrect: "Trải phẳng chỉ thay đổi góc nhị diện giữa hai mặt phẳng, kích thước từng mặt không hề biến dạng.",
         socraticHint: "Khi em giở một trang sách phẳng ra bàn, chữ và hình trên trang sách có bị méo không?",
       },
@@ -990,7 +990,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     order: 1,
     code: "BÀI 1",
     title: "Góc lượng giác, Chiều quay & Điểm biểu diễn",
-    subtitle: "Nhiệm vụ LG-MH01: Khảo sát góc âm và góc nhiều vòng $\\alpha=-765^\\circ$",
+    subtitle: "Khảo sát góc âm và góc nhiều vòng $\\alpha=-765^\\circ$",
     grade: 11,
     estimatedMinutes: 18,
     xpReward: 60,
@@ -1080,7 +1080,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     order: 2,
     code: "BÀI 2",
     title: "Giá trị lượng giác & Xét dấu trên 4 góc phần tư",
-    subtitle: "Nhiệm vụ LG-MH02: $\\sin$ (tung độ), $\\cos$ (hoành độ), $\\tan$, $\\cot$ và điểm trên trục",
+    subtitle: "Liên hệ các giá trị lượng giác với tọa độ điểm trên đường tròn đơn vị",
     grade: 11,
     estimatedMinutes: 20,
     xpReward: 70,
@@ -1104,9 +1104,9 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
       ],
       notes: [
         "Quy tắc xét dấu: Góc phần tư I (Tất cả dương); Góc phần tư II (Chỉ Sin dương); Góc phần tư III (Chỉ Tan/Cot dương); Góc phần tư IV (Chỉ Cos dương).",
-        "Lỗi E06: Quên rằng $\\tan 90^\\circ$ ($\\\pi/2$) không xác định vì mẫu số $\\cos 90^\\circ = 0$.",
+        "$\\tan 90^\\circ$ không xác định vì $\\cos 90^\\circ = 0$; tương ứng, $\\tan \\frac{\\pi}{2}$ cũng không xác định.",
       ],
-      miniTip: "Mẹo nhớ câu thần chú xét dấu: 'Nhất CẢ, Nhì SIN, Tam TAN, Tứ COS'!",
+      miniTip: "Có thể nhớ dấu theo góc phần tư: góc I các giá trị đều dương; góc II sin dương; góc III tan và cot dương; góc IV cos dương.",
     },
     workedExample: {
       problemStatement: "Tính các giá trị lượng giác của góc $\\alpha = -765^\\circ$.",
@@ -1140,10 +1140,10 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         id: "cp-trig2-1",
         question: "Ở góc phần tư thứ II, giá trị lượng giác nào mang dấu DƯƠNG?",
         options: [
-          { id: "A", text: "Chỉ có cos", isCorrect: false },
-          { id: "B", text: "Chỉ có sin", isCorrect: true },
-          { id: "C", text: "Cả sin và cos", isCorrect: false },
-          { id: "D", text: "Chỉ có tan", isCorrect: false },
+          { id: "A", text: "Chỉ có $\\cos \\alpha$", isCorrect: false },
+          { id: "B", text: "Chỉ có $\\sin \\alpha$", isCorrect: true },
+          { id: "C", text: "Cả $\\sin \\alpha$ và $\\cos \\alpha$", isCorrect: false },
+          { id: "D", text: "Chỉ có $\\tan \\alpha$", isCorrect: false },
         ],
         explanationCorrect: "Chính xác! Thần chú 'Nhì SIN': Ở góc phần tư II, tung độ $y > 0$ nên $\\sin > 0$, còn hoành độ $x < 0$ nên $\\cos < 0$.",
         explanationIncorrect: "Góc phần tư II nằm ở phía trên bên trái: tung độ dương, hoành độ âm.",
@@ -1179,14 +1179,14 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     order: 3,
     code: "BÀI 3",
     title: "Cung liên kết & Hệ thống công thức lượng giác",
-    subtitle: "Nhiệm vụ LG-MH03: Đối xứng, cung đối, bù, phụ, công thức nhân đôi và tích $\\leftrightarrow$ tổng",
+    subtitle: "Tìm hiểu cung liên kết, công thức cộng và công thức nhân đôi",
     grade: 11,
     estimatedMinutes: 22,
     xpReward: 80,
     objectives: [
       "Hiểu bản chất hình học của các cung liên kết: Cung đối (đối xứng qua Ox), cung bù (đối xứng qua Oy), cung phụ (đối xứng qua đường $y=x$).",
       "Ghi nhớ và áp dụng chính xác các công thức cộng, công thức nhân đôi $\\sin(2\\alpha), \\cos(2\\alpha)$.",
-      "Tránh bẫy sai lầm phổ biến E08: Tự tiện phân phối $\\sin(a+b) = \\sin a + \\sin b$.",
+      "Nhận biết rằng không thể tách $\\sin(a+b)$ thành tổng $\\sin a + \\sin b$.",
     ],
     theory: {
       coreConcept:
@@ -1202,7 +1202,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         },
       ],
       notes: [
-        "Lỗi E08: Ngộ nhận $\\sin(a+b) = \\sin a + \\sin b$ hoặc $\\cos(2\\alpha) = 2\\cos \\alpha$. Lượng giác KHÔNG CÓ tính chất phân phối!",
+        "Không được nhầm $\\sin(a+b)$ với $\\sin a + \\sin b$, hoặc $\\cos(2\\alpha)$ với $2\\cos \\alpha$. Hãy dùng đúng công thức cộng và công thức nhân đôi.",
       ],
       miniTip: "Mẹo nhớ câu thơ cung liên kết: 'Cos đối, Sin bù, Phụ chéo, Hơn kém pi Tang'!",
     },
@@ -1232,9 +1232,9 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         question: "Biểu thức $\\sin(a + b) = \\sin a + \\sin b$ là Đúng hay Sai?",
         options: [
           { id: "A", text: "Đúng theo tính chất phân phối", isCorrect: false },
-          { id: "B", text: "Sai hoàn toàn, vì sin là hàm số phi tuyến, công thức đúng phải là sin a cos b + cos a sin b", isCorrect: true },
+          { id: "B", text: "Sai. Công thức đúng là $\\sin(a+b)=\\sin a\\cos b+\\cos a\\sin b$.", isCorrect: true },
         ],
-        explanationCorrect: "Chính xác! Lỗi E08 là một trong những lỗi kinh điển nhất của học sinh lớp 11 khi xem hàm lượng giác như phép nhân số học.",
+        explanationCorrect: "Chính xác! Sin không có tính chất phân phối qua phép cộng góc; cần dùng công thức cộng đã học.",
         explanationIncorrect: "Hàm lượng giác không thể nhân phân phối như đại số thông thường.",
         socraticHint: "Thử với $a = 90^\\circ, b = 90^\\circ$: $\\sin(180^\\circ) = 0$, nhưng $\\sin 90^\\circ + \\sin 90^\\circ = 1 + 1 = 2$!",
       },
@@ -1244,9 +1244,9 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         id: "rq-trig3-1",
         question: "Rút gọn biểu thức $\\cos(\\pi - \\alpha)$ theo quy tắc cung liên kết:",
         options: [
-          { id: "A", text: "cos alpha", isCorrect: false },
-          { id: "B", text: "-cos alpha", isCorrect: true },
-          { id: "C", text: "sin alpha", isCorrect: false },
+          { id: "A", text: "$\\cos \\alpha$", isCorrect: false },
+          { id: "B", text: "$-\\cos \\alpha$", isCorrect: true },
+          { id: "C", text: "$\\sin \\alpha$", isCorrect: false },
         ],
         explanationCorrect: "Rất chuẩn! 'Sin bù': Hai góc bù nhau có Sin bằng nhau, còn Cos mang dấu đối nhau.",
         explanationIncorrect: "Chỉ có Sin của hai góc bù nhau mới bằng nhau; Cosin mang dấu âm.",
@@ -1268,7 +1268,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     order: 4,
     code: "BÀI 4",
     title: "Liên kết Đường tròn đơn vị với Đồ thị hàm số & Chu kỳ",
-    subtitle: "Nhiệm vụ LG-MH04: Hoành độ tích lũy, chu kỳ $T=2\\pi$ và hình thành sóng",
+    subtitle: "Tìm hiểu hoành độ, chu kỳ $T=2\\pi$ và cách đồ thị hàm số được hình thành",
     grade: 11,
     estimatedMinutes: 22,
     xpReward: 80,
@@ -1284,7 +1284,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         {
           formula: "T = \\frac{2\\pi}{|b|}",
           meaning: "Chu kỳ tuần hoàn của hàm số y = a sin(bx + c) + d",
-          conditions: "b \\ne 0",
+          conditions: "$b \\ne 0$",
         },
         {
           formula: "y \\in [d - |a|; \\, d + |a|]",
@@ -1293,7 +1293,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
       ],
       notes: [
         "Hoành độ trên đồ thị là góc quay tích lũy (không reset về 0 sau mỗi vòng quay).",
-        "Lỗi E12: Nhầm lẫn giữa chu kỳ $T = 2\\pi$ của sin/cos với chu kỳ $T = \\pi$ của tan/cot.",
+        "Sin và cos có chu kỳ cơ bản $2\\pi$; tan và cot có chu kỳ cơ bản $\\pi$.",
       ],
       miniTip: "Quay tròn tạo nên đồ thị sóng: sin và cos lặp lại sau $2\\pi$, còn tan và cot lặp lại sau $\\pi$.",
     },
@@ -1320,11 +1320,11 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     checkpoints: [
       {
         id: "cp-trig4-1",
-        question: "Chu kỳ tuần hoàn của hàm số y = cos(x) là bao nhiêu?",
+        question: "Chu kỳ của hàm số $y = \\cos x$ là bao nhiêu?",
         options: [
-          { id: "A", text: "pi", isCorrect: false },
-          { id: "B", text: "2 pi", isCorrect: true },
-          { id: "C", text: "4 pi", isCorrect: false },
+          { id: "A", text: "$\\pi$", isCorrect: false },
+          { id: "B", text: "$2\\pi$", isCorrect: true },
+          { id: "C", text: "$4\\pi$", isCorrect: false },
         ],
         explanationCorrect: "Chính xác! Cứ sau đúng một vòng quay $2\\pi$, giá trị cosin lặp lại như cũ.",
         explanationIncorrect: "Hàm số sin và cos có chu kỳ cơ bản là $2\\pi$.",
@@ -1336,9 +1336,9 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         id: "rq-trig4-1",
         question: "Khoảng cách giữa hai đỉnh sóng cao nhất liên tiếp của đồ thị $y = \\sin x$ bằng bao nhiêu?",
         options: [
-          { id: "A", text: "pi", isCorrect: false },
-          { id: "B", text: "2 pi", isCorrect: true },
-          { id: "C", text: "pi / 2", isCorrect: false },
+          { id: "A", text: "$\\pi$", isCorrect: false },
+          { id: "B", text: "$2\\pi$", isCorrect: true },
+          { id: "C", text: "$\\frac{\\pi}{2}$", isCorrect: false },
         ],
         explanationCorrect: "Rất chuẩn! Khoảng cách giữa hai đỉnh lặp lại chính là một chu kỳ sóng $T = 2\\pi$.",
         explanationIncorrect: "Hai đỉnh cao nhất lặp lại sau đúng một chu kỳ tuần hoàn.",
@@ -1360,7 +1360,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     order: 5,
     code: "BÀI 5",
     title: "Phương trình lượng giác cơ bản & Lọc nghiệm trong khoảng",
-    subtitle: "Nhiệm vụ LG-MH05: Giải $\\sin x=-\\frac{\\sqrt2}{2}$ trên khoảng $[-\\pi;\\pi]$",
+    subtitle: "Giải phương trình $\\sin x=-\\frac{\\sqrt2}{2}$ trên đoạn $[-\\pi;\\pi]$",
     grade: 11,
     estimatedMinutes: 24,
     xpReward: 90,
@@ -1384,37 +1384,37 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
       ],
       notes: [
         "Nếu $|m| > 1$, phương trình $\\sin x = m$ hoặc $\\cos x = m$ VÔ NGHIỆM ngay lập tức.",
-        "Lỗi E15: Quên họ nghiệm thứ hai ($x = \\pi - \\alpha + k2\\pi$ với Sin hoặc họ dấu trừ với Cos).",
-        "Lỗi E16: Nhầm lẫn điều kiện đầu mút khi đề bài yêu cầu khoảng mở $(a; b)$ hay đoạn đóng $[a; b]$.",
+        "Với phương trình $\\sin x = \\sin \\alpha$, cần xét cả hai họ nghiệm $x = \\alpha + 2k\\pi$ và $x = \\pi - \\alpha + 2k\\pi$.",
+        "Khi tìm nghiệm trên khoảng hoặc đoạn, cần kiểm tra đúng việc có lấy đầu mút hay không.",
       ],
       miniTip: "Mẹo nhớ: 'Sin thì một nghiệm, một bù; Cos thì cộng trừ đối xứng nhau!'",
     },
     workedExample: {
-      problemStatement: "Giải phương trình $\\sin x = -\\frac{\\sqrt{2}}{2}$ và tìm tất cả các nghiệm thuộc khoảng $[-\\pi; \\pi]$.",
+      problemStatement: "Giải phương trình $\\sin x = -\\frac{\\sqrt{2}}{2}$ và tìm tất cả các nghiệm thuộc đoạn $[-\\pi; \\pi]$.",
       steps: [
         {
           stepNumber: 1,
           title: "Xác định họ nghiệm tổng quát",
           mathExpression: "\\sin x = \\sin\\left(-\\frac{\\pi}{4}\\right) \\iff \\begin{cases} x = -\\frac{\\pi}{4} + k2\\pi \\\\ x = \\pi - \\left(-\\frac{\\pi}{4}\\right) + k2\\pi = \\frac{5\\pi}{4} + k2\\pi \\end{cases}",
           explanation: "Phương trình có 2 họ nghiệm tương ứng với hai điểm cắt trên đường tròn lượng giác.",
-          rationale: "Công thức nghiệm chuẩn SGK GDPT 2018.",
+          rationale: "Áp dụng công thức nghiệm của phương trình $\\sin x = \\sin \\alpha$.",
         },
         {
           stepNumber: 2,
-          title: "Lọc nghiệm trong đoạn [-pi; pi] cho họ nghiệm 1",
+          title: "Lọc nghiệm trong đoạn $[-\\pi; \\pi]$ cho họ nghiệm thứ nhất",
           mathExpression: "-\\pi \\le -\\frac{\\pi}{4} + k2\\pi \\le \\pi \\iff -\\frac{3}{4} \\le 2k \\le \\frac{5}{4} \\iff -0{,}375 \\le k \\le 0{,}625 \\implies k = 0",
           explanation: "Vì $k \\in \\mathbb{Z}$, ta chọn được nghiệm duy nhất $x_1 = -\\frac{\\pi}{4}$.",
           rationale: "Giải bất phương trình kép tìm số nguyên k.",
         },
         {
           stepNumber: 3,
-          title: "Lọc nghiệm trong đoạn [-pi; pi] cho họ nghiệm 2",
+          title: "Lọc nghiệm trong đoạn $[-\\pi; \\pi]$ cho họ nghiệm thứ hai",
           mathExpression: "-\\pi \\le \\frac{5\\pi}{4} + k2\\pi \\le \\pi \\iff -\\frac{9}{4} \\le 2k \\le -\\frac{1}{4} \\implies k = -1 \\implies x_2 = \\frac{5\\pi}{4} - 2\\pi = -\\frac{3\\pi}{4}",
           explanation: "Với $k = -1$, ta thu được nghiệm thứ hai $x_2 = -\\frac{3\\pi}{4}$.",
           rationale: "Kiểm tra đầy đủ cả hai họ nghiệm để không sót nghiệm.",
         },
       ],
-      conclusion: "Phương trình có đúng hai nghiệm trong đoạn [-pi; pi] là x1 = -pi/4 và x2 = -3pi/4.",
+      conclusion: "Phương trình có đúng hai nghiệm trong đoạn $[-\\pi; \\pi]$ là $x_1=-\\frac{\\pi}{4}$ và $x_2=-\\frac{3\\pi}{4}$.",
     },
     checkpoints: [
       {
@@ -1423,7 +1423,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         options: [
           { id: "A", text: "Vô số nghiệm", isCorrect: false },
           { id: "B", text: "2 nghiệm", isCorrect: false },
-          { id: "C", text: "0 nghiệm (Vô nghiệm vì 1,5 > 1)", isCorrect: true },
+          { id: "C", text: "Vô nghiệm vì $1{,}5 > 1$", isCorrect: true },
         ],
         explanationCorrect: "Chính xác! Hàm cosin chỉ nhận giá trị trong đoạn $[-1; 1]$. Giá trị 1,5 vượt ra ngoài bán kính đường tròn đơn vị.",
         explanationIncorrect: "$-1 \\le \\cos x \\le 1$. Không góc nào có cosin bằng 1,5.",
@@ -1433,9 +1433,9 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
     reviewQuiz: [
       {
         id: "rq-trig5-1",
-        question: "Góc ban đầu $-765^\\circ$ có phải là một nghiệm của phương trình $\\sin x = -\\frac{\\sqrt{2}}{2}$ không?",
+        question: "Góc $-765^\\circ$ có phải là một nghiệm của phương trình $\\sin x = -\\frac{\\sqrt{2}}{2}$ không?",
         options: [
-          { id: "A", text: "Có, vì sin(-765 độ) = -sqrt(2)/2 (ứng với k = -1 ở họ nghiệm 1)", isCorrect: true },
+          { id: "A", text: "Có, vì $\\sin(-765^\\circ)=-\\frac{\\sqrt{2}}{2}$ (ứng với $k=-2$ ở họ nghiệm thứ nhất).", isCorrect: true },
           { id: "B", text: "Không, vì số đo góc quá lớn", isCorrect: false },
         ],
         explanationCorrect: "Rất xuất sắc! $-765^\\circ = -45^\\circ - 720^\\circ = -\\frac{\\pi}{4} - 2 \\times 2\\pi$ chính là nghiệm tổng quát với $k = -2$.",

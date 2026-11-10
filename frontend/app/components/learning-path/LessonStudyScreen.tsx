@@ -97,7 +97,7 @@ export function LessonStudyScreen({
   const [aiMessages, setAiMessages] = useState<Array<{ role: "user" | "assistant"; text: string }>>([
     {
       role: "assistant",
-      text: `Chào em! Thầy là **Trợ lý Socratic Opti**. Thầy đang cùng em học **${content.code}: ${content.title}**.\n\nNếu em gặp khó khăn ở công thức nào hay cần gợi ý giải bài tập tự luyện, hãy nhắn cho thầy nhé! Thầy sẽ đặt câu hỏi gợi mở để giúp em tự khám phá câu trả lời.`,
+      text: `Chào em! Thầy là **trợ lý học tập Opti**. Thầy đang cùng em học **${content.code}: ${content.title}**.\n\nNếu em gặp khó khăn ở công thức nào hay cần gợi ý giải bài tập, hãy nhắn cho thầy nhé. Thầy sẽ gợi ý từng bước để em tự tìm ra câu trả lời.`,
     },
   ]);
   const [aiInput, setAiInput] = useState<string>("");
@@ -336,16 +336,16 @@ export function LessonStudyScreen({
               <span className="hidden md:inline">Mở mô phỏng</span>
             </button>
 
-            {/* Nút Kích hoạt Trợ lý Socratic AI */}
+            {/* Nút mở trợ lý học tập */}
             <button
               type="button"
               onClick={() => setAiDrawerOpen((prev) => !prev)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 border border-purple-300 text-purple-800 text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
-              title="Hỏi trợ lý Socratic Opti"
+              title="Hỏi trợ lý học tập Opti"
             >
               <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-              <span className="hidden sm:inline">Hỏi Socratic AI</span>
-              <span className="sm:hidden">AI</span>
+              <span className="hidden sm:inline">Hỏi Opti</span>
+              <span className="sm:hidden">Opti</span>
             </button>
           </div>
         </div>
@@ -677,7 +677,7 @@ export function LessonStudyScreen({
                         className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 cursor-pointer"
                       >
                         <HelpCircle className="w-3.5 h-3.5" />
-                        <span>{showHint ? "Ẩn gợi ý" : "Cần gợi ý Socratic?"}</span>
+                        <span>{showHint ? "Ẩn gợi ý" : "Cần gợi ý từng bước?"}</span>
                       </button>
                     </div>
 
@@ -809,11 +809,6 @@ export function LessonStudyScreen({
                         ) : (
                           <>
                             <strong>Chưa đúng:</strong> <MathFormattedText text={q.explanationIncorrect} />
-                            {q.errorTag && (
-                              <span className="ml-2 font-mono text-[10px] px-1.5 py-0.5 rounded bg-rose-200/80 text-rose-900">
-                                Mã lỗi: {q.errorTag}
-                              </span>
-                            )}
                           </>
                         )}
                       </div>
@@ -945,7 +940,7 @@ export function LessonStudyScreen({
                 <OptiMascot expression="happy" size={24} animate={false} />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-white">Trợ lý Socratic Opti</h4>
+                <h4 className="text-xs font-bold text-white">Trợ lý học tập Opti</h4>
                 <p className="text-[10px] text-slate-300">Hỗ trợ bài: {content.code}</p>
               </div>
             </div>
