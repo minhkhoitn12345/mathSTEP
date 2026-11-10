@@ -25,16 +25,20 @@ import { getLessonDetailedContent } from "./data/learningPathData";
 import { UserLearningProgress } from "./types/learningPath";
 import { Sparkles, Mail, Lock, User, AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
 
-const SingleInequalityLab = dynamic(() => import("./components/optimath/SingleInequalityLab").then(m => m.SingleInequalityLab));
-const SystemInequalityLab = dynamic(() => import("./components/optimath/SystemInequalityLab/SystemInequalityLab").then(m => m.SystemInequalityLab));
-const OptimizationLab = dynamic(() => import("./components/optimath/OptimizationLab/OptimizationLab").then(m => m.OptimizationLab));
-const PracticeLab = dynamic(() => import("./components/optimath/PracticeLab/PracticeLab").then(m => m.PracticeLab));
-const SpatialGeometryLab = dynamic(() => import("./components/spatial-geometry/SpatialGeometryLab").then(m => m.SpatialGeometryLab));
-const TrigonometryLab = dynamic(() => import("./components/trigonometry/TrigonometryLab").then(m => m.TrigonometryLab));
+const viewLoading = {
+  loading: () => <div role="status" className="mx-auto my-12 max-w-xl rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm font-semibold text-slate-600 shadow-sm">Đang mở nội dung học tập…</div>,
+};
+
+const SingleInequalityLab = dynamic(() => import("./components/optimath/SingleInequalityLab").then(m => m.SingleInequalityLab), viewLoading);
+const SystemInequalityLab = dynamic(() => import("./components/optimath/SystemInequalityLab/SystemInequalityLab").then(m => m.SystemInequalityLab), viewLoading);
+const OptimizationLab = dynamic(() => import("./components/optimath/OptimizationLab/OptimizationLab").then(m => m.OptimizationLab), viewLoading);
+const PracticeLab = dynamic(() => import("./components/optimath/PracticeLab/PracticeLab").then(m => m.PracticeLab), viewLoading);
+const SpatialGeometryLab = dynamic(() => import("./components/spatial-geometry/SpatialGeometryLab").then(m => m.SpatialGeometryLab), viewLoading);
+const TrigonometryLab = dynamic(() => import("./components/trigonometry/TrigonometryLab").then(m => m.TrigonometryLab), viewLoading);
 const KnowledgeBaseModal = dynamic(() => import("./components/optimath/KnowledgeBaseModal").then(m => m.KnowledgeBaseModal));
 const TeacherGuideModal = dynamic(() => import("./components/optimath/TeacherGuideModal").then(m => m.TeacherGuideModal));
-const LearningPathRoadmap = dynamic(() => import("./components/learning-path/LearningPathRoadmap").then(m => m.LearningPathRoadmap));
-const LessonStudyScreen = dynamic(() => import("./components/learning-path/LessonStudyScreen").then(m => m.LessonStudyScreen));
+const LearningPathRoadmap = dynamic(() => import("./components/learning-path/LearningPathRoadmap").then(m => m.LearningPathRoadmap), viewLoading);
+const LessonStudyScreen = dynamic(() => import("./components/learning-path/LessonStudyScreen").then(m => m.LessonStudyScreen), viewLoading);
 
 type ActiveView =
   | "home"
