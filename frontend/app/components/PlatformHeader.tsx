@@ -309,7 +309,7 @@ export default function PlatformHeader({
                       </span>
                       <span className="text-[10px] text-slate-400 block truncate">
                         {customAiConfig?.model
-                          ? `Model: ${customAiConfig.model.replace("gemini-", "").replace("gpt-", "").replace("deepseek-", "")}`
+                          ? `Model: ${customAiConfig.model.replace("gemini-", "")}`
                           : "Cấu hình API Key & Model AI"}
                       </span>
                     </div>

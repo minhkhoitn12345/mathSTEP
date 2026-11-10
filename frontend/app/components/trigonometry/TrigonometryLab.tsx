@@ -2,7 +2,7 @@
 
 import { TRIG_GUIDED_INDICES, TRIG_GUIDED_STEPS } from "@/app/data/trigonometryLessons";
 
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useCallback } from "react";
 import { CORE_3_MODULES, LessonUnit } from "@/app/types/curriculum";
 import {
   Compass,
@@ -65,7 +65,7 @@ export function TrigonometryLab({
   const cY = cSvgH / 2;
   const cR = 115;
   const circleSvgRef = useRef<SVGSVGElement | null>(null);
-  const [isDraggingM, setIsDraggingM] = useState(false);
+  const draggingPointerId = useRef<number | null>(null);
 
   // Angle math & properties
   const angleRad = (angleDeg * Math.PI) / 180;
@@ -146,22 +146,32 @@ export function TrigonometryLab({
 
   // Drag handler for Point M on Unit Circle
   const handleCirclePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
-    setIsDraggingM(true);
+    draggingPointerId.current = e.pointerId;
+    e.currentTarget.setPointerCapture(e.pointerId);
     handleCirclePointerMove(e);
   };
 
   const handleCirclePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
-    if (!isDraggingM && e.buttons !== 1) return;
-    const rect = circleSvgRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const dx = e.clientX - rect.left - cX;
-    const dy = -(e.clientY - rect.top - cY);
+    if (draggingPointerId.current !== e.pointerId) return;
+    const svg = circleSvgRef.current;
+    const matrix = svg?.getScreenCTM();
+    if (!svg || !matrix) return;
+    const point = svg.createSVGPoint();
+    point.x = e.clientX;
+    point.y = e.clientY;
+    const local = point.matrixTransform(matrix.inverse());
+    const dx = local.x - cX;
+    const dy = cY - local.y;
     let deg = (Math.atan2(dy, dx) * 180) / Math.PI;
     if (deg < 0) deg += 360;
     setAngleDeg(Math.round(deg));
   };
 
-  const handleCirclePointerUp = () => setIsDraggingM(false);
+  const handleCirclePointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (draggingPointerId.current !== e.pointerId) return;
+    draggingPointerId.current = null;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+  };
 
   // Right SVG Dimensions: Dynamic Wave Curve
   const waveSvgW = 620;
@@ -175,7 +185,7 @@ export function TrigonometryLab({
   // For tan/cot, split paths at vertical asymptotes instead of joining across the jump.
   const graphXMin = -waveOriginX / waveScaleX;
   const graphXMax = (waveSvgW - 10 - waveOriginX) / waveScaleX;
-  const graphValue = (x: number) => {
+  const graphValue = useCallback((x: number) => {
     if (waveMode === "tan") return Math.tan(x);
     if (waveMode === "cot") return Math.cos(x) / Math.sin(x);
     if (guidedLessonIndex === 3) {
@@ -184,7 +194,7 @@ export function TrigonometryLab({
         : ampA * Math.cos(freqB * x + phaseC) + shiftD;
     }
     return waveMode === "sin" ? Math.sin(x) : Math.cos(x);
-  };
+  }, [waveMode, guidedLessonIndex, ampA, freqB, phaseC, shiftD]);
   const wavePaths = useMemo(() => {
     const paths: string[] = [];
     let current = "";
@@ -449,11 +459,11 @@ export function TrigonometryLab({
             <svg
               ref={circleSvgRef}
               viewBox={`0 0 ${cSvgW} ${cSvgH}`}
-              className="w-full max-w-[480px] h-auto cursor-crosshair"
+              className="w-full max-w-[480px] h-auto cursor-crosshair touch-none"
               onPointerDown={handleCirclePointerDown}
               onPointerMove={handleCirclePointerMove}
               onPointerUp={handleCirclePointerUp}
-              onPointerLeave={handleCirclePointerUp}
+              onPointerCancel={handleCirclePointerUp}
             >
               {/* Axes Ox and Oy */}
               <line x1="20" y1={cY} x2={cSvgW - 20} y2={cY} stroke="#CBD5E1" strokeWidth="1.5" />
