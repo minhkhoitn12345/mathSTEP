@@ -86,6 +86,9 @@ export async function POST(request: NextRequest) {
     if (contentLength > 16_000) return jsonError("REQUEST_TOO_LARGE", "Yêu cầu quá lớn.", 413);
     const body = await request.json().catch(() => null);
     const { prompt, custom_ai } = body || {};
+    if (custom_ai?.provider && custom_ai.provider !== "gemini") {
+      return jsonError("UNSUPPORTED_PROVIDER", "Chỉ hỗ trợ Google Gemini.", 400);
+    }
 
     if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
       return jsonError("MISSING_PROMPT", "Vui lòng nhập đề bài hình học không gian.", 400);
@@ -154,50 +157,6 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // B. OPENAI API
-      if (provider === "openai" || provider === "deepseek") {
-        const baseUrl =
-          provider === "deepseek"
-            ? "https://api.deepseek.com/chat/completions"
-            : "https://api.openai.com/v1/chat/completions";
-        const rawModel = typeof custom_ai.model === "string" ? custom_ai.model : "gpt-4o-mini";
-        const model = rawModel.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 64) || "gpt-4o-mini";
-        const openaiRes = await fetch(baseUrl, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model,
-            messages: [
-              { role: "system", content: GEOMETRY_PARSER_SYSTEM_PROMPT },
-              {
-                role: "user",
-                content: `Đề bài toán hình học không gian:\n"${trimmedPrompt}"\n\nHãy phân tích và trích xuất đúng Geometry JSON Schema:`,
-              },
-            ],
-            response_format: { type: "json_object" },
-            temperature: 0.1,
-            max_tokens: 1500,
-          }),
-          signal: AbortSignal.timeout(35000),
-        });
-
-        if (openaiRes.ok) {
-          const openAiData = await openaiRes.json();
-          const rawText = openAiData.choices?.[0]?.message?.content;
-          const parsed = extractJsonFromText(rawText);
-          if (parsed) {
-            return NextResponse.json({
-              ok: true,
-              solid: parsed,
-              source: `custom_${provider}`,
-              modelUsed: model,
-            }, { headers: { "Cache-Control": "no-store" } });
-          }
-        }
-      }
     }
 
     // 2. FALLBACK THÔNG MINH (KEY DỰ ÁN HOẶC HEURISTIC TEMPLATE MATCHER)

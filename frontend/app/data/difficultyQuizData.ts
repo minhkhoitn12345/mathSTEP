@@ -352,6 +352,161 @@ const S: Record<string, LessonSeeds> = {
   },
 };
 
+// The original five-lesson quiz predates the thirteen-topic catalog. Replace
+// LG02–LG05 so that each assessment matches the theory the learner just read.
+const alignedEarlyTrigSeeds: Record<string, LessonSeeds> = {
+  "trig-lesson-2": {
+    basic: [
+      ["Trên đường tròn đơn vị, hoành độ của điểm biểu diễn $\\alpha$ là gì?", "$\\cos\\alpha$", ["$\\sin\\alpha$", "$\\tan\\alpha$", "$\\cot\\alpha$"]],
+      ["Trên đường tròn đơn vị, tung độ của điểm biểu diễn $\\alpha$ là gì?", "$\\sin\\alpha$", ["$\\cos\\alpha$", "$\\tan\\alpha$", "$1$"]],
+      ["Tại $\\alpha=0$, giá trị $\\cos\\alpha$ là gì?", "$1$", ["$0$", "$-1$", "Không xác định"]],
+      ["Tại $\\alpha=\\pi/2$, giá trị $\\sin\\alpha$ là gì?", "$1$", ["$0$", "$-1$", "Không xác định"]],
+      ["Điểm nằm trên trục tọa độ có thuộc góc phần tư nào không?", "Không thuộc góc phần tư nào", ["Góc phần tư I", "Góc phần tư II", "Cả bốn góc phần tư"]],
+    ],
+    intermediate: [
+      ["Tại $\\alpha=\\pi/2$, $\\tan\\alpha$ bằng gì?", "Không xác định", ["$0$", "$1$", "$-1$"]],
+      ["Tại $\\alpha=0$, $\\cot\\alpha$ bằng gì?", "Không xác định", ["$0$", "$1$", "$-1$"]],
+      ["Ở góc phần tư II, dấu của sin và cos lần lượt là gì?", "Sin dương, cos âm", ["Cả hai dương", "Sin âm, cos dương", "Cả hai âm"]],
+      ["Ở góc phần tư III, dấu của tan là gì?", "Dương", ["Âm", "Bằng $0$", "Không xác định với mọi góc"]],
+      ["Nếu $M(-3/5;4/5)$ trên đường tròn đơn vị, $\\sin\\alpha$ bằng gì?", "$4/5$", ["$-3/5$", "$3/5$", "$-4/5$"]],
+    ],
+    advanced: [
+      ["Nếu $\\cos\\alpha=3/5$ và $\\sin\\alpha=4/5$, $\\tan\\alpha$ bằng gì?", "$4/3$", ["$3/4$", "$7/5$", "$1$"]],
+      ["Nếu $M(-5/13;-12/13)$, $\\cot\\alpha$ bằng gì?", "$5/12$", ["$12/5$", "$-5/12$", "$-12/5$"]],
+      ["Điều kiện xác định của $\\tan\\alpha$ là gì?", "$\\cos\\alpha\\ne0$", ["$\\sin\\alpha\\ne0$", "$\\cos\\alpha=0$", "Mọi $\\alpha$ đều xác định"]],
+      ["Điều kiện xác định của $\\cot\\alpha$ là gì?", "$\\sin\\alpha\\ne0$", ["$\\cos\\alpha\\ne0$", "$\\sin\\alpha=0$", "Mọi $\\alpha$ đều xác định"]],
+      ["Nếu điểm biểu diễn là $(0;-1)$, $\\cot\\alpha$ bằng gì?", "$0$", ["$1$", "$-1$", "Không xác định"]],
+    ],
+  },
+  "trig-lesson-3": {
+    basic: [
+      ["Giá trị $\\sin30^\\circ$ là gì?", "$1/2$", ["$\\sqrt3/2$", "$\\sqrt2/2$", "$1$"]],
+      ["Giá trị $\\cos60^\\circ$ là gì?", "$1/2$", ["$\\sqrt3/2$", "$\\sqrt2/2$", "$0$"]],
+      ["Giá trị $\\sin45^\\circ$ là gì?", "$\\sqrt2/2$", ["$1/2$", "$\\sqrt3/2$", "$1$"]],
+      ["Giá trị $\\tan45^\\circ$ là gì?", "$1$", ["$0$", "$\\sqrt3$", "$1/\\sqrt3$"]],
+      ["Tam giác vuông cân giúp suy ra các giá trị tại góc nào?", "$45^\\circ$", ["$30^\\circ$", "$60^\\circ$", "$90^\\circ$"]],
+    ],
+    intermediate: [
+      ["Giá trị $\\cos30^\\circ$ là gì?", "$\\sqrt3/2$", ["$1/2$", "$\\sqrt2/2$", "$1$"]],
+      ["Giá trị $\\sin60^\\circ$ là gì?", "$\\sqrt3/2$", ["$1/2$", "$\\sqrt2/2$", "$0$"]],
+      ["Giá trị $\\tan30^\\circ$ là gì?", "$\\sqrt3/3$", ["$\\sqrt3$", "$1$", "$1/2$"]],
+      ["Giá trị $\\tan60^\\circ$ là gì?", "$\\sqrt3$", ["$\\sqrt3/3$", "$1$", "$2$"]],
+      ["Nửa tam giác đều giúp suy ra trực tiếp góc nào?", "$30^\\circ$ và $60^\\circ$", ["$45^\\circ$", "$0^\\circ$ và $90^\\circ$", "$15^\\circ$ và $75^\\circ$"]],
+    ],
+    advanced: [
+      ["Tính $\\sin30^\\circ+\\cos60^\\circ$.", "$1$", ["$0$", "$\\sqrt3$", "$2$"]],
+      ["Tính $\\sin45^\\circ\\cos45^\\circ$.", "$1/2$", ["$1$", "$\\sqrt2/2$", "$1/4$"]],
+      ["Tính $\\tan60^\\circ\\tan30^\\circ$.", "$1$", ["$3$", "$\\sqrt3$", "$1/3$"]],
+      ["Tính $\\sin^230^\\circ+\\cos^230^\\circ$.", "$1$", ["$1/2$", "$3/4$", "$2$"]],
+      ["Tính $\\cos45^\\circ/\\sin45^\\circ$.", "$1$", ["$0$", "$\\sqrt2$", "$1/2$"]],
+    ],
+  },
+  "trig-lesson-4": {
+    basic: [
+      ["$\\cos(-\\alpha)$ bằng gì?", "$\\cos\\alpha$", ["$-\\cos\\alpha$", "$\\sin\\alpha$", "$-\\sin\\alpha$"]],
+      ["$\\sin(-\\alpha)$ bằng gì?", "$-\\sin\\alpha$", ["$\\sin\\alpha$", "$\\cos\\alpha$", "$-\\cos\\alpha$"]],
+      ["$\\sin(\\pi-\\alpha)$ bằng gì?", "$\\sin\\alpha$", ["$-\\sin\\alpha$", "$\\cos\\alpha$", "$-\\cos\\alpha$"]],
+      ["$\\cos(\\pi-\\alpha)$ bằng gì?", "$-\\cos\\alpha$", ["$\\cos\\alpha$", "$\\sin\\alpha$", "$-\\sin\\alpha$"]],
+      ["$\\sin(\\pi+\\alpha)$ bằng gì?", "$-\\sin\\alpha$", ["$\\sin\\alpha$", "$\\cos\\alpha$", "$-\\cos\\alpha$"]],
+    ],
+    intermediate: [
+      ["$\\cos(\\pi+\\alpha)$ bằng gì?", "$-\\cos\\alpha$", ["$\\cos\\alpha$", "$\\sin\\alpha$", "$-\\sin\\alpha$"]],
+      ["$\\sin(\\pi/2-\\alpha)$ bằng gì?", "$\\cos\\alpha$", ["$-\\cos\\alpha$", "$\\sin\\alpha$", "$-\\sin\\alpha$"]],
+      ["$\\cos(\\pi/2-\\alpha)$ bằng gì?", "$\\sin\\alpha$", ["$-\\sin\\alpha$", "$\\cos\\alpha$", "$-\\cos\\alpha$"]],
+      ["$\\sin(\\pi/2+\\alpha)$ bằng gì?", "$\\cos\\alpha$", ["$-\\cos\\alpha$", "$\\sin\\alpha$", "$-\\sin\\alpha$"]],
+      ["$\\cos(\\pi/2+\\alpha)$ bằng gì?", "$-\\sin\\alpha$", ["$\\sin\\alpha$", "$\\cos\\alpha$", "$-\\cos\\alpha$"]],
+    ],
+    advanced: [
+      ["Tính $\\sin150^\\circ$ từ góc $30^\\circ$.", "$1/2$", ["$-1/2$", "$\\sqrt3/2$", "$-\\sqrt3/2$"]],
+      ["Tính $\\cos150^\\circ$ từ góc $30^\\circ$.", "$-\\sqrt3/2$", ["$\\sqrt3/2$", "$-1/2$", "$1/2$"]],
+      ["Tính $\\sin210^\\circ$ từ góc $30^\\circ$.", "$-1/2$", ["$1/2$", "$-\\sqrt3/2$", "$\\sqrt3/2$"]],
+      ["Tính $\\cos330^\\circ$ từ góc $30^\\circ$.", "$\\sqrt3/2$", ["$-\\sqrt3/2$", "$1/2$", "$-1/2$"]],
+      ["Tính $\\sin330^\\circ$ từ góc $30^\\circ$.", "$-1/2$", ["$1/2$", "$-\\sqrt3/2$", "$\\sqrt3/2$"]],
+    ],
+  },
+  "trig-lesson-5": {
+    basic: [
+      ["$\\sin(a+b)$ bằng gì?", "$\\sin a\\cos b+\\cos a\\sin b$", ["$\\sin a+\\sin b$", "$\\sin a\\sin b+\\cos a\\cos b$", "$\\sin a\\cos b-\\cos a\\sin b$"]],
+      ["$\\cos(a+b)$ bằng gì?", "$\\cos a\\cos b-\\sin a\\sin b$", ["$\\cos a+\\cos b$", "$\\cos a\\cos b+\\sin a\\sin b$", "$\\sin a\\cos b+\\cos a\\sin b$"]],
+      ["$\\sin2a$ bằng gì?", "$2\\sin a\\cos a$", ["$2\\sin a$", "$\\sin^2a+\\cos^2a$", "$\\cos^2a-\\sin^2a$"]],
+      ["$\\cos2a$ bằng gì?", "$\\cos^2a-\\sin^2a$", ["$2\\sin a\\cos a$", "$\\sin^2a+\\cos^2a$", "$2\\cos a$"]],
+      ["$\\cos(a-b)$ bằng gì?", "$\\cos a\\cos b+\\sin a\\sin b$", ["$\\cos a\\cos b-\\sin a\\sin b$", "$\\cos a-\\cos b$", "$\\sin a\\cos b+\\cos a\\sin b$"]],
+    ],
+    intermediate: [
+      ["Tính $\\sin75^\\circ$ bằng công thức cộng.", "$(\\sqrt6+\\sqrt2)/4$", ["$(\\sqrt6-\\sqrt2)/4$", "$1/2$", "$\\sqrt2/2$"]],
+      ["Tính $\\cos75^\\circ$ bằng công thức cộng.", "$(\\sqrt6-\\sqrt2)/4$", ["$(\\sqrt6+\\sqrt2)/4$", "$1/2$", "$\\sqrt3/2$"]],
+      ["Nếu $\\sin a=3/5$ và $\\cos a=4/5$, $\\sin2a$ bằng gì?", "$24/25$", ["$12/25$", "$7/25$", "$-24/25$"]],
+      ["Nếu $\\sin a=3/5$ và $\\cos a=4/5$, $\\cos2a$ bằng gì?", "$7/25$", ["$24/25$", "$-7/25$", "$1$"]],
+      ["$\\sin^2a$ viết theo $\\cos2a$ là gì?", "$(1-\\cos2a)/2$", ["$(1+\\cos2a)/2$", "$1-\\cos2a$", "$2(1-\\cos2a)$"]],
+    ],
+    advanced: [
+      ["Tính $\\cos15^\\circ$ bằng $45^\\circ-30^\\circ$.", "$(\\sqrt6+\\sqrt2)/4$", ["$(\\sqrt6-\\sqrt2)/4$", "$1/2$", "$\\sqrt3/2$"]],
+      ["Tính $\\sin15^\\circ$ bằng $45^\\circ-30^\\circ$.", "$(\\sqrt6-\\sqrt2)/4$", ["$(\\sqrt6+\\sqrt2)/4$", "$1/2$", "$\\sqrt2/2$"]],
+      ["Nếu $\\sin a=3/5$ và $\\cos a=4/5$, $\\cos2a$ bằng gì?", "$7/25$", ["$24/25$", "$-7/25$", "$1$"]],
+      ["$\\cos^2a$ viết theo $\\cos2a$ là gì?", "$(1+\\cos2a)/2$", ["$(1-\\cos2a)/2$", "$1+\\cos2a$", "$2(1+\\cos2a)$"]],
+      ["$\\tan(a+b)$ theo $\\tan a,\\tan b$ là gì?", "$(\\tan a+\\tan b)/(1-\\tan a\\tan b)$", ["$(\\tan a+\\tan b)/(1+\\tan a\\tan b)$", "$\\tan a+\\tan b$", "$(\\tan a-\\tan b)/(1+\\tan a\\tan b)$"]],
+    ],
+  },
+};
+Object.assign(S, alignedEarlyTrigSeeds);
+
+// LG06–LG13: five distinct, parameterized questions at each level.
+function laterTrigSeed(lesson: number, level: Level, index: number): Seed {
+  const a = 3 + 2 * index;
+  const k = 2 + index;
+  const halfPlus = (a + 1) / 2;
+  const halfMinus = (a - 1) / 2;
+  if (lesson === 6) {
+    if (level === "basic") return [`Biến đổi $\\cos ${a}x\\cos x$ thành tổng.`, `$\\frac{\\cos ${a + 1}x+\\cos ${a - 1}x}{2}$`, [`$\\cos ${a + 1}x+\\cos ${a - 1}x$`, `$\\frac{\\cos ${a + 1}x-\\cos ${a - 1}x}{2}$`, `$2\\cos ${a + 1}x\\cos ${a - 1}x$`]];
+    if (level === "intermediate") return [`Biến đổi $\\sin ${a}x\\sin x$ thành tổng.`, `$\\frac{\\cos ${a - 1}x-\\cos ${a + 1}x}{2}$`, [`$\\frac{\\cos ${a + 1}x+\\cos ${a - 1}x}{2}$`, `$\\cos ${a - 1}x-\\cos ${a + 1}x$`, `$\\frac{\\sin ${a + 1}x+\\sin ${a - 1}x}{2}$`]];
+    return [`Biến đổi $\\sin ${a}x\\cos x$ thành tổng.`, `$\\frac{\\sin ${a + 1}x+\\sin ${a - 1}x}{2}$`, [`$\\frac{\\sin ${a + 1}x-\\sin ${a - 1}x}{2}$`, `$\\sin ${a + 1}x+\\sin ${a - 1}x$`, `$\\frac{\\cos ${a + 1}x+\\cos ${a - 1}x}{2}$`]];
+  }
+  if (lesson === 7) {
+    if (level === "basic") return [`Biến đổi $\\cos ${a}x+\\cos x$ thành tích.`, `$2\\cos ${halfPlus}x\\cos ${halfMinus}x$`, [`$2\\sin ${halfPlus}x\\sin ${halfMinus}x$`, `$\\cos ${halfPlus}x\\cos ${halfMinus}x$`, `$-2\\sin ${halfPlus}x\\sin ${halfMinus}x$`]];
+    if (level === "intermediate") return [`Biến đổi $\\sin ${a}x+\\sin x$ thành tích.`, `$2\\sin ${halfPlus}x\\cos ${halfMinus}x$`, [`$2\\cos ${halfPlus}x\\sin ${halfMinus}x$`, `$\\sin ${halfPlus}x\\cos ${halfMinus}x$`, `$-2\\sin ${halfPlus}x\\sin ${halfMinus}x$`]];
+    return [`Biến đổi $\\cos ${a}x-\\cos x$ thành tích.`, `$-2\\sin ${halfPlus}x\\sin ${halfMinus}x$`, [`$2\\sin ${halfPlus}x\\sin ${halfMinus}x$`, `$2\\cos ${halfPlus}x\\cos ${halfMinus}x$`, `$-2\\cos ${halfPlus}x\\cos ${halfMinus}x$`]];
+  }
+  if (lesson === 8) {
+    const fn = level === "intermediate" ? "cos" : "sin";
+    const phase = level === "advanced" ? "+\\frac\\pi4" : "";
+    return [`Chu kỳ cơ bản của $y=\\${fn}(${k}x${phase})$ là bao nhiêu?`, `$\\frac{2\\pi}{${k}}$`, [`$\\frac{\\pi}{${k}}$`, `$2${k}\\pi$`, `$${k}\\pi$`]];
+  }
+  if (lesson === 9) {
+    if (level === "advanced") return [`Tập giá trị của $y=-${k}\\sin x+1$ là gì?`, `$[${1 - k};${1 + k}]$`, [`$[-${k};${k}]$`, `$[1;${k + 1}]$`, `$[-${k + 1};${k - 1}]$`]];
+    const fn = level === "basic" ? "tan" : "cot";
+    return [`Chu kỳ cơ bản của $y=\\${fn}(${k}x)$ là bao nhiêu?`, `$\\frac{\\pi}{${k}}$`, [`$\\frac{2\\pi}{${k}}$`, `$${k}\\pi$`, `$2${k}\\pi$`]];
+  }
+  if (lesson === 10) {
+    if (level === "basic") return [`Hàm số $y=\\tan(${k}x)$ biến thiên thế nào trên mỗi khoảng xác định?`, "Đồng biến", ["Nghịch biến", "Không đơn điệu trên từng nhánh", "Không xác định ở mọi điểm"]];
+    if (level === "intermediate") return [`Tiệm cận đứng của $y=\\cot(${k}x)$ là họ đường nào?`, `$x=\\frac{m\\pi}{${k}},\\ m\\in\\mathbb Z$`, [`$x=\\frac{\\pi}{2${k}}+m\\pi$`, `$x=\\frac{2m\\pi}{${k}}$`, "$x=m\\pi+\\frac\\pi2$"]];
+    return [`Tiệm cận đứng của $y=\\tan(${k}x)$ là họ đường nào?`, `$x=\\frac{\\pi}{2${k}}+\\frac{m\\pi}{${k}},\\ m\\in\\mathbb Z$`, [`$x=\\frac{m\\pi}{${k}}$`, "$x=m\\pi$", `$x=\\frac{2m\\pi}{${k}}$`]];
+  }
+  if (lesson === 11) {
+    const angle = `\\frac{\\pi}{${k + 2}}`;
+    if (level === "basic") return [`Phương trình $\\sin x=\\sin(${angle})$ có nghiệm tổng quát nào?`, `$x=${angle}+2m\\pi$ hoặc $x=\\pi-${angle}+2m\\pi$`, [`$x=${angle}+m\\pi$`, `$x=\\pm${angle}+2m\\pi$`, `$x=\\pi+${angle}+2m\\pi$`]];
+    if (level === "intermediate") return [`Phương trình $\\cos x=\\cos(${angle})$ có nghiệm tổng quát nào?`, `$x=\\pm${angle}+2m\\pi$`, [`$x=${angle}+m\\pi$`, `$x=\\pi-${angle}+2m\\pi$`, "$x=m\\pi$"]];
+    return [`Trên $[0;2\\pi)$, phương trình $\\sin x=\\sin(${angle})$ có mấy nghiệm?`, "2 nghiệm", ["0 nghiệm", "1 nghiệm", "Vô số nghiệm"]];
+  }
+  if (lesson === 12) {
+    const angle = `\\frac{\\pi}{${k + 2}}`;
+    if (level === "basic") return [`Giải $\\tan x=\\tan(${angle})$.`, `$x=${angle}+m\\pi,\\ m\\in\\mathbb Z$`, [`$x=${angle}+2m\\pi$`, `$x=\\pm${angle}+m\\pi$`, `$x=\\pi-${angle}+m\\pi$`]];
+    if (level === "intermediate") return [`Giải $\\cot x=\\cot(${angle})$.`, `$x=${angle}+m\\pi,\\ m\\in\\mathbb Z$`, [`$x=${angle}+2m\\pi$`, `$x=-${angle}+m\\pi$`, `$x=\\pi/2+${angle}+m\\pi$`]];
+    return [`Giải $\\tan(${k}x)=0$.`, `$x=\\frac{m\\pi}{${k}},\\ m\\in\\mathbb Z$`, [`$x=\\frac{2m\\pi}{${k}}$`, `$x=\\frac{\\pi}{2${k}}+m\\pi$`, "$x=m\\pi+\\frac\\pi2$"]];
+  }
+  const radius = 5 + index;
+  const center = radius + 3 + index;
+  const period = 12 + 2 * index;
+  if (level === "basic") return [`Đu quay bán kính ${radius} m, tâm cao ${center} m. Khách ở đáy ban đầu cao bao nhiêu?`, `${center - radius} m`, [`${center} m`, `${center + radius} m`, `${radius} m`]];
+  if (level === "intermediate") return [`Đu quay bán kính ${radius} m, tâm cao ${center} m. Đỉnh cao nhất cách đất bao nhiêu?`, `${center + radius} m`, [`${center - radius} m`, `${center} m`, `${2 * radius} m`]];
+  return [`Khách bắt đầu ở đáy đu quay, chu kỳ ${period} phút. Sau bao lâu khách tới đỉnh lần đầu?`, `${period / 2} phút`, [`${period} phút`, `${period / 4} phút`, `${2 * period} phút`]];
+}
+
+for (let lesson = 6; lesson <= 13; lesson++) {
+  S[`trig-lesson-${lesson}`] = Object.fromEntries(
+    (["basic", "intermediate", "advanced"] as const).map(level => [level, Array.from({ length: 5 }, (_, index) => laterTrigSeed(lesson, level, index))])
+  ) as LessonSeeds;
+}
+
 function buildItems(lessonId: string, level: Level, seeds: Seed[], startIndex = 0): ReviewQuizItem[] {
   const levelReason: Record<Level, string> = {
     basic: "Dùng định nghĩa và kiến thức nền của bài để nhận ra đáp án.",
@@ -448,22 +603,23 @@ const lessonQuestionBank: Record<string, ReviewQuizItem[]> = Object.fromEntries(
     lessonId,
     (["basic", "intermediate", "advanced"] as const).flatMap((level) => {
       const seeds = levels[level];
-      const extras = Array.from({ length: EXTRA_COUNTS[level] }, (_, index) => variantSeed(lessonId, level, index));
+      const isAlignedTrigLesson = lessonId.startsWith("trig-lesson-") && Number(lessonId.split("-").at(-1)) >= 2;
+      const extras = isAlignedTrigLesson ? [] : Array.from({ length: EXTRA_COUNTS[level] }, (_, index) => variantSeed(lessonId, level, index));
       return [...buildItems(lessonId, level, seeds), ...buildItems(lessonId, level, extras, seeds.length)];
     }),
   ])
 );
 
-/** 200 authored/parameterized questions per module, split evenly across five lessons. */
+/** Counts reflect the questions actually available for each module. */
 export const QUESTION_BANK_COUNTS = {
-  linear_programming: 200,
-  spatial_geometry: 200,
-  trigonometry: 200,
-} as const;
+  linear_programming: Object.entries(lessonQuestionBank).filter(([id]) => id.startsWith("lp-")).reduce((sum, [, items]) => sum + items.length, 0),
+  spatial_geometry: Object.entries(lessonQuestionBank).filter(([id]) => id.startsWith("sg-")).reduce((sum, [, items]) => sum + items.length, 0),
+  trigonometry: Object.entries(lessonQuestionBank).filter(([id]) => id.startsWith("trig-")).reduce((sum, [, items]) => sum + items.length, 0),
+};
 
 export const DIFFICULTY_QUIZ_BANK: Record<string, ReviewQuizItem[]> = lessonQuestionBank;
 
-/** Backwards-compatible name now exposes the complete lesson bank (40 items per lesson). */
+/** Backwards-compatible name for the complete lesson bank. */
 export const DIFFICULTY_QUIZ_DATA = DIFFICULTY_QUIZ_BANK;
 
 export function sampleLessonQuiz(lessonId: string, random: () => number = Math.random): ReviewQuizItem[] {

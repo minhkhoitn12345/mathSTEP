@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       return testKeyError("KEY_INVALID_FORMAT", "API key không hợp lệ hoặc chứa ký tự đặc biệt không được phép.", 400);
     }
 
-    if (!new Set(["gemini", "openai", "deepseek"]).has(provider)) {
+    if (provider !== "gemini") {
       return testKeyError("UNSUPPORTED_PROVIDER", "Nhà cung cấp chưa được hỗ trợ.", 400);
     }
 
@@ -78,34 +78,6 @@ export async function POST(request: NextRequest) {
         } catch {}
       }
       return testKeyError("KEY_INVALID", lastError || "Google API key không hợp lệ hoặc model không khả dụng.", 400);
-    }
-
-    if (provider === "openai" || provider === "deepseek") {
-      const baseUrl =
-        provider === "deepseek"
-          ? "https://api.deepseek.com/chat/completions"
-          : "https://api.openai.com/v1/chat/completions";
-      const rawModel = typeof model === "string" ? model : (provider === "deepseek" ? "deepseek-chat" : "gpt-4o-mini");
-      const modelName = rawModel.replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 64) || (provider === "deepseek" ? "deepseek-chat" : "gpt-4o-mini");
-
-      const res = await fetch(baseUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${key}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: modelName,
-          messages: [{ role: "user", content: "Ping test" }],
-          max_tokens: 5,
-        }),
-        signal: AbortSignal.timeout(10000),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        return testKeyError("KEY_INVALID", data.error?.message || "API key không hợp lệ.", 400);
-      }
-      return NextResponse.json({ ok: true, message: `Kết nối thành công với ${modelName}!` }, { headers: NO_CACHE_HEADERS });
     }
 
     return testKeyError("UNSUPPORTED_PROVIDER", "Nhà cung cấp chưa được hỗ trợ.", 400);

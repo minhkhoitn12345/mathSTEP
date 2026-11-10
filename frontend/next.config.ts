@@ -2,14 +2,15 @@ import type { NextConfig } from "next";
 
 const cspHeader = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline';
+  script-src 'self' ${process.env.NODE_ENV === "development" ? "'unsafe-eval' " : ""}'unsafe-inline';
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' data: https://fonts.gstatic.com;
   img-src 'self' data: blob: https:;
-  connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.deepseek.com https://*.supabase.co;
+  connect-src 'self' https://generativelanguage.googleapis.com https://*.supabase.co;
   frame-ancestors 'none';
   object-src 'none';
   base-uri 'self';
+  form-action 'self';
 `.replace(/\s{2,}/g, " ").trim();
 
 const nextConfig: NextConfig = {

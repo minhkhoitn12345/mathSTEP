@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import {
   Search,
   X,
@@ -11,6 +12,7 @@ import {
   RotateCcw,
   SlidersHorizontal,
   HelpCircle,
+  ArrowRight,
 } from "lucide-react";
 import { CORE_3_MODULES } from "@/app/types/curriculum";
 import {
@@ -69,7 +71,7 @@ export const LessonCatalogHome: React.FC<LessonCatalogHomeProps> = ({
     setSelectedModule(focusModuleId);
   }, [focusModuleId]);
 
-  // 3. Flattened list of all 15 lessons with their parent module
+  // Flatten every lesson across the three modules.
   const allLessonsWithModule = useMemo(() => {
     return CORE_3_MODULES.flatMap((mod) =>
       mod.lessons.map((lesson) => ({
@@ -159,6 +161,9 @@ export const LessonCatalogHome: React.FC<LessonCatalogHomeProps> = ({
   const completedCount = CORE_3_MODULES.flatMap((module) => module.lessons)
     .filter((lesson) => userProgress.completedLessonIds.includes(lesson.id)).length;
   const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+  const resumeLesson = allLessonsWithModule.find((lesson) =>
+    lesson.id === userProgress.lastActiveLessonId && lesson.status !== "completed"
+  ) ?? allLessonsWithModule.find((lesson) => lesson.status !== "completed");
 
   return (
     <section className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
@@ -185,6 +190,16 @@ export const LessonCatalogHome: React.FC<LessonCatalogHomeProps> = ({
 
             {/* Quick Action Buttons */}
             <div className="flex flex-wrap items-center gap-2.5 pt-2">
+              {resumeLesson && (
+                <Link
+                  href={`/learn/${resumeLesson.moduleId}/${resumeLesson.id}`}
+                  className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-emerald-400 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-emerald-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  title={`${resumeLesson.code}: ${resumeLesson.title}`}
+                >
+                  {resumeLesson.status === "in_progress" ? "Học tiếp" : "Bắt đầu bài tiếp theo"}
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              )}
               {onOpenTeacherGuide && (
                 <button
                   type="button"

@@ -92,7 +92,7 @@ export const TRIG_DETAILS: Record<string, DetailedLessonContent> = Object.fromEn
   const lesson = TRIG_LESSONS[i];
   const item: DetailedLessonContent = {
     lessonId: lesson.id, moduleId: "trigonometry", order: lesson.order, code: lesson.code,
-    title: t.title, subtitle: t.meaning, grade: 11, estimatedMinutes: 20, xpReward: 60,
+    title: t.title, subtitle: t.meaning, grade: 11, estimatedMinutes: 20, xpReward: [60, 70, 80, 80, 90][i] ?? 60,
     objectives: [t.concept, `Giải thích và vận dụng: ${t.meaning}`],
     theory: { coreConcept: t.concept, formulas: [{ formula: t.formula, meaning: t.meaning }, ...(additionalFormulas[i] ?? [])], notes: t.errors.map(code => errorGuidance[code]), miniTip: t.meaning },
     workedExample: { problemStatement: t.example, steps: [{ stepNumber: 1, title: "Lập luận từ kiến thức vừa học", explanation: t.solution, rationale: t.concept }], conclusion: t.solution },

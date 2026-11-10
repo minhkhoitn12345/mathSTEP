@@ -34,7 +34,7 @@ export default function NaturalLanguageGeometryPanel({
 
   // 2. User API Key Drawer State
   const [isKeyDrawerOpen, setIsKeyDrawerOpen] = useState<boolean>(false);
-  const [provider, setProvider] = useState<"gemini" | "openai">("gemini");
+  const provider = "gemini";
   const [apiKey, setApiKey] = useState<string>("");
   const [isUsingProjectKey, setIsUsingProjectKey] = useState<boolean>(true);
   const [keyTesting, setKeyTesting] = useState<boolean>(false);
@@ -87,7 +87,7 @@ export default function NaturalLanguageGeometryPanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           provider,
-          model: provider === "gemini" ? "gemini-2.5-flash" : "gpt-4o-mini",
+          model: "gemini-2.5-flash",
           apiKey: apiKey.trim(),
         }),
       });
@@ -142,7 +142,7 @@ export default function NaturalLanguageGeometryPanel({
         ? undefined
         : {
             provider,
-            model: provider === "gemini" ? "gemini-2.5-flash" : "gpt-4o-mini",
+            model: "gemini-2.5-flash",
             apiKey: apiKey.trim(),
           };
 
@@ -206,48 +206,23 @@ export default function NaturalLanguageGeometryPanel({
 
         {isKeyDrawerOpen && (
           <div className="p-3.5 pt-2 border-t border-slate-200 bg-white space-y-3 text-xs">
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-1.5 cursor-pointer font-medium text-slate-700">
-                <input
-                  type="radio"
-                  name="provider"
-                  value="gemini"
-                  checked={provider === "gemini"}
-                  onChange={() => setProvider("gemini")}
-                  className="accent-emerald-600"
-                />
-                <span>Google Gemini API (Miễn phí từ AI Studio)</span>
-              </label>
-              <label className="flex items-center gap-1.5 cursor-pointer font-medium text-slate-700">
-                <input
-                  type="radio"
-                  name="provider"
-                  value="openai"
-                  checked={provider === "openai"}
-                  onChange={() => setProvider("openai")}
-                  className="accent-emerald-600"
-                />
-                <span>OpenAI API</span>
-              </label>
-            </div>
+            <p className="font-medium text-slate-700">Google Gemini API</p>
 
             <div className="space-y-1">
+              <label htmlFor="geometry-gemini-key" className="block font-medium text-slate-700">Khóa Gemini cá nhân</label>
               <input
+                id="geometry-gemini-key"
                 type="password"
                 value={apiKey}
                 onChange={(e) => {
                   setApiKey(e.target.value);
                   setIsUsingProjectKey(false);
                 }}
-                placeholder={
-                  provider === "gemini"
-                    ? "Dán khóa AI Studio (AIzaSy...)"
-                    : "Dán OpenAI API Key (sk-...)"
-                }
+                placeholder="Dán khóa AI Studio (AIzaSy...)"
                 className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-slate-50/50"
               />
               <p className="text-[10px] text-slate-500">
-                Khóa được lưu cục bộ trên trình duyệt (Client-side only) để đảm bảo bảo mật.
+                Khóa chỉ được giữ trong phiên trang này và gửi tới máy chủ MathSTEP qua HTTPS khi em dùng AI.
               </p>
             </div>
 

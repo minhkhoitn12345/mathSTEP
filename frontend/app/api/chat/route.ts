@@ -109,6 +109,8 @@ export async function POST(request: NextRequest) {
       apiKey?: string;
     } | undefined;
 
+    if (customAi?.provider && customAi.provider !== "gemini") return jsonError("UNSUPPORTED_PROVIDER", "Chỉ hỗ trợ Google Gemini.", 400);
+
     const serverGeminiKey = (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "").trim();
     const customApiKeyCandidate = typeof customAi?.apiKey === "string" ? customAi.apiKey.trim() : "";
     const hasCustomKey = Boolean(
@@ -245,51 +247,6 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // B. OpenAI hoặc DeepSeek
-      if (effectiveProvider === "openai" || effectiveProvider === "deepseek") {
-        const baseUrl =
-          effectiveProvider === "deepseek"
-            ? "https://api.deepseek.com/chat/completions"
-            : "https://api.openai.com/v1/chat/completions";
-        const model =
-          effectiveModel ||
-          (effectiveProvider === "deepseek" ? "deepseek-chat" : "gpt-4o-mini");
-
-        const upstreamRes = await fetch(baseUrl, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${key}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model,
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: userPrompt },
-            ],
-            temperature: 0.4,
-            max_tokens: 2048,
-          }),
-          signal: AbortSignal.timeout(45_000),
-        });
-
-        if (upstreamRes.ok) {
-          const upstreamData = await upstreamRes.json();
-          const answerText = upstreamData.choices?.[0]?.message?.content;
-          if (answerText) {
-            return responseWithSessionCookies(
-              NextResponse.json({
-                ok: true,
-                answer: answerText,
-                intent: "guided_socratic",
-                model_used: model,
-                source: hasCustomKey ? "custom_llm_rag" : "server_llm_rag",
-              }),
-              refreshed
-            );
-          }
-        }
-      }
     }
 
     // 7. NẾU CÓ DỊCH VỤ FASTAPI BACKEND
