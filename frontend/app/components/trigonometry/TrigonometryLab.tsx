@@ -7,7 +7,6 @@ import { CORE_3_MODULES, LessonUnit } from "@/app/types/curriculum";
 import {
   Compass,
   ArrowLeft,
-  HelpCircle,
   Activity,
 } from "lucide-react";
 import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
@@ -357,10 +356,66 @@ export function TrigonometryLab({
         </div>
       )}
 
-      {/* 3. SPLIT WORKBENCH: UNIT CIRCLE (LEFT) + WAVE GRAPH (RIGHT) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      {/* Lesson layout: guided steps on the left, visuals on the right. */}
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-12 lg:gap-5">
+        <aside className="min-w-0 space-y-4 lg:sticky lg:top-4 lg:col-span-4" aria-label="Các bước giải">
+          <section className="rounded-3xl border border-purple-200 bg-white p-5 shadow-sm space-y-4" aria-labelledby="trig-seven-step-title">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-purple-700">Làm cùng mô phỏng</p>
+                <h2 id="trig-seven-step-title" className="mt-1 text-base font-black text-slate-900">Giải từng bước cùng mô phỏng</h2>
+                <p className="mt-1 text-xs text-slate-600">Mỗi câu hỏi gắn với hình hoặc đồ thị. Chọn đáp án, đọc giải thích rồi mới chuyển bước.</p>
+              </div>
+              <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-extrabold text-purple-900">{currentGuidedQuestion ? `Bước ${guidedStep + 1} / ${currentGuidedSteps.length}` : "Đã hoàn thành"}</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label="Tiến độ mô phỏng" aria-valuemin={0} aria-valuemax={currentGuidedSteps.length} aria-valuenow={guidedStep}>
+              <div className="h-full rounded-full bg-purple-600 transition-all" style={{ width: `${(guidedStep / currentGuidedSteps.length) * 100}%` }} />
+            </div>
+            {currentGuidedQuestion ? (
+              <>
+                <div className="rounded-2xl border border-purple-100 bg-purple-50/60 p-4">
+                  <p className="text-xs font-extrabold text-purple-800">{currentGuidedQuestion.title}</p>
+                  <p className="mt-2 text-sm font-bold leading-relaxed text-slate-900"><MathFormattedText text={currentGuidedQuestion.prompt} /></p>
+                  {guidedLessonIndex === 0 && <p className="mt-2 text-[11px] text-slate-600">Bài mẫu đang xét góc −765°. Nếu đã đổi góc, chọn lại nút −765° phía trên để đối chiếu đúng cấu hình.</p>}
+                  {guidedLessonIndex === 3 && <p className="mt-2 text-[11px] text-slate-600">Kéo góc α ở hình tròn. Điểm màu vàng trên đồ thị sẽ theo góc; hai mũi tên ở hai đầu nhắc rằng đường cong còn tiếp tục.</p>}
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {currentGuidedQuestion.choices.map((choice, index) => (
+                    <button key={`${guidedStep}-${choice}`} type="button" disabled={guidedResultShown} onClick={() => setGuidedChoice(index)} aria-pressed={guidedChoice === index} className={`min-h-11 rounded-xl border px-3 py-2.5 text-left text-xs leading-relaxed transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700 disabled:cursor-default ${guidedChoice === index ? "border-purple-600 bg-purple-50 ring-1 ring-purple-500" : "border-slate-200 bg-white hover:border-purple-300"}`}>
+                      <MathFormattedText text={choice} />
+                    </button>
+                  ))}
+                </div>
+                {guidedResultShown && guidedChoice !== currentGuidedQuestion.answer && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" role="status">
+                    <strong>Chưa đúng.</strong> <MathFormattedText text={currentGuidedQuestion.hint} />
+                    <button type="button" onClick={() => { setGuidedChoice(null); setGuidedResultShown(false); }} className="ml-2 font-bold underline">Thử lại</button>
+                  </div>
+                )}
+                {guidedResultShown && guidedChoice === currentGuidedQuestion.answer && (
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs leading-relaxed text-emerald-950" role="status">
+                    <strong>Đúng rồi.</strong> <MathFormattedText text={currentGuidedQuestion.explanation} />
+                  </div>
+                )}
+                <div className="flex justify-end">
+                  {!guidedResultShown ? (
+                    <button type="button" disabled={guidedChoice === null} onClick={() => setGuidedResultShown(true)} className="min-h-11 rounded-xl bg-purple-700 px-5 py-2.5 text-xs font-extrabold text-white transition hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-40">Kiểm tra câu trả lời</button>
+                  ) : guidedChoice === currentGuidedQuestion.answer ? (
+                    <button type="button" onClick={() => { setGuidedStep((step) => step + 1); setGuidedChoice(null); setGuidedResultShown(false); }} className="min-h-11 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-extrabold text-white transition hover:bg-emerald-800">{guidedStep === currentGuidedSteps.length - 1 ? "Hoàn thành 7 bước" : "Sang bước tiếp theo"}</button>
+                  ) : null}
+                </div>
+              </>
+            ) : (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-950" role="status">
+                Em đã hoàn thành các câu hỏi của bài này. Hãy thay đổi mô hình để tự kiểm tra lại kết luận.
+                <button type="button" onClick={() => { setGuidedStep(0); setGuidedChoice(null); setGuidedResultShown(false); }} className="ml-2 underline">Làm lại</button>
+              </div>
+            )}
+          </section>
+        </aside>
+        <div className="min-w-0 space-y-4 lg:col-span-8">
         {/* Left Column: Interactive Unit Circle (6 cols) */}
-        <div className="lg:col-span-6 bg-white rounded-3xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col items-center">
+        <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col items-center">
           <div className="w-full flex items-center justify-between pb-3 border-b border-slate-100 text-xs">
             <div className="flex items-center gap-2">
               <Compass className="w-4 h-4 text-purple-600" />
@@ -394,7 +449,7 @@ export function TrigonometryLab({
             <svg
               ref={circleSvgRef}
               viewBox={`0 0 ${cSvgW} ${cSvgH}`}
-              className="w-full max-w-[320px] h-auto cursor-crosshair"
+              className="w-full max-w-[480px] h-auto cursor-crosshair"
               onPointerDown={handleCirclePointerDown}
               onPointerMove={handleCirclePointerMove}
               onPointerUp={handleCirclePointerUp}
@@ -712,8 +767,6 @@ export function TrigonometryLab({
           )}
         </div>
 
-        {/* Right Column: Wave Graph & Step-by-Step Instructions (6 cols) */}
-        <div className="lg:col-span-6 space-y-4">
           {/* Wave Plot Card */}
           <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3">
             <div className="flex flex-col items-start justify-between gap-3 pb-2 border-b border-slate-100 sm:flex-row sm:items-center">
@@ -736,7 +789,7 @@ export function TrigonometryLab({
 
             {/* SVG Wave Canvas */}
             <div className="w-full overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 p-2 select-none">
-              <svg viewBox={`0 0 ${waveSvgW} ${waveSvgH}`} className="block h-auto max-h-[280px] w-full" role="img" aria-label={`Đồ thị hàm số ${waveMode}, đang xem quanh góc ${angleDeg} độ`}>
+              <svg viewBox={`0 0 ${waveSvgW} ${waveSvgH}`} className="block h-auto max-h-[360px] w-full" role="img" aria-label={`Đồ thị hàm số ${waveMode}, đang xem quanh góc ${angleDeg} độ`}>
                 <defs>
                   <marker id="trigAxisArrow" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto-start-reverse"><path d="M0,0 L7,3.5 L0,7 Z" fill="#94A3B8" /></marker>
                   <marker id="trigCurveArrow" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill={curveColor} /></marker>
@@ -904,102 +957,6 @@ export function TrigonometryLab({
             )}
           </div>
 
-          <section className="rounded-3xl border border-purple-200 bg-white p-5 shadow-sm space-y-4" aria-labelledby="trig-seven-step-title">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-purple-700">Làm cùng mô phỏng</p>
-                <h2 id="trig-seven-step-title" className="mt-1 text-base font-black text-slate-900">Giải từng bước cùng mô phỏng</h2>
-                <p className="mt-1 text-xs text-slate-600">Mỗi câu hỏi gắn với hình hoặc đồ thị. Chọn đáp án, đọc giải thích rồi mới chuyển bước.</p>
-              </div>
-              <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-extrabold text-purple-900">{currentGuidedQuestion ? `Bước ${guidedStep + 1} / ${currentGuidedSteps.length}` : "Đã hoàn thành"}</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label="Tiến độ mô phỏng" aria-valuemin={0} aria-valuemax={currentGuidedSteps.length} aria-valuenow={guidedStep}>
-              <div className="h-full rounded-full bg-purple-600 transition-all" style={{ width: `${(guidedStep / currentGuidedSteps.length) * 100}%` }} />
-            </div>
-            {currentGuidedQuestion ? (
-              <>
-                <div className="rounded-2xl border border-purple-100 bg-purple-50/60 p-4">
-                  <p className="text-xs font-extrabold text-purple-800">{currentGuidedQuestion.title}</p>
-                  <p className="mt-2 text-sm font-bold leading-relaxed text-slate-900"><MathFormattedText text={currentGuidedQuestion.prompt} /></p>
-                  {guidedLessonIndex === 0 && <p className="mt-2 text-[11px] text-slate-600">Bài mẫu đang xét góc −765°. Nếu đã đổi góc, chọn lại nút −765° phía trên để đối chiếu đúng cấu hình.</p>}
-                  {guidedLessonIndex === 3 && <p className="mt-2 text-[11px] text-slate-600">Kéo góc α ở hình tròn. Điểm màu vàng trên đồ thị sẽ theo góc; hai mũi tên ở hai đầu nhắc rằng đường cong còn tiếp tục.</p>}
-                </div>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {currentGuidedQuestion.choices.map((choice, index) => (
-                    <button key={`${guidedStep}-${choice}`} type="button" disabled={guidedResultShown} onClick={() => setGuidedChoice(index)} aria-pressed={guidedChoice === index} className={`min-h-11 rounded-xl border px-3 py-2.5 text-left text-xs leading-relaxed transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700 disabled:cursor-default ${guidedChoice === index ? "border-purple-600 bg-purple-50 ring-1 ring-purple-500" : "border-slate-200 bg-white hover:border-purple-300"}`}>
-                      <MathFormattedText text={choice} />
-                    </button>
-                  ))}
-                </div>
-                {guidedResultShown && guidedChoice !== currentGuidedQuestion.answer && (
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" role="status">
-                    <strong>Chưa đúng.</strong> <MathFormattedText text={currentGuidedQuestion.hint} />
-                    <button type="button" onClick={() => { setGuidedChoice(null); setGuidedResultShown(false); }} className="ml-2 font-bold underline">Thử lại</button>
-                  </div>
-                )}
-                {guidedResultShown && guidedChoice === currentGuidedQuestion.answer && (
-                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs leading-relaxed text-emerald-950" role="status">
-                    <strong>Đúng rồi.</strong> <MathFormattedText text={currentGuidedQuestion.explanation} />
-                  </div>
-                )}
-                <div className="flex justify-end">
-                  {!guidedResultShown ? (
-                    <button type="button" disabled={guidedChoice === null} onClick={() => setGuidedResultShown(true)} className="min-h-11 rounded-xl bg-purple-700 px-5 py-2.5 text-xs font-extrabold text-white transition hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-40">Kiểm tra câu trả lời</button>
-                  ) : guidedChoice === currentGuidedQuestion.answer ? (
-                    <button type="button" onClick={() => { setGuidedStep((step) => step + 1); setGuidedChoice(null); setGuidedResultShown(false); }} className="min-h-11 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-extrabold text-white transition hover:bg-emerald-800">{guidedStep === currentGuidedSteps.length - 1 ? "Hoàn thành 7 bước" : "Sang bước tiếp theo"}</button>
-                  ) : null}
-                </div>
-              </>
-            ) : (
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-950" role="status">
-                Em đã hoàn thành các câu hỏi của bài này. Hãy thay đổi mô hình để tự kiểm tra lại kết luận.
-                <button type="button" onClick={() => { setGuidedStep(0); setGuidedChoice(null); setGuidedResultShown(false); }} className="ml-2 underline">Làm lại</button>
-              </div>
-            )}
-          </section>
-
-          {/* Current Lesson Guide Card */}
-          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-extrabold bg-purple-100 text-purple-800">
-                {currentLesson.code}
-              </span>
-              <h2 className="font-bold text-sm text-slate-900"><MathFormattedText text={currentLesson.title} /></h2>
-            </div>
-            <p className="text-xs text-slate-600 leading-relaxed"><MathFormattedText text={currentLesson.description} /></p>
-
-            {/* Steps in this lesson */}
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              {currentLesson.steps.filter((st) => st.stepNumber <= Math.min(guidedStep + 1, currentLesson.steps.length)).map((st) => (
-                <div key={st.stepNumber} className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-purple-600 text-white font-bold text-[10px] flex items-center justify-center shrink-0">
-                      {st.stepNumber}
-                    </span>
-                    <h3 className="font-bold text-xs text-slate-800">{st.title}</h3>
-                  </div>
-                  <p className="text-[11px] text-slate-600 pl-7"><MathFormattedText text={st.instruction} /></p>
-
-                  {/* Socratic Questions */}
-                  {st.socraticQuestions && st.socraticQuestions.length > 0 && (
-                    <div className="mt-2 pl-7 pt-1.5 border-t border-slate-200/60">
-                      <div className="text-[10px] font-bold text-purple-800 flex items-center gap-1 mb-1">
-                        <HelpCircle className="w-3 h-3 text-purple-600" />
-                        <span>Câu hỏi Socratic gợi mở:</span>
-                      </div>
-                      <ul className="list-disc list-inside text-[11px] text-slate-700 space-y-1">
-                        {st.socraticQuestions.map((q, qIdx) => (
-                          <li key={qIdx} className="leading-snug">
-                            <MathFormattedText text={q} />
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>
