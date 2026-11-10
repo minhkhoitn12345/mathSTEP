@@ -1452,6 +1452,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
       actionPrompt: "Mở mô phỏng để kẻ đường thẳng y = -sqrt(2)/2 cắt đường tròn tại 2 điểm nghiệm đối xứng.",
     },
   },
+  ...TRIG_DETAILS,
 };
 
 export function getLessonDetailedContent(lessonId: string): DetailedLessonContent | undefined {

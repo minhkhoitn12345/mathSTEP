@@ -1,9 +1,8 @@
 "use client";
 
-import { TRIG_ACTIVITIES, TRIG_GUIDED_INDICES } from "@/app/data/trigonometryLessons";
+import { TRIG_GUIDED_INDICES, TRIG_GUIDED_STEPS } from "@/app/data/trigonometryLessons";
 
 import React, { useState, useMemo, useRef } from "react";
-import Link from "next/link";
 import { CORE_3_MODULES, LessonUnit } from "@/app/types/curriculum";
 import {
   Compass,
@@ -20,56 +19,6 @@ interface TrigonometryLabProps {
   initialLessonIndex?: number;
   embedded?: boolean;
 }
-
-type GuidedQuestion = { title: string; prompt: string; choices: string[]; answer: number; explanation: string };
-
-const GUIDED_STEPS: GuidedQuestion[][] = [
-  [
-    { title: "Quy ước chiều quay", prompt: "Trên đường tròn lượng giác, góc âm được tạo bởi chiều quay nào?", choices: ["Ngược chiều kim đồng hồ", "Cùng chiều kim đồng hồ", "Không xác định chiều quay"], answer: 1, explanation: "Chiều dương ngược chiều kim đồng hồ; vì vậy góc âm quay cùng chiều kim đồng hồ." },
-    { title: "Tách số vòng", prompt: "Góc $-765^\\circ$ gồm bao nhiêu vòng âm trọn vẹn và phần góc còn lại?", choices: ["$-2$ vòng và $-45^\\circ$", "$-1$ vòng và $-405^\\circ$", "$-3$ vòng và $315^\\circ$"], answer: 0, explanation: "$-765^\\circ = -2\\cdot360^\\circ-45^\\circ$. Phần quay còn lại sau hai vòng là $-45^\\circ$." },
-    { title: "Tìm góc cùng điểm cuối", prompt: "Góc trong khoảng $[0^\\circ;360^\\circ)$ có cùng điểm cuối với $-765^\\circ$ là góc nào?", choices: ["$45^\\circ$", "$225^\\circ$", "$315^\\circ$"], answer: 2, explanation: "$-765^\\circ+3\\cdot360^\\circ=315^\\circ$. Hai góc sai khác một bội của $360^\\circ$ nên cùng điểm cuối." },
-    { title: "Xác định góc phần tư", prompt: "Điểm cuối ứng với $315^\\circ$ thuộc góc phần tư nào?", choices: ["I", "III", "IV"], answer: 2, explanation: "$315^\\circ$ nằm giữa $270^\\circ$ và $360^\\circ$, nên điểm cuối thuộc góc phần tư IV." },
-    { title: "Đọc tọa độ điểm", prompt: "Ở góc phần tư IV, dấu của hoành độ $\\cos\\alpha$ và tung độ $\\sin\\alpha$ lần lượt là gì?", choices: ["Dương, âm", "Âm, dương", "Âm, âm"], answer: 0, explanation: "Trên đường tròn đơn vị, $M(\\cos\\alpha;\\sin\\alpha)$. Góc phần tư IV có hoành độ dương và tung độ âm." },
-    { title: "Đổi sang radian", prompt: "Đổi $-765^\\circ$ sang radian được kết quả nào?", choices: ["$-17\\pi/4$", "$-15\\pi/4$", "$17\\pi/4$"], answer: 0, explanation: "$-765^\\circ\\cdot\\pi/180^\\circ=-17\\pi/4$ rad." },
-    { title: "Kết luận về điểm cuối", prompt: "Hai góc có cùng điểm biểu diễn trên đường tròn lượng giác thì luôn có số đo bằng nhau không?", choices: ["Có, vì cùng một điểm", "Không; hiệu hai góc là một bội của $2\\pi$ rad", "Không; tổng hai góc luôn bằng $2\\pi$ rad"], answer: 1, explanation: "Các góc cùng điểm cuối có dạng $\\alpha+2k\\pi$ (hay $\\alpha+360^\\circ k$), với $k\\in\\mathbb Z$. Số đo có thể khác nhau." },
-  ],
-  [
-    { title: "Đọc tọa độ trên đường tròn", prompt: "Với điểm $M$ trên đường tròn đơn vị, $\\cos\\alpha$ là tọa độ nào của $M$?", choices: ["Hoành độ", "Tung độ", "Độ dài bán kính"], answer: 0, explanation: "$M(\\cos\\alpha;\\sin\\alpha)$: cos ứng với hoành độ, sin ứng với tung độ." },
-    { title: "Liên hệ tung độ", prompt: "$\\sin\\alpha$ được đọc trên trục nào của hình?", choices: ["Trục hoành", "Trục tung", "Đường thẳng tiếp tuyến $x=1$"], answer: 1, explanation: "$\\sin\\alpha$ là tung độ của điểm $M$, nên được đọc theo phương trục tung." },
-    { title: "Tính tan", prompt: "Khi $\\cos\\alpha\\ne0$, công thức xác định $\\tan\\alpha$ là gì?", choices: ["$\\sin\\alpha/\\cos\\alpha$", "$\\cos\\alpha/\\sin\\alpha$", "$\\sin\\alpha+\\cos\\alpha$"], answer: 0, explanation: "$\\tan\\alpha=\\frac{\\sin\\alpha}{\\cos\\alpha}$ khi $\\cos\\alpha\\ne0$. Trên hình, đây là tung độ giao điểm của đường thẳng $OM$ với tiếp tuyến $x=1$." },
-    { title: "Tính cot", prompt: "Khi $\\sin\\alpha\\ne0$, công thức xác định $\\cot\\alpha$ là gì?", choices: ["$\\sin\\alpha/\\cos\\alpha$", "$\\cos\\alpha/\\sin\\alpha$", "$1/(\\sin\\alpha+\\cos\\alpha)$"], answer: 1, explanation: "$\\cot\\alpha=\\frac{\\cos\\alpha}{\\sin\\alpha}$ khi $\\sin\\alpha\\ne0$. Trên hình, đọc hoành độ giao điểm đường thẳng $OM$ với tiếp tuyến $y=1$." },
-    { title: "Nhận biết tan không xác định", prompt: "Tại góc $90^\\circ$, vì sao $\\tan\\alpha$ không xác định?", choices: ["Vì $\\cos90^\\circ=0$ ở mẫu", "Vì $\\sin90^\\circ=0$ ở mẫu", "Vì cả sin và cos đều bằng 0"], answer: 0, explanation: "$\\tan\\alpha=\\sin\\alpha/\\cos\\alpha$. Tại $90^\\circ$, cos bằng 0 nên phép chia không thực hiện được." },
-    { title: "Nhận biết cot không xác định", prompt: "Tại góc $0^\\circ$, vì sao $\\cot\\alpha$ không xác định?", choices: ["Vì $\\cos0^\\circ=0$", "Vì $\\sin0^\\circ=0$ ở mẫu", "Vì $\\cot0^\\circ=0$"], answer: 1, explanation: "$\\cot\\alpha=\\cos\\alpha/\\sin\\alpha$. Tại $0^\\circ$, sin bằng 0; cot không xác định, không phải bằng 0." },
-    { title: "Phân biệt giá trị 0", prompt: "Tại $90^\\circ$, cặp giá trị $(\\tan\\alpha;\\cot\\alpha)$ là gì?", choices: ["$(\\text{không xác định};0)$", "$(0;\\text{không xác định})$", "$(1;1)$"], answer: 0, explanation: "Tại $90^\\circ$, tan không xác định vì cos bằng 0; cot bằng 0 vì cos bằng 0 còn sin bằng 1." },
-  ],
-  [
-    { title: "Cung bù", prompt: "Hai điểm ứng với $\\alpha$ và $\\pi-\\alpha$ đối xứng nhau qua trục nào?", choices: ["Trục hoành", "Trục tung", "Gốc tọa độ"], answer: 1, explanation: "Phép đối xứng qua trục tung đổi dấu hoành độ, giữ nguyên tung độ: cos đổi dấu, sin giữ nguyên." },
-    { title: "Cung đối", prompt: "Khi thay $\\alpha$ bằng $-\\alpha$, tọa độ nào đổi dấu?", choices: ["Hoành độ cos", "Tung độ sin", "Cả hai tọa độ"], answer: 1, explanation: "Hai điểm đối xứng qua trục hoành có cùng hoành độ và tung độ đối nhau: cos chẵn, sin lẻ." },
-    { title: "Nhận diện công thức sai", prompt: "Đẳng thức nào sau đây không đúng với mọi $a,b$?", choices: ["$\\sin(a+b)=\\sin a+\\sin b$", "$\\sin(a+b)=\\sin a\\cos b+\\cos a\\sin b$", "$\\cos(2a)=\\cos^2a-\\sin^2a$"], answer: 0, explanation: "Sin của tổng không bằng tổng các sin. Công thức đúng là $\\sin(a+b)=\\sin a\\cos b+\\cos a\\sin b$." },
-    { title: "Chọn công thức nhân đôi", prompt: "Công thức nhân đôi đúng của sin là gì?", choices: ["$\\sin2a=2\\sin a\\cos a$", "$\\sin2a=\\sin^2a+\\cos^2a$", "$\\sin2a=2\\sin a$"], answer: 0, explanation: "Từ công thức cộng, $\\sin(a+a)=\\sin a\\cos a+\\cos a\\sin a=2\\sin a\\cos a$." },
-    { title: "Dự đoán dấu", prompt: "Với góc đang xét ở góc phần tư IV, dấu của $\\sin\\alpha\\cos\\alpha$ là gì?", choices: ["Dương", "Âm", "Bằng 0"], answer: 1, explanation: "Góc phần tư IV có sin âm và cos dương nên tích sin cos âm." },
-    { title: "Đối chiếu trên hình", prompt: "Điểm ứng với $2\\alpha$ trên đường tròn được tính từ tọa độ $M(\\cos\\alpha;\\sin\\alpha)$ bằng công thức nào?", choices: ["$(\\cos^2\\alpha-\\sin^2\\alpha;2\\sin\\alpha\\cos\\alpha)$", "$(2\\cos\\alpha;2\\sin\\alpha)$", "$(\\sin\\alpha;\\cos\\alpha)$"], answer: 0, explanation: "Tọa độ điểm góc $2\\alpha$ là $(\\cos2\\alpha;\\sin2\\alpha)$, dùng hai công thức nhân đôi để tính." },
-    { title: "Rút ra kết luận", prompt: "Vì sao hình học đường tròn giúp kiểm tra công thức lượng giác?", choices: ["Vì cùng một điểm $2\\alpha$ cho cả tọa độ tính theo công thức và tọa độ đọc trên hình", "Vì mọi góc đều có sin bằng cos", "Vì hình vẽ thay thế được lập luận"], answer: 0, explanation: "Hình giúp đối chiếu dự đoán với tọa độ, nhưng kết luận tổng quát vẫn cần dựa vào định nghĩa và phép biến đổi đại số." },
-  ],
-  [
-    { title: "Đọc giá trị theo thời gian", prompt: "Khi điểm $M$ quay đều trên đường tròn đơn vị, tung độ của $M$ tạo ra đồ thị nào?", choices: ["$y=\\sin x$", "$y=\\tan x$", "$y=x^2$"], answer: 0, explanation: "Tung độ của điểm trên đường tròn là $\\sin x$. Khi góc tăng đều, giá trị này tạo thành đồ thị hình sin." },
-    { title: "Nhận ra tính tuần hoàn", prompt: "Sau khi góc tăng thêm $2\\pi$, điểm trên đường tròn và giá trị sin thay đổi thế nào?", choices: ["Trở về vị trí cũ, giá trị lặp lại", "Điểm dừng lại ở $2\\pi$", "Giá trị tăng thêm 1"], answer: 0, explanation: "Quay thêm một vòng $2\\pi$ đưa điểm về vị trí cũ, nên $\\sin(x+2\\pi)=\\sin x$." },
-    { title: "Tìm chu kỳ cơ bản", prompt: "Khoảng cách theo trục hoành giữa hai đỉnh liên tiếp của $y=\\sin x$ là bao nhiêu?", choices: ["$\\pi$", "$2\\pi$", "$4\\pi$"], answer: 1, explanation: "Hai đỉnh liên tiếp cách nhau đúng một vòng quay, tức $2\\pi$. Đây là chu kỳ cơ bản của sin và cos." },
-    { title: "Đọc biên độ", prompt: "Với $y=a\\sin(bx+c)+d$, độ lệch lớn nhất so với đường trung bình $y=d$ bằng gì?", choices: ["$|a|$", "$|b|$", "$|c|$"], answer: 0, explanation: "Biên độ là $|a|$; đồ thị nằm trong đoạn $[d-|a|;d+|a|]$." },
-    { title: "Tìm chu kỳ sau biến đổi", prompt: "Với $y=a\\sin(bx+c)+d$, chu kỳ là công thức nào khi $b\\ne0$?", choices: ["$2\\pi/|b|$", "$2\\pi|b|$", "$|a|+|d|$"], answer: 0, explanation: "Hệ số $b$ làm co giãn theo phương ngang, nên chu kỳ mới là $T=2\\pi/|b|$." },
-    { title: "Đọc dịch chuyển", prompt: "Trong $y=a\\sin(bx+c)+d$, tham số $d$ làm đồ thị thay đổi thế nào?", choices: ["Tịnh tiến lên hoặc xuống", "Thay đổi chu kỳ", "Đổi sin thành cos"], answer: 0, explanation: "$d$ tịnh tiến đồ thị theo phương thẳng đứng; đường trung bình trở thành $y=d$." },
-    { title: "Hiểu miền kéo dài", prompt: "Vì sao đồ thị sin/cos không có điểm kết thúc ở hai mép khung mô phỏng?", choices: ["Hàm số xác định với mọi số thực và các chu kỳ tiếp tục lặp", "Đồ thị chỉ có nghĩa trong khung đang thấy", "Sau $2\\pi$ hàm số không xác định"], answer: 0, explanation: "Miền xác định của sin và cos là $\\mathbb R$. Khung chỉ là cửa sổ quan sát; đồ thị tiếp tục tuần hoàn về cả hai phía." },
-  ],
-  [
-    { title: "Đọc đường thẳng ngang", prompt: "Phương trình $\\sin x=m$ được biểu diễn trên đồ thị bằng giao điểm với đường nào?", choices: ["$y=m$", "$x=m$", "$y=x+m$"], answer: 0, explanation: "Ta tìm giao điểm của đồ thị $y=\\sin x$ với đường thẳng ngang $y=m$." },
-    { title: "Kiểm tra miền giá trị", prompt: "Để $\\sin x=m$ có nghiệm thực, m phải thỏa điều kiện nào?", choices: ["$m\\ge1$", "$-1\\le m\\le1$", "$m\\ne0$"], answer: 1, explanation: "Giá trị của sin luôn thuộc $[-1;1]$, nên ngoài đoạn này phương trình vô nghiệm." },
-    { title: "Đếm giao điểm", prompt: "Khi $-1<m<1$, một đường thẳng $y=m$ cắt đồ thị sin trong mỗi chu kỳ như thế nào?", choices: ["Hai giao điểm", "Một giao điểm", "Không có giao điểm"], answer: 0, explanation: "Trong một chu kỳ, đường thẳng ngang ở giữa hai giá trị cực trị cắt đồ thị sin tại hai điểm." },
-    { title: "Đọc nghiệm trên đường tròn", prompt: "Trên đường tròn đơn vị, phương trình $\\sin x=m$ tương ứng với điều kiện nào?", choices: ["Tung độ điểm biểu diễn bằng m", "Hoành độ điểm biểu diễn bằng m", "Bán kính bằng m"], answer: 0, explanation: "Sin là tung độ, nên nghiệm là các góc có điểm biểu diễn nằm trên đường thẳng ngang $y=m$." },
-    { title: "Viết họ nghiệm", prompt: "Vì sao nghiệm của phương trình lượng giác cơ bản thường có thêm $2k\\pi$?", choices: ["Vì sin lặp lại sau mỗi chu kỳ $2\\pi$", "Vì góc chỉ được phép lớn hơn $2\\pi$", "Vì $k$ là hệ số của sin"], answer: 0, explanation: "Mỗi nghiệm trong một chu kỳ sinh ra cả họ nghiệm bằng cách cộng $2k\\pi$, với $k\\in\\mathbb Z$." },
-    { title: "Lọc nghiệm", prompt: "Khi đề yêu cầu nghiệm trong $[-\\pi;\\pi]$, cần làm gì sau khi tìm họ nghiệm?", choices: ["Chọn các nghiệm thuộc đoạn đã cho, kể cả hai đầu mút", "Chỉ giữ nghiệm dương", "Bỏ tất cả nghiệm có chứa k"], answer: 0, explanation: "Thay các giá trị nguyên k phù hợp vào họ nghiệm rồi giữ đúng những giá trị thuộc đoạn, lưu ý hai đầu mút đều được lấy." },
-    { title: "Kết luận từ hình", prompt: "Mỗi giao điểm của $y=\\sin x$ và $y=m$ cho biết điều gì?", choices: ["Một nghiệm x của phương trình $\\sin x=m$", "Một nghiệm y của phương trình", "Một điểm không thuộc đồ thị"], answer: 0, explanation: "Hoành độ của mỗi giao điểm chính là một nghiệm x. Sau đó mới lọc theo khoảng đề bài yêu cầu." },
-  ],
-];
 
 export function TrigonometryLab({
   onBackToHome,
@@ -301,7 +250,7 @@ export function TrigonometryLab({
   const eqCircleScreenY = cY - cR * eqM;
   const eqCircleIntersectX1 = cX + cR * Math.sqrt(Math.max(0, 1 - eqM * eqM));
   const eqCircleIntersectX2 = cX - cR * Math.sqrt(Math.max(0, 1 - eqM * eqM));
-  const currentGuidedSteps = GUIDED_STEPS[guidedLessonIndex] ?? GUIDED_STEPS[0];
+  const currentGuidedSteps = TRIG_GUIDED_STEPS[selectedLessonIndex] ?? TRIG_GUIDED_STEPS[0];
   const currentGuidedQuestion = currentGuidedSteps[guidedStep];
 
   return (
@@ -333,11 +282,6 @@ export function TrigonometryLab({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Link href={`/modules/trigonometry/lab?activity=${TRIG_ACTIVITIES[selectedLessonIndex] ?? "LG01"}`} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-purple-200 bg-white px-3.5 py-2 text-xs font-extrabold text-purple-800 shadow-sm transition hover:border-purple-400 hover:bg-purple-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700">
-            <Compass className="h-4 w-4" aria-hidden="true" />
-            <span>Phòng thí nghiệm chuyên sâu</span>
-            <span aria-hidden="true">↗</span>
-          </Link>
           {onOpenSocraticDrawer && (
             <button
               type="button"
@@ -409,7 +353,7 @@ export function TrigonometryLab({
       {embedded && (
         <div className="flex items-start gap-3 rounded-2xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm">
           <span className="mt-0.5 rounded-lg bg-purple-700 px-2 py-1 text-[10px] font-black text-white">QUAN SÁT</span>
-          <div className="min-w-0 flex-1"><p className="font-bold text-purple-950"><MathFormattedText text={currentLesson.title} /></p><p className="mt-0.5 text-xs leading-relaxed text-purple-900"><MathFormattedText text={`${currentLesson.steps[0]?.instruction || currentLesson.description} Thử thay đổi góc hoặc tham số bên dưới để xem đại lượng trên hình thay đổi như thế nào.`} /></p><Link href={`/modules/trigonometry/lab?activity=${TRIG_ACTIVITIES[selectedLessonIndex] ?? "LG01"}`} className="mt-2 inline-flex text-xs font-bold text-purple-800 underline decoration-purple-300 underline-offset-2 hover:text-purple-950">Mở phòng thí nghiệm chuyên sâu ↗</Link></div>
+          <div className="min-w-0 flex-1"><p className="font-bold text-purple-950"><MathFormattedText text={currentLesson.title} /></p><p className="mt-0.5 text-xs leading-relaxed text-purple-900"><MathFormattedText text={`${currentLesson.steps[0]?.instruction || currentLesson.description} Thử thay đổi góc hoặc tham số bên dưới để xem đại lượng trên hình thay đổi như thế nào.`} /></p></div>
         </div>
       )}
 
@@ -932,7 +876,7 @@ export function TrigonometryLab({
                   onChange={(e) => setEqM(parseFloat(e.target.value))}
                   className="w-full accent-rose-600 cursor-pointer"
                 />
-                <div className="p-2 rounded-xl bg-white border border-rose-200 text-[11px] space-y-1">
+                {guidedStep >= currentGuidedSteps.length && <div className="p-2 rounded-xl bg-white border border-rose-200 text-[11px] space-y-1">
                   <div className="font-bold text-slate-800">Các nghiệm thuộc đoạn [-π; π]:</div>
                   {eqRoots.length > 0 ? (
                     <div className="flex flex-wrap gap-2 pt-1">
@@ -948,12 +892,12 @@ export function TrigonometryLab({
                   <p className="text-slate-500 text-[10px] pt-1">
                     Với m = -√2/2, hai nghiệm là x1 = -π/4 (-45°) và x2 = -3π/4 (-135°).
                   </p>
-                </div>
+                </div>}
               </div>
             )}
 
             {/* Lesson 0 & general insight */}
-            {guidedLessonIndex === 0 && (
+            {guidedLessonIndex === 0 && guidedStep >= currentGuidedSteps.length && (
               <div className="text-[11px] text-slate-600 bg-purple-50/50 p-2.5 rounded-xl border border-purple-100">
                 <strong>Đối chiếu Task LG-MH01:</strong> Góc α = -765° tách thành <code>(-2) × 360° - 45°</code>, tương ứng với quay 2 vòng theo chiều âm và đi tiếp -45° (trùng điểm biểu diễn góc 315° = 7π/4 ở góc phần tư IV).
               </div>
@@ -964,22 +908,19 @@ export function TrigonometryLab({
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-purple-700">Làm cùng mô phỏng</p>
-                <h2 id="trig-seven-step-title" className="mt-1 text-base font-black text-slate-900">Khám phá theo 7 bước</h2>
+                <h2 id="trig-seven-step-title" className="mt-1 text-base font-black text-slate-900">Giải từng bước cùng mô phỏng</h2>
                 <p className="mt-1 text-xs text-slate-600">Mỗi câu hỏi gắn với hình hoặc đồ thị. Chọn đáp án, đọc giải thích rồi mới chuyển bước.</p>
               </div>
-              <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-extrabold text-purple-900">{currentGuidedQuestion ? `Bước ${guidedStep + 1} / 7` : "Đã xong 7 bước"}</span>
+              <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-extrabold text-purple-900">{currentGuidedQuestion ? `Bước ${guidedStep + 1} / ${currentGuidedSteps.length}` : "Đã hoàn thành"}</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label="Tiến độ 7 bước" aria-valuemin={0} aria-valuemax={7} aria-valuenow={guidedStep}>
-              <div className="h-full rounded-full bg-purple-600 transition-all" style={{ width: `${(guidedStep / 7) * 100}%` }} />
+            <div className="h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label="Tiến độ mô phỏng" aria-valuemin={0} aria-valuemax={currentGuidedSteps.length} aria-valuenow={guidedStep}>
+              <div className="h-full rounded-full bg-purple-600 transition-all" style={{ width: `${(guidedStep / currentGuidedSteps.length) * 100}%` }} />
             </div>
             {currentGuidedQuestion ? (
               <>
                 <div className="rounded-2xl border border-purple-100 bg-purple-50/60 p-4">
                   <p className="text-xs font-extrabold text-purple-800">{currentGuidedQuestion.title}</p>
                   <p className="mt-2 text-sm font-bold leading-relaxed text-slate-900"><MathFormattedText text={currentGuidedQuestion.prompt} /></p>
-                  {guidedLessonIndex === 1 && guidedStep >= 2 && guidedStep <= 5 && <p className="mt-2 text-[11px] text-slate-600"><MathFormattedText text="Quan sát giao điểm của đường thẳng $OM$ với hai tiếp tuyến màu cam $x=1$ và màu tím $y=1$." /></p>}
-                  {guidedLessonIndex === 1 && guidedStep === 4 && <p className="mt-1 text-[11px] font-semibold text-orange-800"><MathFormattedText text="Chọn góc $90^\\circ$ để thấy đường thẳng $OM$ song song với tiếp tuyến $x=1$." /></p>}
-                  {guidedLessonIndex === 1 && guidedStep === 5 && <p className="mt-1 text-[11px] font-semibold text-violet-800"><MathFormattedText text="Chọn góc $0^\\circ$ để thấy đường thẳng $OM$ song song với tiếp tuyến $y=1$." /></p>}
                   {guidedLessonIndex === 0 && <p className="mt-2 text-[11px] text-slate-600">Bài mẫu đang xét góc −765°. Nếu đã đổi góc, chọn lại nút −765° phía trên để đối chiếu đúng cấu hình.</p>}
                   {guidedLessonIndex === 3 && <p className="mt-2 text-[11px] text-slate-600">Kéo góc α ở hình tròn. Điểm màu vàng trên đồ thị sẽ theo góc; hai mũi tên ở hai đầu nhắc rằng đường cong còn tiếp tục.</p>}
                 </div>
@@ -992,7 +933,7 @@ export function TrigonometryLab({
                 </div>
                 {guidedResultShown && guidedChoice !== currentGuidedQuestion.answer && (
                   <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" role="status">
-                    <strong>Chưa đúng.</strong> <MathFormattedText text={currentGuidedQuestion.explanation} />
+                    <strong>Chưa đúng.</strong> <MathFormattedText text={currentGuidedQuestion.hint} />
                     <button type="button" onClick={() => { setGuidedChoice(null); setGuidedResultShown(false); }} className="ml-2 font-bold underline">Thử lại</button>
                   </div>
                 )}
@@ -1005,13 +946,13 @@ export function TrigonometryLab({
                   {!guidedResultShown ? (
                     <button type="button" disabled={guidedChoice === null} onClick={() => setGuidedResultShown(true)} className="min-h-11 rounded-xl bg-purple-700 px-5 py-2.5 text-xs font-extrabold text-white transition hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-40">Kiểm tra câu trả lời</button>
                   ) : guidedChoice === currentGuidedQuestion.answer ? (
-                    <button type="button" onClick={() => { setGuidedStep((step) => step + 1); setGuidedChoice(null); setGuidedResultShown(false); }} className="min-h-11 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-extrabold text-white transition hover:bg-emerald-800">{guidedStep === 6 ? "Hoàn thành 7 bước" : "Sang bước tiếp theo"}</button>
+                    <button type="button" onClick={() => { setGuidedStep((step) => step + 1); setGuidedChoice(null); setGuidedResultShown(false); }} className="min-h-11 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-extrabold text-white transition hover:bg-emerald-800">{guidedStep === currentGuidedSteps.length - 1 ? "Hoàn thành 7 bước" : "Sang bước tiếp theo"}</button>
                   ) : null}
                 </div>
               </>
             ) : (
               <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-950" role="status">
-                Em đã hoàn thành đủ 7 bước của bài này. Hãy kéo góc hoặc chọn hàm khác để tự kiểm tra lại các nhận xét.
+                Em đã hoàn thành các câu hỏi của bài này. Hãy thay đổi mô hình để tự kiểm tra lại kết luận.
                 <button type="button" onClick={() => { setGuidedStep(0); setGuidedChoice(null); setGuidedResultShown(false); }} className="ml-2 underline">Làm lại</button>
               </div>
             )}
@@ -1029,7 +970,7 @@ export function TrigonometryLab({
 
             {/* Steps in this lesson */}
             <div className="space-y-2 pt-2 border-t border-slate-100">
-              {currentLesson.steps.map((st) => (
+              {currentLesson.steps.filter((st) => st.stepNumber <= Math.min(guidedStep + 1, currentLesson.steps.length)).map((st) => (
                 <div key={st.stepNumber} className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1.5">
                   <div className="flex items-center gap-2">
                     <span className="w-5 h-5 rounded-full bg-purple-600 text-white font-bold text-[10px] flex items-center justify-center shrink-0">

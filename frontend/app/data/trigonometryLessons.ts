@@ -23,6 +23,52 @@ const topics: Topic[] = [
   { title: "Vận dụng thực tiễn và mô hình hóa", concept: "Mô hình tuần hoàn cần xác định mốc thời gian, vị trí đầu, chiều chuyển động, biên độ, đường giữa và chu kỳ. Các tham số phải mang đơn vị đo phù hợp với tình huống.", formula: "h(t)=d-R\\cos\\left(\\frac{2\\pi}{T}t\\right)", meaning: "Độ cao của khách bắt đầu ở đáy đu quay bán kính R, tâm cao d, chu kỳ T.", example: "Đu quay có R=10 m, d=12 m, T=20 phút. Tính độ cao lúc lên và sau 10 phút.", solution: "h(0)=2 m và h(10)=22 m.", question: "Sau nửa chu kỳ, khách bắt đầu ở đáy đến đâu?", correct: "Đỉnh cao nhất", wrong: "Trở lại đáy", errors: ["E14", "E15"], activity: "LG08", labIndex: 3 },
 ];
 
+const additionalFormulas: Record<number, { formula: string; meaning: string; conditions?: string }[]> = {
+  1: [{ formula: "\\cot\\alpha=\\frac{\\cos\\alpha}{\\sin\\alpha}", meaning: "Côtang là tỉ số hoành độ trên tung độ.", conditions: "sin α khác 0." }],
+  3: [
+    { formula: "\\sin(-a)=-\\sin a,\\quad\\cos(-a)=\\cos a", meaning: "Hai điểm đối xứng qua trục hoành." },
+    { formula: "\\sin(\\pi+a)=-\\sin a,\\quad\\cos(\\pi+a)=-\\cos a", meaning: "Hai điểm đối xứng qua gốc tọa độ." },
+    { formula: "\\sin(\\frac\\pi2-a)=\\cos a,\\quad\\cos(\\frac\\pi2-a)=\\sin a", meaning: "Hai giá trị đổi vai trò ở hai góc phụ nhau." },
+  ],
+  4: [
+    { formula: "\\sin(a\\pm b)=\\sin a\\cos b\\pm\\cos a\\sin b", meaning: "Công thức cộng và trừ của sin." },
+    { formula: "\\cos(a-b)=\\cos a\\cos b+\\sin a\\sin b", meaning: "Công thức hiệu của cos." },
+    { formula: "\\cos2a=\\cos^2a-\\sin^2a=1-2\\sin^2a=2\\cos^2a-1", meaning: "Ba dạng của công thức nhân đôi cos." },
+    { formula: "\\sin^2a=\\frac{1-\\cos2a}{2},\\quad\\cos^2a=\\frac{1+\\cos2a}{2}", meaning: "Công thức hạ bậc." },
+  ],
+  5: [
+    { formula: "\\sin a\\sin b=\\frac{\\cos(a-b)-\\cos(a+b)}2", meaning: "Biến tích sin thành hiệu cos." },
+    { formula: "\\sin a\\cos b=\\frac{\\sin(a+b)+\\sin(a-b)}2", meaning: "Biến tích sin cos thành tổng sin." },
+  ],
+  6: [
+    { formula: "\\cos a+\\cos b=2\\cos\\frac{a+b}2\\cos\\frac{a-b}2", meaning: "Tổng hai cos thành tích." },
+    { formula: "\\sin a+\\sin b=2\\sin\\frac{a+b}2\\cos\\frac{a-b}2", meaning: "Tổng hai sin thành tích." },
+    { formula: "\\sin a-\\sin b=2\\cos\\frac{a+b}2\\sin\\frac{a-b}2", meaning: "Hiệu hai sin thành tích." },
+  ],
+  8: [{ formula: "D_{\\tan}=\\mathbb R\\setminus\\{\\frac\\pi2+k\\pi\\},\\quad D_{\\cot}=\\mathbb R\\setminus\\{k\\pi\\}", meaning: "Các điểm không xác định tạo tiệm cận đứng.", conditions: "k là số nguyên." }],
+  10: [{ formula: "\\cos x=\\cos a\\iff x=\\pm a+2k\\pi", meaning: "Hai họ nghiệm của phương trình cos; ở biên có thể trùng họ.", conditions: "k là số nguyên." }],
+  11: [{ formula: "\\cos x=0\\Rightarrow\\tan x\\text{ không xác định};\\quad\\sin x=0\\Rightarrow\\cot x\\text{ không xác định}", meaning: "Không chia hai vế cho biểu thức có thể bằng 0." }],
+};
+
+const errorGuidance: Record<string, string> = {
+  E01: "Góc âm quay cùng chiều kim đồng hồ; góc dương quay ngược chiều.",
+  E02: "Hai góc cùng điểm cuối có thể khác nhau một số nguyên vòng quay.",
+  E03: "Đổi độ sang radian phải nhân với π/180.",
+  E04: "Cos là hoành độ, sin là tung độ của điểm trên đường tròn đơn vị.",
+  E05: "Điểm nằm trên trục không thuộc góc phần tư nào.",
+  E06: "Mẫu số bằng 0 làm tan hoặc cot không xác định, không phải bằng 0.",
+  E07: "Xác định trục đối xứng rồi mới kết luận dấu của giá trị lượng giác.",
+  E08: "Không phân phối sin hoặc cos qua phép cộng; dùng đúng công thức cộng.",
+  E09: "Công thức tích và tổng luôn cần kiểm tra hệ số 2 hoặc 1/2.",
+  E10: "Hiệu cos a − cos b có dấu âm ở đầu công thức.",
+  E11: "Một cặp điểm trùng không đủ chứng minh cả hàm tuần hoàn.",
+  E12: "Phân biệt một chu kỳ với chu kỳ dương nhỏ nhất.",
+  E13: "Muốn xét chẵn lẻ, tập xác định phải đối xứng qua gốc 0.",
+  E14: "Biên độ là |A|; tập giá trị còn phụ thuộc đường giữa.",
+  E15: "Lọc nghiệm phải kiểm tra đầu mút và các họ nghiệm trùng nhau.",
+  E16: "Trước khi chia cho sin hoặc cos, phải xét trường hợp chúng bằng 0.",
+};
+
 export const TRIG_LESSONS: LessonUnit[] = topics.map((t, i) => ({
   id: `trig-lesson-${i + 1}`, moduleId: "trigonometry", order: i + 1,
   code: `LG${String(i + 1).padStart(2, "0")}`, title: t.title,
@@ -48,7 +94,7 @@ export const TRIG_DETAILS: Record<string, DetailedLessonContent> = Object.fromEn
     lessonId: lesson.id, moduleId: "trigonometry", order: lesson.order, code: lesson.code,
     title: t.title, subtitle: t.meaning, grade: 11, estimatedMinutes: 20, xpReward: 60,
     objectives: [t.concept, `Giải thích và vận dụng: ${t.meaning}`],
-    theory: { coreConcept: t.concept, formulas: [{ formula: t.formula, meaning: t.meaning }], notes: [`Sai lầm cần tránh: ${t.errors.join(", ")}.`, "Kiểm tra điều kiện xác định trước khi biến đổi hoặc chia hai vế."], miniTip: t.meaning },
+    theory: { coreConcept: t.concept, formulas: [{ formula: t.formula, meaning: t.meaning }, ...(additionalFormulas[i] ?? [])], notes: t.errors.map(code => errorGuidance[code]), miniTip: t.meaning },
     workedExample: { problemStatement: t.example, steps: [{ stepNumber: 1, title: "Lập luận từ kiến thức vừa học", explanation: t.solution, rationale: t.concept }], conclusion: t.solution },
     checkpoints: [{ id: `cp-trig-${i + 1}`, question: t.question, options: [{ id: "A", text: t.correct, isCorrect: true }, { id: "B", text: t.wrong, isCorrect: false }], explanationCorrect: t.solution, explanationIncorrect: t.concept, socraticHint: t.meaning }],
     reviewQuiz: [{ id: `rq-trig-${i + 1}`, level: "basic", question: t.question, options: [{ id: "A", text: t.correct, isCorrect: true }, { id: "B", text: t.wrong, isCorrect: false }], explanationCorrect: t.solution, explanationIncorrect: t.concept, errorTag: t.errors[0] }],
@@ -59,3 +105,14 @@ export const TRIG_DETAILS: Record<string, DetailedLessonContent> = Object.fromEn
 
 export const TRIG_ACTIVITIES = topics.map(t => t.activity);
 export const TRIG_GUIDED_INDICES = topics.map(t => t.labIndex);
+
+export const TRIG_GUIDED_STEPS = topics.map((t, i) => {
+  const other = topics[(i + 3) % topics.length];
+  return [
+    { title: "1. Dự đoán", prompt: t.question, choices: [t.wrong, t.correct], answer: 1, hint: t.meaning, explanation: t.solution },
+    { title: "2. Chọn căn cứ", prompt: `Kiến thức nào giúp em giải bài: ${t.example}`, choices: [other.concept, t.concept], answer: 1, hint: `Hãy đọc lại phần lý thuyết của ${TRIG_LESSONS[i].code}.`, explanation: t.concept },
+    { title: "3. Chọn công thức", prompt: "Công thức nào phù hợp với chủ đề đang học?", choices: [`$${topics[(i + 1) % topics.length].formula}$`, `$${t.formula}$`], answer: 1, hint: t.meaning, explanation: t.meaning },
+    { title: "4. Thao tác và quan sát", prompt: `Sau khi thao tác trên mô phỏng, kết quả của bài toán “${t.example}” là gì?`, choices: [t.wrong, t.solution], answer: 1, hint: `Quan sát mô hình, rồi dùng công thức vừa chọn. ${t.meaning}`, explanation: t.solution },
+    { title: "5. Giải thích và tổng kết", prompt: "Nhận xét nào giải thích đúng kết quả vừa quan sát?", choices: [other.concept, t.concept], answer: 1, hint: `Đối chiếu kết quả với ${TRIG_LESSONS[i].code} trong phần lý thuyết.`, explanation: t.concept },
+  ];
+});

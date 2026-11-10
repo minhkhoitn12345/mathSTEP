@@ -480,7 +480,7 @@ export function LessonStudyScreen({
 
           {/* Core Concept Text */}
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs sm:text-sm text-slate-700 leading-relaxed">
-            {LEARNER_FRIENDLY_EXPLANATIONS[content.lessonId] && (
+            {content.moduleId !== "trigonometry" && LEARNER_FRIENDLY_EXPLANATIONS[content.lessonId] && (
               <div className="mb-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-indigo-950">
                 <strong className="mb-1 block text-indigo-800">Nói dễ hiểu</strong>
                 <MathFormattedText text={LEARNER_FRIENDLY_EXPLANATIONS[content.lessonId]} />

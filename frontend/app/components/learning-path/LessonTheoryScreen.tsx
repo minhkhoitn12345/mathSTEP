@@ -50,7 +50,7 @@ export function LessonTheoryScreen({ content, onStartGuidedPractice }: LessonThe
             <div>
               <h2 id="lesson-theory" className="text-lg font-black text-slate-900">Hiểu ý chính trước</h2>
               <p className="mt-1 text-sm leading-relaxed text-slate-600">Mình đọc ý nghĩa bằng lời trước, rồi dùng công thức để tính và kiểm tra.</p>
-              {LEARNER_FRIENDLY_EXPLANATIONS[content.lessonId] && (
+              {content.moduleId !== "trigonometry" && LEARNER_FRIENDLY_EXPLANATIONS[content.lessonId] && (
                 <div className="mt-3 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm leading-relaxed text-indigo-950">
                   <strong className="mb-1 block text-indigo-800">Nói dễ hiểu</strong>
                   <MathFormattedText text={LEARNER_FRIENDLY_EXPLANATIONS[content.lessonId]} />
