@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { CORE_3_MODULES, LessonUnit } from "@/app/types/curriculum";
 import {
   RotateCcw,
@@ -12,7 +12,6 @@ import {
   EyeOff,
   Layers,
   Sparkles,
-  Maximize2,
   CheckCircle2,
 } from "lucide-react";
 import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
@@ -43,7 +42,7 @@ export function SpatialGeometryLab({
 
   // 3D Apex Parameters (S.ABCD)
   const [apexX, setApexX] = useState<number>(0);
-  const [apexY, setApexY] = useState<number>(0);
+  const apexY = 0;
   const [apexZ, setApexZ] = useState<number>(4.5);
 
   // Lesson 2: Point N division ratio along SB (default 2/3 for SN:NB = 2:1)
@@ -64,8 +63,8 @@ export function SpatialGeometryLab({
 
   // Toggles for visual explorations
   const [showSectionPlane, setShowSectionPlane] = useState<boolean>(true);
-  const [showCenterO, setShowCenterO] = useState<boolean>(true);
-  const [showPointsMN, setShowPointsMN] = useState<boolean>(true);
+  const showCenterO = true;
+  const showPointsMN = true;
   const [transparentMode, setTransparentMode] = useState<boolean>(false);
   const [illusionSnapActive, setIllusionSnapActive] = useState<boolean>(false);
 
@@ -187,7 +186,6 @@ export function SpatialGeometryLab({
     }
     const radX = (rotX * Math.PI) / 180;
     const radY = (rotY * Math.PI) / 180;
-    const x1 = normal[0] * Math.cos(radY) + normal[2] * Math.sin(radY);
     const y1 = normal[1];
     const z1 = -normal[0] * Math.sin(radY) + normal[2] * Math.cos(radY);
     const z2 = y1 * Math.sin(radX) + z1 * Math.cos(radX);

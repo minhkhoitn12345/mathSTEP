@@ -2,7 +2,7 @@ import React from 'react';
 import { Point2D, SystemInequality } from '@/app/types/math';
 import { formatInequality, getOperatorSymbol } from '@/app/lib/optimath/mathEngine';
 import { checkPointAgainstInequality } from '@/app/lib/optimath/systemMathEngine';
-import { CheckCircle2, XCircle, AlertCircle, Crosshair, Target } from 'lucide-react';
+import { CheckCircle2, XCircle, Crosshair } from 'lucide-react';
 
 interface SystemPointMInspectorProps {
   system: SystemInequality[];

@@ -1,7 +1,7 @@
 import React from 'react';
 import { EvaluationResult, Inequality, Point2D } from '@/app/types/math';
-import { formatBoundaryLine, formatInequality } from '../../lib/optimath/mathEngine';
-import { CheckCircle2, XCircle, HelpCircle, ArrowRight, BookOpen, Sparkles, Compass } from 'lucide-react';
+import { formatBoundaryLine } from '../../lib/optimath/mathEngine';
+import { CheckCircle2, XCircle, BookOpen, Sparkles, Compass } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface ExplanationPanelProps {

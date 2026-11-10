@@ -7,10 +7,6 @@ import {
   ArrowLeft,
   HelpCircle,
   Activity,
-  Sliders,
-  CheckCircle2,
-  AlertCircle,
-  Sparkles,
 } from "lucide-react";
 import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
 
@@ -41,7 +37,6 @@ export function TrigonometryLab({
   // Core angle in degrees (Defaults to -765° from Task LG-MH01)
   const [angleDeg, setAngleDeg] = useState<number>(-765);
   const [waveMode, setWaveMode] = useState<"sin" | "cos">("sin");
-  const [angleUnit, setAngleUnit] = useState<"deg" | "rad">("deg");
 
   // Lesson 3: Reflection toggles
   const [showSupplementary, setShowSupplementary] = useState<boolean>(true); // Cung bù (pi - x)
@@ -72,8 +67,7 @@ export function TrigonometryLab({
   const repAngleRad = (repAngleDeg * Math.PI) / 180;
 
   // Complete turns k
-  const completeTurns = Math.floor(Math.abs(angleDeg) / 360) * (angleDeg < 0 ? -1 : 1);
-  const remainingDeg = angleDeg - completeTurns * 360;
+  const _completeTurns = Math.floor(Math.abs(angleDeg) / 360) * (angleDeg < 0 ? -1 : 1);
 
   // Values on Unit Circle
   const cosVal = Math.cos(angleRad);
@@ -98,7 +92,6 @@ export function TrigonometryLab({
   const oppScreenY = cY - cR * oppSin;
 
   // Double angle: 2a
-  const doubleAngleRad = 2 * angleRad;
   const sin2a = 2 * sinVal * cosVal;
   const cos2a = cosVal * cosVal - sinVal * sinVal;
   const doubleScreenX = cX + cR * cos2a;

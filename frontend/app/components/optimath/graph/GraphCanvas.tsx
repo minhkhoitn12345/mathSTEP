@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Inequality, Point2D, ShadingMode } from '@/app/types/math';
 import { getHalfPlanePolygon, getLineSegmentInBox, formatBoundaryLine, checkPointInequality } from '../../../lib/optimath/mathEngine';
-import { ZoomIn, ZoomOut, RotateCcw, MousePointer, Layers, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, MousePointer } from 'lucide-react';
 
 interface GraphCanvasProps {
   inequality: Inequality;
@@ -151,7 +151,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
   const maxX = viewCenter.x + dimensions.width / (2 * scale);
   const minY = viewCenter.y - dimensions.height / (2 * scale);
   const maxY = viewCenter.y + dimensions.height / (2 * scale);
-  const mathBounds = { minX, maxX, minY, maxY };
+  const mathBounds = useMemo(() => ({ minX, maxX, minY, maxY }), [minX, maxX, minY, maxY]);
 
   // Boundary line segment
   const lineSegment = getLineSegmentInBox(inequality.a, inequality.b, inequality.c, mathBounds);

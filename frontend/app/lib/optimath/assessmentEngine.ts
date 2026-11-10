@@ -1,7 +1,6 @@
 import {
   AssessmentExercise,
   AssessmentTopicId,
-  CognitiveLevel,
   ErrorCodeId,
   ExerciseAttemptRecord,
   ExerciseStepPrompt,

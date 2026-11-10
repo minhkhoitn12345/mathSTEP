@@ -345,7 +345,7 @@ export function getHalfPlanePolygon(
 ): Point2D[] {
   const { minX, maxX, minY, maxY } = bounds;
   // Bounding box polygon (counter-clockwise)
-  let polygon: Point2D[] = [
+  const polygon: Point2D[] = [
     { x: minX, y: minY },
     { x: maxX, y: minY },
     { x: maxX, y: maxY },

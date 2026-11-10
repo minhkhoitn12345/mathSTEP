@@ -6,10 +6,7 @@ import {
   EyeOff,
   Maximize2,
   Minimize2,
-  HelpCircle,
-  Sparkles,
-  CheckCircle2,
-  Layers
+  HelpCircle
 } from 'lucide-react';
 
 interface SystemTeacherControlsProps {
@@ -26,7 +23,7 @@ interface SystemTeacherControlsProps {
 }
 
 export const SystemTeacherControls: React.FC<SystemTeacherControlsProps> = ({
-  system,
+  system: _system,
   analysis,
   showCommonRegion,
   onToggleCommonRegion,

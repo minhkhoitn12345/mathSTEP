@@ -14,7 +14,6 @@ import {
   Award,
   Sparkles,
   Calculator,
-  HelpCircle,
   Target,
   Eye,
   RotateCcw,

@@ -10,8 +10,7 @@ import {
 import {
   ASSESSMENT_EXERCISE_BANK,
   ERROR_CODE_CATALOG,
-  LEVEL_METADATA,
-  TOPIC_METADATA
+  LEVEL_METADATA
 } from '@/app/lib/optimath/assessmentBank';
 import { computeStudentAnalytics } from '@/app/lib/optimath/assessmentEngine';
 import {

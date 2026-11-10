@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { OptimizationResult, RealWorldScenario } from '@/app/types/math';
-import { Presentation, Maximize2, Minimize2, Eye, EyeOff, Sparkles, HelpCircle, Target } from 'lucide-react';
+import { Presentation, Maximize2, Minimize2, Eye, EyeOff, HelpCircle } from 'lucide-react';
 
 interface OptimizationTeacherControlsProps {
   scenario: RealWorldScenario;
@@ -16,8 +16,8 @@ interface OptimizationTeacherControlsProps {
 }
 
 export const OptimizationTeacherControls: React.FC<OptimizationTeacherControlsProps> = ({
-  scenario,
-  result,
+  scenario: _scenario,
+  result: _result,
   isPresentationMode,
   onTogglePresentationMode,
   showLevelCurve,
@@ -28,7 +28,7 @@ export const OptimizationTeacherControls: React.FC<OptimizationTeacherControlsPr
   onToggleOptimalPoint
 }) => {
   const [activeQuestion, setActiveQuestion] = useState<number | null>(null);
-  const [revealedAnswer, setRevealedAnswer] = useState(false);
+  const [, setRevealedAnswer] = useState(false);
 
   const socratesQuestions = [
     {

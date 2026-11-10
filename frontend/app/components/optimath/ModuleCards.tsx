@@ -1,5 +1,5 @@
 import React from "react";
-import { Compass, Box, Activity, Play, ArrowRight, Sparkles } from "lucide-react";
+import { Compass, Box, Activity, Play, ArrowRight } from "lucide-react";
 import { CORE_3_MODULES, CoreModuleConfig, LessonUnit } from "@/app/types/curriculum";
 
 export interface ModuleData {
@@ -47,7 +47,6 @@ export const ModuleCards: React.FC<ModuleCardsProps> = ({
         {CORE_3_MODULES.map((mod: CoreModuleConfig) => {
           const isBlue = mod.id === "linear_programming";
           const isEmerald = mod.id === "spatial_geometry";
-          const isPurple = mod.id === "trigonometry";
 
           const accentColor = isBlue
             ? "border-blue-200 hover:border-blue-400"

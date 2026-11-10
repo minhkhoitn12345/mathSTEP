@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
-import { ObjectiveFunction, OptimizationResult, Point2D, RealWorldScenario, SystemInequality } from '@/app/types/math';
+import { OptimizationResult, Point2D, RealWorldScenario } from '@/app/types/math';
 import { getLineSegmentInBox } from '../../../lib/optimath/mathEngine';
 import {
   clipBoxWithSystem,
@@ -14,12 +14,8 @@ import {
   Play,
   Pause,
   Sliders,
-  CheckCircle2,
   Sparkles,
   Target,
-  Layers,
-  Eye,
-  EyeOff,
   Minus,
   Plus
 } from 'lucide-react';

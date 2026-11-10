@@ -1,8 +1,8 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Point2D, ShadingMode, SystemInequality, IntersectionPoint, SystemAnalysisResult } from '@/app/types/math';
-import { getLineSegmentInBox, formatBoundaryLine } from '../../../lib/optimath/mathEngine';
+import { getLineSegmentInBox } from '../../../lib/optimath/mathEngine';
 import { formatPointCoord } from '../../../lib/optimath/systemMathEngine';
-import { ZoomIn, ZoomOut, RotateCcw, Layers, MousePointer, Eye, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, MousePointer } from 'lucide-react';
 
 interface SystemGraphCanvasProps {
   system: SystemInequality[];
@@ -41,8 +41,8 @@ export const SystemGraphCanvas: React.FC<SystemGraphCanvasProps> = ({
   showBoundaryLines = true,
   showIntersections = true,
   showFeasibleVerticesOnly = false,
-  dimNonFeasibleRegion = false,
-  shadingMode = 'solution',
+  dimNonFeasibleRegion: _dimNonFeasibleRegion = false,
+  shadingMode: _shadingMode = 'solution',
 
   isPresentationMode = false,
   className = '',
@@ -214,10 +214,10 @@ export const SystemGraphCanvas: React.FC<SystemGraphCanvasProps> = ({
   const individualPolygons = useMemo(() => {
     if (!showIndividualFills) return [];
 
-    return system.map((ineq, idx) => {
+    return system.map((ineq, _idx) => {
       if (ineq.showFill === false) return null;
 
-      let poly: Point2D[] = [
+      const poly: Point2D[] = [
         { x: bounds.minX, y: bounds.minY },
         { x: bounds.maxX, y: bounds.minY },
         { x: bounds.maxX, y: bounds.maxY },

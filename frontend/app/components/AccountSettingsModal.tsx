@@ -20,7 +20,7 @@ import {
 import { downloadBackupFile } from "../lib/useStationStorage";
 
 export interface CustomAiConfig {
-  provider: "gemini" | "openai" | "deepseek";
+  provider: "gemini";
   model: string;
   apiKey: string;
 }
@@ -49,11 +49,7 @@ interface AccountSettingsModalProps {
   onAiConfigUpdated?: (config: CustomAiConfig | null) => void;
 }
 
-const AI_MODEL_OPTIONS: Record<
-  "gemini" | "openai" | "deepseek",
-  { id: string; label: string; desc: string; isRecommended?: boolean }[]
-> = {
-  gemini: [
+const AI_MODEL_OPTIONS = [
     {
       id: "gemini-3-flash-preview",
       label: "Gemini 3 Flash",
@@ -75,34 +71,7 @@ const AI_MODEL_OPTIONS: Record<
       label: "Gemini 2.5 Pro",
       desc: "Tư duy toán học và logic Socratic chuyên sâu, giải thích chặt chẽ.",
     },
-  ],
-  openai: [
-    {
-      id: "gpt-4o-mini",
-      label: "GPT-4o mini",
-      desc: "Nhẹ, thông minh, tối ưu chi phí và phản hồi nhanh.",
-      isRecommended: true,
-    },
-    {
-      id: "gpt-4o",
-      label: "GPT-4o",
-      desc: "Mô hình đa nhiệm đầu bảng của OpenAI, khả năng lý luận cao cấp.",
-    },
-  ],
-  deepseek: [
-    {
-      id: "deepseek-chat",
-      label: "DeepSeek V3 (Chat)",
-      desc: "Tốc độ phản hồi vượt trội, xử lý ngôn ngữ tiếng Việt tự nhiên.",
-    },
-    {
-      id: "deepseek-reasoner",
-      label: "DeepSeek R1 (Reasoner)",
-      desc: "Chuyên gia suy luận toán học sâu với chuỗi suy nghĩ CoT bài bản.",
-      isRecommended: true,
-    },
-  ],
-};
+];
 
 export default function AccountSettingsModal({
   isOpen,
@@ -130,7 +99,7 @@ export default function AccountSettingsModal({
   const [teacherVerifyMsg, setTeacherVerifyMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   // AI Config Form States
-  const [provider, setProvider] = useState<"gemini" | "openai" | "deepseek">("gemini");
+  const provider = "gemini" as const;
   const [selectedModel, setSelectedModel] = useState<string>("gemini-3-flash-preview");
   const [apiKey, setApiKey] = useState<string>("");
   const [savedApiKeyConfigured, setSavedApiKeyConfigured] = useState(false);
@@ -173,14 +142,6 @@ export default function AccountSettingsModal({
       setSavedApiKeyConfigured(false);
     }
   }, [isOpen, initialTab, currentSession]);
-
-  // Tự động chọn model đề xuất khi chuyển provider
-  const handleSelectProvider = (p: "gemini" | "openai" | "deepseek") => {
-    setProvider(p);
-    const rec = AI_MODEL_OPTIONS[p].find((m) => m.isRecommended) || AI_MODEL_OPTIONS[p][0];
-    setSelectedModel(rec.id);
-    setTestResult(null);
-  };
 
   // Lưu hồ sơ cá nhân
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -648,47 +609,11 @@ export default function AccountSettingsModal({
               {/* Provider Selection */}
               <div>
                 <label className="font-semibold text-slate-200 block mb-1.5">
-                  1. Chọn Nhà cung cấp AI (Provider)
+                  1. Nhà cung cấp AI
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleSelectProvider("gemini")}
-                    className={`p-2.5 rounded-xl border font-semibold text-center transition-all cursor-pointer ${
-                      provider === "gemini"
-                        ? "border-blue-500 bg-blue-950/40 text-blue-300 ring-1 ring-blue-500"
-                        : "border-slate-800 bg-slate-950/60 hover:bg-slate-850 text-slate-300"
-                    }`}
-                  >
-                    <span className="block font-bold">Google Gemini</span>
-                    <span className="block text-[10px] text-emerald-400 font-normal">Miễn phí key</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleSelectProvider("openai")}
-                    className={`p-2.5 rounded-xl border font-semibold text-center transition-all cursor-pointer ${
-                      provider === "openai"
-                        ? "border-blue-500 bg-blue-950/40 text-blue-300 ring-1 ring-blue-500"
-                        : "border-slate-800 bg-slate-950/60 hover:bg-slate-850 text-slate-300"
-                    }`}
-                  >
-                    <span className="block font-bold">OpenAI</span>
-                    <span className="block text-[10px] text-slate-400 font-normal">GPT-4o / mini</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleSelectProvider("deepseek")}
-                    className={`p-2.5 rounded-xl border font-semibold text-center transition-all cursor-pointer ${
-                      provider === "deepseek"
-                        ? "border-blue-500 bg-blue-950/40 text-blue-300 ring-1 ring-blue-500"
-                        : "border-slate-800 bg-slate-950/60 hover:bg-slate-850 text-slate-300"
-                    }`}
-                  >
-                    <span className="block font-bold">DeepSeek</span>
-                    <span className="block text-[10px] text-sky-400 font-normal">R1 Toán học</span>
-                  </button>
+                <div className="rounded-xl border border-blue-500 bg-blue-950/40 p-2.5 text-blue-200">
+                  <span className="block font-bold">Google Gemini</span>
+                  <span className="block text-[10px] text-emerald-300 font-normal">Nhà cung cấp duy nhất cho Trợ lý học tập</span>
                 </div>
               </div>
 
@@ -698,7 +623,7 @@ export default function AccountSettingsModal({
                   2. Chọn phiên bản Model chuyên sâu
                 </label>
                 <div className="space-y-1.5">
-                  {AI_MODEL_OPTIONS[provider].map((opt) => (
+                  {AI_MODEL_OPTIONS.map((opt) => (
                     <label
                       key={opt.id}
                       className={`p-2.5 rounded-xl border flex items-start gap-2.5 cursor-pointer transition-all ${
@@ -752,17 +677,6 @@ export default function AccountSettingsModal({
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
-                  {provider === "openai" && (
-                    <a
-                      href="https://platform.openai.com/api-keys"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[11px] text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1 font-medium"
-                    >
-                      <span>Lấy key OpenAI</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
                 </div>
 
                 <div className="relative">
@@ -773,13 +687,7 @@ export default function AccountSettingsModal({
                       setApiKey(e.target.value);
                       setTestResult(null);
                     }}
-                    placeholder={
-                      provider === "gemini"
-                        ? "Dán API Key bắt đầu bằng AIzaSy..."
-                        : provider === "openai"
-                        ? "Dán API Key sk-..."
-                        : "Dán DeepSeek API Key..."
-                    }
+                    placeholder="Dán Google Gemini API key bắt đầu bằng AIzaSy..."
                     className="w-full p-2.5 pr-10 border border-slate-700/80 rounded-xl text-xs font-mono focus:outline-none focus:border-blue-500 bg-slate-950 text-white placeholder-slate-500"
                   />
                   <button

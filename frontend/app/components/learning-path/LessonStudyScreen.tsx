@@ -22,6 +22,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import { OptiMascot } from "../optimath/mascot/OptiMascot";
+import { getLessonFlowStage, setLessonFlowStage, type LessonFlowStage } from "../../lib/learningProgressStorage";
 
 const SOUND_PREFERENCE_KEY = "mathstep_learning_sound_enabled";
 
@@ -85,6 +86,8 @@ export function LessonStudyScreen({
   );
   const [passedQuizLevels, setPassedQuizLevels] = useState<Record<string, boolean>>({});
   const [activeWorkedStepIndex, setActiveWorkedStepIndex] = useState(0);
+  const [lessonFlowStage, setLessonFlowStageState] = useState<LessonFlowStage>("simulation");
+  const [simulationOpened, setSimulationOpened] = useState(false);
   const [workedHintLevel, setWorkedHintLevel] = useState(0);
   const [workedStepChecked, setWorkedStepChecked] = useState(false);
   const [workedStepAttempt, setWorkedStepAttempt] = useState("");
@@ -111,6 +114,12 @@ export function LessonStudyScreen({
       // Keep sound enabled by default if browser storage is unavailable.
     }
   }, []);
+
+  useEffect(() => {
+    const savedStage = getLessonFlowStage(content.lessonId);
+    setLessonFlowStageState(savedStage);
+    setSimulationOpened(savedStage !== "simulation");
+  }, [content.lessonId]);
 
   useEffect(() => {
     // Keep server and initial client markup deterministic, then draw a fresh set after hydration.
@@ -157,12 +166,22 @@ export function LessonStudyScreen({
     return checkpoint.options.some((option) => option.id === selectedId && option.isCorrect);
   });
   const canCompleteLesson =
-    workedExampleComplete &&
-    checkpointsComplete &&
+    lessonFlowStage === "test" &&
     (quizItems.length === 0 || quizLevels.every((level) => passedQuizLevels[level]));
 
   const handleShowNextWorkedHint = () => {
     setWorkedHintLevel((level) => Math.min(level + 1, 3));
+  };
+
+  const advanceLessonStage = (stage: LessonFlowStage) => {
+    setLessonFlowStage(content.lessonId, stage);
+    setLessonFlowStageState(stage);
+  };
+
+  const handleOpenLessonSimulation = () => {
+    setSimulationOpened(true);
+    if (lessonFlowStage === "simulation") advanceLessonStage("simulation_opened");
+    onOpenSimulation(content.moduleId, content.lessonId);
   };
 
   const handleAdvanceWorkedStep = () => {
@@ -328,7 +347,7 @@ export function LessonStudyScreen({
             {/* Nút Mở phòng mô phỏng bài này */}
             <button
               type="button"
-              onClick={() => onOpenSimulation(content.moduleId, content.lessonId)}
+              onClick={handleOpenLessonSimulation}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
               title="Mở ngay phòng mô phỏng tương tác chuyên biệt cho bài này"
             >
@@ -377,6 +396,23 @@ export function LessonStudyScreen({
             <MathFormattedText text={content.subtitle} />
           </p>
 
+          <div className="grid grid-cols-3 gap-2" aria-label="Tiến trình bài học">
+            {[
+              { key: "simulation", label: "1. Mô phỏng", done: lessonFlowStage === "questions" || lessonFlowStage === "test" },
+              { key: "questions", label: "2. Câu hỏi gợi mở", done: lessonFlowStage === "test" },
+              { key: "test", label: "3. Bài kiểm tra", done: false },
+            ].map((item) => (
+              <div key={item.key} className={`rounded-xl border px-2 py-2 text-center text-[10px] font-bold sm:text-xs ${
+                item.done ? "border-emerald-200 bg-emerald-50 text-emerald-700" :
+                item.key === lessonFlowStage || (item.key === "simulation" && lessonFlowStage === "simulation_opened")
+                  ? "border-blue-300 bg-blue-50 text-blue-800"
+                  : "border-slate-200 bg-slate-50 text-slate-400"
+              }`}>
+                {item.label}{item.done ? " ✓" : ""}
+              </div>
+            ))}
+          </div>
+
           {/* Quick simulation banner */}
           <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-blue-50/50 p-3.5 rounded-2xl border border-blue-100">
             <div className="flex items-center gap-2.5 text-xs text-blue-900 font-medium">
@@ -385,13 +421,24 @@ export function LessonStudyScreen({
             </div>
             <button
               type="button"
-              onClick={() => onOpenSimulation(content.moduleId, content.lessonId)}
+              onClick={handleOpenLessonSimulation}
               className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
             >
               <span>Vào mô phỏng</span>
               <ArrowRight className="w-3 h-3" />
             </button>
           </div>
+          {lessonFlowStage === "simulation_opened" && simulationOpened && (
+            <div className="mt-3 flex flex-col gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs leading-relaxed text-emerald-900">Sau khi thao tác trên mô phỏng, hãy xác nhận để chuyển sang phần câu hỏi gợi mở.</p>
+              <button type="button" onClick={() => advanceLessonStage("questions")} className="shrink-0 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-extrabold text-white transition hover:bg-emerald-700">
+                Đã thực hành mô phỏng · Tiếp tục
+              </button>
+            </div>
+          )}
+          {lessonFlowStage === "questions" && (
+            <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800">Đã qua phần mô phỏng. Hoàn thành ví dụ và toàn bộ câu hỏi gợi mở để mở bài kiểm tra.</p>
+          )}
         </div>
 
         {showTheorySections && <>
@@ -497,7 +544,7 @@ export function LessonStudyScreen({
         </>}
 
         {/* Guided example: learners reveal and check one step at a time. */}
-        <section className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-5">
+        {lessonFlowStage === "questions" && <section className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-5">
           <div className="flex items-center gap-2.5 text-slate-900">
             <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs">
               {showTheorySections ? 3 : 1}
@@ -601,10 +648,10 @@ export function LessonStudyScreen({
             )}
           </div>
 
-        </section>
+        </section>}
 
         {/* PHẦN 4: CÂU HỎI TỰ LUYỆN SAU MỖI PHẦN (CHECKPOINTS) */}
-        {content.checkpoints.length > 0 && workedExampleComplete && (
+        {lessonFlowStage === "questions" && content.checkpoints.length > 0 && workedExampleComplete && (
           <section className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-5">
             <div className="flex items-center gap-2.5 text-slate-900">
               <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">
@@ -715,8 +762,18 @@ export function LessonStudyScreen({
           </section>
         )}
 
-        {/* PHẦN 5: BÀI ÔN TẬP NGẮN CUỐI BÀI (MINI REVIEW QUIZ) */}
-        {quizItems.length > 0 && workedExampleComplete && checkpointsComplete && (
+        {/* Bài kiểm tra cuối bài chỉ xuất hiện sau khi hoàn thành mô phỏng và câu hỏi gợi mở. */}
+        {lessonFlowStage === "questions" && workedExampleComplete && checkpointsComplete && (
+          <section className="rounded-3xl border border-indigo-200 bg-indigo-50 p-5 sm:p-6">
+            <h2 className="text-base font-black text-indigo-950">Em đã hoàn thành phần câu hỏi gợi mở</h2>
+            <p className="mt-1 text-sm leading-relaxed text-indigo-900">Bây giờ em có thể làm bài kiểm tra để tự đánh giá mức độ nắm bài.</p>
+            <button type="button" onClick={() => advanceLessonStage("test")} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-indigo-700">
+              Mở bài kiểm tra <ArrowRight className="h-4 w-4" />
+            </button>
+          </section>
+        )}
+
+        {lessonFlowStage === "test" && quizItems.length > 0 && (
           <section className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm space-y-5">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 text-slate-900">
@@ -724,7 +781,7 @@ export function LessonStudyScreen({
                 {showTheorySections ? 5 : 3}
                 </div>
                 <h2 className="text-base sm:text-lg font-black tracking-tight">
-                  Quiz theo cấp độ
+                  Bài kiểm tra cuối bài
                 </h2>
               </div>
               <span className="text-xs text-slate-500 font-medium">

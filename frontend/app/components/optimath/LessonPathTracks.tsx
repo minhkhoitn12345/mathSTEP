@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Activity, ArrowRight, BookOpen, Box, Check, CheckCircle2, Clock, Compass } from "lucide-react";
+import { Activity, ArrowRight, BookOpen, Box, Check, Clock, Compass } from "lucide-react";
 import type { CoreModuleConfig } from "@/app/types/curriculum";
 import type { LessonStatus, UserLearningProgress } from "@/app/types/learningPath";
 import { getLessonStatus } from "@/app/lib/learningProgressStorage";

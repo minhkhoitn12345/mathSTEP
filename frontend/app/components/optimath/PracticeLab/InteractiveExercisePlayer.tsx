@@ -26,7 +26,6 @@ import {
   AlertTriangle,
   HelpCircle,
   ArrowRight,
-  RotateCcw,
   BookOpen,
   Clock,
   Target,
@@ -98,7 +97,7 @@ export const InteractiveExercisePlayer: React.FC<InteractiveExercisePlayerProps>
     setCanvasPointB({ x: 1, y: 0 });
     setCanvasHalfPlaneSide(null);
     setLastFeedback(null);
-  }, [exercise.id]);
+  }, [exercise.id, exercise.mathData.testPoint]);
 
   // Live timer while exercise is in progress
   useEffect(() => {

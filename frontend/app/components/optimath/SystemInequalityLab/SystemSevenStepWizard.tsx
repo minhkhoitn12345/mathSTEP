@@ -1,7 +1,22 @@
+type StudentInterCalc = {
+  inputX: string;
+  inputY: string;
+  isSolved: boolean;
+  showHint: boolean;
+  showSolution: boolean;
+  feedback?: { isCorrect: boolean; message: string };
+};
+
+type StudentFilterState = {
+  choice: 'feasible' | 'infeasible' | null;
+  isVerified: boolean;
+  isCorrect?: boolean;
+  showDetails: boolean;
+};
 import React, { useState, useMemo, useEffect } from 'react';
 import { Point2D, StepNumber, SystemAnalysisResult, SystemInequality } from '@/app/types/math';
-import { formatBoundaryLine, formatInequality, getOperatorSymbol } from '@/app/lib/optimath/mathEngine';
-import { parseCoordinateInput, formatFractionOrDecimal } from '@/app/lib/optimath/systemMathEngine';
+import { formatBoundaryLine, formatInequality } from '@/app/lib/optimath/mathEngine';
+import { parseCoordinateInput } from '@/app/lib/optimath/systemMathEngine';
 import { SystemGraphCanvas } from '@/app/components/optimath/graph/SystemGraphCanvas';
 import { OptiMascot } from '@/app/components/optimath/mascot/OptiMascot';
 import {
@@ -14,17 +29,12 @@ import {
   Sparkles,
   HelpCircle,
   Copy,
-  Layers,
   Check,
   Compass,
   Sliders,
   Volume2,
   VolumeX,
   Target,
-  Calculator,
-  Eye,
-  ChevronDown,
-  ChevronUp,
   Award
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -50,7 +60,7 @@ const SYSTEM_STEP_TITLES = [
 export const SystemSevenStepWizard: React.FC<SystemSevenStepWizardProps> = ({
   system,
   analysis,
-  onSystemChange,
+  onSystemChange: _onSystemChange,
   onSelectPreset,
   onSwitchToSandbox
 }) => {
@@ -256,7 +266,7 @@ export const SystemSevenStepWizard: React.FC<SystemSevenStepWizardProps> = ({
 
   // STEP 4: Auto-fill all coordinates (quick mode / teacher)
   const handleAutoFillAllStep4 = () => {
-    const next: Record<string, any> = {};
+    const next: Record<string, StudentInterCalc> = {};
     for (const inter of analysis.intersections) {
       next[inter.id] = {
         inputX: String(inter.point.x),
@@ -307,7 +317,7 @@ export const SystemSevenStepWizard: React.FC<SystemSevenStepWizardProps> = ({
 
   // STEP 5: Auto verify all filters
   const handleAutoVerifyAllStep5 = () => {
-    const next: Record<string, any> = {};
+    const next: Record<string, StudentFilterState> = {};
     for (const inter of analysis.intersections) {
       next[inter.id] = {
         choice: inter.isFeasible ? 'feasible' : 'infeasible',

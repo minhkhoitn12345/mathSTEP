@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { LearningMode, Point2D, SystemInequality } from '@/app/types/math';
 import { analyzeSystemFeasibleRegion, SYSTEM_BENCHMARK_PRESETS } from '@/app/lib/optimath/systemMathEngine';
 import { SystemGraphCanvas } from '@/app/components/optimath/graph/SystemGraphCanvas';
@@ -8,18 +8,7 @@ import { SystemPointMInspector } from './SystemPointMInspector';
 import { SystemSevenStepWizard } from './SystemSevenStepWizard';
 import { SystemTeacherControls } from './SystemTeacherControls';
 import { OptiMascot } from '@/app/components/optimath/mascot/OptiMascot';
-import {
-  Compass,
-  GraduationCap,
-  Presentation,
-  Layers,
-  Sparkles,
-  RotateCcw,
-  Maximize2,
-  Minimize2,
-  CheckCircle2,
-  Sliders
-} from 'lucide-react';
+import { Compass, GraduationCap, Presentation } from 'lucide-react';
 
 interface SystemInequalityLabProps {
   initialLearningMode?: LearningMode;
@@ -41,8 +30,8 @@ export const SystemInequalityLab: React.FC<SystemInequalityLabProps> = ({
 
   // Layer Toggles
   const [showCommonRegion, setShowCommonRegion] = useState(true);
-  const [showIndividualFills, setShowIndividualFills] = useState(true);
-  const [showBoundaryLines, setShowBoundaryLines] = useState(true);
+  const showIndividualFills = true;
+  const showBoundaryLines = true;
   const [showIntersections, setShowIntersections] = useState(true);
   const [showVerticesOnly, setShowVerticesOnly] = useState(false);
   const [isPresentationMode, setIsPresentationMode] = useState(false);

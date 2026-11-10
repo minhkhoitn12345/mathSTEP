@@ -108,7 +108,7 @@ export function LessonTheoryScreen({ content, onStartGuidedPractice }: LessonThe
             onClick={onStartGuidedPractice}
             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3.5 text-sm font-extrabold text-white shadow-md transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
           >
-            Mình đã nắm ý chính · Bắt đầu luyện từng bước
+            Mình đã nắm lý thuyết · Vào phòng mô phỏng
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>

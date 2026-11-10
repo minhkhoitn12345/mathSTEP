@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { ComparisonOperator, Inequality, LearningMode, OptiExpression, Point2D, ShadingMode } from '@/app/types/math';
+import React, { useState, useMemo } from 'react';
+import { Inequality, LearningMode, OptiExpression, Point2D, ShadingMode } from '@/app/types/math';
 import { evaluatePointWithSteps, formatBoundaryLine, formatInequality } from '../../lib/optimath/mathEngine';
 import { OptiActionState } from '@/app/components/optimath/mascot/OptiMascot';
 import { GraphCanvas } from '@/app/components/optimath/graph/GraphCanvas';
@@ -7,7 +7,7 @@ import { ControlPanel } from './ControlPanel';
 import { ExplanationPanel } from './ExplanationPanel';
 import { OptiDialogue } from '@/app/components/optimath/mascot/OptiDialogue';
 import { SevenStepWizard } from './SevenStepWizard/SevenStepWizard';
-import { Sparkles, GraduationCap, Compass, Presentation, HelpCircle, Lightbulb, Play } from 'lucide-react';
+import { Sparkles, GraduationCap, Compass, Presentation } from 'lucide-react';
 
 interface SingleInequalityLabProps {
   initialLearningMode?: LearningMode;
@@ -50,7 +50,7 @@ export const SingleInequalityLab: React.FC<SingleInequalityLabProps> = ({
   // Dynamic Opti message calculation
   const optiState = useMemo(() => {
     const isOrigin = pointM.x === 0 && pointM.y === 0;
-    const isDefaultIneq = inequality.a === 2 && inequality.b === 1 && inequality.op === '<=' && inequality.c === 6;
+    const _isDefaultIneq = inequality.a === 2 && inequality.b === 1 && inequality.op === '<=' && inequality.c === 6;
 
     const isThroughOrigin = Math.abs(inequality.c) < 1e-6;
 

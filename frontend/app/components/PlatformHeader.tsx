@@ -38,11 +38,11 @@ interface PlatformHeaderProps {
 
 export default function PlatformHeader({
   subsystem,
-  activeSection,
+  activeSection: _activeSection,
   onSelectSubsystem,
   onNavigateHome,
-  onNavigateStations,
-  onNavigateModules,
+  onNavigateStations: _onNavigateStations,
+  onNavigateModules: _onNavigateModules,
   session,
   sessionLoading,
   customAiConfig,

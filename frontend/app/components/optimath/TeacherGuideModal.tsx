@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Presentation, Compass, CheckCircle2, Lightbulb, Users, Target, ArrowRight } from 'lucide-react';
+import { X, Presentation, CheckCircle2, Lightbulb, Target, ArrowRight } from 'lucide-react';
 import { OptiMascot } from '@/app/components/optimath/mascot/OptiMascot';
 
 interface TeacherGuideModalProps {

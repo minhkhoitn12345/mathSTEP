@@ -12,7 +12,7 @@ import {
   LEVEL_METADATA,
   TOPIC_METADATA
 } from '@/app/lib/optimath/assessmentBank';
-import { CheckCircle2, Search, Play, AlertCircle, Filter } from 'lucide-react';
+import { CheckCircle2, Search, Play, AlertCircle } from 'lucide-react';
 import { MathFormattedText } from '@/app/components/KatexMath';
 
 interface ExerciseBankViewProps {

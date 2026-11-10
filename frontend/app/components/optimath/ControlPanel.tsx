@@ -1,7 +1,7 @@
 import React from 'react';
 import { ComparisonOperator, Inequality, Point2D, ShadingMode } from '@/app/types/math';
 import { formatInequality, formatBoundaryLine } from '../../lib/optimath/mathEngine';
-import { RotateCcw, Sparkles, Layers, Sliders, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { RotateCcw, Layers, Sliders, AlertTriangle } from 'lucide-react';
 
 interface ControlPanelProps {
   inequality: Inequality;

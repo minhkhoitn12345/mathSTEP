@@ -2,6 +2,30 @@ import { UserLearningProgress, LessonStatus } from "../types/learningPath";
 
 const STORAGE_KEY = "mathstep_learning_progress_v1";
 const THEORY_COMPLETED_KEY = "mathstep_theory_completed_v1";
+const LESSON_FLOW_KEY = "mathstep_lesson_flow_v1";
+
+export type LessonFlowStage = "simulation" | "simulation_opened" | "questions" | "test";
+
+export function getLessonFlowStage(lessonId: string): LessonFlowStage {
+  if (typeof window === "undefined") return "simulation";
+  try {
+    const stages = JSON.parse(localStorage.getItem(LESSON_FLOW_KEY) || "{}") as Record<string, unknown>;
+    const stage = stages[lessonId];
+    return stage === "simulation_opened" || stage === "questions" || stage === "test" ? stage : "simulation";
+  } catch {
+    return "simulation";
+  }
+}
+
+export function setLessonFlowStage(lessonId: string, stage: LessonFlowStage): void {
+  if (typeof window === "undefined") return;
+  try {
+    const parsed = JSON.parse(localStorage.getItem(LESSON_FLOW_KEY) || "{}") as Record<string, unknown>;
+    localStorage.setItem(LESSON_FLOW_KEY, JSON.stringify({ ...parsed, [lessonId]: stage }));
+  } catch {
+    // The lesson can still continue for this visit if browser storage is unavailable.
+  }
+}
 
 const DEFAULT_PROGRESS: UserLearningProgress = {
   completedLessonIds: [],

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ComparisonOperator, ObjectiveFunction, RealWorldScenario, SystemInequality } from '@/app/types/math';
-import { formatBoundaryLine, formatInequality } from '@/app/lib/optimath/mathEngine';
-import { Plus, Trash2, Eye, EyeOff, RotateCcw, Target, Sparkles, Sliders } from 'lucide-react';
+import { formatInequality } from '@/app/lib/optimath/mathEngine';
+import { Plus, Trash2, Eye, EyeOff, Target, Sparkles } from 'lucide-react';
 
 interface OptimizationSandboxPanelProps {
   scenario: RealWorldScenario;

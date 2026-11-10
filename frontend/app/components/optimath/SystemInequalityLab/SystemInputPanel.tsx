@@ -1,8 +1,8 @@
 import React from 'react';
 import { ComparisonOperator, SystemInequality } from '@/app/types/math';
-import { formatBoundaryLine, formatInequality, formatLinearLHS, getOperatorSymbol } from '@/app/lib/optimath/mathEngine';
+import { formatBoundaryLine, formatInequality } from '@/app/lib/optimath/mathEngine';
 import { SYSTEM_BENCHMARK_PRESETS } from '@/app/lib/optimath/systemMathEngine';
-import { Plus, Trash2, Eye, EyeOff, RotateCcw, Sparkles, Sliders } from 'lucide-react';
+import { Plus, Trash2, Eye, EyeOff, Sparkles } from 'lucide-react';
 
 interface SystemInputPanelProps {
   system: SystemInequality[];
@@ -49,9 +49,6 @@ export const SystemInputPanel: React.FC<SystemInputPanelProps> = ({
     onSystemChange(updated);
   };
 
-  const handleResetToDefault = () => {
-    onSelectPreset('preset-1');
-  };
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col gap-3.5">

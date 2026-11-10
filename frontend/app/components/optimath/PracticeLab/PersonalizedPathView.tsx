@@ -19,14 +19,7 @@ import {
 import { OptiMascot } from '@/app/components/optimath/mascot/OptiMascot';
 import {
   Award,
-  CheckCircle2,
-  Compass,
-  Play,
-  Target,
-  AlertTriangle,
-  Sparkles,
-  BookOpen,
-  Clock
+  Play
 } from 'lucide-react';
 
 interface PersonalizedPathViewProps {

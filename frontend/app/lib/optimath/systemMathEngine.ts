@@ -1,5 +1,5 @@
-import { ComparisonOperator, Point2D, SystemInequality, IntersectionPoint, FeasibleRegionType, SystemAnalysisResult } from '@/app/types/math';
-import { formatBoundaryLine, formatInequality, formatLinearLHS, getOperatorSymbol } from '@/app/lib/optimath/mathEngine';
+import { Point2D, SystemInequality, IntersectionPoint, FeasibleRegionType, SystemAnalysisResult } from '@/app/types/math';
+import { formatBoundaryLine } from '@/app/lib/optimath/mathEngine';
 
 /**
  * Standardize an inequality and validate coefficients

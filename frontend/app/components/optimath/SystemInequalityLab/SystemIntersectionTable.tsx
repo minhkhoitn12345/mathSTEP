@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { IntersectionPoint, Point2D, SystemAnalysisResult } from '@/app/types/math';
+import { Point2D, SystemAnalysisResult } from '@/app/types/math';
 import { formatPointCoord } from '@/app/lib/optimath/systemMathEngine';
-import { CheckCircle2, XCircle, AlertTriangle, Sparkles, Eye, Target, Compass } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertTriangle, Compass } from 'lucide-react';
 
 interface SystemIntersectionTableProps {
   analysis: SystemAnalysisResult;
@@ -14,9 +14,8 @@ export const SystemIntersectionTable: React.FC<SystemIntersectionTableProps> = (
 }) => {
   const [activeTab, setActiveTab] = useState<'vertices' | 'all_intersections'>('vertices');
 
-  const { intersections, orderedPolygon, regionType, sgkSummary } = analysis;
+  const { intersections, regionType, sgkSummary } = analysis;
   const feasibleIntersections = intersections.filter(i => i.isFeasible);
-  const infeasibleIntersections = intersections.filter(i => !i.isFeasible);
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-col gap-3.5">

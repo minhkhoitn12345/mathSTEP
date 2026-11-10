@@ -17,7 +17,6 @@ import {
   Compass,
   Volume2,
   VolumeX,
-  Target,
   Award,
   BookOpen,
   Calculator,

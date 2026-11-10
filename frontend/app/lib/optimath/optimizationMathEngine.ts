@@ -1,7 +1,5 @@
 import {
-  FeasibleRegionType,
   ObjectiveFunction,
-  OptimizationGoal,
   OptimizationResult,
   Point2D,
   RealWorldScenario,
@@ -17,8 +15,6 @@ import {
   formatPointCoord,
   formatValueWithApprox
 } from '@/app/lib/optimath/systemMathEngine';
-import { formatBoundaryLine, formatInequality, formatLinearLHS } from '@/app/lib/optimath/mathEngine';
-
 /**
  * 5 Comprehensive Real-World Benchmark Scenarios for Grade 10 Math
  */
