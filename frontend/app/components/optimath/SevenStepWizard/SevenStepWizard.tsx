@@ -559,7 +559,6 @@ export const SevenStepWizard: React.FC<SevenStepWizardProps> = ({
     if (currentStep < 7) {
       setCurrentStep(s => (s + 1) as StepNumber);
       setActiveHintTier(null);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -567,7 +566,6 @@ export const SevenStepWizard: React.FC<SevenStepWizardProps> = ({
     if (currentStep > 1) {
       setCurrentStep(s => (s - 1) as StepNumber);
       setActiveHintTier(null);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 

@@ -53,6 +53,7 @@ function OptimathMainContent() {
   const [activeLessonId, setActiveLessonId] = useState<string>("lp-lesson-1");
   const [selectedStudyLessonId] = useState<string>("lp-lesson-1");
   const [returnToUrl, setReturnToUrl] = useState<string | null>(null);
+  const [pendingModuleFocus, setPendingModuleFocus] = useState<"linear_programming" | "spatial_geometry" | "trigonometry" | null>(null);
   const [userProgress, setUserProgress] = useState<UserLearningProgress>(() =>
     loadUserLearningProgress()
   );
@@ -129,6 +130,12 @@ function OptimathMainContent() {
     const viewParam = searchParams.get("view");
     const lessonParam = searchParams.get("lesson");
     const returnToParam = searchParams.get("returnTo");
+    const focusModuleParam = searchParams.get("focusModule");
+
+    if (focusModuleParam === "linear_programming" || focusModuleParam === "spatial_geometry" || focusModuleParam === "trigonometry") {
+      setCurrentView("home");
+      setPendingModuleFocus(focusModuleParam);
+    }
 
     if (returnToParam) {
       setReturnToUrl(decodeURIComponent(returnToParam));
@@ -249,16 +256,10 @@ function OptimathMainContent() {
     } else if (modId === "learning_path") {
       setCurrentView("learning_path");
       window.scrollTo({ top: 0, behavior: "smooth" });
-    } else if (modId === "linear_programming" || modId === "lab") {
+    } else if (modId === "linear_programming" || modId === "spatial_geometry" || modId === "trigonometry" || modId === "lab") {
       setReturnToUrl(null);
-      setCurrentView("linear_programming");
-      setLpSubTab("single");
-      setActiveLessonId("lp-lesson-1");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else if (modId === "spatial_geometry") {
-      window.location.assign("/learn/spatial_geometry/sg-lesson-1");
-    } else if (modId === "trigonometry") {
-      window.location.assign("/learn/trigonometry/trig-lesson-1");
+      setCurrentView("home");
+      setPendingModuleFocus(modId === "lab" ? "linear_programming" : modId);
     } else if (modId === "system") {
       setReturnToUrl(null);
       setCurrentView("linear_programming");
@@ -571,6 +572,8 @@ function OptimathMainContent() {
           <LessonCatalogHome
             onOpenTeacherGuide={handleOpenTeacherGuide}
             onOpenKnowledgeBase={() => setIsKnowledgeModalOpen(true)}
+            focusModuleId={pendingModuleFocus}
+            onModuleFocusHandled={() => setPendingModuleFocus(null)}
           />
         ) : currentView === "learning_path" ? (
           /* =========================================================================

@@ -285,11 +285,8 @@ export default function LessonStudyClientPage({
           currentModule="home"
           onSelectModule={(mod) => {
             if (mod === "home") router.push("/");
-            else {
-              const firstLessons: Record<string, string> = { spatial_geometry: "sg-lesson-1", trigonometry: "trig-lesson-1", linear_programming: "lp-lesson-1" };
-              const firstLesson = firstLessons[mod];
-              router.push(firstLesson ? `/learn/${mod}/${firstLesson}` : `/?view=${mod}`);
-            }
+            else if (mod === "linear_programming" || mod === "spatial_geometry" || mod === "trigonometry") router.push(`/?focusModule=${mod}`);
+            else router.push(`/?view=${mod}`);
           }}
           onOpenTeacherGuide={() => setIsTeacherModalOpen(true)}
           session={session}
@@ -359,11 +356,8 @@ export default function LessonStudyClientPage({
         onSelectModule={(mod) => {
           if (mod === "home") router.push("/");
           else if (mod === "learning_path") router.push("/");
-          else {
-            const firstLessons: Record<string, string> = { spatial_geometry: "sg-lesson-1", trigonometry: "trig-lesson-1", linear_programming: "lp-lesson-1" };
-            const firstLesson = firstLessons[mod];
-            router.push(firstLesson ? `/learn/${mod}/${firstLesson}` : `/?view=${mod}`);
-          }
+          else if (mod === "linear_programming" || mod === "spatial_geometry" || mod === "trigonometry") router.push(`/?focusModule=${mod}`);
+          else router.push(`/?view=${mod}`);
         }}
         onOpenTeacherGuide={() => setIsTeacherModalOpen(true)}
         onToggleChatDrawer={() => setChatDrawerOpen((prev) => !prev)}

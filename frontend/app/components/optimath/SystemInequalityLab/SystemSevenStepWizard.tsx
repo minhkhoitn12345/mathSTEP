@@ -4,6 +4,7 @@ type StudentInterCalc = {
   isSolved: boolean;
   showHint: boolean;
   showSolution: boolean;
+  attempts?: number;
   feedback?: { isCorrect: boolean; message: string };
 };
 
@@ -73,34 +74,12 @@ export const SystemSevenStepWizard: React.FC<SystemSevenStepWizardProps> = ({
 
   // Step 4: Student Coordinate Calculation state
   // Records student inputs, hints, solved state for each intersection
-  const [studentInterCalcs, setStudentInterCalcs] = useState<
-    Record<
-      string,
-      {
-        inputX: string;
-        inputY: string;
-        isSolved: boolean;
-        showHint: boolean;
-        showSolution: boolean;
-        feedback?: { isCorrect: boolean; message: string };
-      }
-    >
-  >({});
+  const [studentInterCalcs, setStudentInterCalcs] = useState<Record<string, StudentInterCalc>>({});
   const [activeInterId, setActiveInterId] = useState<string | null>(null);
 
   // Step 5: Student Filtering state
   // Records student's choice: 'feasible' vs 'infeasible' for each intersection
-  const [studentFilters, setStudentFilters] = useState<
-    Record<
-      string,
-      {
-        choice: 'feasible' | 'infeasible' | null;
-        isVerified: boolean;
-        isCorrect?: boolean;
-        showDetails: boolean;
-      }
-    >
-  >({});
+  const [studentFilters, setStudentFilters] = useState<Record<string, StudentFilterState>>({});
 
   // Test point M state
   const [pointM, setPointM] = useState<Point2D>({ x: 1, y: 1 });
@@ -127,14 +106,12 @@ export const SystemSevenStepWizard: React.FC<SystemSevenStepWizardProps> = ({
   const handleNextStep = () => {
     if (currentStep < 7) {
       setCurrentStep(s => (s + 1) as StepNumber);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handlePrevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(s => (s - 1) as StepNumber);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -203,6 +180,7 @@ export const SystemSevenStepWizard: React.FC<SystemSevenStepWizardProps> = ({
         ...prev,
         [interId]: {
           ...currentCalc,
+          attempts: (currentCalc.attempts ?? 0) + 1,
           feedback: {
             isCorrect: false,
             message: 'Vui lòng nhập đầy đủ giá trị số hoặc phân số hợp lệ cho x và y (ví dụ: 2, 2.5 hoặc 5/2)!'
@@ -234,6 +212,7 @@ export const SystemSevenStepWizard: React.FC<SystemSevenStepWizardProps> = ({
         ...prev,
         [interId]: {
           ...currentCalc,
+          attempts: (currentCalc.attempts ?? 0) + 1,
           feedback: {
             isCorrect: false,
             message: `Chưa chính xác! ${!isXCorrect ? 'Tọa độ x chưa đúng. ' : ''}${!isYCorrect ? 'Tọa độ y chưa đúng. ' : ''}Hãy thử lại hoặc bấm "Xem gợi ý".`
@@ -264,24 +243,6 @@ export const SystemSevenStepWizard: React.FC<SystemSevenStepWizardProps> = ({
     }));
   };
 
-  // STEP 4: Auto-fill all coordinates (quick mode / teacher)
-  const handleAutoFillAllStep4 = () => {
-    const next: Record<string, StudentInterCalc> = {};
-    for (const inter of analysis.intersections) {
-      next[inter.id] = {
-        inputX: String(inter.point.x),
-        inputY: String(inter.point.y),
-        isSolved: true,
-        showHint: false,
-        showSolution: true,
-        feedback: {
-          isCorrect: true,
-          message: `Tọa độ: (${inter.point.x}; ${inter.point.y})`
-        }
-      };
-    }
-    setStudentInterCalcs(next);
-  };
 
   const solvedIntersectionsCount = analysis.intersections.filter(
     i => studentInterCalcs[i.id]?.isSolved
@@ -840,13 +801,7 @@ Các đỉnh của miền nghiệm: ${
                   <p className="text-xs text-slate-600 leading-relaxed">
                     Học sinh tự giải hệ phương trình từng cặp bờ để tìm tọa độ giao điểm:
                   </p>
-                  <button
-                    type="button"
-                    onClick={handleAutoFillAllStep4}
-                    className="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                  >
-                    Tự động điền tất cả
-                  </button>
+
                 </div>
 
                 {/* Progress badge */}
@@ -994,16 +949,18 @@ Các đỉnh của miền nghiệm: ${
                                 <HelpCircle className="w-3 h-3" />
                                 <span>{calc.showHint ? 'Ẩn gợi ý' : 'Xem gợi ý cách giải'}</span>
                               </button>
-
-                              <span>•</span>
-
-                              <button
-                                type="button"
-                                onClick={() => handleRevealSolution(inter.id)}
-                                className="text-amber-700 hover:underline font-semibold cursor-pointer"
-                              >
-                                Hiện lời giải chi tiết
-                              </button>
+                              {calc.feedback?.isCorrect === false && (calc.attempts ?? 0) >= 2 && (calc.inputX.trim() || calc.inputY.trim()) && (
+                                <>
+                                  <span>•</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRevealSolution(inter.id)}
+                                    className="text-amber-700 hover:underline font-semibold cursor-pointer"
+                                  >
+                                    Xem lời giải sau 2 lần thử
+                                  </button>
+                                </>
+                              )}
                             </div>
 
                             {calc.showHint && (

@@ -96,8 +96,9 @@ export default function LessonPathTracks({
         return (
           <section
             key={module.id}
+            id={`${module.id}-section`}
             aria-labelledby={`${module.id}-heading`}
-            className={`overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm transition-colors ${theme.cardHover}`}
+            className={`scroll-mt-24 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm transition-colors ${theme.cardHover}`}
           >
             <header className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
               <div className="flex min-w-0 items-center gap-3.5">

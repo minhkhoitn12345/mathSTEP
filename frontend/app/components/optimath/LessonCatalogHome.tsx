@@ -31,11 +31,15 @@ function normalizeSearchText(value: string): string {
 interface LessonCatalogHomeProps {
   onOpenTeacherGuide?: () => void;
   onOpenKnowledgeBase?: () => void;
+  focusModuleId?: "linear_programming" | "spatial_geometry" | "trigonometry" | null;
+  onModuleFocusHandled?: () => void;
 }
 
 export const LessonCatalogHome: React.FC<LessonCatalogHomeProps> = ({
   onOpenTeacherGuide,
   onOpenKnowledgeBase,
+  focusModuleId = null,
+  onModuleFocusHandled,
 }) => {
   // 1. Search & Filter States
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,6 +60,14 @@ export const LessonCatalogHome: React.FC<LessonCatalogHomeProps> = ({
     window.addEventListener("focus", refresh);
     return () => window.removeEventListener("focus", refresh);
   }, []);
+
+  useEffect(() => {
+    if (!focusModuleId) return;
+    setSearchQuery("");
+    setSelectedGrade("all");
+    setSelectedStatus("all");
+    setSelectedModule(focusModuleId);
+  }, [focusModuleId]);
 
   // 3. Flattened list of all 15 lessons with their parent module
   const allLessonsWithModule = useMemo(() => {
@@ -118,6 +130,15 @@ export const LessonCatalogHome: React.FC<LessonCatalogHomeProps> = ({
       return true;
     });
   }, [allLessonsWithModule, searchQuery, selectedGrade, selectedModule, selectedStatus]);
+
+  useEffect(() => {
+    if (!focusModuleId || selectedModule !== focusModuleId || filteredLessons.length === 0) return;
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById(`${focusModuleId}-section`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      onModuleFocusHandled?.();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [focusModuleId, selectedModule, filteredLessons.length, onModuleFocusHandled]);
 
   // Active filters count
   const hasActiveFilters =

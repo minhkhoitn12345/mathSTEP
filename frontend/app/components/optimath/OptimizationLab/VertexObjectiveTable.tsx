@@ -15,7 +15,6 @@ import {
   Sparkles,
   Calculator,
   Target,
-  Eye,
   RotateCcw,
   AlertTriangle
 } from 'lucide-react';
@@ -121,22 +120,6 @@ export const VertexObjectiveTable: React.FC<VertexObjectiveTableProps> = ({
     setVerifiedVertices(nextVerified);
   };
 
-  const handleRevealSolution = () => {
-    const inputs: Record<string, string> = {};
-    const verified: Record<string, { isCorrect: boolean; message: string }> = {};
-
-    for (const ve of vertexEvaluations) {
-      inputs[ve.label] = formatCoord(ve.value);
-      verified[ve.label] = {
-        isCorrect: true,
-        message: `Đúng: ${formatValueWithApprox(ve.value)} ${objective.unit}`
-      };
-    }
-
-    setStudentInputs(inputs);
-    setVerifiedVertices(verified);
-    setShowSolution(true);
-  };
 
   const handleResetTable = () => {
     setStudentInputs({});
@@ -237,14 +220,7 @@ export const VertexObjectiveTable: React.FC<VertexObjectiveTableProps> = ({
               >
                 Kiểm chứng tất cả
               </button>
-              <button
-                type="button"
-                onClick={handleRevealSolution}
-                className="px-2.5 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 font-bold text-[11px] transition cursor-pointer flex items-center gap-1"
-              >
-                <Eye className="w-3 h-3" />
-                <span>Hiện lời giải</span>
-              </button>
+
               {(Object.keys(verifiedVertices).length > 0 || showSolution) && (
                 <button
                   type="button"
@@ -537,13 +513,7 @@ export const VertexObjectiveTable: React.FC<VertexObjectiveTableProps> = ({
           <span>
             💡 <strong>Chế độ Sư phạm:</strong> Hãy tự nhập và bấm <strong>Kiểm chứng</strong> giá trị tại các đỉnh ở bảng trên để mở khóa kết luận đỉnh tối ưu!
           </span>
-          <button
-            type="button"
-            onClick={handleRevealSolution}
-            className="text-[11px] font-bold text-purple-700 hover:underline shrink-0 cursor-pointer"
-          >
-            Mở khóa ngay
-          </button>
+
         </div>
       )}
     </div>
