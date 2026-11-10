@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import OfflineSupport from "./components/OfflineSupport";
 import { Plus_Jakarta_Sans, Newsreader, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import "katex/dist/katex.min.css";
@@ -84,6 +85,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className="font-sans antialiased bg-slate-50 text-slate-900 selection:bg-blue-600/30 selection:text-blue-900 max-w-full overflow-x-clip">
         {children}
+        <OfflineSupport />
       </body>
     </html>
   );

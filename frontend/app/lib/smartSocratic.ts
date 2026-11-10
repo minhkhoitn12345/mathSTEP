@@ -176,9 +176,9 @@ export function generateSmartSocraticResponse(
   if (moduleId === "conics_and_solids") {
     if (q.includes("elip") || q.includes("parabol") || q.includes("hypebol") || q.includes("cắt nón")) {
       return {
-        answer: `Ba đường Conic là giao tuyến của mặt phẳng cắt với mặt nón tròn xoay hai tầng:\n- Nếu góc nghiêng $\\beta > \\alpha$ (góc đường sinh): Giao tuyến là một **đường Elip** khép kín.\n- Nếu $\\beta = \\alpha$: Giao tuyến là một **đường Parabol** mở vô tận.\n- Nếu $\\beta < \\alpha$: Mặt phẳng cắt cả hai tầng nón tạo thành một **đường Hypebol** hai nhánh.`,
-        intent: "explain",
-        nextQuestion: "Khoảng cách từ điểm M trên Elip tới 2 tiêu điểm có tính chất gì?",
+        answer: `Em hãy so sánh góc cắt $\\beta$ với góc nửa đỉnh $\\alpha$ trên mô hình. Nếu hai góc bằng nhau, mặt phẳng sẽ song song với đường sinh; theo em khi ấy giao tuyến có dạng gì?`,
+        intent: "guided_socratic",
+        nextQuestion: "Em đang thấy β lớn hơn, nhỏ hơn hay bằng α?",
       };
     }
   }

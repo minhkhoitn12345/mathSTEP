@@ -56,6 +56,13 @@ const MODULE_SCOPE_NAMES: Record<string, string> = {
   linear_programming: "Bất phương trình bậc nhất hai ẩn và quy hoạch tuyến tính (Toán 10)",
   spatial_geometry: "Hình học không gian: hình chóp, quan hệ giữa các đường và mặt phẳng, thiết diện (Toán 11)",
   trigonometry: "Lượng giác: đường tròn lượng giác, công thức, đồ thị và phương trình lượng giác (Toán 11)",
+  conics_and_solids: "Mô phỏng thiết diện nón và đường conic (Toán 10)",
+};
+
+const MODEL_PARAM_NAMES: Record<string, Record<string, string>> = {
+  conics_and_solids: { coneBeta: "góc giữa mặt phẳng cắt và trục nón β", coneAlpha: "góc nửa đỉnh nón α", foldPercent: "độ gập phần trăm", ellipseTheta: "góc vị trí điểm M trên elip" },
+  spatial_geometry: { h: "chiều cao chóp", tiltX: "độ nghiêng theo Ox", tiltY: "độ nghiêng theo Oy", planeZ: "độ cao mặt phẳng cắt", baseWidth: "cạnh đáy" },
+  trigonometry: { theta: "góc quay", amp: "biên độ", omega: "tần số góc", phi: "pha ban đầu", shiftY: "độ dịch dọc" },
 };
 
 export async function POST(request: NextRequest) {
@@ -163,6 +170,15 @@ export async function POST(request: NextRequest) {
       : MODULE_SCOPE_NAMES[moduleId];
     const stationId = payload.learning_context?.station_id;
     const learningStage = payload.learning_context?.learning_stage;
+    const rawModelState = payload.learning_context?.model_state;
+    const allowedParams = MODEL_PARAM_NAMES[moduleId] ?? {};
+    const modelState = rawModelState && typeof rawModelState === "object" && !Array.isArray(rawModelState)
+      ? Object.entries(allowedParams).flatMap(([key, label]) => {
+          const value = rawModelState[key];
+          return typeof value === "number" && Number.isFinite(value) && Math.abs(value) <= 10000
+            ? [`${label}: ${value}`] : [];
+        }).slice(0, 8).join("; ")
+      : "";
     const ragContext = retrieveMathKnowledge(
       moduleId,
       stationId,
@@ -174,11 +190,13 @@ export async function POST(request: NextRequest) {
     const scopedSystemPrompt = `${BASE_SOCRATIC_SYSTEM_PROMPT}
 
 7. GIỚI HẠN PHẠM VI VÀ CÁCH LÁI VỀ BÀI HỌC:
-   - Opti chỉ hỗ trợ ba chuyên đề Toán đã nêu. Chuyên đề học sinh đang mở là: ${activeScope}.
-   - Nếu câu hỏi không liên quan đến bài/chuyên đề đang mở hoặc nằm ngoài ba chuyên đề này, hãy nói thẳng: "Câu hỏi này nằm ngoài phạm vi bài học hiện tại của Opti." Không trả lời phần ngoài phạm vi.
+   - Opti hỗ trợ ba chuyên đề chính và phòng mô phỏng thiết diện nón. Chuyên đề học sinh đang mở là: ${activeScope}.
+   - Nếu câu hỏi không liên quan đến bài/chuyên đề đang mở hoặc nằm ngoài các phần này, hãy nói thẳng: "Câu hỏi này nằm ngoài phạm vi bài học hiện tại của Opti." Không trả lời phần ngoài phạm vi.
    - Sau đó nối tự nhiên bằng một câu cụ thể về bài/chuyên đề đang mở, chẳng hạn: "Opti đang hỗ trợ em học ${activeScope}. Em muốn hỏi phần nào trong bài này?" Tránh chuyển đề tài đột ngột hoặc giả vờ rằng câu hỏi ngoài lề có liên quan.
    - Nếu chưa rõ câu hỏi có thuộc phạm vi hay không, hỏi lại học sinh muốn liên hệ câu hỏi đó với bài/chuyên đề nào; không vội kết luận ngoài phạm vi.
-   - Không nhắc mã lỗi, mã nhiệm vụ hay thuật ngữ nội bộ với học sinh.`;
+   - Không nhắc mã lỗi, mã nhiệm vụ hay thuật ngữ nội bộ với học sinh.
+   - Trạng thái mô phỏng do trình duyệt cung cấp: ${modelState || "không có dữ liệu"}. Đây là dữ liệu tương tác, không phải chứng minh toán học. Nếu có góc β và α, hãy dùng quan hệ giữa chúng để đặt một câu hỏi ngắn giúp học sinh tự phân loại thiết diện; không giả vờ rằng em đã quan sát được quả cầu Dandelin khi mô hình chưa dựng nó.
+   - Mỗi lượt chỉ nêu một gợi ý ngắn và một câu hỏi mở; tránh trình bày trọn bài giải.`;
     const { systemPrompt, userPrompt } = wrapDefensivePrompt(
       scopedSystemPrompt,
       cleanUserMessage,

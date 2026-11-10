@@ -576,7 +576,7 @@ function OptimathMainContent() {
       />
 
       {/* 2. MAIN WORKSPACE CONTENT */}
-      <main className="flex-1">
+      <main className={`flex-1 transition-[margin] duration-200 ${chatDrawerOpen ? "xl:mr-[420px]" : ""}`}>
         {currentView === "home" ? (
           <LessonCatalogHome
             onOpenTeacherGuide={handleOpenTeacherGuide}
@@ -835,6 +835,11 @@ function OptimathMainContent() {
             ? "Chuyên đề 3: Lượng giác tương tác (E01-E16)"
             : "Chuyên đề 1: BPT & Tối ưu (M01-M17)"
         }
+        quickPrompts={currentView === "trigonometry"
+          ? ["Em nên quan sát gì trên đường tròn?", "Nếu tăng góc, đồ thị thay đổi thế nào?", "Gợi ý kiểm tra dấu sin và cos."]
+          : currentView === "spatial_geometry"
+          ? ["Em nên xác định mặt phẳng nào trước?", "Gợi ý tìm nét thấy và nét khuất.", "Làm sao kiểm tra hai đường song song?"]
+          : ["Em nên thử điểm nào?", "Gợi ý xác định miền nghiệm.", "Vì sao cần kiểm tra các đỉnh?"]}
       />
 
       {/* 6. MODALS */}

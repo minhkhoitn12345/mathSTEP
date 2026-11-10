@@ -96,7 +96,30 @@ export const MODULE_PRESETS: Record<ModuleId, Record<string, DynamicParam>> = {
   },
 };
 
-export const useDynamicMathStore = create<DynamicMathState>((set) => ({
+const moduleStorageKey = (mod: ModuleId) => `mathstep:dynamic-params:${mod}`;
+
+function restoreModuleParams(mod: ModuleId): Record<string, DynamicParam> {
+  const defaults = MODULE_PRESETS[mod];
+  try {
+    const saved = JSON.parse(localStorage.getItem(moduleStorageKey(mod)) || "null") as Record<string, unknown> | null;
+    if (!saved || typeof saved !== "object") return { ...defaults };
+    return Object.fromEntries(Object.entries(defaults).map(([id, param]) => {
+      const value = saved[id];
+      return [id, { ...param, val: typeof value === "number" && Number.isFinite(value)
+        ? Math.max(param.min, Math.min(param.max, value)) : param.val }];
+    }));
+  } catch { return { ...defaults }; }
+}
+
+function saveModuleParams(mod: ModuleId, params: Record<string, DynamicParam>) {
+  try {
+    localStorage.setItem(moduleStorageKey(mod), JSON.stringify(Object.fromEntries(
+      Object.entries(params).filter(([id]) => id in MODULE_PRESETS[mod]).map(([id, param]) => [id, param.val])
+    )));
+  } catch { /* Browser storage is optional. */ }
+}
+
+export const useDynamicMathStore = create<DynamicMathState>((set, get) => ({
   activeModule: "linear_programming",
   params: { ...MODULE_PRESETS.linear_programming },
   freePoints: {},
@@ -104,11 +127,12 @@ export const useDynamicMathStore = create<DynamicMathState>((set) => ({
   setActiveModule: (mod) =>
     set({
       activeModule: mod,
-      params: { ...(MODULE_PRESETS[mod] || {}) },
+      params: restoreModuleParams(mod),
     }),
 
   setParamVal: (id, val) =>
-    set((state) => {
+    {
+      set((state) => {
       const p = state.params[id];
       if (!p) return state;
       const clamped = Math.max(p.min, Math.min(p.max, val));
@@ -118,7 +142,10 @@ export const useDynamicMathStore = create<DynamicMathState>((set) => ({
           [id]: { ...p, val: clamped },
         },
       };
-    }),
+      });
+      const state = get();
+      saveModuleParams(state.activeModule, state.params);
+    },
 
   addCustomParam: (newP) =>
     set((state) => {
@@ -143,9 +170,10 @@ export const useDynamicMathStore = create<DynamicMathState>((set) => ({
     }),
 
   resetModuleParams: (mod) =>
-    set({
-      params: { ...(MODULE_PRESETS[mod] || {}) },
-    }),
+    {
+      try { localStorage.removeItem(moduleStorageKey(mod)); } catch {}
+      set({ params: { ...MODULE_PRESETS[mod] } });
+    },
 
   setFreePoint: (id, x, y, z) =>
     set((state) => ({

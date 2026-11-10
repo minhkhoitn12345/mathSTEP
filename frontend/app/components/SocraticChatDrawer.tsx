@@ -71,6 +71,7 @@ interface SocraticChatDrawerProps {
   sessionName?: string | null;
   moduleTitle?: string;
   stationId?: string;
+  quickPrompts?: string[];
 }
 
 export default function SocraticChatDrawer({
@@ -85,6 +86,7 @@ export default function SocraticChatDrawer({
   sessionName,
   moduleTitle,
   stationId,
+  quickPrompts = [],
 }: SocraticChatDrawerProps) {
   const endRef = useRef<HTMLDivElement | null>(null);
 
@@ -97,13 +99,8 @@ export default function SocraticChatDrawer({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex justify-end"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <aside className="w-full sm:w-[420px] md:w-[460px] bg-slate-950 border-l border-slate-800 flex flex-col h-full shadow-2xl animate-in slide-in-from-right duration-200">
+    <div className="fixed inset-0 z-50 pointer-events-none flex justify-end items-end xl:items-stretch">
+      <aside aria-label="Trợ lý học tập Opti" className="pointer-events-auto w-full sm:w-[420px] xl:w-[420px] bg-slate-950 border border-slate-800 flex flex-col h-[min(60dvh,620px)] xl:h-full shadow-2xl rounded-t-2xl xl:rounded-none animate-in slide-in-from-right duration-200">
         {/* Header */}
         <div className="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -184,6 +181,12 @@ export default function SocraticChatDrawer({
 
         {/* Composer */}
         <div className="p-3 border-t border-slate-800 bg-slate-950 shrink-0 space-y-2">
+          {quickPrompts.length > 0 && <div className="flex flex-wrap gap-1.5" aria-label="Câu hỏi gợi ý">
+            {quickPrompts.slice(0, 3).map((prompt) => <button key={prompt} type="button" onClick={() => onSendMessage(prompt)}
+              disabled={busy} className="min-h-8 rounded-lg border border-blue-700/60 bg-blue-950/60 px-2.5 text-left text-[10px] font-medium text-blue-100 hover:bg-blue-900 disabled:opacity-50">
+              {prompt}
+            </button>)}
+          </div>}
           <div className="flex items-center justify-between text-[10px] text-slate-400">
             <span>Phương pháp Socratic · GDPT 2018</span>
             <button

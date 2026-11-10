@@ -23,6 +23,7 @@ import {
   Compass as CompassIcon,
   SlidersHorizontal,
   X,
+  Download,
 } from "lucide-react";
 import KatexMath, { formatVNFloat } from "./KatexMath";
 
@@ -880,19 +881,21 @@ export default function Stereometry3DCanvas({
   const [mounted, setMounted] = useState(false);
   const [showCoordinates, setShowCoordinates] = useState<boolean>(false);
   const [showNormalVector, setShowNormalVector] = useState<boolean>(false);
-  const [showAxes, setShowAxes] = useState<boolean>(false);
-  const [showFloorGrid, setShowFloorGrid] = useState<boolean>(false);
+  const [showAxes, setShowAxes] = useState<boolean>(true);
+  const [showFloorGrid, setShowFloorGrid] = useState<boolean>(true);
   const [showSectionPlane, setShowSectionPlane] = useState<boolean>(false);
   const [showHiddenEdges, setShowHiddenEdges] = useState<boolean>(true);
   const [originAtVertexA, setOriginAtVertexA] = useState<boolean>(false);
   const [showHudCard, setShowHudCard] = useState<boolean>(false);
   const [showSliders, setShowSliders] = useState<boolean>(false);
+  const [lowGraphics, setLowGraphics] = useState<boolean>(false);
   const [isFrozenView, setIsFrozenView] = useState<boolean>(false);
   const [freezeNotice, setFreezeNotice] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    try { setLowGraphics(localStorage.getItem("mathstep:fast-graphics") === "true"); } catch {}
   }, []);
 
   // ResizeObserver tự động tính toán lại kích thước khung hình khi chuyển đổi bước học hoặc thay đổi layout, chống sập WebGL context
@@ -906,6 +909,34 @@ export default function Stereometry3DCanvas({
   }, [mounted]);
 
   const controlsRef = useRef<React.ComponentRef<typeof OrbitControls>>(null);
+  const cameraStorageKey = "mathstep:stereometry-camera:v1";
+
+  useEffect(() => {
+    if (!mounted || !controlsRef.current) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(cameraStorageKey) || "null") as { position?: number[]; target?: number[] } | null;
+      if (saved?.position?.length !== 3 || saved.target?.length !== 3 ||
+          ![...saved.position, ...saved.target].every(Number.isFinite)) return;
+      const distance = Math.hypot(...saved.position.map((value, index) => value - saved.target![index]));
+      if (distance < 2.5 || distance > 15) return;
+      controlsRef.current.object.position.set(saved.position[0], saved.position[1], saved.position[2]);
+      controlsRef.current.target.set(saved.target[0], saved.target[1], saved.target[2]);
+      controlsRef.current.update();
+    } catch { /* Keep the default view if browser storage is unavailable. */ }
+  }, [mounted, lowGraphics]);
+
+  const setCameraView = (view: "default" | "top" | "front" | "side") => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    const positions = { default: [4.5, 3.5, 5], top: [0, 9, 0.01], front: [0, 2, 9], side: [9, 2, 0] };
+    const position = positions[view];
+    controls.object.position.set(position[0], position[1], position[2]);
+    controls.target.set(0, 1, 0);
+    controls.update();
+    setIsFrozenView(false);
+    controls.enabled = true;
+    try { localStorage.setItem(cameraStorageKey, JSON.stringify({ position, target: [0, 1, 0] })); } catch {}
+  };
 
   // Vị trí các đỉnh cơ bản của hình chóp tứ giác đều (Cho phép Kéo thả trực tiếp 3D Direct Manipulation)
   const halfW = baseWidth / 2;
@@ -929,11 +960,6 @@ export default function Stereometry3DCanvas({
   );
 
   // Tâm đáy H / O: Giao điểm hai đường chéo AC và BD
-  const centerH = useMemo(
-    () => new THREE.Vector3().addVectors(vertexA, vertexC).multiplyScalar(0.5),
-    [vertexA, vertexC]
-  );
-
   // Trung điểm M của cạnh bên SA: M = (S + A) / 2
   const pointM = useMemo(
     () => new THREE.Vector3().addVectors(apexPos, vertexA).multiplyScalar(0.5),
@@ -957,23 +983,40 @@ export default function Stereometry3DCanvas({
   const vecAD = new THREE.Vector3().subVectors(vertexD, vertexA);
   const crossBase = new THREE.Vector3().crossVectors(vecAB, vecAD);
   const realBaseArea = crossBase.length();
-  const currentHeight = apexPos.y;
+  const currentHeight = Math.abs(apexPos.y - vertexA.y);
   const currentVolume = (1 / 3) * realBaseArea * currentHeight;
   const edgeSA = apexPos.distanceTo(vertexA);
-  const slantAngle = (Math.atan2(currentHeight, vertexA.distanceTo(centerH)) * 180) / Math.PI;
+  const slantAngle = (Math.atan2(currentHeight, Math.hypot(apexPos.x - vertexA.x, apexPos.z - vertexA.z)) * 180) / Math.PI;
+  const sideNormal = new THREE.Vector3().crossVectors(vecAB, new THREE.Vector3().subVectors(apexPos, vertexA));
+  const dihedralAngle = crossBase.lengthSq() > 1e-8 && sideNormal.lengthSq() > 1e-8
+    ? Math.acos(Math.min(1, Math.abs(crossBase.clone().normalize().dot(sideNormal.normalize())))) * 180 / Math.PI
+    : null;
 
   const foldT = foldPercent / 100;
 
   // Reset góc nhìn Camera về góc chuẩn & vị trí đỉnh ban đầu
   const handleResetCamera = () => {
-    if (controlsRef.current) {
-      controlsRef.current.reset();
-    }
-    setVertexA(new THREE.Vector3(-halfW, 0, halfD));
-    setVertexB(new THREE.Vector3(halfW, 0, halfD));
-    setVertexD(new THREE.Vector3(-halfW, 0, -halfD));
-    setApexPos(new THREE.Vector3(0, apexHeight, 0));
-    setIsFrozenView(false);
+    setCameraView("default");
+  };
+
+  const handleSnapshot = () => {
+    const source = containerRef.current?.querySelector("canvas");
+    if (!source) return;
+    const image = document.createElement("canvas");
+    image.width = source.width;
+    image.height = source.height + 72;
+    const context = image.getContext("2d");
+    if (!context) return;
+    context.fillStyle = "#0B0F17";
+    context.fillRect(0, 0, image.width, image.height);
+    context.drawImage(source, 0, 0);
+    context.fillStyle = "#e2e8f0";
+    context.font = "bold 24px Arial, sans-serif";
+    context.fillText("MathSTEP • Hình chóp S.ABCD", 24, source.height + 43);
+    const link = document.createElement("a");
+    link.href = image.toDataURL("image/png");
+    link.download = "mathstep-hinh-chop.png";
+    link.click();
   };
 
   // Xoay 45 độ theo phương ngang (hỗ trợ trình chiếu lớp học)
@@ -1163,6 +1206,7 @@ export default function Stereometry3DCanvas({
             }`}
           >
             <FileText className="w-4 h-4" />
+            <span className="hidden sm:inline text-[10px] font-semibold">Đo</span>
             {showHudCard ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
         </div>
@@ -1197,25 +1241,25 @@ export default function Stereometry3DCanvas({
                 <span>TỌA ĐỘ HÓA TẠI ĐỈNH A (SGK TOÁN 12)</span>
               </div>
               <p className="text-[10px] text-slate-300 leading-tight">
-                Gốc <KatexMath math="O \equiv A(0;\,0;\,0)" />, tia <KatexMath math="AB \equiv Ox" />, tia <KatexMath math="AD \equiv Oy" />, tia <KatexMath math="Az \parallel SH" />.
+                Gốc tại <KatexMath math={"A(0;\\,0;\\,0)"} />; các vectơ dưới đây lấy theo hệ trục Oxyz đang hiển thị và cập nhật khi kéo đỉnh.
               </p>
               <div className="pt-0.5 space-y-0.5 text-[10px]">
-                <div>• <KatexMath math={`\\vec{AB} = (${formatVNFloat(edgeAB)};\\, 0;\\, 0)`} /></div>
-                <div>• <KatexMath math={`\\vec{AD} = (0;\\, ${formatVNFloat(edgeAD)};\\, 0)`} /></div>
-                <div>• <KatexMath math={`\\vec{AS} = (${formatVNFloat(edgeAB / 2)};\\, ${formatVNFloat(edgeAD / 2)};\\, ${formatVNFloat(currentHeight)})`} /></div>
+                <div>• <KatexMath math={`\\vec{AB} = (${formatVNFloat(vertexB.x - vertexA.x)};\\, ${formatVNFloat(vertexA.z - vertexB.z)};\\, ${formatVNFloat(vertexB.y - vertexA.y)})`} /></div>
+                <div>• <KatexMath math={`\\vec{AD} = (${formatVNFloat(vertexD.x - vertexA.x)};\\, ${formatVNFloat(vertexA.z - vertexD.z)};\\, ${formatVNFloat(vertexD.y - vertexA.y)})`} /></div>
+                <div>• <KatexMath math={`\\vec{AS} = (${formatVNFloat(apexPos.x - vertexA.x)};\\, ${formatVNFloat(vertexA.z - apexPos.z)};\\, ${formatVNFloat(apexPos.y - vertexA.y)})`} /></div>
               </div>
             </div>
           )}
 
           <div className="space-y-1 text-[10.5px]">
             <div className="flex justify-between items-center bg-slate-900/80 p-1.5 rounded border border-slate-800/60">
-              <span className="text-slate-400">Chiều cao chóp:</span>
-              <KatexMath math={`h = SH = ${formatVNFloat(currentHeight)}\\text{ m}`} className="text-emerald-300 font-semibold" />
+              <span className="text-slate-400">Khoảng cách từ S đến đáy:</span>
+              <KatexMath math={`d(S,(ABCD)) = ${formatVNFloat(currentHeight)}\\text{ m}`} className="text-emerald-300 font-semibold" />
             </div>
 
             <div className="flex justify-between items-center bg-slate-900/80 p-1.5 rounded border border-slate-800/60">
-              <span className="text-slate-400">Cạnh đáy AB & AD:</span>
-              <KatexMath math={`a \\approx ${formatVNFloat(edgeAB)}\\text{ m}`} className="text-cyan-300 font-semibold" />
+              <span className="text-slate-400">Cạnh đáy AB và AD:</span>
+              <KatexMath math={`AB \\approx ${formatVNFloat(edgeAB)},\\; AD \\approx ${formatVNFloat(edgeAD)}\\text{ m}`} className="text-cyan-300 font-semibold" />
             </div>
 
             <div className="flex justify-between items-center bg-slate-900/80 p-1.5 rounded border border-slate-800/60">
@@ -1240,6 +1284,10 @@ export default function Stereometry3DCanvas({
               <span className="text-slate-400">Góc cạnh bên & đáy:</span>
               <KatexMath math={`\\varphi \\approx ${formatVNFloat(slantAngle)}^\\circ`} className="text-purple-300 font-semibold" />
             </div>
+            {dihedralAngle !== null && <div className="flex justify-between items-center bg-slate-900/80 p-1.5 rounded border border-slate-800/60">
+              <span className="text-slate-400">Góc giữa (SAB) và đáy:</span>
+              <KatexMath math={`\\theta \\approx ${formatVNFloat(dihedralAngle)}^\\circ`} className="text-amber-300 font-semibold" />
+            </div>}
           </div>
 
           <div className="pt-1.5 border-t border-slate-800 text-[9.5px] space-y-0.5 text-slate-400">
@@ -1267,9 +1315,11 @@ export default function Stereometry3DCanvas({
 
       {/* WebGL 3D Canvas */}
       <Canvas
+        key={lowGraphics ? "fast" : "quality"}
         camera={{ position: [4.5, 3.5, 5.0], fov: 45 }}
-        dpr={[1, 1.5]}
-        gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: "high-performance" }}
+        frameloop={lowGraphics ? "demand" : "always"}
+        dpr={lowGraphics ? 1 : [1, 1.5]}
+        gl={{ antialias: !lowGraphics, alpha: true, preserveDrawingBuffer: true, powerPreference: lowGraphics ? "low-power" : "high-performance" }}
         className="w-full h-full cursor-grab active:cursor-grabbing"
         style={{ touchAction: "none" }}
       >
@@ -1418,6 +1468,13 @@ export default function Stereometry3DCanvas({
           maxPolarAngle={Math.PI / 2 + 0.1}
           minDistance={2.5}
           maxDistance={15}
+          onEnd={() => {
+            const controls = controlsRef.current;
+            if (!controls) return;
+            try { localStorage.setItem(cameraStorageKey, JSON.stringify({
+              position: controls.object.position.toArray(), target: controls.target.toArray(),
+            })); } catch {}
+          }}
         />
       </Canvas>
 
@@ -1499,7 +1556,22 @@ export default function Stereometry3DCanvas({
       </div>
 
       {/* Quick Camera Controls Toolbar (Bottom Right) - Dùng icon gọn gàng */}
-      <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1 p-1 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-800 shadow-xl">
+      <div className={`absolute right-3 z-20 flex items-center gap-1 p-1 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-800 shadow-xl ${showSliders ? "bottom-16 sm:bottom-3" : "bottom-3"}`}>
+        <button type="button" onClick={() => {
+          const controls = controlsRef.current;
+          if (controls) try { localStorage.setItem(cameraStorageKey, JSON.stringify({ position: controls.object.position.toArray(), target: controls.target.toArray() })); } catch {}
+          setLowGraphics((current) => { try { localStorage.setItem("mathstep:fast-graphics", String(!current)); } catch {} return !current; });
+        }} title={lowGraphics ? "Chế độ nhanh, giảm tải GPU; bấm để tăng chất lượng" : "Chất lượng cao; bấm để tiết kiệm GPU"}
+          className="min-h-9 rounded-lg border border-slate-700 px-2 text-[11px] font-semibold text-slate-100 hover:bg-slate-800">
+          {lowGraphics ? "Nhanh" : "Đẹp"}
+        </button>
+        <select aria-label="Chọn góc nhìn chuẩn" defaultValue="" onChange={(event) => { setCameraView(event.target.value as "default" | "top" | "front" | "side"); event.currentTarget.value = ""; }}
+          className="min-h-9 max-w-[96px] rounded-lg border border-slate-700 bg-slate-900 px-1 text-[11px] font-semibold text-slate-100">
+          <option value="" disabled>Góc nhìn</option>
+          <option value="top">Từ trên</option>
+          <option value="front">Chính diện</option>
+          <option value="side">Bên cạnh</option>
+        </select>
         <button
           type="button"
           onClick={handleRotate45}
@@ -1518,6 +1590,11 @@ export default function Stereometry3DCanvas({
           }`}
         >
           <Camera className="w-4 h-4" />
+        </button>
+
+        <button type="button" onClick={handleSnapshot} title="Lưu ảnh mô hình và chú thích" aria-label="Lưu ảnh mô hình và chú thích"
+          className="min-h-9 min-w-9 inline-flex items-center justify-center rounded-lg text-slate-300 hover:bg-slate-800">
+          <Download className="h-4 w-4" />
         </button>
 
         <button

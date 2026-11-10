@@ -4,7 +4,7 @@
 // Module 3: Khảo sát các quan hệ Lượng giác tương tác (Toán 11 - Chuyên đề 3, Task LG-MH01-MH05, E01-E16)
 
 export interface MathKnowledgeChunk {
-  moduleId: "linear_programming" | "spatial_geometry" | "trigonometry";
+  moduleId: "linear_programming" | "spatial_geometry" | "trigonometry" | "conics_and_solids";
   lessonId: string;
   topic: string;
   grade: 10 | 11;
@@ -19,6 +19,31 @@ export interface MathKnowledgeChunk {
 }
 
 export const MATH_KNOWLEDGE_BASE: MathKnowledgeChunk[] = [
+  {
+    moduleId: "conics_and_solids",
+    lessonId: "conic-section-lab",
+    topic: "Thiết diện mặt nón tròn xoay",
+    grade: 10,
+    sgkSource: "Kiến thức đường conic trong chương trình Toán THPT; hình mô phỏng là sơ đồ minh họa",
+    coreConcepts: [
+      "β là góc giữa mặt phẳng cắt và trục nón; α là góc giữa đường sinh và trục nón.",
+      "Với mặt phẳng không đi qua đỉnh, β = 90° cho đường tròn; α < β < 90° cho elip; β = α cho parabol; 0° < β < α cho hypebol trên mặt nón kép kéo dài.",
+      "Hai tiêu điểm trên hình chiếu elip thuộc ví dụ elip riêng; không được coi chúng là tiếp điểm quả cầu Dandelin nếu mô phỏng chưa dựng quả cầu.",
+    ],
+    keyFormulas: [
+      "$MF_1+MF_2=2a$ với elip; $c^2=a^2-b^2$.",
+      "$x^2/a^2+y^2/b^2=1$ với elip tâm O và trục trùng hệ tọa độ.",
+      "$x^2=4py$ với parabol trục Oy, $p>0$.",
+    ],
+    commonMisconceptions: [
+      "Nhầm góc β với góc α hoặc quên β được đo với trục nón.",
+      "Đọc một hình chiếu sơ đồ như phép đo chính xác của giao tuyến 3D.",
+    ],
+    socraticGuidance: [
+      "Hỏi học sinh so sánh β và α trước khi gọi tên thiết diện.",
+      "Nếu học sinh hỏi về tiêu điểm, gợi họ kiểm tra hình đang là elip hay đường conic khác.",
+    ],
+  },
   // =========================================================================
   // CHUYÊN ĐỀ 1: BẤT PHƯƠNG TRÌNH & QUY HOẠCH TUYẾN TÍNH (TOÁN 10)
   // =========================================================================

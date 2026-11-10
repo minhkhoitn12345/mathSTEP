@@ -9,6 +9,7 @@ import MathStepWorkbench from "./MathStepWorkbench";
 import SocraticChatDrawer, { ChatMessage } from "./SocraticChatDrawer";
 import StationCatalogModal from "./StationCatalogModal";
 import { generateSmartSocraticResponse } from "../lib/smartSocratic";
+import { useDynamicMathStore } from "./dynamic-math/useDynamicMathStore";
 
 interface ModuleLabWorkbenchClientProps {
   module: CoreModuleCard;
@@ -77,6 +78,10 @@ export default function ModuleLabWorkbenchClient({
     setError("");
 
     try {
+      const liveModel = useDynamicMathStore.getState();
+      const modelState = liveModel.activeModule === module.id
+        ? Object.fromEntries(Object.entries(liveModel.params).map(([id, param]) => [id, param.val]))
+        : undefined;
       // 2. Thử gọi API backend /api/chat
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -89,6 +94,7 @@ export default function ModuleLabWorkbenchClient({
             module: module.id,
             station_id: currentStation.id,
             learning_stage: currentStep,
+            model_state: modelState,
           },
           hint_level: 1,
         }),
@@ -123,6 +129,15 @@ export default function ModuleLabWorkbenchClient({
         `step-${currentStep + 1}`,
         1
       );
+      if (module.id === "conics_and_solids" && /thiết diện|conic|góc|parabol|hypebol|elip/i.test(textToSend)) {
+        const live = useDynamicMathStore.getState().params;
+        const beta = live.coneBeta?.val;
+        const alpha = live.coneAlpha?.val;
+        if (Number.isFinite(beta) && Number.isFinite(alpha)) {
+          socraticResp.answer = `Trên mô hình hiện tại, góc cắt β là ${beta}° và góc nửa đỉnh α là ${alpha}°. Em hãy so sánh hai góc rồi dự đoán mặt phẳng cắt tạo đường gì?`;
+          socraticResp.nextQuestion = "Em thấy β lớn hơn, nhỏ hơn hay bằng α?";
+        }
+      }
       setMessages((prev) => [
         ...prev,
         {
@@ -196,7 +211,7 @@ export default function ModuleLabWorkbenchClient({
       </header>
 
       {/* Main Workbench Area */}
-      <main className="flex-1 min-h-0 relative">
+      <main className={`flex-1 min-h-0 relative transition-[margin] duration-200 ${tutorOpen ? "xl:mr-[420px]" : ""}`}>
         <MathStepWorkbench
           moduleId={module.id}
           stationId={currentStation.id}
@@ -224,6 +239,9 @@ export default function ModuleLabWorkbenchClient({
         onSendMessage={handleSendMessage}
         stationId={currentStation.id}
         moduleTitle={module.title}
+        quickPrompts={module.id === "conics_and_solids"
+          ? ["Thiết diện hiện tại là đường gì?", "Vì sao β và α quyết định loại thiết diện?", "Nếu tăng β thêm 5° thì hình đổi thế nào?"]
+          : ["Em nên quan sát yếu tố nào trước?", "Cho em một gợi ý nhỏ.", "Em kiểm tra kết luận này thế nào?"]}
       />
 
       {/* Station Catalog Modal */}

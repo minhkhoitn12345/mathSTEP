@@ -379,7 +379,7 @@ const REAL_WORLD_PROBLEMS: Record<string, RealWorldProblem> = {
     matrixRows: [
       { label: "Gấp khối 100%", col1: "Khối chóp 3D", col2: "4 đỉnh S chụm tại đỉnh chung", limit: "Quan sát hình học không gian" },
       { label: "Khai triển 0%", col1: "Bản vẽ phẳng 2D", col2: "4 đỉnh S trải ra 4 hướng", limit: "Tính diện tích toàn phần chính xác" },
-      { label: "Mặt nón Conic", col1: "Cắt mặt nón góc β", col2: "Sinh Elip, Parabol, Hypebol", limit: "Định lý Dandelin" },
+      { label: "Thiết diện nón", col1: "Chỉnh góc cắt β", col2: "Phân loại elip, parabol, hypebol", limit: "So sánh β và α" },
     ],
     optimalSummary: "Liên kết trực quan giữa bản vẽ kỹ thuật 2D và mô hình vật lý 3D trong không gian.",
   },

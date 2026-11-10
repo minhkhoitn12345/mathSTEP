@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MathSTEP">
+  <rect width="512" height="512" rx="112" fill="#087e7c"/>
+  <path d="M106 353V160h54l96 122 96-122h54v193h-60V251l-90 111-90-111v102z" fill="#fff"/>
+  <circle cx="391" cy="118" r="23" fill="#fbbf24"/>
+</svg>

@@ -65,7 +65,7 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
             </span>
             <div>
               <h2 className="text-sm sm:text-base font-extrabold flex items-center gap-2">
-                <span>Phòng Thí Nghiệm Toán Học Động GeoGebra & Desmos</span>
+                <span>Phòng mô phỏng Toán học tương tác</span>
                 <span className="text-[10px] font-semibold bg-emerald-400/20 text-emerald-200 px-2 py-0.5 rounded-full border border-emerald-400/30">
                   SGK Kết nối tri thức
                 </span>

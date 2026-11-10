@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useRef, useState, useMemo } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import React, { useRef, useState, useMemo, useEffect } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
 import {
@@ -13,6 +13,7 @@ import {
   Pause,
   Compass,
   Download,
+  RotateCcw,
 } from "lucide-react";
 import { ResolvedGeometryScene } from "../lib/geometrySolver";
 
@@ -213,8 +214,44 @@ function RightAngleSymbol({
 // -------------------------------------------------------------
 // Scene Controller (Auto-rotation & Camera views)
 // -------------------------------------------------------------
-function SceneController({ autoRotate }: { autoRotate: boolean }) {
+type CameraView = "default" | "top" | "front" | "side";
+const CAMERA_TARGET: [number, number, number] = [0, 1.4, 0];
+const CAMERA_POSITIONS: Record<CameraView, [number, number, number]> = {
+  default: [5.2, 4.5, 6.2],
+  top: [0, 10, 0.01],
+  front: [0, 1.4, 10],
+  side: [10, 1.4, 0],
+};
+
+function SceneController({ autoRotate, viewRequest, storageKey }: { autoRotate: boolean; viewRequest: { view: CameraView; id: number } | null; storageKey: string }) {
   const controlsRef = useRef<React.ComponentRef<typeof OrbitControls>>(null);
+  const { camera, invalidate } = useThree();
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || "null") as { position?: number[]; target?: number[] } | null;
+      if (saved?.position?.length === 3 && saved.target?.length === 3 &&
+          [...saved.position, ...saved.target].every(Number.isFinite)) {
+        const distance = Math.hypot(...saved.position.map((value, index) => value - saved.target![index]));
+        if (distance >= 3 && distance <= 22) {
+          camera.position.set(saved.position[0], saved.position[1], saved.position[2]);
+          controlsRef.current?.target.set(saved.target[0], saved.target[1], saved.target[2]);
+          controlsRef.current?.update();
+          invalidate();
+        }
+      }
+    } catch { /* The default camera remains available if browser storage is blocked. */ }
+  }, [camera, invalidate, storageKey]);
+
+  useEffect(() => {
+    if (!viewRequest || !controlsRef.current) return;
+    const position = CAMERA_POSITIONS[viewRequest.view];
+    camera.position.set(...position);
+    controlsRef.current.target.set(...CAMERA_TARGET);
+    controlsRef.current.update();
+    invalidate();
+    try { localStorage.setItem(storageKey, JSON.stringify({ position, target: CAMERA_TARGET })); } catch {}
+  }, [camera, invalidate, storageKey, viewRequest]);
 
   useFrame(() => {
     if (autoRotate && controlsRef.current) {
@@ -233,7 +270,16 @@ function SceneController({ autoRotate }: { autoRotate: boolean }) {
       dampingFactor={0.06}
       minDistance={3}
       maxDistance={22}
-      target={[0, 1.4, 0]}
+      target={CAMERA_TARGET}
+      onEnd={() => {
+        const controls = controlsRef.current;
+        if (!controls) return;
+        try {
+          localStorage.setItem(storageKey, JSON.stringify({
+            position: camera.position.toArray(), target: controls.target.toArray(),
+          }));
+        } catch {}
+      }}
     />
   );
 }
@@ -247,16 +293,32 @@ export default function Geometry3DViewer({ scene, onAskTutor, className = "" }: 
   const [showSection, setShowSection] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
   const [autoRotate, setAutoRotate] = useState(false);
+  const [viewRequest, setViewRequest] = useState<{ view: CameraView; id: number } | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const cameraStorageKey = `mathstep:camera:${scene.solidType}`;
+  const chooseView = (view: CameraView) => {
+    setAutoRotate(false);
+    setViewRequest({ view, id: Date.now() + Math.random() });
+  };
 
   // Snapshot PNG Export
   const handleSnapshot = () => {
     const canvas = containerRef.current?.querySelector("canvas");
     if (!canvas) return;
-    const dataUrl = canvas.toDataURL("image/png");
+    const snapshot = document.createElement("canvas");
+    snapshot.width = canvas.width;
+    snapshot.height = canvas.height + 72;
+    const context = snapshot.getContext("2d");
+    if (!context) return;
+    context.fillStyle = "#f8fafc";
+    context.fillRect(0, 0, snapshot.width, snapshot.height);
+    context.drawImage(canvas, 0, 0);
+    context.fillStyle = "#0f172a";
+    context.font = "bold 22px Arial, sans-serif";
+    context.fillText(scene.title.slice(0, 70), 24, canvas.height + 42);
     const link = document.createElement("a");
     link.download = `MathSTEP_3D_${scene.solidType}_${Date.now()}.png`;
-    link.href = dataUrl;
+    link.href = snapshot.toDataURL("image/png");
     link.click();
   };
 
@@ -337,7 +399,7 @@ export default function Geometry3DViewer({ scene, onAskTutor, className = "" }: 
       </div>
 
       {/* 2. WebGL 3D Canvas */}
-      <div className="flex-1 w-full h-full">
+      <div className="flex-1 w-full min-h-[320px] sm:min-h-[420px] touch-none">
         <Canvas
           frameloop={autoRotate ? "always" : "demand"}
           dpr={[1, 1.5]}
@@ -345,7 +407,7 @@ export default function Geometry3DViewer({ scene, onAskTutor, className = "" }: 
           gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: "high-performance" }}
         >
           <color attach="background" args={["#f8fafc"]} />
-          <SceneController autoRotate={autoRotate} />
+          <SceneController autoRotate={autoRotate} viewRequest={viewRequest} storageKey={cameraStorageKey} />
 
           {/* Ánh sáng Studio 3 điểm */}
           <ambientLight intensity={0.75} />
@@ -472,6 +534,17 @@ export default function Geometry3DViewer({ scene, onAskTutor, className = "" }: 
         </Canvas>
       </div>
 
+      <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 bg-white px-3 py-2 text-xs" aria-label="Góc nhìn mô hình">
+        <span className="font-semibold text-slate-700">Góc nhìn:</span>
+        {(["default", "top", "front", "side"] as const).map((view) => (
+          <button key={view} type="button" onClick={() => chooseView(view)}
+            className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-200 px-3 font-semibold text-slate-700 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600">
+            {view === "default" && <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />}
+            {{ default: "Đặt lại", top: "Từ trên", front: "Chính diện", side: "Bên cạnh" }[view]}
+          </button>
+        ))}
+      </div>
+
       {/* 3. Footer Thống kê hình học & Gợi ý câu hỏi Socratic */}
       <div className="p-3 bg-white/95 backdrop-blur-md border-t border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-2 text-slate-600">
@@ -493,15 +566,17 @@ export default function Geometry3DViewer({ scene, onAskTutor, className = "" }: 
 
         {/* Gợi ý hỏi trợ lý Socratic */}
         {scene.suggestedQuestions.length > 0 && onAskTutor && (
-          <div className="flex items-center gap-1.5 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
             <span className="text-[11px] text-slate-500 hidden md:inline">Gợi ý học tập:</span>
-            <button
-              onClick={() => onAskTutor(scene.suggestedQuestions[0])}
+            {scene.suggestedQuestions.slice(0, 3).map((question) => <button
+              key={question}
+              type="button"
+              onClick={() => onAskTutor(question)}
               className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#087e7c] hover:bg-[#076a68] text-white rounded-lg text-xs font-medium shadow-sm transition-all"
             >
               <Lightbulb className="w-3.5 h-3.5 text-amber-300" />
-              <span className="truncate max-w-[200px] sm:max-w-xs">{scene.suggestedQuestions[0]}</span>
-            </button>
+              <span className="truncate max-w-[200px] sm:max-w-xs">{question}</span>
+            </button>)}
           </div>
         )}
       </div>
