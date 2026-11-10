@@ -108,11 +108,14 @@ export const TRIG_GUIDED_INDICES = topics.map(t => t.labIndex);
 
 export const TRIG_GUIDED_STEPS = topics.map((t, i) => {
   const other = topics[(i + 3) % topics.length];
-  return [
+  const questions = [
     { title: "1. Dự đoán", prompt: t.question, choices: [t.wrong, t.correct], answer: 1, hint: t.meaning, explanation: t.solution },
     { title: "2. Chọn căn cứ", prompt: `Kiến thức nào giúp em giải bài: ${t.example}`, choices: [other.concept, t.concept], answer: 1, hint: `Hãy đọc lại phần lý thuyết của ${TRIG_LESSONS[i].code}.`, explanation: t.concept },
     { title: "3. Chọn công thức", prompt: "Công thức nào phù hợp với chủ đề đang học?", choices: [`$${topics[(i + 1) % topics.length].formula}$`, `$${t.formula}$`], answer: 1, hint: t.meaning, explanation: t.meaning },
     { title: "4. Thao tác và quan sát", prompt: `Sau khi thao tác trên mô phỏng, kết quả của bài toán “${t.example}” là gì?`, choices: [t.wrong, t.solution], answer: 1, hint: `Quan sát mô hình, rồi dùng công thức vừa chọn. ${t.meaning}`, explanation: t.solution },
     { title: "5. Giải thích và tổng kết", prompt: "Nhận xét nào giải thích đúng kết quả vừa quan sát?", choices: [other.concept, t.concept], answer: 1, hint: `Đối chiếu kết quả với ${TRIG_LESSONS[i].code} trong phần lý thuyết.`, explanation: t.concept },
   ];
+  return questions.map((question, step) => (i + step) % 2 === 0
+    ? question
+    : { ...question, choices: [question.choices[1], question.choices[0]], answer: 0 });
 });
