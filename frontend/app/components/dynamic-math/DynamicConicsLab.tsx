@@ -10,7 +10,7 @@ import {
 import KatexMath from "../KatexMath";
 import { useDynamicMathStore } from "./useDynamicMathStore";
 
-  type ConicSubTab = "coneCut" | "unfolding3d";
+type ConicSubTab = "coneCut" | "unfolding3d";
 type ConicCode = "circle" | "ellipse" | "parabola" | "hyperbola";
 const CONIC_CHALLENGES: { code: ConicCode; label: string }[] = [
   { code: "parabola", label: "Parabol" },
@@ -74,6 +74,26 @@ export default function DynamicConicsLab() {
       return;
     }
     setChallengeFeedback("correct");
+    try {
+      const AudioContextClass = window.AudioContext;
+      if (AudioContextClass) {
+        const audioContext = new AudioContextClass();
+        for (const [index, frequency] of [660, 880].entries()) {
+          const oscillator = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          const start = audioContext.currentTime + index * 0.1;
+          oscillator.type = "sine";
+          oscillator.frequency.value = frequency;
+          gain.gain.setValueAtTime(0.0001, start);
+          gain.gain.exponentialRampToValueAtTime(0.045, start + 0.015);
+          gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.11);
+          oscillator.connect(gain).connect(audioContext.destination);
+          oscillator.start(start);
+          oscillator.stop(start + 0.12);
+        }
+        window.setTimeout(() => { void audioContext.close(); }, 400);
+      }
+    } catch { /* Visual feedback remains available when audio is blocked. */ }
     const next = [...new Set([...completedChallenges, challenge])];
     setCompletedChallenges(next);
     try { localStorage.setItem(CONIC_PROGRESS_KEY, JSON.stringify(next)); } catch {}
@@ -172,7 +192,7 @@ export default function DynamicConicsLab() {
                 const cy = 110; // Cắt ở tầng nón trên
 
                 return (
-                  <g>
+                  <g style={showClassification ? { filter: "drop-shadow(0 0 5px #fbbf24)" } : undefined}>
                     {/* Mặt phẳng cắt (Đỏ) */}
                     <line
                       x1={cx - dx}
@@ -184,7 +204,9 @@ export default function DynamicConicsLab() {
                     />
 
                     {/* Tiết diện conic sinh ra */}
-                    {coneBeta > coneAlpha ? (
+                    {coneBeta === 90 ? (
+                      <circle cx={cx} cy={cy} r="36" fill="#fca5a5" fillOpacity="0.65" stroke="#b91c1c" strokeWidth="2.2" />
+                    ) : coneBeta > coneAlpha ? (
                       <ellipse
                         cx={cx}
                         cy={cy}

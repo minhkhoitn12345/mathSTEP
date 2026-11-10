@@ -8,6 +8,7 @@ import {
   X,
 } from "lucide-react";
 import Geometry3DViewer from "./Geometry3DViewer";
+import FreeGeometrySandbox from "./FreeGeometrySandbox";
 import NaturalLanguageGeometryPanel from "./NaturalLanguageGeometryPanel";
 import {
   GEOMETRY_PRESET_TEMPLATES,
@@ -46,7 +47,7 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
   }, [moduleId, setActiveModule]);
 
   // AI 3D Creative Sub-tab state (for Module 2 & Module 7)
-  const [geoSubTab, setGeoSubTab] = useState<"standard" | "ai_parser">("standard");
+  const [geoSubTab, setGeoSubTab] = useState<"standard" | "ai_parser" | "sandbox">("standard");
   const [parsedAiScene, setParsedAiScene] = useState<ResolvedGeometryScene>(() =>
     resolveGeometrySolid(GEOMETRY_PRESET_TEMPLATES[0].solid)
   );
@@ -200,7 +201,15 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
                     }`}
                   >
                     <Box className="w-3.5 h-3.5 text-blue-200" />
-                    <span>Dựng hình tự do (3D)</span>
+                    <span>Dựng từ mô tả</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGeoSubTab("sandbox")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${geoSubTab === "sandbox" ? "bg-gradient-to-r from-[#087e7c] to-[#0f9488] text-white shadow-xs" : "text-slate-600 hover:text-slate-900"}`}
+                  >
+                    <Box className="w-3.5 h-3.5" />
+                    <span>Tự chấm điểm, dựng hình</span>
                   </button>
                 </div>
                 <span className="text-[11px] text-slate-500 hidden sm:inline px-2 font-medium">
@@ -210,6 +219,8 @@ export default function MathGraphVisualizer({ moduleId, onClose }: MathGraphVisu
 
               {geoSubTab === "standard" ? (
                 <DynamicSpatialGeometryLab />
+              ) : geoSubTab === "sandbox" ? (
+                <FreeGeometrySandbox />
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
                   <div className="lg:col-span-5 order-2 lg:order-1">
