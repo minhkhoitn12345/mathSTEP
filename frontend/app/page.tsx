@@ -3,16 +3,9 @@
 import React, { useState, useEffect, useCallback, Suspense, FormEvent, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Header, SessionData } from "./components/optimath/Header";
 import { LessonCatalogHome } from "./components/optimath/LessonCatalogHome";
-import { SingleInequalityLab } from "./components/optimath/SingleInequalityLab";
-import { SystemInequalityLab } from "./components/optimath/SystemInequalityLab/SystemInequalityLab";
-import { OptimizationLab } from "./components/optimath/OptimizationLab/OptimizationLab";
-import { PracticeLab } from "./components/optimath/PracticeLab/PracticeLab";
-import { SpatialGeometryLab } from "./components/spatial-geometry/SpatialGeometryLab";
-import { TrigonometryLab } from "./components/trigonometry/TrigonometryLab";
-import { KnowledgeBaseModal } from "./components/optimath/KnowledgeBaseModal";
-import { TeacherGuideModal } from "./components/optimath/TeacherGuideModal";
 import { Footer } from "./components/optimath/Footer";
 import { OptiMascot } from "./components/optimath/mascot/OptiMascot";
 import SocraticChatDrawer, { ChatMessage } from "./components/SocraticChatDrawer";
@@ -21,8 +14,6 @@ import ChatHistoryModal from "./components/ChatHistoryModal";
 import { generateSmartSocraticResponse } from "./lib/smartSocratic";
 import { LearningMode } from "./types/math";
 import { CORE_3_MODULES } from "./types/curriculum";
-import { LearningPathRoadmap } from "./components/learning-path/LearningPathRoadmap";
-import { LessonStudyScreen } from "./components/learning-path/LessonStudyScreen";
 import {
   loadUserLearningProgress,
   markLessonCompleted,
@@ -33,6 +24,17 @@ import { useCloudLearningProgress } from "./lib/useCloudLearningProgress";
 import { getLessonDetailedContent } from "./data/learningPathData";
 import { UserLearningProgress } from "./types/learningPath";
 import { Sparkles, Mail, Lock, User, AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
+
+const SingleInequalityLab = dynamic(() => import("./components/optimath/SingleInequalityLab").then(m => m.SingleInequalityLab));
+const SystemInequalityLab = dynamic(() => import("./components/optimath/SystemInequalityLab/SystemInequalityLab").then(m => m.SystemInequalityLab));
+const OptimizationLab = dynamic(() => import("./components/optimath/OptimizationLab/OptimizationLab").then(m => m.OptimizationLab));
+const PracticeLab = dynamic(() => import("./components/optimath/PracticeLab/PracticeLab").then(m => m.PracticeLab));
+const SpatialGeometryLab = dynamic(() => import("./components/spatial-geometry/SpatialGeometryLab").then(m => m.SpatialGeometryLab));
+const TrigonometryLab = dynamic(() => import("./components/trigonometry/TrigonometryLab").then(m => m.TrigonometryLab));
+const KnowledgeBaseModal = dynamic(() => import("./components/optimath/KnowledgeBaseModal").then(m => m.KnowledgeBaseModal));
+const TeacherGuideModal = dynamic(() => import("./components/optimath/TeacherGuideModal").then(m => m.TeacherGuideModal));
+const LearningPathRoadmap = dynamic(() => import("./components/learning-path/LearningPathRoadmap").then(m => m.LearningPathRoadmap));
+const LessonStudyScreen = dynamic(() => import("./components/learning-path/LessonStudyScreen").then(m => m.LessonStudyScreen));
 
 type ActiveView =
   | "home"
@@ -832,17 +834,17 @@ function OptimathMainContent() {
       />
 
       {/* 6. MODALS */}
-      <KnowledgeBaseModal
+      {isKnowledgeModalOpen && <KnowledgeBaseModal
         isOpen={isKnowledgeModalOpen}
         onClose={() => setIsKnowledgeModalOpen(false)}
         onGoToLab={handleGoToLabFromModal}
-      />
+      />}
 
-      <TeacherGuideModal
+      {isTeacherModalOpen && <TeacherGuideModal
         isOpen={isTeacherModalOpen}
         onClose={() => setIsTeacherModalOpen(false)}
         onOpenTeacherLab={handleLaunchTeacherLab}
-      />
+      />}
 
       <AccountSettingsModal
         isOpen={accountModalOpen}
