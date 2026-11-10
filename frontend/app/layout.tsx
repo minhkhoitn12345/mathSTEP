@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     siteName: "OPTIMATH LAB",
     title: "OPTIMATH LAB · Phòng Thí Nghiệm Toán Học Tương Tác & Socratic AI",
     description:
-      "Học bằng thao tác, hiểu bằng lập luận: 5 Module trực quan hoá Bất phương trình & Quy hoạch tuyến tính cùng Trợ lý Socratic AI.",
+      "Học Toán 10 và 11 qua ba chuyên đề: bất phương trình và quy hoạch tuyến tính, hình học không gian, lượng giác.",
   },
   twitter: {
     card: "summary_large_image",

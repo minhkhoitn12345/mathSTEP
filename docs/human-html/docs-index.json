@@ -1,0 +1,22 @@
+{
+  "count": 1,
+  "artifacts": [
+    {
+      "date": "2026-11-10",
+      "kind": "review",
+      "slug": "optimath-lab-website-review",
+      "title": "OPTIMATH LAB website review",
+      "summary": "Source review finds a leaderboard integrity flaw, dead sitemap routes, device-only learning progress, and a practice bank that does not yet cover all three modules.",
+      "keywords": [
+        "OPTIMATH LAB",
+        "MathSTEP",
+        "review",
+        "leaderboard",
+        "lessons",
+        "PWA"
+      ],
+      "source": "local",
+      "href": "2026-11-10-review-optimath-lab-website-review.html"
+    }
+  ]
+}

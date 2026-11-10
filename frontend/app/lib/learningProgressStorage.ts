@@ -95,6 +95,36 @@ export function saveUserLearningProgress(progress: UserLearningProgress): void {
   }
 }
 
+export function loadScopedLearningProgress(scope: string): UserLearningProgress | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(`${STORAGE_KEY}:${scope}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<UserLearningProgress>;
+    if (!Array.isArray(parsed.completedLessonIds) || !parsed.quizScores || typeof parsed.quizScores !== "object") return null;
+    return {
+      completedLessonIds: parsed.completedLessonIds.filter((id): id is string => typeof id === "string"),
+      lastActiveLessonId: typeof parsed.lastActiveLessonId === "string" ? parsed.lastActiveLessonId : DEFAULT_PROGRESS.lastActiveLessonId,
+      quizScores: parsed.quizScores as Record<string, number>,
+      earnedXp: typeof parsed.earnedXp === "number" ? parsed.earnedXp : 0,
+      streakDays: typeof parsed.streakDays === "number" ? parsed.streakDays : 0,
+      longestStreakDays: typeof parsed.longestStreakDays === "number" ? parsed.longestStreakDays : 0,
+      lastStudyDate: typeof parsed.lastStudyDate === "string" ? parsed.lastStudyDate : "",
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function saveScopedLearningProgress(scope: string, progress: UserLearningProgress): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(`${STORAGE_KEY}:${scope}`, JSON.stringify(progress));
+  } catch {
+    // Continue using in-memory and account-backed progress when storage is unavailable.
+  }
+}
+
 export function markLessonCompleted(
   lessonId: string,
   scorePercentage: number,

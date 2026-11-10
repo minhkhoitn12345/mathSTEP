@@ -6,14 +6,14 @@ import { ArrowLeft, Award, Flame, LoaderCircle, Medal, RefreshCw, Sparkles, Trop
 
 type Category = "streak" | "xp" | "lessons";
 type LeaderboardEntry = {
-  user_id: string;
   display_name: string;
   total_xp: number;
   longest_streak_days: number;
   completed_lessons: number;
+  is_current_user: boolean;
 };
 type LeaderboardResponse = {
-  profile: { userId: string; displayName: string };
+  profile: { displayName: string };
   boards: Record<Category, LeaderboardEntry[]>;
   own: LeaderboardEntry | null;
 };
@@ -156,10 +156,10 @@ export default function LeaderboardPage() {
               ) : (
                 <ol className="divide-y divide-slate-100">
                   {entries.map((entry, index) => {
-                    const isMe = entry.user_id === data?.profile.userId;
+                    const isMe = entry.is_current_user;
                     const value = Number(entry[selected.metric] ?? 0);
                     return (
-                      <li key={entry.user_id} className={`flex items-center gap-3 px-4 py-3.5 sm:gap-4 sm:px-6 ${isMe ? "bg-blue-50/80" : "hover:bg-slate-50/70"}`}>
+                      <li key={`${entry.display_name}-${index}`} className={`flex items-center gap-3 px-4 py-3.5 sm:gap-4 sm:px-6 ${isMe ? "bg-blue-50/80" : "hover:bg-slate-50/70"}`}>
                         <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold ${index === 0 ? "bg-amber-100 text-amber-700" : index === 1 ? "bg-slate-200 text-slate-600" : index === 2 ? "bg-orange-100 text-orange-700" : "bg-slate-100 text-slate-500"}`}>
                           {index < 3 ? <Medal className="h-4 w-4" /> : index + 1}
                         </span>

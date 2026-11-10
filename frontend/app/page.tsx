@@ -28,7 +28,8 @@ import {
   markLessonCompleted,
   setLastActiveLesson,
 } from "./lib/learningProgressStorage";
-import { syncLeaderboardProgress } from "./lib/leaderboardClient";
+import { recordLessonCompletion } from "./lib/leaderboardClient";
+import { useCloudLearningProgress } from "./lib/useCloudLearningProgress";
 import { getLessonDetailedContent } from "./data/learningPathData";
 import { UserLearningProgress } from "./types/learningPath";
 import { Sparkles, Mail, Lock, User, AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
@@ -67,6 +68,7 @@ function OptimathMainContent() {
   // 3. User session & auth state
   const [session, setSession] = useState<SessionData | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
+  useCloudLearningProgress(sessionLoading ? undefined : session?.userId ?? null, userProgress, setUserProgress);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup" | "verify_email">("login");
   const [loginEmail, setLoginEmail] = useState("");
@@ -221,6 +223,7 @@ function OptimathMainContent() {
         if (data.authenticated) {
           setSession({
             authenticated: true,
+            userId: data.user?.id ?? null,
             name: data.name,
             email: data.email,
             role: data.role,
@@ -301,7 +304,7 @@ function OptimathMainContent() {
   ) => {
     const updated = markLessonCompleted(lessonId, scorePercentage, xpEarned);
     setUserProgress(updated);
-    if (session?.authenticated) void syncLeaderboardProgress(updated);
+    if (session?.authenticated) void recordLessonCompletion(lessonId);
 
     // Tìm bài học tiếp theo trong toàn bộ 15 bài
     const allLessons = CORE_3_MODULES.flatMap((m) => m.lessons);
@@ -319,7 +322,7 @@ function OptimathMainContent() {
   const handleRewardLesson = (lessonId: string, scorePercentage: number, xpEarned: number) => {
     const updated = markLessonCompleted(lessonId, scorePercentage, xpEarned);
     setUserProgress(updated);
-    if (session?.authenticated) void syncLeaderboardProgress(updated);
+    if (session?.authenticated) void recordLessonCompletion(lessonId);
   };
 
   // Mở thẳng đúng một mô phỏng tương ứng của bài học được chọn

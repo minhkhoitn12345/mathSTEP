@@ -9,6 +9,7 @@ import {
   Activity,
 } from "lucide-react";
 import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
+import { MathFormattedText } from "@/app/components/KatexMath";
 
 interface TrigonometryLabProps {
   onBackToHome?: () => void;
@@ -16,6 +17,56 @@ interface TrigonometryLabProps {
   initialLessonIndex?: number;
   embedded?: boolean;
 }
+
+type GuidedQuestion = { title: string; prompt: string; choices: string[]; answer: number; explanation: string };
+
+const GUIDED_STEPS: GuidedQuestion[][] = [
+  [
+    { title: "Quy ước chiều quay", prompt: "Trên đường tròn lượng giác, góc âm được tạo bởi chiều quay nào?", choices: ["Ngược chiều kim đồng hồ", "Cùng chiều kim đồng hồ", "Không xác định chiều quay"], answer: 1, explanation: "Chiều dương ngược chiều kim đồng hồ; vì vậy góc âm quay cùng chiều kim đồng hồ." },
+    { title: "Tách số vòng", prompt: "Góc $-765^\\circ$ gồm bao nhiêu vòng âm trọn vẹn và phần góc còn lại?", choices: ["$-2$ vòng và $-45^\\circ$", "$-1$ vòng và $-405^\\circ$", "$-3$ vòng và $315^\\circ$"], answer: 0, explanation: "$-765^\\circ = -2\\cdot360^\\circ-45^\\circ$. Phần quay còn lại sau hai vòng là $-45^\\circ$." },
+    { title: "Tìm góc cùng điểm cuối", prompt: "Góc trong khoảng $[0^\\circ;360^\\circ)$ có cùng điểm cuối với $-765^\\circ$ là góc nào?", choices: ["$45^\\circ$", "$225^\\circ$", "$315^\\circ$"], answer: 2, explanation: "$-765^\\circ+3\\cdot360^\\circ=315^\\circ$. Hai góc sai khác một bội của $360^\\circ$ nên cùng điểm cuối." },
+    { title: "Xác định góc phần tư", prompt: "Điểm cuối ứng với $315^\\circ$ thuộc góc phần tư nào?", choices: ["I", "III", "IV"], answer: 2, explanation: "$315^\\circ$ nằm giữa $270^\\circ$ và $360^\\circ$, nên điểm cuối thuộc góc phần tư IV." },
+    { title: "Đọc tọa độ điểm", prompt: "Ở góc phần tư IV, dấu của hoành độ $\\cos\\alpha$ và tung độ $\\sin\\alpha$ lần lượt là gì?", choices: ["Dương, âm", "Âm, dương", "Âm, âm"], answer: 0, explanation: "Trên đường tròn đơn vị, $M(\\cos\\alpha;\\sin\\alpha)$. Góc phần tư IV có hoành độ dương và tung độ âm." },
+    { title: "Đổi sang radian", prompt: "Đổi $-765^\\circ$ sang radian được kết quả nào?", choices: ["$-17\\pi/4$", "$-15\\pi/4$", "$17\\pi/4$"], answer: 0, explanation: "$-765^\\circ\\cdot\\pi/180^\\circ=-17\\pi/4$ rad." },
+    { title: "Kết luận về điểm cuối", prompt: "Hai góc có cùng điểm biểu diễn trên đường tròn lượng giác thì luôn có số đo bằng nhau không?", choices: ["Có, vì cùng một điểm", "Không; hiệu hai góc là một bội của $2\\pi$ rad", "Không; tổng hai góc luôn bằng $2\\pi$ rad"], answer: 1, explanation: "Các góc cùng điểm cuối có dạng $\\alpha+2k\\pi$ (hay $\\alpha+360^\\circ k$), với $k\\in\\mathbb Z$. Số đo có thể khác nhau." },
+  ],
+  [
+    { title: "Đọc tọa độ trên đường tròn", prompt: "Với điểm $M$ trên đường tròn đơn vị, $\\cos\\alpha$ là tọa độ nào của $M$?", choices: ["Hoành độ", "Tung độ", "Độ dài bán kính"], answer: 0, explanation: "$M(\\cos\\alpha;\\sin\\alpha)$: cos ứng với hoành độ, sin ứng với tung độ." },
+    { title: "Liên hệ tung độ", prompt: "$\\sin\\alpha$ được đọc trên trục nào của hình?", choices: ["Trục hoành", "Trục tung", "Đường thẳng tiếp tuyến $x=1$"], answer: 1, explanation: "$\\sin\\alpha$ là tung độ của điểm $M$, nên được đọc theo phương trục tung." },
+    { title: "Tính tan", prompt: "Khi $\\cos\\alpha\\ne0$, công thức xác định $\\tan\\alpha$ là gì?", choices: ["$\\sin\\alpha/\\cos\\alpha$", "$\\cos\\alpha/\\sin\\alpha$", "$\\sin\\alpha+\\cos\\alpha$"], answer: 0, explanation: "$\\tan\\alpha=\\frac{\\sin\\alpha}{\\cos\\alpha}$ khi $\\cos\\alpha\\ne0$. Trên hình, đây là tung độ giao điểm của đường thẳng $OM$ với tiếp tuyến $x=1$." },
+    { title: "Tính cot", prompt: "Khi $\\sin\\alpha\\ne0$, công thức xác định $\\cot\\alpha$ là gì?", choices: ["$\\sin\\alpha/\\cos\\alpha$", "$\\cos\\alpha/\\sin\\alpha$", "$1/(\\sin\\alpha+\\cos\\alpha)$"], answer: 1, explanation: "$\\cot\\alpha=\\frac{\\cos\\alpha}{\\sin\\alpha}$ khi $\\sin\\alpha\\ne0$. Trên hình, đọc hoành độ giao điểm đường thẳng $OM$ với tiếp tuyến $y=1$." },
+    { title: "Nhận biết tan không xác định", prompt: "Tại góc $90^\\circ$, vì sao $\\tan\\alpha$ không xác định?", choices: ["Vì $\\cos90^\\circ=0$ ở mẫu", "Vì $\\sin90^\\circ=0$ ở mẫu", "Vì cả sin và cos đều bằng 0"], answer: 0, explanation: "$\\tan\\alpha=\\sin\\alpha/\\cos\\alpha$. Tại $90^\\circ$, cos bằng 0 nên phép chia không thực hiện được." },
+    { title: "Nhận biết cot không xác định", prompt: "Tại góc $0^\\circ$, vì sao $\\cot\\alpha$ không xác định?", choices: ["Vì $\\cos0^\\circ=0$", "Vì $\\sin0^\\circ=0$ ở mẫu", "Vì $\\cot0^\\circ=0$"], answer: 1, explanation: "$\\cot\\alpha=\\cos\\alpha/\\sin\\alpha$. Tại $0^\\circ$, sin bằng 0; cot không xác định, không phải bằng 0." },
+    { title: "Phân biệt giá trị 0", prompt: "Tại $90^\\circ$, cặp giá trị $(\\tan\\alpha;\\cot\\alpha)$ là gì?", choices: ["$(\\text{không xác định};0)$", "$(0;\\text{không xác định})$", "$(1;1)$"], answer: 0, explanation: "Tại $90^\\circ$, tan không xác định vì cos bằng 0; cot bằng 0 vì cos bằng 0 còn sin bằng 1." },
+  ],
+  [
+    { title: "Cung bù", prompt: "Hai điểm ứng với $\\alpha$ và $\\pi-\\alpha$ đối xứng nhau qua trục nào?", choices: ["Trục hoành", "Trục tung", "Gốc tọa độ"], answer: 1, explanation: "Phép đối xứng qua trục tung đổi dấu hoành độ, giữ nguyên tung độ: cos đổi dấu, sin giữ nguyên." },
+    { title: "Cung đối", prompt: "Khi thay $\\alpha$ bằng $-\\alpha$, tọa độ nào đổi dấu?", choices: ["Hoành độ cos", "Tung độ sin", "Cả hai tọa độ"], answer: 1, explanation: "Hai điểm đối xứng qua trục hoành có cùng hoành độ và tung độ đối nhau: cos chẵn, sin lẻ." },
+    { title: "Nhận diện công thức sai", prompt: "Đẳng thức nào sau đây không đúng với mọi $a,b$?", choices: ["$\\sin(a+b)=\\sin a+\\sin b$", "$\\sin(a+b)=\\sin a\\cos b+\\cos a\\sin b$", "$\\cos(2a)=\\cos^2a-\\sin^2a$"], answer: 0, explanation: "Sin của tổng không bằng tổng các sin. Công thức đúng là $\\sin(a+b)=\\sin a\\cos b+\\cos a\\sin b$." },
+    { title: "Chọn công thức nhân đôi", prompt: "Công thức nhân đôi đúng của sin là gì?", choices: ["$\\sin2a=2\\sin a\\cos a$", "$\\sin2a=\\sin^2a+\\cos^2a$", "$\\sin2a=2\\sin a$"], answer: 0, explanation: "Từ công thức cộng, $\\sin(a+a)=\\sin a\\cos a+\\cos a\\sin a=2\\sin a\\cos a$." },
+    { title: "Dự đoán dấu", prompt: "Với góc đang xét ở góc phần tư IV, dấu của $\\sin\\alpha\\cos\\alpha$ là gì?", choices: ["Dương", "Âm", "Bằng 0"], answer: 1, explanation: "Góc phần tư IV có sin âm và cos dương nên tích sin cos âm." },
+    { title: "Đối chiếu trên hình", prompt: "Điểm ứng với $2\\alpha$ trên đường tròn được tính từ tọa độ $M(\\cos\\alpha;\\sin\\alpha)$ bằng công thức nào?", choices: ["$(\\cos^2\\alpha-\\sin^2\\alpha;2\\sin\\alpha\\cos\\alpha)$", "$(2\\cos\\alpha;2\\sin\\alpha)$", "$(\\sin\\alpha;\\cos\\alpha)$"], answer: 0, explanation: "Tọa độ điểm góc $2\\alpha$ là $(\\cos2\\alpha;\\sin2\\alpha)$, dùng hai công thức nhân đôi để tính." },
+    { title: "Rút ra kết luận", prompt: "Vì sao hình học đường tròn giúp kiểm tra công thức lượng giác?", choices: ["Vì cùng một điểm $2\\alpha$ cho cả tọa độ tính theo công thức và tọa độ đọc trên hình", "Vì mọi góc đều có sin bằng cos", "Vì hình vẽ thay thế được lập luận"], answer: 0, explanation: "Hình giúp đối chiếu dự đoán với tọa độ, nhưng kết luận tổng quát vẫn cần dựa vào định nghĩa và phép biến đổi đại số." },
+  ],
+  [
+    { title: "Đọc giá trị theo thời gian", prompt: "Khi điểm $M$ quay đều trên đường tròn đơn vị, tung độ của $M$ tạo ra đồ thị nào?", choices: ["$y=\\sin x$", "$y=\\tan x$", "$y=x^2$"], answer: 0, explanation: "Tung độ của điểm trên đường tròn là $\\sin x$. Khi góc tăng đều, giá trị này tạo thành đồ thị hình sin." },
+    { title: "Nhận ra tính tuần hoàn", prompt: "Sau khi góc tăng thêm $2\\pi$, điểm trên đường tròn và giá trị sin thay đổi thế nào?", choices: ["Trở về vị trí cũ, giá trị lặp lại", "Điểm dừng lại ở $2\\pi$", "Giá trị tăng thêm 1"], answer: 0, explanation: "Quay thêm một vòng $2\\pi$ đưa điểm về vị trí cũ, nên $\\sin(x+2\\pi)=\\sin x$." },
+    { title: "Tìm chu kỳ cơ bản", prompt: "Khoảng cách theo trục hoành giữa hai đỉnh liên tiếp của $y=\\sin x$ là bao nhiêu?", choices: ["$\\pi$", "$2\\pi$", "$4\\pi$"], answer: 1, explanation: "Hai đỉnh liên tiếp cách nhau đúng một vòng quay, tức $2\\pi$. Đây là chu kỳ cơ bản của sin và cos." },
+    { title: "Đọc biên độ", prompt: "Với $y=a\\sin(bx+c)+d$, độ lệch lớn nhất so với đường trung bình $y=d$ bằng gì?", choices: ["$|a|$", "$|b|$", "$|c|$"], answer: 0, explanation: "Biên độ là $|a|$; đồ thị nằm trong đoạn $[d-|a|;d+|a|]$." },
+    { title: "Tìm chu kỳ sau biến đổi", prompt: "Với $y=a\\sin(bx+c)+d$, chu kỳ là công thức nào khi $b\\ne0$?", choices: ["$2\\pi/|b|$", "$2\\pi|b|$", "$|a|+|d|$"], answer: 0, explanation: "Hệ số $b$ làm co giãn theo phương ngang, nên chu kỳ mới là $T=2\\pi/|b|$." },
+    { title: "Đọc dịch chuyển", prompt: "Trong $y=a\\sin(bx+c)+d$, tham số $d$ làm đồ thị thay đổi thế nào?", choices: ["Tịnh tiến lên hoặc xuống", "Thay đổi chu kỳ", "Đổi sin thành cos"], answer: 0, explanation: "$d$ tịnh tiến đồ thị theo phương thẳng đứng; đường trung bình trở thành $y=d$." },
+    { title: "Hiểu miền kéo dài", prompt: "Vì sao đồ thị sin/cos không có điểm kết thúc ở hai mép khung mô phỏng?", choices: ["Hàm số xác định với mọi số thực và các chu kỳ tiếp tục lặp", "Đồ thị chỉ có nghĩa trong khung đang thấy", "Sau $2\\pi$ hàm số không xác định"], answer: 0, explanation: "Miền xác định của sin và cos là $\\mathbb R$. Khung chỉ là cửa sổ quan sát; đồ thị tiếp tục tuần hoàn về cả hai phía." },
+  ],
+  [
+    { title: "Đọc đường thẳng ngang", prompt: "Phương trình $\\sin x=m$ được biểu diễn trên đồ thị bằng giao điểm với đường nào?", choices: ["$y=m$", "$x=m$", "$y=x+m$"], answer: 0, explanation: "Ta tìm giao điểm của đồ thị $y=\\sin x$ với đường thẳng ngang $y=m$." },
+    { title: "Kiểm tra miền giá trị", prompt: "Để $\\sin x=m$ có nghiệm thực, m phải thỏa điều kiện nào?", choices: ["$m\\ge1$", "$-1\\le m\\le1$", "$m\\ne0$"], answer: 1, explanation: "Giá trị của sin luôn thuộc $[-1;1]$, nên ngoài đoạn này phương trình vô nghiệm." },
+    { title: "Đếm giao điểm", prompt: "Khi $-1<m<1$, một đường thẳng $y=m$ cắt đồ thị sin trong mỗi chu kỳ như thế nào?", choices: ["Hai giao điểm", "Một giao điểm", "Không có giao điểm"], answer: 0, explanation: "Trong một chu kỳ, đường thẳng ngang ở giữa hai giá trị cực trị cắt đồ thị sin tại hai điểm." },
+    { title: "Đọc nghiệm trên đường tròn", prompt: "Trên đường tròn đơn vị, phương trình $\\sin x=m$ tương ứng với điều kiện nào?", choices: ["Tung độ điểm biểu diễn bằng m", "Hoành độ điểm biểu diễn bằng m", "Bán kính bằng m"], answer: 0, explanation: "Sin là tung độ, nên nghiệm là các góc có điểm biểu diễn nằm trên đường thẳng ngang $y=m$." },
+    { title: "Viết họ nghiệm", prompt: "Vì sao nghiệm của phương trình lượng giác cơ bản thường có thêm $2k\\pi$?", choices: ["Vì sin lặp lại sau mỗi chu kỳ $2\\pi$", "Vì góc chỉ được phép lớn hơn $2\\pi$", "Vì $k$ là hệ số của sin"], answer: 0, explanation: "Mỗi nghiệm trong một chu kỳ sinh ra cả họ nghiệm bằng cách cộng $2k\\pi$, với $k\\in\\mathbb Z$." },
+    { title: "Lọc nghiệm", prompt: "Khi đề yêu cầu nghiệm trong $[-\\pi;\\pi]$, cần làm gì sau khi tìm họ nghiệm?", choices: ["Chọn các nghiệm thuộc đoạn đã cho, kể cả hai đầu mút", "Chỉ giữ nghiệm dương", "Bỏ tất cả nghiệm có chứa k"], answer: 0, explanation: "Thay các giá trị nguyên k phù hợp vào họ nghiệm rồi giữ đúng những giá trị thuộc đoạn, lưu ý hai đầu mút đều được lấy." },
+    { title: "Kết luận từ hình", prompt: "Mỗi giao điểm của $y=\\sin x$ và $y=m$ cho biết điều gì?", choices: ["Một nghiệm x của phương trình $\\sin x=m$", "Một nghiệm y của phương trình", "Một điểm không thuộc đồ thị"], answer: 0, explanation: "Hoành độ của mỗi giao điểm chính là một nghiệm x. Sau đó mới lọc theo khoảng đề bài yêu cầu." },
+  ],
+];
 
 export function TrigonometryLab({
   onBackToHome,
@@ -36,7 +87,10 @@ export function TrigonometryLab({
 
   // Core angle in degrees (Defaults to -765° from Task LG-MH01)
   const [angleDeg, setAngleDeg] = useState<number>(-765);
-  const [waveMode, setWaveMode] = useState<"sin" | "cos">("sin");
+  const [waveMode, setWaveMode] = useState<"sin" | "cos" | "tan" | "cot">("sin");
+  const [guidedStep, setGuidedStep] = useState(0);
+  const [guidedChoice, setGuidedChoice] = useState<number | null>(null);
+  const [guidedResultShown, setGuidedResultShown] = useState(false);
 
   // Lesson 3: Reflection toggles
   const [showSupplementary, setShowSupplementary] = useState<boolean>(true); // Cung bù (pi - x)
@@ -64,7 +118,7 @@ export function TrigonometryLab({
   // Angle math & properties
   const angleRad = (angleDeg * Math.PI) / 180;
   const repAngleDeg = ((angleDeg % 360) + 360) % 360;
-  const repAngleRad = (repAngleDeg * Math.PI) / 180;
+  const _repAngleRad = (repAngleDeg * Math.PI) / 180;
 
   // Complete turns k
   const _completeTurns = Math.floor(Math.abs(angleDeg) / 360) * (angleDeg < 0 ? -1 : 1);
@@ -98,8 +152,8 @@ export function TrigonometryLab({
   const doubleScreenY = cY - cR * sin2a;
 
   // Tangent and Cotangent projection screen coords
-  const tanScreenY = tanVal !== null ? cY - cR * Math.max(-2.5, Math.min(2.5, tanVal)) : null;
-  const cotScreenX = cotVal !== null ? cX + cR * Math.max(-2.5, Math.min(2.5, cotVal)) : null;
+  const tanScreenY = tanVal !== null ? cY - cR * tanVal : null;
+  const cotScreenX = cotVal !== null ? cX + cR * cotVal : null;
 
   // Quadrant detection
   const getQuadrant = () => {
@@ -158,51 +212,69 @@ export function TrigonometryLab({
   const handleCirclePointerUp = () => setIsDraggingM(false);
 
   // Right SVG Dimensions: Dynamic Wave Curve
-  const waveSvgW = 420;
+  const waveSvgW = 620;
   const waveSvgH = 340;
-  const waveOriginX = 40;
+  const waveOriginX = waveSvgW / 2 - angleRad * 34;
   const waveOriginY = waveSvgH / 2;
-  const waveScaleX = 50; // px per radian
-  const waveScaleY = 55; // px per unit
+  const waveScaleX = 34; // px per radian
+  const waveScaleY = 42; // px per unit
 
-  // Generate SVG path for wave curve y = a * sin(b * x + c) + d
-  const wavePath = useMemo(() => {
-    let d = "";
-    const startX = 0;
-    const endX = 7.0; // from 0 to ~2.2*PI radians
-    const step = 0.04;
-
-    for (let x = startX; x <= endX; x += step) {
-      let y = 0;
-      if (selectedLessonIndex === 3) {
-        // Full transformation
-        y =
-          waveMode === "sin"
-            ? ampA * Math.sin(freqB * x + phaseC) + shiftD
-            : ampA * Math.cos(freqB * x + phaseC) + shiftD;
-      } else {
-        y = waveMode === "sin" ? Math.sin(x) : Math.cos(x);
+  // Keep the current angle in view while showing several repeated periods on both sides.
+  // For tan/cot, split paths at vertical asymptotes instead of joining across the jump.
+  const graphXMin = -waveOriginX / waveScaleX;
+  const graphXMax = (waveSvgW - 10 - waveOriginX) / waveScaleX;
+  const graphValue = (x: number) => {
+    if (waveMode === "tan") return Math.tan(x);
+    if (waveMode === "cot") return Math.cos(x) / Math.sin(x);
+    if (selectedLessonIndex === 3) {
+      return waveMode === "sin"
+        ? ampA * Math.sin(freqB * x + phaseC) + shiftD
+        : ampA * Math.cos(freqB * x + phaseC) + shiftD;
+    }
+    return waveMode === "sin" ? Math.sin(x) : Math.cos(x);
+  };
+  const wavePaths = useMemo(() => {
+    const paths: string[] = [];
+    let current = "";
+    const step = 0.025;
+    for (let x = graphXMin; x <= graphXMax + step; x += step) {
+      const y = graphValue(x);
+      if (!Number.isFinite(y) || Math.abs(y) > 3.25) {
+        if (current) paths.push(current);
+        current = "";
+        continue;
       }
-
       const sx = waveOriginX + x * waveScaleX;
       const sy = waveOriginY - y * waveScaleY;
-      d += `${x === startX ? "M" : "L"} ${sx.toFixed(1)} ${sy.toFixed(1)} `;
+      current += `${current ? "L" : "M"} ${sx.toFixed(1)} ${sy.toFixed(1)} `;
     }
-    return d;
-  }, [selectedLessonIndex, waveMode, ampA, freqB, phaseC, shiftD, waveOriginX, waveOriginY]);
+    if (current) paths.push(current);
+    return paths;
+  }, [selectedLessonIndex, waveMode, ampA, freqB, phaseC, shiftD, graphXMin, graphXMax, waveOriginX, waveOriginY, waveScaleX, waveScaleY, graphValue]);
 
   // Synchronized point on the wave graph
-  const curWaveY =
-    selectedLessonIndex === 3
-      ? waveMode === "sin"
-        ? ampA * Math.sin(freqB * repAngleRad + phaseC) + shiftD
-        : ampA * Math.cos(freqB * repAngleRad + phaseC) + shiftD
-      : waveMode === "sin"
-      ? sinVal
-      : cosVal;
+  const curWaveY = graphValue(angleRad);
+  const curWaveScreenX = waveOriginX + angleRad * waveScaleX;
+  const curWaveScreenY = Number.isFinite(curWaveY) && Math.abs(curWaveY) <= 3.25
+    ? waveOriginY - curWaveY * waveScaleY
+    : null;
+  const leftCurveY = graphValue(graphXMin + 0.12);
+  const rightCurveY = graphValue(graphXMax - 0.12);
+  const curveColor = waveMode === "tan" ? "#FDBA74" : waveMode === "cot" ? "#C4B5FD" : "#A78BFA";
+  const graphPiTicks = Array.from({ length: Math.floor(graphXMax / Math.PI) - Math.ceil(graphXMin / Math.PI) + 1 }, (_, index) => Math.ceil(graphXMin / Math.PI) + index);
+  const graphAsymptotes = waveMode === "tan" || waveMode === "cot"
+    ? Array.from({ length: 8 }, (_, index) => {
+        const k = Math.floor(graphXMin / Math.PI) - 2 + index;
+        return waveMode === "tan" ? Math.PI / 2 + k * Math.PI : k * Math.PI;
+      }).filter((x) => x >= graphXMin && x <= graphXMax)
+    : [];
 
-  const curWaveScreenX = waveOriginX + repAngleRad * waveScaleX;
-  const curWaveScreenY = waveOriginY - curWaveY * waveScaleY;
+  React.useEffect(() => {
+    setGuidedStep(0);
+    setGuidedChoice(null);
+    setGuidedResultShown(false);
+    setWaveMode(selectedLessonIndex === 1 ? "tan" : "sin");
+  }, [selectedLessonIndex]);
 
   // Lesson 5 Equation Solving: sin(x) = eqM on [-pi; pi]
   const eqRoots = useMemo(() => {
@@ -225,6 +297,8 @@ export function TrigonometryLab({
   const eqCircleScreenY = cY - cR * eqM;
   const eqCircleIntersectX1 = cX + cR * Math.sqrt(Math.max(0, 1 - eqM * eqM));
   const eqCircleIntersectX2 = cX - cR * Math.sqrt(Math.max(0, 1 - eqM * eqM));
+  const currentGuidedSteps = GUIDED_STEPS[selectedLessonIndex] ?? GUIDED_STEPS[0];
+  const currentGuidedQuestion = currentGuidedSteps[guidedStep];
 
   return (
     <div className={`max-w-7xl mx-auto px-3 sm:px-6 ${embedded ? "py-3 sm:py-4 space-y-4" : "py-4 sm:py-6 space-y-6"}`}>
@@ -325,7 +399,7 @@ export function TrigonometryLab({
       {embedded && (
         <div className="flex items-start gap-3 rounded-2xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm">
           <span className="mt-0.5 rounded-lg bg-purple-700 px-2 py-1 text-[10px] font-black text-white">QUAN SÁT</span>
-          <div><p className="font-bold text-purple-950">{currentLesson.title}</p><p className="mt-0.5 text-xs leading-relaxed text-purple-900">{currentLesson.steps[0]?.instruction || currentLesson.description} Thử thay đổi góc hoặc tham số bên dưới để xem đại lượng trên hình thay đổi như thế nào.</p></div>
+          <div><p className="font-bold text-purple-950"><MathFormattedText text={currentLesson.title} /></p><p className="mt-0.5 text-xs leading-relaxed text-purple-900"><MathFormattedText text={`${currentLesson.steps[0]?.instruction || currentLesson.description} Thử thay đổi góc hoặc tham số bên dưới để xem đại lượng trên hình thay đổi như thế nào.`} /></p></div>
         </div>
       )}
 
@@ -360,6 +434,8 @@ export function TrigonometryLab({
               >
                 45°
               </button>
+              <button type="button" onClick={() => setAngleDeg(90)} className="px-2 py-1 rounded-lg bg-orange-50 text-orange-800 hover:bg-orange-100 font-semibold text-[11px] transition-colors" title="Kiểm tra tan không xác định tại 90 độ">90°</button>
+              <button type="button" onClick={() => setAngleDeg(0)} className="px-2 py-1 rounded-lg bg-violet-50 text-violet-800 hover:bg-violet-100 font-semibold text-[11px] transition-colors" title="Kiểm tra cot không xác định tại 0 độ">0°</button>
             </div>
           </div>
 
@@ -433,7 +509,7 @@ export function TrigonometryLab({
               <line x1={cX} y1={cY} x2={cX} y2={mScreenY} stroke="#10B981" strokeWidth="3" />
 
               {/* LESSON 2: Tangent Axis x = 1 and Cotangent Axis y = 1 */}
-              {selectedLessonIndex === 1 && (
+              {(selectedLessonIndex === 1 || waveMode === "tan" || waveMode === "cot") && (
                 <>
                   {/* Axis Tan x = 1 */}
                   <line
@@ -445,11 +521,15 @@ export function TrigonometryLab({
                     strokeWidth="1"
                     strokeDasharray="2,2"
                   />
+                  {tanScreenY !== null && <line x1={cX} y1={cY} x2={cX + cR} y2={tanScreenY} stroke="#F97316" strokeWidth="2.4" />}
                   <text x={cX + cR + 4} y={cY - 110} fill="#EA580C" fontSize="10" fontWeight="bold">
-                    Trục Tan
+                    x = 1 · tiếp tuyến tại (1; 0)
                   </text>
                   {tanScreenY !== null && (
-                    <circle cx={cX + cR} cy={tanScreenY} r="3.5" fill="#F97316" />
+                    <>
+                      <line x1={cX + cR} y1={cY} x2={cX + cR} y2={tanScreenY} stroke="#FDBA74" strokeWidth="2" />
+                      <circle cx={cX + cR} cy={tanScreenY} r="5" fill="#F97316" stroke="white" strokeWidth="1.5" />
+                    </>
                   )}
 
                   {/* Axis Cot y = 1 */}
@@ -462,11 +542,15 @@ export function TrigonometryLab({
                     strokeWidth="1"
                     strokeDasharray="2,2"
                   />
+                  {cotScreenX !== null && <line x1={cX} y1={cY} x2={cotScreenX} y2={cY - cR} stroke="#A855F7" strokeWidth="2.4" />}
                   <text x={cX + 80} y={cY - cR - 4} fill="#9333EA" fontSize="10" fontWeight="bold">
-                    Trục Cot
+                    y = 1 · tiếp tuyến tại (0; 1)
                   </text>
                   {cotScreenX !== null && (
-                    <circle cx={cotScreenX} cy={cY - cR} r="3.5" fill="#A855F7" />
+                    <>
+                      <line x1={cX} y1={cY - cR} x2={cotScreenX} y2={cY - cR} stroke="#D8B4FE" strokeWidth="2" />
+                      <circle cx={cotScreenX} cy={cY - cR} r="5" fill="#A855F7" stroke="white" strokeWidth="1.5" />
+                    </>
                   )}
                 </>
               )}
@@ -542,6 +626,14 @@ export function TrigonometryLab({
               </text>
             </svg>
           </div>
+
+          {(selectedLessonIndex === 1 || waveMode === "tan" || waveMode === "cot") && (
+            <div className="w-full rounded-2xl border border-orange-200 bg-orange-50/70 p-3 text-xs leading-relaxed text-slate-700">
+              <p><strong className="text-orange-900">Đọc tan trên hình:</strong> <MathFormattedText text="Đường thẳng $OM$ cắt tiếp tuyến $x=1$ tại điểm có tung độ $\\tan\\alpha=\\frac{\\sin\\alpha}{\\cos\\alpha}$. Đường màu cam biểu diễn giá trị này." /></p>
+              <p className="mt-1"><strong className="text-purple-900">Đọc cot trên hình:</strong> <MathFormattedText text="Đường thẳng $OM$ cắt tiếp tuyến $y=1$ tại điểm có hoành độ $\\cot\\alpha=\\frac{\\cos\\alpha}{\\sin\\alpha}$. Đường màu tím biểu diễn giá trị này." /></p>
+              <p className="mt-1 text-slate-600"><MathFormattedText text="Tan không xác định khi $\\cos\\alpha=0$; cot không xác định khi $\\sin\\alpha=0$. Khi giao điểm ra ngoài khung đường tròn, hãy dùng giá trị ở bảng và xem nhánh đồ thị bên cạnh." /></p>
+            </div>
+          )}
 
           {/* Value Summary Box */}
           <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-100 text-center">
@@ -674,76 +766,51 @@ export function TrigonometryLab({
         <div className="lg:col-span-6 space-y-4">
           {/* Wave Plot Card */}
           <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+            <div className="flex flex-col items-start justify-between gap-3 pb-2 border-b border-slate-100 sm:flex-row sm:items-center">
               <div className="flex items-center gap-2">
                 <Activity className="w-4 h-4 text-purple-600" />
                 <h3 className="font-bold text-xs text-slate-800">
-                  {selectedLessonIndex === 3
-                    ? `Đồ thị y = ${ampA !== 1 ? ampA + "·" : ""}${waveMode}(${freqB !== 1 ? freqB + "·" : ""}x${phaseC !== 0 ? (phaseC > 0 ? " + " + phaseC.toFixed(1) : " - " + Math.abs(phaseC).toFixed(1)) : ""})${shiftD !== 0 ? (shiftD > 0 ? " + " + shiftD : " - " + Math.abs(shiftD)) : ""}`
-                    : `Đồ thị hàm số tuần hoàn y = ${waveMode}(x) (T = 2π)`}
+                  {selectedLessonIndex === 3 && (waveMode === "sin" || waveMode === "cos")
+                    ? `y = ${ampA !== 1 ? ampA + "·" : ""}${waveMode}(${freqB !== 1 ? freqB + "·" : ""}x${phaseC !== 0 ? (phaseC > 0 ? " + " + phaseC.toFixed(1) : " − " + Math.abs(phaseC).toFixed(1)) : ""})${shiftD !== 0 ? (shiftD > 0 ? " + " + shiftD : " − " + Math.abs(shiftD)) : ""}`
+                    : `Đồ thị y = ${waveMode}(x) · chu kỳ ${waveMode === "tan" || waveMode === "cot" ? "π" : "2π"}`}
                 </h3>
               </div>
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => setWaveMode("sin")}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
-                    waveMode === "sin"
-                      ? "bg-purple-600 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
-                >
-                  sin(x)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setWaveMode("cos")}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
-                    waveMode === "cos"
-                      ? "bg-purple-600 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
-                >
-                  cos(x)
-                </button>
+              <div className="grid w-full grid-cols-4 gap-1 rounded-xl bg-slate-100 p-1 sm:w-auto" role="group" aria-label="Chọn hàm số để xem đồ thị">
+                {(["sin", "cos", "tan", "cot"] as const).map((mode) => (
+                  <button key={mode} type="button" onClick={() => setWaveMode(mode)} aria-pressed={waveMode === mode} className={`min-h-9 rounded-lg px-2 text-xs font-extrabold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700 ${waveMode === mode ? "bg-purple-700 text-white shadow-sm" : "text-slate-600 hover:bg-white"}`}>
+                    {mode}
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* SVG Wave Canvas */}
-            <div className="w-full overflow-hidden bg-slate-900 rounded-2xl p-2 select-none">
-              <svg viewBox={`0 0 ${waveSvgW} ${waveSvgH}`} className="w-full h-[180px]">
-                {/* Center X Axis */}
-                <line x1={waveOriginX} y1={waveOriginY} x2={waveSvgW - 10} y2={waveOriginY} stroke="#475569" strokeWidth="1" />
-                <line x1={waveOriginX} y1="20" x2={waveOriginX} y2={waveSvgH - 20} stroke="#475569" strokeWidth="1" />
-
-                {/* Grid ticks: 0, pi, 2pi */}
-                <text x={waveOriginX + Math.PI * waveScaleX} y={waveOriginY + 14} fill="#94A3B8" fontSize="10" textAnchor="middle">
-                  π
-                </text>
-                <text x={waveOriginX + 2 * Math.PI * waveScaleX} y={waveOriginY + 14} fill="#94A3B8" fontSize="10" textAnchor="middle">
-                  2π
-                </text>
-
-                {/* Wave Curve */}
-                <path d={wavePath} fill="none" stroke="#A78BFA" strokeWidth="2.5" />
-
-                {/* Synchronized Point on Wave Curve */}
-                <circle cx={curWaveScreenX} cy={curWaveScreenY} r="5" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="1.5" />
-                <line
-                  x1={curWaveScreenX}
-                  y1={waveOriginY}
-                  x2={curWaveScreenX}
-                  y2={curWaveScreenY}
-                  stroke="#F59E0B"
-                  strokeWidth="1"
-                  strokeDasharray="2,2"
-                />
+            <div className="w-full overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 p-2 select-none">
+              <svg viewBox={`0 0 ${waveSvgW} ${waveSvgH}`} className="block h-auto max-h-[280px] w-full" role="img" aria-label={`Đồ thị hàm số ${waveMode}, đang xem quanh góc ${angleDeg} độ`}>
+                <defs>
+                  <marker id="trigAxisArrow" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto-start-reverse"><path d="M0,0 L7,3.5 L0,7 Z" fill="#94A3B8" /></marker>
+                  <marker id="trigCurveArrow" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill={curveColor} /></marker>
+                </defs>
+                {[ -2, -1, 1, 2 ].map((unit) => <line key={`y-grid-${unit}`} x1="10" x2={waveSvgW - 10} y1={waveOriginY - unit * waveScaleY} y2={waveOriginY - unit * waveScaleY} stroke="#334155" strokeWidth="0.8" strokeDasharray="3 5" />)}
+                {graphPiTicks.map((multiple) => {
+                  const x = waveOriginX + multiple * Math.PI * waveScaleX;
+                  const label = multiple === 0 ? "0" : multiple === 1 ? "π" : multiple === -1 ? "−π" : `${multiple}π`;
+                  return <g key={`pi-tick-${multiple}`}><line x1={x} x2={x} y1="18" y2={waveSvgH - 25} stroke={multiple === 0 ? "#475569" : "#243247"} strokeWidth="0.8" strokeDasharray={multiple === 0 ? undefined : "3 5"} /><text x={x} y={waveOriginY + 17} fill="#CBD5E1" fontSize="11" textAnchor="middle">{label}</text></g>;
+                })}
+                <line x1="12" y1={waveOriginY} x2={waveSvgW - 12} y2={waveOriginY} stroke="#94A3B8" strokeWidth="1.4" markerStart="url(#trigAxisArrow)" markerEnd="url(#trigAxisArrow)" />
+                <line x1={waveOriginX} y1="18" x2={waveOriginX} y2={waveSvgH - 25} stroke="#64748B" strokeWidth="1" />
+                {graphAsymptotes.map((x) => { const sx = waveOriginX + x * waveScaleX; return <line key={`asymptote-${x.toFixed(3)}`} x1={sx} x2={sx} y1="18" y2={waveSvgH - 25} stroke="#FB7185" strokeWidth="1.4" strokeDasharray="6 5" opacity="0.9" />; })}
+                {wavePaths.map((path, index) => <path key={`graph-branch-${index}`} d={path} fill="none" stroke={curveColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />)}
+                {Number.isFinite(leftCurveY) && Math.abs(leftCurveY) <= 3.1 && <line x1={waveOriginX + (graphXMin + 0.12) * waveScaleX} y1={waveOriginY - leftCurveY * waveScaleY} x2={waveOriginX + (graphXMin + 0.02) * waveScaleX} y2={waveOriginY - graphValue(graphXMin + 0.02) * waveScaleY} stroke={curveColor} strokeWidth="2.4" markerEnd="url(#trigCurveArrow)" />}
+                {Number.isFinite(rightCurveY) && Math.abs(rightCurveY) <= 3.1 && <line x1={waveOriginX + (graphXMax - 0.12) * waveScaleX} y1={waveOriginY - rightCurveY * waveScaleY} x2={waveOriginX + (graphXMax - 0.02) * waveScaleX} y2={waveOriginY - graphValue(graphXMax - 0.02) * waveScaleY} stroke={curveColor} strokeWidth="2.4" markerEnd="url(#trigCurveArrow)" />}
+                <line x1={curWaveScreenX} y1="18" x2={curWaveScreenX} y2={waveSvgH - 25} stroke="#F59E0B" strokeWidth="1.2" strokeDasharray="3 4" opacity="0.75" />
+                {curWaveScreenY !== null && <><line x1={curWaveScreenX} y1={waveOriginY} x2={curWaveScreenX} y2={curWaveScreenY} stroke="#FBBF24" strokeWidth="1.5" strokeDasharray="3 3" /><circle cx={curWaveScreenX} cy={curWaveScreenY} r="5.5" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="1.5" /></>}
 
                 {/* LESSON 5: Horizontal line y = eqM cutting the wave */}
                 {selectedLessonIndex === 4 && (
                   <>
                     <line
-                      x1={waveOriginX}
+                      x1="10"
                       y1={eqLineWaveY}
                       x2={waveSvgW - 10}
                       y2={eqLineWaveY}
@@ -756,7 +823,15 @@ export function TrigonometryLab({
                     </text>
                   </>
                 )}
+                <text x="18" y="18" fill="#CBD5E1" fontSize="10">← đồ thị còn tiếp</text>
+                <text x={waveSvgW - 18} y="18" fill="#CBD5E1" fontSize="10" textAnchor="end">đồ thị còn tiếp →</text>
               </svg>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px]">
+              <span className="font-semibold text-slate-700">Trục ngang là góc α, trục dọc là giá trị {waveMode}(α). Khung chỉ là một phần; hai mũi tên cho biết đồ thị còn tiếp tục vô hạn.</span>
+              {(waveMode === "tan" || waveMode === "cot") && <span className="inline-flex items-center gap-2 font-bold text-rose-800"><span className="h-0 w-7 border-t-2 border-dashed border-rose-500" />Tiệm cận đứng: {waveMode === "tan" ? "α = π/2 + kπ" : "α = kπ"}; nhánh đồ thị tiến gần nhưng không cắt tiệm cận</span>}
+              <span className="rounded-lg bg-purple-100 px-2 py-1 font-bold text-purple-900">Chu kỳ: {waveMode === "tan" || waveMode === "cot" ? "π" : selectedLessonIndex === 3 ? (2 * Math.PI / freqB).toFixed(2) + " rad" : "2π"}</span>
+              {curWaveScreenY === null && <span className="font-bold text-rose-700">Tại góc này, {waveMode} không xác định hoặc nằm ngoài khung tung độ.</span>}
             </div>
 
             {/* LESSON 4: Sliders for Amplitude, Frequency, Phase, Shift */}
@@ -879,15 +954,72 @@ export function TrigonometryLab({
             )}
           </div>
 
+          <section className="rounded-3xl border border-purple-200 bg-white p-5 shadow-sm space-y-4" aria-labelledby="trig-seven-step-title">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-purple-700">Làm cùng mô phỏng</p>
+                <h2 id="trig-seven-step-title" className="mt-1 text-base font-black text-slate-900">Khám phá theo 7 bước</h2>
+                <p className="mt-1 text-xs text-slate-600">Mỗi câu hỏi gắn với hình hoặc đồ thị. Chọn đáp án, đọc giải thích rồi mới chuyển bước.</p>
+              </div>
+              <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-extrabold text-purple-900">{currentGuidedQuestion ? `Bước ${guidedStep + 1} / 7` : "Đã xong 7 bước"}</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label="Tiến độ 7 bước" aria-valuemin={0} aria-valuemax={7} aria-valuenow={guidedStep}>
+              <div className="h-full rounded-full bg-purple-600 transition-all" style={{ width: `${(guidedStep / 7) * 100}%` }} />
+            </div>
+            {currentGuidedQuestion ? (
+              <>
+                <div className="rounded-2xl border border-purple-100 bg-purple-50/60 p-4">
+                  <p className="text-xs font-extrabold text-purple-800">{currentGuidedQuestion.title}</p>
+                  <p className="mt-2 text-sm font-bold leading-relaxed text-slate-900"><MathFormattedText text={currentGuidedQuestion.prompt} /></p>
+                  {selectedLessonIndex === 1 && guidedStep >= 2 && guidedStep <= 5 && <p className="mt-2 text-[11px] text-slate-600"><MathFormattedText text="Quan sát giao điểm của đường thẳng $OM$ với hai tiếp tuyến màu cam $x=1$ và màu tím $y=1$." /></p>}
+                  {selectedLessonIndex === 1 && guidedStep === 4 && <p className="mt-1 text-[11px] font-semibold text-orange-800"><MathFormattedText text="Chọn góc $90^\\circ$ để thấy đường thẳng $OM$ song song với tiếp tuyến $x=1$." /></p>}
+                  {selectedLessonIndex === 1 && guidedStep === 5 && <p className="mt-1 text-[11px] font-semibold text-violet-800"><MathFormattedText text="Chọn góc $0^\\circ$ để thấy đường thẳng $OM$ song song với tiếp tuyến $y=1$." /></p>}
+                  {selectedLessonIndex === 0 && <p className="mt-2 text-[11px] text-slate-600">Bài mẫu đang xét góc −765°. Nếu đã đổi góc, chọn lại nút −765° phía trên để đối chiếu đúng cấu hình.</p>}
+                  {selectedLessonIndex === 3 && <p className="mt-2 text-[11px] text-slate-600">Kéo góc α ở hình tròn. Điểm màu vàng trên đồ thị sẽ theo góc; hai mũi tên ở hai đầu nhắc rằng đường cong còn tiếp tục.</p>}
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {currentGuidedQuestion.choices.map((choice, index) => (
+                    <button key={`${guidedStep}-${choice}`} type="button" disabled={guidedResultShown} onClick={() => setGuidedChoice(index)} aria-pressed={guidedChoice === index} className={`min-h-11 rounded-xl border px-3 py-2.5 text-left text-xs leading-relaxed transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700 disabled:cursor-default ${guidedChoice === index ? "border-purple-600 bg-purple-50 ring-1 ring-purple-500" : "border-slate-200 bg-white hover:border-purple-300"}`}>
+                      <MathFormattedText text={choice} />
+                    </button>
+                  ))}
+                </div>
+                {guidedResultShown && guidedChoice !== currentGuidedQuestion.answer && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" role="status">
+                    <strong>Chưa đúng.</strong> <MathFormattedText text={currentGuidedQuestion.explanation} />
+                    <button type="button" onClick={() => { setGuidedChoice(null); setGuidedResultShown(false); }} className="ml-2 font-bold underline">Thử lại</button>
+                  </div>
+                )}
+                {guidedResultShown && guidedChoice === currentGuidedQuestion.answer && (
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs leading-relaxed text-emerald-950" role="status">
+                    <strong>Đúng rồi.</strong> <MathFormattedText text={currentGuidedQuestion.explanation} />
+                  </div>
+                )}
+                <div className="flex justify-end">
+                  {!guidedResultShown ? (
+                    <button type="button" disabled={guidedChoice === null} onClick={() => setGuidedResultShown(true)} className="min-h-11 rounded-xl bg-purple-700 px-5 py-2.5 text-xs font-extrabold text-white transition hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-40">Kiểm tra câu trả lời</button>
+                  ) : guidedChoice === currentGuidedQuestion.answer ? (
+                    <button type="button" onClick={() => { setGuidedStep((step) => step + 1); setGuidedChoice(null); setGuidedResultShown(false); }} className="min-h-11 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-extrabold text-white transition hover:bg-emerald-800">{guidedStep === 6 ? "Hoàn thành 7 bước" : "Sang bước tiếp theo"}</button>
+                  ) : null}
+                </div>
+              </>
+            ) : (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-950" role="status">
+                Em đã hoàn thành đủ 7 bước của bài này. Hãy kéo góc hoặc chọn hàm khác để tự kiểm tra lại các nhận xét.
+                <button type="button" onClick={() => { setGuidedStep(0); setGuidedChoice(null); setGuidedResultShown(false); }} className="ml-2 underline">Làm lại</button>
+              </div>
+            )}
+          </section>
+
           {/* Current Lesson Guide Card */}
           <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
             <div className="flex items-center gap-2">
               <span className="px-2 py-0.5 rounded text-[10px] font-mono font-extrabold bg-purple-100 text-purple-800">
                 {currentLesson.code}
               </span>
-              <h2 className="font-bold text-sm text-slate-900">{currentLesson.title}</h2>
+              <h2 className="font-bold text-sm text-slate-900"><MathFormattedText text={currentLesson.title} /></h2>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">{currentLesson.description}</p>
+            <p className="text-xs text-slate-600 leading-relaxed"><MathFormattedText text={currentLesson.description} /></p>
 
             {/* Steps in this lesson */}
             <div className="space-y-2 pt-2 border-t border-slate-100">
@@ -899,7 +1031,7 @@ export function TrigonometryLab({
                     </span>
                     <h3 className="font-bold text-xs text-slate-800">{st.title}</h3>
                   </div>
-                  <p className="text-[11px] text-slate-600 pl-7">{st.instruction}</p>
+                  <p className="text-[11px] text-slate-600 pl-7"><MathFormattedText text={st.instruction} /></p>
 
                   {/* Socratic Questions */}
                   {st.socraticQuestions && st.socraticQuestions.length > 0 && (
@@ -911,7 +1043,7 @@ export function TrigonometryLab({
                       <ul className="list-disc list-inside text-[11px] text-slate-700 space-y-1">
                         {st.socraticQuestions.map((q, qIdx) => (
                           <li key={qIdx} className="leading-snug">
-                            {q}
+                            <MathFormattedText text={q} />
                           </li>
                         ))}
                       </ul>

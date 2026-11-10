@@ -13,8 +13,21 @@ import {
   Layers,
   Sparkles,
   CheckCircle2,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
+import { MathFormattedText } from "@/app/components/KatexMath";
+
+type DiscoveryPrompt = { prompt: string; choices: string[]; answer: number; explanation: string };
+
+const DISCOVERY_PROMPTS: DiscoveryPrompt[] = [
+  { prompt: "Trong hình bình hành ABCD, hai đường chéo AC và BD cắt nhau tại O. Điều nào luôn đúng?", choices: ["O là trung điểm của cả AC và BD", "AC vuông góc với BD", "O là trung điểm của một cạnh đáy"], answer: 0, explanation: "Hai đường chéo của hình bình hành cắt nhau tại trung điểm mỗi đường. Hình vẽ minh họa quan hệ đó; không suy ra hai đường chéo vuông góc." },
+  { prompt: "M là trung điểm SA. N nằm trên SB và hiện có SN:NB = 2:1. Đoạn MN có song song với AB không?", choices: ["Có, vì M và N cùng là trung điểm", "Không, vì SM:SA = 1:2 còn SN:SB = 2:3", "Không thể xác định dù đã biết các tỉ số"], answer: 1, explanation: "Trong tam giác SAB, MN song song AB khi SM/SA = SN/SB. Ở đây hai tỉ số lần lượt là 1/2 và 2/3 nên MN không song song AB. Hãy kéo tỉ số N về 1:1 để kiểm chứng trường hợp song song." },
+  { prompt: "Trong hình chóp S.ABCD, AB thuộc mặt phẳng đáy còn SD đi qua S và D. Hai đường thẳng AB và SD có quan hệ gì?", choices: ["Cắt nhau tại một điểm trên hình chiếu", "Song song", "Chéo nhau"], answer: 2, explanation: "AB nằm trong mặt phẳng đáy; SD cắt mặt phẳng đáy tại D, mà D không thuộc AB. Hai đường thẳng không đồng phẳng nên chéo nhau. Hình chiếu 2D có thể làm chúng trông như cắt nhau." },
+  { prompt: "Mặt phẳng cắt song song đáy tại tỉ lệ k tính từ S. Tỉ số diện tích thiết diện so với đáy được tính thế nào?", choices: ["k", "k²", "2k"], answer: 1, explanation: "Thiết diện song song với đáy đồng dạng với đáy theo tỉ số độ dài k. Tỉ số diện tích là $\\frac{S_{MPQR}}{S_{ABCD}}=k^2$." },
+  { prompt: "Khi trải phẳng các mặt bên của hình chóp, đại lượng nào được bảo toàn trên từng mặt?", choices: ["Độ dài các cạnh và diện tích của mặt", "Góc nhị diện giữa hai mặt kề nhau", "Khoảng cách từ mọi điểm đến đỉnh S"], answer: 0, explanation: "Mỗi mặt được quay quanh cạnh chung như một vật rắn nên độ dài và diện tích của mặt không đổi. Góc giữa các mặt thay đổi khi mở hình." },
+];
 
 interface SpatialGeometryLabProps {
   onBackToHome?: () => void;
@@ -67,6 +80,8 @@ export function SpatialGeometryLab({
   const showPointsMN = true;
   const [transparentMode, setTransparentMode] = useState<boolean>(false);
   const [illusionSnapActive, setIllusionSnapActive] = useState<boolean>(false);
+  const [discoveryAnswer, setDiscoveryAnswer] = useState<number | null>(null);
+  const [discoveryChecked, setDiscoveryChecked] = useState(false);
 
   // SVG viewport dimensions
   const svgW = 540;
@@ -167,6 +182,29 @@ export function SpatialGeometryLab({
   const pCutP = project3D(cutP);
   const pCutQ = project3D(cutQ);
   const pCutR = project3D(cutR);
+
+  const discoveryPrompt = selectedLessonIndex === 1
+    ? {
+        ...DISCOVERY_PROMPTS[1],
+        prompt: `M là trung điểm SA. Với vị trí N đang chọn, SN:NB = ${(ratioN / (1 - ratioN)).toFixed(2)}:1. Đoạn MN có song song với AB không?`,
+        choices: ["Có, vì SM/SA = SN/SB", "Không, vì SM/SA khác SN/SB", "Không thể xác định từ hình"],
+        answer: Math.abs(ratioN - 0.5) < 0.001 ? 0 : 1,
+        explanation: Math.abs(ratioN - 0.5) < 0.001
+          ? "Khi N là trung điểm SB, ta có SM/SA = SN/SB = 1/2. Theo định lí Ta-lét đảo trong tam giác SAB, MN song song AB."
+          : "M là trung điểm SA nên SM/SA = 1/2. N chỉ là trung điểm SB khi SN/SB = 1/2, tương đương SN:NB = 1:1. Hiện hai tỉ số chưa bằng nhau nên MN không song song AB.",
+      }
+    : selectedLessonIndex === 3
+      ? {
+          ...DISCOVERY_PROMPTS[3],
+          prompt: `Mặt phẳng song song đáy cắt các cạnh bên tại cùng tỉ lệ k = ${cutK.toFixed(2)} tính từ S. Tỉ số diện tích thiết diện so với đáy được tính thế nào?`,
+          explanation: `Thiết diện đồng dạng với đáy theo tỉ số độ dài k. Vì vậy tỉ số diện tích là k²; với k = ${cutK.toFixed(2)}, tỉ số hiện tại xấp xỉ ${(cutK * cutK).toFixed(3)}.`,
+        }
+      : DISCOVERY_PROMPTS[selectedLessonIndex] ?? DISCOVERY_PROMPTS[0];
+
+  React.useEffect(() => {
+    setDiscoveryAnswer(null);
+    setDiscoveryChecked(false);
+  }, [selectedLessonIndex, ratioN, cutK]);
 
   // Classify a face by its outward normal after applying the same rotations as the drawing.
   // The SVG camera looks toward the object along +z after projection.
@@ -395,7 +433,7 @@ export function SpatialGeometryLab({
       {embedded && (
         <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm">
           <span className="mt-0.5 rounded-lg bg-emerald-600 px-2 py-1 text-[10px] font-black text-white">QUAN SÁT</span>
-          <div><p className="font-bold text-emerald-950">{currentLesson.title}</p><p className="mt-0.5 text-xs leading-relaxed text-emerald-900">{currentLesson.steps[0]?.instruction || currentLesson.description} Kéo hình để đổi góc nhìn và theo dõi cạnh nào đang bị mặt khác che.</p></div>
+          <div><p className="font-bold text-emerald-950"><MathFormattedText text={currentLesson.title} /></p><p className="mt-0.5 text-xs leading-relaxed text-emerald-900"><MathFormattedText text={`${currentLesson.steps[0]?.instruction || currentLesson.description} Kéo hình để đổi góc nhìn và theo dõi cạnh nào đang bị mặt khác che.`} /></p></div>
         </div>
       )}
 
@@ -416,11 +454,19 @@ export function SpatialGeometryLab({
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-slate-500">
+              <button type="button" onClick={() => setZoom((value) => Math.max(0.5, Number((value - 0.1).toFixed(1))))} aria-label="Thu nhỏ hình" className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" title="Thu nhỏ hình">
+                <ZoomOut className="h-4 w-4" />
+              </button>
+              <span className="min-w-10 text-center font-mono text-[10px] font-bold text-slate-600">{zoom.toFixed(1)}×</span>
+              <button type="button" onClick={() => setZoom((value) => Math.min(2, Number((value + 0.1).toFixed(1))))} aria-label="Phóng to hình" className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600" title="Phóng to hình">
+                <ZoomIn className="h-4 w-4" />
+              </button>
               <button
                 type="button"
                 onClick={handleResetView}
-                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors"
-                title="Đặt lại góc nhìn chuẩn"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100"
+                title="Đặt lại góc nhìn và độ phóng"
+                aria-label="Đặt lại góc nhìn và độ phóng"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
@@ -430,7 +476,8 @@ export function SpatialGeometryLab({
                 className={`p-1.5 rounded-lg transition-colors ${
                   transparentMode ? "bg-emerald-100 text-emerald-800 font-bold" : "hover:bg-slate-100"
                 }`}
-                title="Bật/Tắt chế độ trong suốt"
+                title="Bật hoặc tắt chế độ nhìn xuyên khối"
+                aria-label="Bật hoặc tắt chế độ nhìn xuyên khối"
               >
                 {transparentMode ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
               </button>
@@ -439,7 +486,7 @@ export function SpatialGeometryLab({
 
           {/* Interactive SVG Projection Canvas */}
           <div
-            className="w-full relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 rounded-2xl my-3 cursor-grab active:cursor-grabbing select-none"
+            className="w-full relative overflow-hidden bg-[radial-gradient(ellipse_at_center,_#1e293b_0%,_#0f172a_58%,_#020617_100%)] rounded-2xl my-3 cursor-grab active:cursor-grabbing select-none"
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
@@ -608,7 +655,7 @@ export function SpatialGeometryLab({
                 y2={pA.y}
                 stroke={selectedLessonIndex === 1 ? "#34D399" : "#E2E8F0"}
                 strokeWidth={selectedLessonIndex === 1 ? "2.5" : isHiddenEdge("S", "A") ? "1.5" : "2"}
-                strokeDasharray={isHiddenEdge("S", "A") ? "4,4" : undefined}
+                strokeDasharray={isHiddenEdge("S", "A") ? "8 5" : undefined}
               />
               {/* SB */}
               <line
@@ -618,7 +665,7 @@ export function SpatialGeometryLab({
                 y2={pB.y}
                 stroke={selectedLessonIndex === 1 ? "#F59E0B" : "#E2E8F0"}
                 strokeWidth={selectedLessonIndex === 1 ? "2.5" : isHiddenEdge("S", "B") ? "1.5" : "2"}
-                strokeDasharray={isHiddenEdge("S", "B") ? "4,4" : undefined}
+                strokeDasharray={isHiddenEdge("S", "B") ? "8 5" : undefined}
               />
               {/* SC */}
               <line
@@ -628,7 +675,7 @@ export function SpatialGeometryLab({
                 y2={pC.y}
                 stroke="#E2E8F0"
                 strokeWidth={isHiddenEdge("S", "C") ? "1.5" : "2"}
-                strokeDasharray={isHiddenEdge("S", "C") ? "4,4" : undefined}
+                strokeDasharray={isHiddenEdge("S", "C") ? "8 5" : undefined}
               />
               {/* SD: In Lesson 3, SD is highlighted in gold to analyze skew relationship with AB */}
               <line
@@ -638,8 +685,20 @@ export function SpatialGeometryLab({
                 y2={pD.y}
                 stroke={selectedLessonIndex === 2 ? "#F59E0B" : "#E2E8F0"}
                 strokeWidth={isHiddenEdge("S", "D") ? "1.8" : selectedLessonIndex === 2 ? "3.5" : "2"}
-                strokeDasharray={isHiddenEdge("S", "D") ? "5,4" : undefined}
+                strokeDasharray={isHiddenEdge("S", "D") ? "8 5" : undefined}
               />
+
+              {selectedLessonIndex >= 1 && (
+                <line
+                  x1={pM.x}
+                  y1={pM.y}
+                  x2={pN.x}
+                  y2={pN.y}
+                  stroke="#22D3EE"
+                  strokeWidth="2.5"
+                  strokeDasharray={!faceVisibility.SAB && !transparentMode ? "7 5" : undefined}
+                />
+              )}
 
               {/* Base edges */}
               {/* AB: In Lesson 3, AB is highlighted in bright cyan to analyze skew relationship with SD */}
@@ -650,7 +709,7 @@ export function SpatialGeometryLab({
                 y2={pB.y}
                 stroke={selectedLessonIndex === 2 ? "#38BDF8" : "#93C5FD"}
                 strokeWidth={isHiddenEdge("A", "B") ? "1.8" : selectedLessonIndex === 2 ? "3.5" : "1.5"}
-                strokeDasharray={isHiddenEdge("A", "B") ? "5,4" : undefined}
+                strokeDasharray={isHiddenEdge("A", "B") ? "8 5" : undefined}
               />
               <line
                 x1={pB.x}
@@ -659,7 +718,7 @@ export function SpatialGeometryLab({
                 y2={pC.y}
                 stroke="#93C5FD"
                 strokeWidth="1.5"
-                strokeDasharray={isHiddenEdge("B", "C") ? "4,4" : undefined}
+                strokeDasharray={isHiddenEdge("B", "C") ? "8 5" : undefined}
               />
               <line
                 x1={pC.x}
@@ -668,7 +727,7 @@ export function SpatialGeometryLab({
                 y2={pD.y}
                 stroke="#93C5FD"
                 strokeWidth="1.5"
-                strokeDasharray={isHiddenEdge("C", "D") ? "4,4" : undefined}
+                strokeDasharray={isHiddenEdge("C", "D") ? "8 5" : undefined}
               />
               <line
                 x1={pD.x}
@@ -677,7 +736,7 @@ export function SpatialGeometryLab({
                 y2={pA.y}
                 stroke="#93C5FD"
                 strokeWidth="1.5"
-                strokeDasharray={isHiddenEdge("D", "A") ? "4,4" : undefined}
+                strokeDasharray={isHiddenEdge("D", "A") ? "8 5" : undefined}
               />
 
               {/* Point Markers & Labels */}
@@ -802,8 +861,8 @@ export function SpatialGeometryLab({
               </div>
               <input
                 type="range"
-                min="0.7"
-                max="1.5"
+                min="0.5"
+                max="2.0"
                 step="0.1"
                 value={zoom}
                 onChange={(e) => setZoom(parseFloat(e.target.value))}
@@ -963,9 +1022,34 @@ export function SpatialGeometryLab({
               <span className="px-2 py-0.5 rounded text-[10px] font-mono font-extrabold bg-emerald-100 text-emerald-800">
                 {currentLesson.code}
               </span>
-              <h2 className="font-bold text-sm text-slate-900">{currentLesson.title}</h2>
+              <h2 className="font-bold text-sm text-slate-900"><MathFormattedText text={currentLesson.title} /></h2>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">{currentLesson.description}</p>
+            <p className="text-xs text-slate-600 leading-relaxed"><MathFormattedText text={currentLesson.description} /></p>
+
+            <section className="rounded-2xl border border-cyan-200 bg-cyan-50/70 p-4 space-y-3" aria-labelledby="geometry-discovery-title">
+              <div className="flex items-center gap-2 text-cyan-950">
+                <HelpCircle className="h-4 w-4 text-cyan-700" aria-hidden="true" />
+                <h3 id="geometry-discovery-title" className="text-sm font-extrabold">Quan sát hình rồi trả lời</h3>
+              </div>
+              <p className="text-sm font-semibold leading-relaxed text-slate-800"><MathFormattedText text={discoveryPrompt.prompt} /></p>
+              {selectedLessonIndex === 1 && <p className="text-xs text-cyan-900">Đoạn MN được tô màu xanh trên hình. Thử kéo thanh tỉ số của N đến 1:1 để xem đoạn MN đổi hướng thế nào.</p>}
+              {selectedLessonIndex === 2 && <p className="text-xs text-cyan-900">Quan sát AB màu xanh và SD màu vàng. Xoay khối để nhận ra giao điểm trên hình chiếu không phải giao điểm trong không gian.</p>}
+              <div className="grid gap-2">
+                {discoveryPrompt.choices.map((choice, index) => (
+                  <button key={choice} type="button" disabled={discoveryChecked} onClick={() => setDiscoveryAnswer(index)} aria-pressed={discoveryAnswer === index} className={`rounded-xl border px-3 py-2.5 text-left text-xs leading-relaxed transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700 disabled:cursor-default ${discoveryAnswer === index ? "border-cyan-600 bg-white ring-1 ring-cyan-500" : "border-slate-200 bg-white hover:border-cyan-400"}`}>
+                    <MathFormattedText text={choice} />
+                  </button>
+                ))}
+              </div>
+              {!discoveryChecked ? (
+                <button type="button" disabled={discoveryAnswer === null} onClick={() => setDiscoveryChecked(true)} className="rounded-xl bg-cyan-700 px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-45">Kiểm tra câu trả lời</button>
+              ) : (
+                <div className={`rounded-xl border p-3 text-xs leading-relaxed ${discoveryAnswer === discoveryPrompt.answer ? "border-emerald-300 bg-emerald-50 text-emerald-950" : "border-amber-300 bg-amber-50 text-amber-950"}`} role="status">
+                  <strong>{discoveryAnswer === discoveryPrompt.answer ? "Chính xác." : "Mình cùng xem lại hình nhé."}</strong> <MathFormattedText text={discoveryPrompt.explanation} />
+                  <button type="button" onClick={() => { setDiscoveryAnswer(null); setDiscoveryChecked(false); }} className="ml-2 font-bold underline">Thử lại</button>
+                </div>
+              )}
+            </section>
 
             {/* Steps in this lesson */}
             <div className="space-y-2.5 pt-2 border-t border-slate-100">
@@ -977,7 +1061,7 @@ export function SpatialGeometryLab({
                     </span>
                     <h3 className="font-bold text-xs text-slate-800">{st.title}</h3>
                   </div>
-                  <p className="text-[11px] text-slate-600 pl-7">{st.instruction}</p>
+                  <p className="text-[11px] text-slate-600 pl-7"><MathFormattedText text={st.instruction} /></p>
 
                   {/* Socratic Questions */}
                   {st.socraticQuestions && st.socraticQuestions.length > 0 && (
@@ -989,7 +1073,7 @@ export function SpatialGeometryLab({
                       <ul className="list-disc list-inside text-[11px] text-slate-700 space-y-1">
                         {st.socraticQuestions.map((q, qIdx) => (
                           <li key={qIdx} className="leading-snug">
-                            {q}
+                            <MathFormattedText text={q} />
                           </li>
                         ))}
                       </ul>
@@ -1012,10 +1096,10 @@ export function SpatialGeometryLab({
               {selectedLessonIndex === 0 && (
                 <>
                   <p>
-                    <strong>[SG02] Tự thêm tính chất vuông góc:</strong> Không được vẽ đáy thành hình chữ nhật hay tự cho $SA \perp (ABCD)$ nếu đề bài chỉ cho hình chóp tổng quát đáy hình bình hành.
+                    <strong>[SG02] Tự thêm tính chất vuông góc:</strong> <MathFormattedText text="Không được vẽ đáy thành hình chữ nhật hay tự cho $SA \\perp (ABCD)$ nếu đề bài chỉ cho hình chóp tổng quát đáy hình bình hành." />
                   </p>
                   <p>
-                    <strong>[SG03] Đỉnh suy biến:</strong> Đỉnh $S$ bắt buộc có cao độ $z \ne 0$ để không bị rơi vào mặt phẳng đáy.
+                    <strong>[SG03] Đỉnh suy biến:</strong> <MathFormattedText text="Đỉnh $S$ bắt buộc có cao độ $z \\ne 0$ để không bị rơi vào mặt phẳng đáy." />
                   </p>
                 </>
               )}
@@ -1023,10 +1107,10 @@ export function SpatialGeometryLab({
               {selectedLessonIndex === 1 && (
                 <>
                   <p>
-                    <strong>[SG04] Nhầm tỉ số:</strong> Tỉ số $SN : NB = 2 : 1$ nghĩa là $SN = \frac{2}{3}SB$ (chia 3 phần), không phải $\frac{1}{2}SB$.
+                    <strong>[SG04] Nhầm tỉ số:</strong> <MathFormattedText text="Tỉ số $SN : NB = 2 : 1$ nghĩa là $SN = \\frac{2}{3}SB$ (chia 3 phần), không phải $\\frac{1}{2}SB$." />
                   </p>
                   <p>
-                    <strong>[SG05] Điểm ngoài đoạn:</strong> Điểm $N$ nằm trong đoạn $SB$, gần đỉnh $B$ hơn đỉnh $S$.
+                    <strong>[SG05] Điểm ngoài đoạn:</strong> <MathFormattedText text="Điểm $N$ nằm trong đoạn $SB$, gần đỉnh $B$ hơn đỉnh $S$." />
                   </p>
                 </>
               )}
@@ -1034,7 +1118,7 @@ export function SpatialGeometryLab({
               {selectedLessonIndex === 2 && (
                 <>
                   <p>
-                    <strong>[SG16] Ảo ảnh giao điểm trên hình chiếu 2D:</strong> Hai đường thẳng $AB$ và $SD$ chéo nhau ($AB \cap SD = \emptyset$), nhưng khi xoay đến góc nhìn chiếu phẳng chúng nhìn như cắt nhau. Hãy xoay chuột 360° để thấy rõ khoảng cách không gian!
+                    <strong>[SG16] Ảo ảnh giao điểm trên hình chiếu 2D:</strong> <MathFormattedText text="Hai đường thẳng $AB$ và $SD$ chéo nhau ($AB \\cap SD = \\emptyset$), nhưng khi xoay đến góc nhìn chiếu phẳng chúng nhìn như cắt nhau. Hãy xoay hình để thấy rõ quan hệ trong không gian!" />
                   </p>
                   <p>
                     <strong>[SG08] Nét khuất:</strong> Nét đứt bị che bởi các mặt bên phía trước, thay đổi trạng thái khi đổi góc nhìn.
@@ -1045,10 +1129,10 @@ export function SpatialGeometryLab({
               {selectedLessonIndex === 3 && (
                 <>
                   <p>
-                    <strong>[SG10] Điểm ngoài cạnh:</strong> Thiết diện là đa giác lồi khép kín $MPQR$, 4 đỉnh bắt buộc nằm trên các cạnh của hình chóp.
+                    <strong>[SG10] Điểm ngoài cạnh:</strong> <MathFormattedText text="Thiết diện là đa giác lồi khép kín $MPQR$, 4 đỉnh bắt buộc nằm trên các cạnh của hình chóp." />
                   </p>
                   <p>
-                    <strong>[SG11] Tỉ số diện tích:</strong> Với mặt phẳng song song qua trung điểm $k = 1/2$, tỉ số diện tích là $k^2 = (1/2)^2 = 1/4$ diện tích đáy, không phải $1/2$.
+                    <strong>[SG11] Tỉ số diện tích:</strong> <MathFormattedText text="Với mặt phẳng song song qua trung điểm $k = 1/2$, tỉ số diện tích là $k^2 = (1/2)^2 = 1/4$ diện tích đáy, không phải $1/2$." />
                   </p>
                 </>
               )}

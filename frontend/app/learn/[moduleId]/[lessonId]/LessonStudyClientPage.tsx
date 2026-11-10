@@ -24,7 +24,8 @@ import {
   markLessonCompleted,
   setLastActiveLesson,
 } from "@/app/lib/learningProgressStorage";
-import { syncLeaderboardProgress } from "@/app/lib/leaderboardClient";
+import { recordLessonCompletion } from "@/app/lib/leaderboardClient";
+import { useCloudLearningProgress } from "@/app/lib/useCloudLearningProgress";
 import { UserLearningProgress } from "@/app/types/learningPath";
 import {
   ArrowLeft,
@@ -101,6 +102,7 @@ export default function LessonStudyClientPage({
   // 3. User session & auth state
   const [session, setSession] = useState<SessionData | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
+  useCloudLearningProgress(sessionLoading ? undefined : session?.userId ?? null, userProgress, setUserProgress);
 
   // 4. Modals state
   const [isKnowledgeModalOpen, setIsKnowledgeModalOpen] = useState(false);
@@ -143,6 +145,7 @@ export default function LessonStudyClientPage({
         if (data.authenticated) {
           setSession({
             authenticated: true,
+          userId: data.user?.id ?? null,
             name: data.name,
             email: data.email,
             role: data.role,
@@ -171,7 +174,7 @@ export default function LessonStudyClientPage({
   ) => {
     const updated = markLessonCompleted(lId, scorePercentage, xpEarned);
     setUserProgress(updated);
-    if (session?.authenticated) void syncLeaderboardProgress(updated);
+    if (session?.authenticated) void recordLessonCompletion(lId);
 
     // Find next lesson in the entire 15 lessons curriculum
     const allLessons = CORE_3_MODULES.flatMap((m) => m.lessons);
@@ -189,7 +192,7 @@ export default function LessonStudyClientPage({
   const handleRewardLesson = (lId: string, scorePercentage: number, xpEarned: number) => {
     const updated = markLessonCompleted(lId, scorePercentage, xpEarned);
     setUserProgress(updated);
-    if (session?.authenticated) void syncLeaderboardProgress(updated);
+    if (session?.authenticated) void recordLessonCompletion(lId);
   };
 
   // Open simulation lab handler

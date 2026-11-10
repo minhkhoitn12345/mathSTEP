@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import type { DetailedLessonContent } from "../../types/learningPath";
-import { DIFFICULTY_QUIZ_DATA, sampleLessonQuiz, sampleLessonQuizLevel } from "../../data/difficultyQuizData";
+import { DIFFICULTY_QUIZ_DATA, QUESTION_BANK_COUNTS, sampleLessonQuiz, sampleLessonQuizLevel } from "../../data/difficultyQuizData";
 import { LEARNER_FRIENDLY_EXPLANATIONS } from "../../data/learnerFriendlyExplanations";
 import KatexMath, { MathFormattedText } from "../KatexMath";
 import {
@@ -785,7 +785,7 @@ export function LessonStudyScreen({
                 </h2>
               </div>
               <span className="text-xs text-slate-500 font-medium">
-                {quizItems.length} câu hỏi · {quizLevels.length} mức
+                {quizItems.length} câu trong lượt này · {QUESTION_BANK_COUNTS[content.moduleId]} câu trong ngân hàng chuyên đề
               </span>
             </div>
 

@@ -22,6 +22,7 @@ import {
 
 export interface SessionData {
   authenticated: boolean;
+  userId?: string | null;
   name: string | null;
   email: string | null;
   role?: string;
