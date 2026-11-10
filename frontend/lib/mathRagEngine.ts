@@ -220,14 +220,14 @@ export const MATH_KNOWLEDGE_BASE: MathKnowledgeChunk[] = [
     newmanLevel: "Tầng 1 (Đọc đơn vị) -> Tầng 3 (Biến đổi công thức) -> Tầng 4 (Kỹ năng vẽ đồ thị)",
     evaluationStandards: [
       "Nhận biết (Mức 1): Nhận diện đúng chiều quay (chiều dương ngược chiều kim đồng hồ), đơn vị độ và radian.",
-      "Thông hiểu (Mức 2): Xác định đúng tọa độ điểm M(cos alpha, sin alpha), xét dấu trên 4 góc phần tư, phân biệt giá trị 0 và không xác định.",
+      "Thông hiểu (Mức 2): Xác định đúng tọa độ điểm M(cos α; sin α), xét dấu trên bốn góc phần tư, phân biệt giá trị bằng 0 và không xác định.",
       "Vận dụng (Mức 3): Áp dụng cung liên kết, công thức nhân đôi, liên kết chu kỳ sóng T = 2pi và giải phương trình trên khoảng [a; b].",
     ],
     coreConcepts: [
-      "Nhiệm vụ LG-MH01: Góc alpha = -765 độ = (-2)*360 độ - 45 độ. Góc đại diện trong vòng dương là 315 độ (7pi/4), điểm cuối thuộc góc phần tư IV.",
+      "Nhiệm vụ LG-MH01: Góc α = −765° = (−2) × 360° − 45°. Góc đại diện dương là 315° (7π/4), điểm cuối thuộc góc phần tư IV.",
       "Nhiệm vụ LG-MH02: Tọa độ điểm biểu diễn M(sqrt(2)/2; -sqrt(2)/2). sin = -sqrt(2)/2, cos = sqrt(2)/2, tan = -1, cot = -1.",
       "Phân biệt bằng 0 và không xác định: Tại pi/2, cot = 0 nhưng tan không xác định do mẫu cos = 0 (E06). Điểm trên trục không thuộc góc phần tư nào (E05).",
-      "Nhiệm vụ LG-MH03: Công thức nhân đôi sin(2*alpha) = 2*sin(alpha)*cos(alpha) = -1. Khớp với điểm biểu diễn góc -1530 độ = -90 độ.",
+      "Nhiệm vụ LG-MH03: Công thức nhân đôi sin(2α) = 2 sin α cos α = −1. Kết quả khớp với điểm biểu diễn góc −1530° = −90°.",
       "Nhiệm vụ LG-MH04: Liên kết đường tròn và đồ thị. Góc -765 độ và 315 độ có cùng tung độ trên đường tròn nhưng hoành độ trên đồ thị cách nhau 6pi (3 chu kỳ).",
       "Nhiệm vụ LG-MH05: Giải phương trình sin(x) = -sqrt(2)/2 trên [-pi; pi]. Nghiệm tổng quát: x = -pi/4 + k2pi hoặc x = -3pi/4 + k2pi. Trong [-pi; pi] có đúng 2 nghiệm: x1 = -pi/4, x2 = -3pi/4.",
     ],

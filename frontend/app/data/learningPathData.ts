@@ -857,7 +857,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
           rationale: "Đa giác khép kín có các cạnh tương ứng song song với đáy.",
         },
       ],
-      conclusion: "Thiết diện tạo bởi mặt phẳng (alpha) và hình chóp là hình bình hành MPQR.",
+      conclusion: "Thiết diện tạo bởi mặt phẳng (α) và hình chóp là hình bình hành MPQR.",
     },
     checkpoints: [
       {
@@ -1224,7 +1224,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
           rationale: "Tại góc $2\\alpha = 2(-45^\\circ) = -90^\\circ$, điểm biểu diễn nằm tại $(0; -1)$ có hoành độ bằng 0.",
         },
       ],
-      conclusion: "Kết quả: sin(2 alpha) = -1 và cos(2 alpha) = 0, hoàn toàn khớp với góc -90 độ trên trục tung.",
+      conclusion: "Kết quả: sin(2α) = −1 và cos(2α) = 0, khớp với điểm biểu diễn góc −90° trên trục tung.",
     },
     checkpoints: [
       {

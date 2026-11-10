@@ -479,7 +479,7 @@ function OptimathMainContent() {
       },
       trigonometry: {
         module: "trigonometry",
-        topic: "Chuyên đề 3: Khảo sát quan hệ Lượng giác tương tác (Toán 11, LG-MH01-MH05, alpha = -765 deg, E01-E16)",
+        topic: "Chuyên đề 3: Khảo sát quan hệ lượng giác tương tác (Toán 11, LG-MH01-MH05, α = −765°, E01-E16)",
       },
     };
 

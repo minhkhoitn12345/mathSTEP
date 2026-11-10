@@ -1,0 +1,8 @@
+{
+  "name": "Remix MathSTEP - Lượng Giác",
+  "description": "Hệ thống mô hình toán học tương tác hỗ trợ dạy học, rèn luyện và khắc phục sai lầm thường gặp trong môn Toán THPT - Chuyên đề Lượng giác",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

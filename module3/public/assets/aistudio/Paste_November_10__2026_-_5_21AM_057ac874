@@ -1,0 +1,228 @@
+Bạn là chuyên gia kiểm thử ứng dụng giáo dục, lập trình viên giao diện tương tác và người thẩm định toán phổ thông. Hãy trực tiếp rà soát, tái hiện lỗi, sửa và nâng cấp toàn diện khu vực “Tự kiến tạo” của app MathSTEP Module 3 hiện tại theo chín ảnh đính kèm và đặc tả này. Bàn giao bản chạy cùng TOÀN BỘ MÃ NGUỒN hoàn chỉnh sau sửa, không chỉ đoạn mã thay thế.
+
+Định hướng: học sinh tự tạo biểu diễn, tự chọn căn cứ, tự giải thích và kiểm tra bằng toán học. Ba chiều ngược cốt lõi là giá trị→vị trí; đồ thị→công thức; tình huống→mô hình. Bản sửa cần tăng thao tác có ý nghĩa và khả năng tự rèn luyện, không biến thành nhiều bảng công thức có sẵn đáp án.
+
+1. GIỮ ĐÚNG PHẠM VI VÀ NGUỒN CĂN CỨ
+
+1.1. Đọc mã thực, đề cương MathSTEP, Module 3, prompt thiết kế gốc và prompt nâng cấp Tự kiến tạo nếu được cung cấp. Nội dung dưới đây tự chứa các yêu cầu cần sửa; không tự bịa tệp/API hoặc xác nhận đã đọc tài liệu chưa truy cập được.
+1.2. Nền chuyên môn theo tài liệu đã dùng: góc, đơn vị, đường tròn, giá trị và quan hệ lượng giác; công thức cộng, nhân đôi, tích–tổng; hàm số và đồ thị; phương trình cơ bản và vận dụng trực tiếp; sử dụng máy tính; giải thích và mô hình hóa. Nội dung nền lớp10 được ghi là ôn nền; trọng tâm hàm số/phương trình thuộc lớp11.
+1.3. Bảo toàn LG01–LG13 và mọi chức năng mô phỏng cũ. Được điều chỉnh mạnh bố cục và luồng thao tác BÊN TRONG Tự kiến tạo để sửa các vấn đề này; không thiết kế lại hoặc thay thế khu vực mô phỏng hiện tại. Giữ điểm vào, đường quay về, cờ tính năng và dữ liệu cũ.
+1.4. Giữ framework, thư viện vẽ, router và cách đóng gói hiện có. Tận dụng lõi toán qua adapter; sửa lõi chung chỉ khi chứng minh được lỗi và kiểm hồi quy đầy đủ. Không viết app mới đơn giản hơn thay app hiện tại.
+1.5. Tạo checkpoint trước sửa. Chỉ dùng dữ liệu thử riêng; không xóa dữ liệu người học hoặc gọi localStorage.clear(). Sửa dữ liệu học liệu tạo phiên bản mới, không âm thầm đổi đề/điểm lịch sử.
+1.6. Có mã thì trực tiếp làm việc; thiếu browser thì vẫn kiểm mã/toán/build trong khả năng và ghi giới hạn. Nếu không có mã nguồn, yêu cầu cung cấp dự án hiện tại; không tuyên bố đã sửa/chạy app chỉ từ ảnh.
+
+2. NHẬN ĐỊNH TỪ ẢNH PHẢI CHUYỂN THÀNH CA TÁI HIỆN
+
+Phân biệt bằng chứng ảnh với giả thuyết. Ảnh ghi trạng thái đang xem, không chứng minh người dùng chưa nhập dữ liệu hoặc nút đã hỏng.
+
+ID | Bằng chứng hoặc dấu hiệu | Yêu cầu xác minh và sửa
+IMG01 | Các sân rất rộng nhưng đường tròn/vòng quay nhỏ, nhiều vùng trống; chữ và nhãn nhỏ | Kiểm viewBox, bounding box, chiều cao panel, scale; dùng diện tích có ích mà không biến dạng hình
+IMG02 | Nút trợ lý nằm đè lên vùng nút kiểm chứng ở nhiều màn | Bố trí vùng riêng/cơ chế tránh vật cản; kiểm hit target thật, không chỉ giảm opacity
+IMG03 | KT01 nhãn điểm bên trái chồng đường mức; đáp án và giải thích đang hiện khi bước1 được tô | Kiểm va chạm nhãn; test lượt mới sạch để phân biệt prefill rò đáp án, phục hồi bài cũ hoặc stepper không cập nhật
+IMG04 | KT02 thấy ba điểm, bảng nhập và nút đối xứng, không thấy công cụ tạo đường/nhánh trong trạng thái chụp | Kiểm toàn bộ luồng “tự dựng đồ thị”; không coi có ba điểm là đã vẽ hàm; thêm công cụ còn thiếu đúng mục tiêu
+IMG05 | KT03 vẽ đường mục tiêu và đường ứng viên, form đang có giá trị; thiếu b trên các trường cấu trúc đang thấy | Kiểm giá trị có phải tự điền trước hay bài khôi phục; hiện rõ tham số b/ω và pha, đồng bộ cấu trúc với công thức
+IMG06 | Tên bài KT03 thứ2 chỉ nêu ymax5, ymin−1, qua(0, 2) đi lên, không thể hiện T | Đọc đề đầy đủ; thiếu T/tần số thì không có công thức duy nhất, phải sửa đề hoặc nhận họ nghiệm tham số
+IMG07 | KT04 vòng quay có công thức, mốc kết quả và giả thiết đã tick trong trạng thái ảnh | Kiểm lượt mới; dữ kiện đề cho được hiện, các kết quả học sinh cần tìm không được tự điền trước
+IMG08 | KT05 đang hiện cả điểm loại, điều kiện và họ góc bị loại; văn bản dễ lẫn “họ bị loại” với điều kiện x≠… | Phân biệt tập loại E và miền D; kiểm mode/step; hiện biểu diễn chuẩn sau phần tự tạo
+IMG09 | KT06 tên bài đầu hiển thị luôn đẳng thức đích; ba bước công thức đang được viết sẵn | Với bài tự tìm công thức, đổi tên thành yêu cầu chưa lộ đích; nếu đề vốn cho đẳng thức để chứng minh thì giữ đúng loại nhiệm vụ
+IMG10 | HT01 có chuỗi thẻ đúng hoàn chỉnh và đoạn tự luận trong ảnh | Kiểm đây là mẫu hay bài học sinh; không dùng nguyên chuỗi đáp án làm trạng thái mặc định của lượt tự làm
+IMG11 | HT02 viết x=0.619+2kπ và các đẳng thức dùng số làm tròn; 30°=0.167π | Sửa ký hiệu chính xác/gần đúng; giữ α0=arcsin0.58 trong họ nghiệm, 30°=π/6 chính xác
+IMG12 | HT03 đang trống, thống kê0 | Trạng thái này có thể hợp lệ; phải nộp một bài rồi reload để kiểm lưu thực, không khẳng định mất dữ liệu từ ảnh trống
+IMG13 | Tất cả ảnh đều tô bước1 dù có nội dung kết quả | Test event bước thực, restore và điều hướng; stepper phải phản ánh hoạt động, không chỉ đổi màu
+IMG14 | Nhãn nguồn SGK chung cho các bài có vẻ tự biên soạn/cầu nối | Rà nguồn bài thật, không tự gán bài tự soạn thành bài SGK; ghi dựa kiến thức khi chỉ kế thừa nội dung
+IMG15 | Thanh chẩn đoán N01–N20 xuất hiện ở giao diện người học | Đưa công cụ phát triển vào mục chẩn đoán phù hợp vai trò/chế độ; không để test hoặc expected làm lộ đáp án
+
+Không sửa “Remix”, “Device” hoặc thanh điều khiển của môi trường host nếu chúng không thuộc mã app. Không gán lỗi của host cho mã ứng dụng.
+
+3. SỬA LUỒNG HỌC TẬP VÀ TRẠNG THÁI TRƯỚC KHI TRANG TRÍ
+
+3.1. Tách tối thiểu bốn lớp dữ liệu:
+- TaskDefinition: đề, mục tiêu, mẫu toán, miền, công cụ và kết quả chuẩn có kiểm soát.
+- LearnerDraft: dự đoán, điểm/bảng/biểu thức/thẻ do người học tự tạo; không lấy answerSpec làm giá trị mặc định.
+- ValidationReport: kết quả kiểm từng tiêu chí, căn cứ, phiên bản trạng thái và giới hạn.
+- ModelSolution: lời giải/mô hình chuẩn chỉ mở đúng quyền, bước hoặc sau nộp.
+3.2. Mọi đáp án ban đầu trống/null; placeholder phải là ví dụ cú pháp trung tính khác đáp án bài đang làm. Không dùng0 thay chưa nhập. Dropdown dự đoán mặc định “Chưa chọn”, không chọn sẵn phương án đúng.
+3.3. Dữ kiện cố định từ đề được hiển thị rõ nhãn “Đề cho”. Đại lượng học sinh cần suy ra có nhãn “Em xác định”. Giá trị khôi phục phải ghi “Đã khôi phục bài nháp” để không nhầm app tự giải.
+3.4. Một trạng thái toán đã commit dùng chung cho mô hình, bảng và biểu thức; giữ bản raw khi người dùng đang gõ. Khi còn “−”, “π/” hoặc chuỗi chưa hợp lệ, không làm vỡ sân vẽ; hiện chưa áp dụng thay vì ngầm dùng số cũ như thể là kết quả mới.
+3.5. Sau thay đổi đầu vào, tăng stateRevision, đánh dấu báo cáo kiểm trước đã cũ; không tiếp tục hiện Đúng với dữ liệu mới chưa kiểm. Bài nộp cũ được giữ nguyên.
+3.6. Với mode “Có giàn đỡ”, mở từng căn cứ hoặc bài toán con khi người dùng yêu cầu; không mở ngay toàn lời giải. “Tự làm” chỉ có công cụ được phép. “Tự kiểm tra” không có phản hồi đúng/sai, mô hình đáp án, hint hoặc tooltip tiết lộ trước nộp.
+3.7. Chế độ mẫu/trình diễn tách biệt, ghi rõ không tính độc lập. Chuyển mode không xóa lịch sử đã xem; muốn làm độc lập sau khi xem đáp án phải dùng nhiệm vụ mới.
+3.8. Tám bước cần sản phẩm thật theo nhiệm vụ: đề→dự đoán→biểu diễn tự tạo→quan sát→kiểm→giải thích→bài mới→luyện. Cho quay lại sửa bước cũ, không bắt thêm lượt chạm vô nghĩa; mỗi bước nêu một yêu cầu ngắn.
+3.9. Không cho Next tự đánh dấu hiểu/hoàn thành. Thiếu dữ liệu thiết yếu thì nêu còn thiếu gì; không khóa người học ở bước giải thích chỉ vì AI chưa phản hồi. Tự luận chưa kiểm được giữ chờ xem xét và cho lưu/tiếp tục theo chính sách.
+3.10. Có undo/redo, đặt lại lượt, nháp, về mô phỏng cũ; phạm vi riêng. Thay task hoặc mode khi có nháp phải lưu/cho chọn rõ, không lấy nháp bài A gán sang B.
+
+4. BỐ CỤC VÀ NÚT LỆNH CHO TRẢI NGHIỆM TRỰC TIẾP
+
+4.1. Trong Tự kiến tạo, dùng app shell flex/grid theo vùng cao khả dụng. Với laptop/desktop, sân thao tác nên tận dụng phần lớn chiều cao còn lại sau toolbar; không giữ card400px rồi để trống nửa màn hình khi có thể mở rộng hữu ích. Màn thấp được cuộn tự nhiên, không ép min-height gây mất nút.
+4.2. Tính toán khung vẽ từ viewport và nội dung thật. Đường tròn giữ tỉ lệ trục1:1, căn giữa hoặc bố trí cạnh đồ thị; bán kính tăng theo không gian sau chừa nhãn. Không dùng hình tròn nhỏ cố định trong SVG rất rộng. Đồ thị được phép scale hai trục khác nhau nhưng phải có thang/nhãn đúng.
+4.3. Có nút “Vừa khung”, phóng/thu và điều chỉnh cỡ chữ mô hình. Thay kích thước không làm thay dữ liệu toán. Vẽ trục, mũi tên, vạch chia và nhãn trên vùng đồ thị thực; không để tick nằm ngoài đoạn trục khiến khó đọc.
+4.4. Nhãn chọn vị trí tránh nhau, vùng biên và thanh điều khiển; điểm có vùng chạm lớn nhưng tọa độ thật không đổi. Tại điểm trùng/đối xứng hoặc hai đường trùng nhau, dùng chú giải/offset, toggle, không che mất thông tin.
+4.5. Nhóm điều khiển theo hành động: “Tạo”, “Chọn/Sửa”, “Hoàn tác”, “Kiểm bước này”, “Nộp bài”, “Bài mới”. Một nút chính theo bước, không có nhiều nút lớn cùng nghĩa. Kiểm bước không tự nộp hoặc tự hoàn thành cả nhiệm vụ.
+4.6. Linh vật và trợ lý phải ở dock riêng hoặc vùng có chỗ dành, không đè CTA, ô nhập, điểm kéo, dialog hay footer. Trên mobile mở drawer và có nút đóng; test bằng tọa độ hit target thật.
+4.7. Tên nhiệm vụ hiển thị rõ tại đầu nội dung, đề đầy đủ mở được ngay. Không để hàng tab dài là nơi duy nhất chứa đề. Chọn nhiệm vụ bằng danh sách/chip có thể thu gọn và lọc theo dạng, mức độ; không bỏ các bài cũ.
+4.8. Thuật ngữ/font tiếng Việt nhất quán. Dùng nhãn tiếng Việt thay mã GIVEN/THEOREM nếu hướng tới học sinh; mã nội bộ chỉ hiện trong công cụ chuyên môn. Tránh văn phong như “âm xác thực”, “loại trừ nghiệm dương” khi đang nói dấu cos; dùng “cosα<0 vì α thuộc góc phần tư II”.
+4.9. Cỡ chữ nội dung khoảng16px, đọc được ở máy tính/điện thoại. Bảng thông minh có chế độ chữ20–24px và nút56–64px khi diện tích cho phép. Nút thường có vùng chạm≥44px; hành động chính không phụ thuộc hover/chuột phải.
+4.10. Điện thoại360–430px: sân lớn ở trên, nhiệm vụ và điều khiển theo tab/drawer hoặc xếp dọc; không co ba cột. Có bàn phím thay kéo, khoảng an toàn, không che CTA khi bàn phím ảo mở. Thử cả dọc/ngang.
+4.11. Phím Tab, Enter, Escape, focus dialog và tên nút biểu tượng phải hoạt động. Chọn công cụ/kéo chỉ chặn cuộn trong vùng cần. Pointercapture, pointercancel và chuyển tọa độ SVG đúng sau resize.
+4.12. Bộ màu sin/cos/tan/cot nhất quán với app hiện tại, kèm nhãn và nét. Trạng thái không dùng đỏ/xanh đơn độc. Giảm chuyển động, tạm dừng, ẩn linh vật, cài đặt cỡ chữ được lưu nếu storage hoạt động.
+
+5. KT01 GIÁ TRỊ ĐẾN VỊ TRÍ PHẢI CÓ HÀNH ĐỘNG TỰ TẠO
+
+5.1. Với sinα=3/5 và π/2<α<π, ban đầu chỉ hiện đề và đường tròn/hệ trục trung tính. Học sinh dự đoán số điểm, dùng công cụ “Dựng mức giá trị” để tạo y=3/5, tự chọn hai điểm khả dĩ rồi chọn điểm theo miền. Không điền trước cos, tan, cot hoặc lời giải thích.
+5.2. Có cách đặt điểm bằng chạm/kéo và bằng tọa độ/góc. Phân biệt điểm dự đoán với điểm chuẩn đã kiểm. Kéo gần đúng chỉ là ước lượng; dùng quan hệ chính xác để chốt tọa độ.
+5.3. Miền góc được cho có thể tô như dữ kiện nhưng không chọn hộ điểm. Học sinh xác định dấu và độ lớn riêng, sau đó mới ghép thành giá trị lượng giác.
+5.4. Nhãn chính dùng 3/5, nhãn phụ dùng ≈0.60. Kết quả chuẩn: cosα=−4/5, tanα=−3/4, cotα=−4/3. Kết luận duy nhất là điểm trong miền đang xét, không phải một số đo góc duy nhất trên R.
+5.5. Bài cố định m=3/5 không cho slider thay m âm thầm. Nút “Thử trường hợp khác” tạo phiên khám phá hoặc phiên bản nhiệm vụ mới; giữ bài gốc, vô hiệu báo cáo kiểm cũ và không giữ đáp án đúng cho dữ kiện đã thay.
+5.6. Kiểm đủ không miền, có miền, m=0, ±1, |m|>1 và tan/cot theo mẫu được hỗ trợ. Nếu tên bài có “cosα=−1 và sinα=1.5”, phải tách thành hai câu con kiểm độc lập, không ép một kết quả chung.
+5.7. Thêm bài giá trị→góc liên kết: học sinh chọn phép đối xứng/quay để suy giá trị góc mới, giải thích bằng tọa độ. Không đưa bảng công thức đầy đủ trước khi làm.
+
+6. KT02 TỰ DỰNG ĐỒ THỊ KHÔNG DỪNG Ở BẢNG BA ĐIỂM
+
+6.1. Phải có chuỗi thao tác: tạo/sửa bảng → đặt/chỉnh điểm → dựng phần đường/nhánh → chọn đối xứng → dịch theo chu kỳ → đối chiếu chuẩn → giải thích. Kiểm và hoàn thiện khâu còn thiếu.
+6.2. Không chấp nhận tùy ý nối thẳng ba điểm (0, 0), (π/2, 1), (π, 0) thành đồ thị sin. Cho phép dựng đường cong theo họ mẫu có ràng buộc, đánh dấu đặc trưng hoặc phác theo rubric được công bố. Không chấm độ đẹp pixel.
+6.3. Tách “điểm em tạo”, “điểm suy từ phép biến đổi”, “đường em dựng”, “đường chuẩn sau kiểm” bằng nhãn/nét. Không thay bài sai bằng đường đúng rồi coi là sản phẩm học sinh.
+6.4. Chọn điểm trên sân để sửa/xóa; chọn dòng bảng để focus điểm. Nhận π/2, 3π/2, −π và giữ dạng chính xác. Điểm trùng cần quy tắc cập nhật hoặc xác nhận thay, không vẽ chồng vô ích.
+6.5. Nếu đang dựng [0, π], nhập 3π/2 phải báo ngoài phần đang dựng hoặc cho mở miền bằng thao tác rõ; không âm thầm thêm ngoài phạm vi bài.
+6.6. Với sin, học sinh chọn đối xứng O để tạo [−π, 0]; cos dùng Oy. Có thể thử phép sai để tìm mâu thuẫn tại một điểm phân biệt; không khóa sẵn chỉ còn lựa chọn đúng.
+6.7. Tan/cot: học sinh xác định điểm không xác định, chia nhánh và xét tăng/giảm trên từng khoảng. Công cụ nối qua tiệm cận phải bị phát hiện, không báo đạt.
+6.8. Có chế độ liên kết đường tròn với đồ thị dùng cùng x, hình chiếu và giá trị. Giữ góc tích lũy qua nhiều chu kỳ, không làm đổi phiên mô phỏng cũ.
+
+7. KT03 ĐỒ THỊ ĐẾN CÔNG THỨC PHẢI ĐỦ DỮ KIỆN
+
+7.1. Đồ thị mục tiêu là dữ kiện cố định. Học sinh chọn max/min, đường giữa, hai điểm cùng pha liên tiếp để đo T, suy |b|=2π/T khi T đo bằng radian, rồi chọn sin/cos và pha. Không điền sẵn các đặc trưng cần tìm.
+7.2. Hiện đủ A, b hoặc ω, c, d. Phân biệt “pha c trong bx+c” với “dịch ngang h trong b(x−h)”. Không dùng một nhãn mơ hồ cho cả hai.
+7.3. Có hai cách làm “Từ tham số” và “Nhập biểu thức”. Một cách là nguồn chính; cách kia hiển thị kết quả suy ra hoặc đồng bộ có kiểm. Không giữ hai công thức mâu thuẫn. Đổi cách nhập giữ nháp và báo trường chưa diễn giải được.
+7.4. Đường ứng viên chỉ vẽ sau khi học sinh nhập hợp lệ và yêu cầu thử. Không lấy công thức mục tiêu làm mặc định. Có nút bật/tắt ứng viên, đánh dấu vùng chưa khớp và dự đoán cần sửa tham số nào.
+7.5. Bài có max1, min−3, đỉnh tại0 vàπ, đáy tạiπ/2: nhận 2cos(2x)−1 và 2sin(2x+π/2)−1 bằng quy tắc tương đương chính xác trong mẫu.
+7.6. Rà bài ymax5, ymin−1, qua(0, 2) và đi lên: thiếu T thì chưa xác định duy nhất. Nhận họ 3sin(bx)+2 với b>0 trong mô tả này, hoặc bổ sung T=2π rõ vào phiên bản học liệu mới để chốt 3sinx+2. Không tự chọn b=1 rồi chấm các công thức khác sai.
+7.7. Có bài thiếu dữ kiện để học sinh chọn “Chưa đủ xác định duy nhất” và chỉ ra dữ kiện cần thêm. Có bài phân biệt hai điểm cùng tung độ với hai điểm cùng pha.
+7.8. Kiểm theo chuẩn hóa họ sin/cos, tần số, dấu, pha modulo2π và miền. Không chỉ so chuỗi hoặc thử vài điểm để chứng nhận đồng nhất thức. Ngoài khả năng bộ kiểm thì trả “chưa xác minh được”, không tự sai.
+7.9. Hàm hằng không có pha duy nhất hoặc chu kỳ dương nhỏ nhất trên R. Không chia0, không ép nhập T. Đồ thị đo gần đúng không tự cho tham số chính xác nếu thiếu dữ kiện chính xác.
+
+8. KT04 NỐI TÌNH HUỐNG VỚI MÔ HÌNH VÀ ĐỒ THỊ
+
+8.1. Hiện đề đầy đủ: đơn vị, vị trí bắt đầu, đặc điểm chuyển động và mốc thời gian. Dữ kiện cho phép hiện; kết quả cần suy ra để trống cho người học tạo.
+8.2. Tách “cảnh theo dữ kiện” và “mô hình em đề xuất”. Nếu ứng viên sai, cho thấy sai ở đâu. Không dùng công thức chuẩn điều khiển cả hai lớp rồi luôn trùng nhau.
+8.3. Vòng quay R75m, tâm cao90m, T30phút, t0 ở đáy: h(t)=90−75cos(πt/15). Mốc chuẩn: h0=15, h7.5=90, h15=165, h20=127.5, h30=15. Chỉ mở mốc kết quả theo bước; trước đó cho dự đoán/đo/nhập.
+8.4. Có đồ thị h(t), trục thời gian và đường chiếu từ cabin tới mức cao. Chạm cabin/thanh thời gian/điểm đồ thị cập nhật cùng t. Cảnh vật lý khác đường tròn đơn vị phải có phép đổi thang rõ.
+8.5. Chạy/dừng, tốc độ, từng bước, mốc thời gian, đặt lại và nhập t chính xác phải hoạt động thật. Tốc độ hoạt hình không làm thay chu kỳ vật lý của bài toán.
+8.6. Nhận sin/cos tương đương đúng điều kiện đầu. 90+75sin(πt/15) sai bài bắt đầu ở đáy dù đúng biên/T; gợi kiểm t0 thay vì cho ngay công thức.
+8.7. Bài lò xo A5cm, f2Hz phải có điều kiện đầu. Nếu t0 ở biên dương, x=5cos(4πt), T0.5s. Chỉ có A, f thì chưa biết pha, không ép một hàm.
+8.8. Mực nước theo mẫu tự biên soạn có đơn vị và miền rõ, không gọi là dữ liệu đo thật. Ví dụ 2+cos(πt/6)m, t giờ, có chu kỳ12giờ và biên[1, 3]. Thay dữ kiện phải kiểm lại.
+8.9. Thêm bài nghịch: tìm thời điểm đạt độ cao, phân biệt đang lên/đang xuống và chọn nghiệm theo khoảng thời gian. Nghiệm âm hoặc ngoài lịch quan sát không tự là đáp án thực tế.
+
+9. KT05 MIỀN XÁC ĐỊNH CẦN CHỌN ĐƯỢC ĐIỂM VÀ CUNG
+
+9.1. Người học chọn thành phần cần điều kiện, viết điều kiện, chọn điểm/cung bị loại hoặc được nhận, biểu diễn trên trục số rồi kiểm. Không hiện sẵn mọi điểm loại và họ góc ở bước1.
+9.2. Tách tập loại E và miền D. Với sinx/(1+cosx): E={π+2kπ|k∈Z}, D=R\E. Ô “Họ bị loại” dùng x=π+2kπ; ô “Điều kiện” dùng x≠π+2kπ. Không lẫn hai nghĩa.
+9.3. Trục số có thang, chiều và tick khớp. Hiện phần hữu hạn của tập vô hạn và dấu tiếp tục. Zoom/pan cập nhật đúng; không coi toàn R chỉ có hai điểm bị loại ±π.
+9.4. sin²x/sinx cần đồ thị sin có điểm khuyết kπ. Liên kết điểm khuyết trên đồ thị với điểm loại trên đường tròn, không chỉ vẽ dấu X tĩnh.
+9.5. sqrt(cosx): điều kiện cosx≥0; tập nhận là hợp các khoảng [−π/2+2kπ, π/2+2kπ], kể cả hai đầu. Công cụ phải chọn được cung/khoảng; không dùng nguyên cơ chế chỉ chọn điểm cấm của bài trước.
+9.6. sin2x=sinx: phép chia cần xét riêng sinx=0, hoặc đưa về sinx(2cosx−1)=0. Trên[0, 2π): 0, π/3, π, 5π/3.
+9.7. Chỉ chấm tự động trong các mẫu có bộ kiểm; trường hợp căn/mẫu phức tạp hơn giữ giới hạn. Thử vài điểm không xác minh miền toàn R.
+
+10. KT06 GHÉP SÓNG VÀ TỰ BIẾN ĐỔI CÔNG THỨC
+
+10.1. Bài “Tìm công thức gọn cho sinx+cosx” không ghi đích √2sin(x+π/4) trong tên trước khi làm. Bài “Chứng minh…” có thể cho đẳng thức đích nhưng phải gắn đúng loại nhiệm vụ.
+10.2. Vạch đo x có số đo chính xác; các điểm y1, y2, y1+y2 cùng một x. Minh họa cộng tung độ có dấu, gồm trường hợp một giá trị âm; không cộng độ dài tuyệt đối.
+10.3. Học sinh chọn/ghép/thêm bước, điền hệ số, góc và dấu. Không xếp sẵn ba thẻ lời giải đúng. Mỗi thao tác kéo có phương án bấm chọn; có sửa và hoàn tác.
+10.4. Giữ biên độ √2 chính xác; ≈1.4142 chỉ là phụ. Không đưa sẵn biên độ nếu đó là kết quả đang cần tìm, không coi1.414 là giá trị chính xác.
+10.5. Cùng tần số: sinx+cosx=√2sin(x+π/4); √3sinx+cosx=2sin(x+π/6). Chuẩn hóa theo A sinx+B cosx trong phạm vi hỗ trợ, nhận cách viết tương đương.
+10.6. Tích thành tổng: cos3xcosx=[cos4x+cos2x]/2. Đổi bài phải đổi renderer, dữ liệu, gợi ý, rubric và bộ kiểm; không giữ sinx+cosx dưới tên mới.
+10.7. Khác tần số: sinx+sin2x=2sin(3x/2)cos(x/2). Không ép thành một sin duy nhất có biên độ hằng và một tần số vì nhìn gần giống. Có nhiệm vụ tìm phản ví dụ của công thức sai.
+10.8. Biến đổi có lý do xác lập đồng nhất thức. Phân biệt thông báo “khớp tại điểm đang xem” với “đã xác minh trong họ biểu thức được hỗ trợ”.
+
+11. HT01 HT02 HT03 HOẠT ĐỘNG THEO NHIỆM VỤ
+
+11.1. HT01 nối đúng task đang làm; không luôn hiện bài sin3/5 phần tư II. Có thể mở dạng drawer trong nhiệm vụ và mở toàn màn theo lựa chọn.
+11.2. Thẻ phân biệt dữ kiện, điều kiện, quan sát, hệ thức, suy ra và kết luận. sin²+cos²=1 chưa tự cho căn âm; cần dùng điều kiện dấu. Nhận nhiều thứ tự lập luận hợp lệ, không chỉ so một thứ tự id.
+11.3. Bài có giàn đỡ dùng thẻ lựa chọn và thẻ nhiễu phù hợp; không đưa cả lời giải đúng mặc định. Bài tự làm có ô viết/thêm thẻ. Không chấm tự luận bằng số chữ hoặc từ khóa; phần chưa xác minh giữ chờ xem xét.
+11.4. HT02 sửa chính xác/gần đúng: 30°=π/6rad; đặt α0=arcsin(0.58)≈0.6187286907rad. Họ chính xác: x=α0+2kπ hoặc x=π−α0+2kπ, k∈Z. Nếu ghi thập phân thì dùng ≈, không viết0.619 là số đo chính xác.
+11.5. sin30°=1/2; sin(30rad)≈−0.988031624. tan90° không xác định dù thư viện trả số rất lớn. m ngoài[−1, 1] trong arcsin/arccos phải báo không có góc thực, không NaN hoặc tự clamp.
+11.6. Liên kết phép tính với đường tròn và góc tương ứng; không chỉ hai khối số. arcsin là hàm ngược để tìm một góc, khác1/sin. Học sinh tự hoàn thành bước tìm các khả năng và họ nghiệm.
+11.7. HT03 trống là hợp lệ khi chưa có bài. Có CTA “Bắt đầu nhiệm vụ”, “Tiếp tục bài nháp” khi có nháp. Kiểm thực: nhập→lưu nháp→kiểm→nộp→sửa→reload→xem revision.
+11.8. Tách draft/check/submission/revision. Chỉ lưu sự kiện có ý nghĩa hoặc snapshot phù hợp; không ghi mỗi frame. Bấm kiểm20lần không tạo20bài đạt/nhân điểm. Revision không tăng số lượt độc lập.
+11.9. “Thực hiện độc lập trong nhiệm vụ này” khác “Hoàn thành có gợi ý”. Không gọi thống kê là năng lực đã xác nhận khi thiếu dữ liệu. Xem mẫu rồi đổi mode vẫn giữ lịch sử hỗ trợ.
+11.10. Hàng chờ ôn có mở bài, tạm hoãn và xóa đề xuất theo lựa chọn; không giả gửi thông báo ngoài app. Nhập/xuất JSON có schema, preview, lỗi rõ và xử lý id trùng.
+
+12. DẠNG TOÁN BỔ SUNG VÀ NGÂN HÀNG CÓ KIỂM SOÁT
+
+Giữ các bài cũ hợp lệ; sửa bài thiếu/sai bằng phiên bản mới. Mỗi KT01–KT06 có tối thiểu6 nhiệm vụ, tận dụng bài đã có; ít nhất2 bài chuyển giao trong mỗi trạm. Không coi đổi màu là đổi dạng.
+
+KT01: sin/cos biết giá trị+có miền; thiếu miền; tan/cot+tỉ số; góc trên trục/vô nghiệm; góc liên kết; phân biệt điểm và họ góc.
+KT02: lập bảng; dựng sin bằng đối xứngO; dựng cos bằngOy; trải chu kỳ; tách nhánh tan/cot; phát hiện sai mốc/chu kỳ/nối nhánh.
+KT03: đọc A, d, T, pha; đổi sin/cos tương đương; dịch ngang/dọc; thiếu dữ kiện; hàm hằng; phân biệt cùng tung độ và cùng pha.
+KT04: vòng quay bắt đầu ở đáy; vị trí đầu khác; dao động đủ điều kiện đầu; mực nước tự soạn; tìm thời điểm; phản biện sai đơn vị/pha.
+KT05: tan/cot; mẫu chứa sin/cos; miền gốc sau rút gọn; căn không âm; chia phương trình mất nghiệm; giao miền với khoảng khảo sát.
+KT06: sin+cos; cùng tần số hệ số khác; tích thành tổng; tổng thành tích; chọn công thức theo mục tiêu; bác bỏ ghép sóng sai khác tần số.
+
+12.1. Mỗi bài có id, version, statement, prerequisites, givenData, unknowns, domain, mathTemplate, initialState, allowedTools, steps, answerSpec, alternativeAnswers, hints, rubric, source, testCases. Chưa có bộ kiểm/rubric đáng tin thì giữ nháp, không mở như bài chấm hoàn chỉnh.
+12.2. Đổi bài phải đổi đúng đề, dữ liệu, mô hình, gợi ý và validator; không chỉ đổi title trong khi body vẫn hardcode. Kiểm từng bài phát hành, không chỉ bài đầu mỗi tab.
+12.3. Sinh bài theo template có giới hạn tham số, điều kiện đủ và đáp án kiểm độc lập. Lưu seed để tái hiện; không random lại sau mỗi render. Không đưa nội dung vượt chương trình thành bắt buộc.
+12.4. Nhận biết/hiểu/vận dụng được thiết kế theo hành động, kiểm cả kết quả và căn cứ. Không gán độ khó chỉ theo số lớn. Với người cần hỗ trợ, đề xuất bài nền rồi quay lại bài gốc.
+12.5. Ghi đúng nguồn. Bài vòng quay75m, tâm90m, T30phút đã dùng làm cầu nối từ SGKToán10 trong thiết kế; không tự gắn là bài nguyên bản SGK11 cuối chương. Không đối chiếu được số bài/trang thì ghi “Tự biên soạn dựa trên kiến thức…”, không bịa trích dẫn.
+
+13. DỮ LIỆU NÚT LỆNH VÀ HIỆU NĂNG
+
+13.1. Mọi button, input, slider, thẻ, tab, dialog có hành động và phản hồi thật. Kiểm nộp, kiểm, sửa, reset, undo, redo, về mô phỏng, đổi task và mode bằng chuột, chạm, bàn phím.
+13.2. Kiểm rỗng, null, space, π, phân số, căn chính xác, số âm, ngoài miền, dấu thập phân. Không dùng eval/newFunction; parser chỉ nhận cú pháp cho phép. Nội dung người học không phải chỉ dẫn hệ thống.
+13.3. Giữ namespace và dữ liệu mở rộng tách biệt. Migration chỉ khi cần, có backup, version và khôi phục. JSON hỏng không phải lý do reset toàn app.
+13.4. Storage bị cấm/hết quota: giữ phiên bộ nhớ, báo chưa lưu bền vững, cho xuất. Chỉ báo “Đã lưu” sau ghi thành công. In/xuất tệp là hành động thật, không alert thay tệp.
+13.5. Phản hồi AI/bộ kiểm bất đồng bộ gắn taskId, attemptId, taskVersion, stateRevision, mode; loại kết quả cũ. Tự kiểm tra không gọi gợi ý ngoài quyền.
+13.6. Không nâng dependency/đổi framework khi không cần. Hủy RAF, timer, pointer, observer khi rời trạm; không chạy nền. Không ghi storage mỗi frame; giới hạn trace/cache mà không mất minh chứng cần lưu.
+13.7. Đo kéo, chuyển trạm, lưu, import, khởi tạo trên cùng môi trường trước/sau. Không bịa mức giảm% hoặc60fps. Sửa nguyên nhân mô hình nhỏ, bố cục, trạng thái; không chỉ vá CSS diện rộng.
+
+14. CA NGHIỆM THU PHẢI CHẠY TRỰC TIẾP
+
+QA01 Lượt mới sạch cả ba mode: không điền sẵn đáp án; đề cho khác trường cần tìm; khôi phục nháp có thông báo.
+QA02 Chọn từng bài trong tối thiểu36 bài: đề, mô hình, validator, gợi ý, reset thay đúng; không hardcode bài đầu.
+QA03 KT01 sin3/5 phần tư II: cos−4/5, tan−3/4, cot−4/3; thiếu miền giữ hai điểm; sin1.5 vô nghiệm; cos−1 một điểm trong một vòng.
+QA04 Đổi m trong khám phá: phiên/bản mới rõ; kết quả kiểm m3/5 không còn hiệu lực cho m khác.
+QA05 KT02 thêm, sửa, xóa, trùng điểm, ngoài miền, đối xứng, chu kỳ và tách nhánh: kiểm đúng sản phẩm/căn cứ.
+QA06 Ba điểm của sin chưa được tự chấm đạt toàn đồ thị nếu còn thiếu phần dựng/đặc trưng yêu cầu.
+QA07 KT03 nhận2cos2x−1 và2sin(2x+π/2)−1; không nhận đúng biên/T nhưng sai pha.
+QA08 Bài max5, min−1, qua(0, 2)đi lên thiếuT: nhận chưa đủ hoặc họ3sin(bx)+2, b>0; thêmT2π mới chốt3sinx+2.
+QA09 A0/b0 hàm hằng: không NaN, chia0 hoặc pha duy nhất. Đề thiếu dữ kiện không bị ép đáp án.
+QA10 KT04 h=90−75cos(πt/15):h0=15, h15=165, h20=127.5, h30=15; ứng viên90+75sin… bị phát hiện sai t0.
+QA11 Cảnh, đồ thịh(t), bảng, cabin đồng bộ; đổi tốc độ hoạt hình không đổi chu kỳ vật lý.
+QA12 Lò xoA5, f2, t0biên dương:x=5cos4πt, T0.5; thiếu điều kiện đầu không chốt pha.
+QA13 KT05 E={π+2kπ}, D=R\E; x= và x≠ đúng nghĩa; bài căn cosx≥0 tô cung và bao biên đúng.
+QA14 sin²x/sinx vẫn loại kπ; sin2x=sinx trên[0, 2π):0, π/3, π, 5π/3.
+QA15 KT06 √3sinx+cosx=2sin(x+π/6); cos3xcosx=[cos4x+cos2x]/2; sinx+sin2x không dùng nhầm validator cùng tần số.
+QA16 Cộng tung độ có dấu khi y1 hoặc y2 âm, không cộng độ dài tuyệt đối.
+QA17 HT01 theo đúng task, thẻ học sinh tự chọn; nhận lập luận khác mẫu hợp lệ, không chấm theo số chữ.
+QA18 HT02 30°=π/6; α0=arcsin0.58≈0.6187286907; họ chính xác dùngα0, nhãn thập phân dùng≈.
+QA19 tan90° không xác định; arcsin1.5 không có góc thực; sin30rad≈−0.988031624.
+QA20 HT03 nộp bài, reload còn bài và revision; bấm kiểm/nộp20lần không nhân lượt/điểm.
+QA21 Sửa sau kiểm làm báo cáo cũ hết hiệu lực; đổi task không nhận phản hồi AI cũ.
+QA22 Bước1→8 đổi nội dung/chỉ dẫn và lưu đúng sản phẩm; quay lại không mất bản đầu; không buộc thao tác vô nghĩa.
+QA23 Tự kiểm tra không lộ đích trong title, tooltip, form hoặc model trước nộp; đổi mode không xóa lịch sử xem mẫu.
+QA24 Trợ lý mở/đóng không đè CTA/điểm kéo ở mọi viewport; kiểm click và touch thật trong môi trường khả dụng.
+QA25 Resize, zoom125/150/200%, bàn phím ảo, xoay máy:không mất nút, cắt chữ hoặc lệch tọa độ.
+QA26 Lưu/import/JSON lỗi/quota/reset phần mới không xóa phần cũ; round-trip giữ metadata.
+QA27 Về LG cũ khôi phục góc, hàm, tham số, viewport, bước; cờ tắt vẫn dùng app cũ.
+QA28 Mở/đóng trạm10lần không nhân sự kiện hoặc animation nền; không lỗi console/unhandledrejection/404 trong flow đã chạy.
+
+Mỗi ca ghi input, expected độc lập, actual, môi trường, version, trạng thái đạt/chưa đạt/chưa chạy và bằng chứng. Không dùng chính hàm đang kiểm để tạo expected. Coverage từng bài có ca đúng, sai, biên và rỗng phù hợp.
+
+15. KIỂM ẢNH SAU SỬA VÀ BẢN BÀN GIAO
+
+15.1. Nếu có browser automation, chạy app và chụp ảnh THỰC trước/sau tại360×800, 390×844, 768×1024, 1366×768, 1920×1080; kiểm landscape và chế độ bảng thông minh khi có. Dữ liệu thử cố định; đóng băng hoạt hình khi so ảnh.
+15.2. Mở xem từng ảnh:nhãn, nút, kích thước mô hình, vùng trống, phân số, căn, font Việt. Phải có mỗi KT/HT, lượt mới chưa đáp án, lượt sai, bài có điều kiện loại, bài đúng, lưu nháp và tự kiểm tra. Có tệp screenshot không tự có nghĩa UI đạt.
+15.3. Kiểm chuột, chạm giả lập, bàn phím và thiết bị thật khi có. Không gọi viewport giả lập là đã kiểm iPhone/Samsung/bảng thông minh thật. Không dùng ảnh AI/mockup thay bằng chứng.
+15.4. Thiếu công cụ vẫn làm đọc mã, toán, tests/build khả dụng; liệt kê chính xác phần chưa kiểm hình ảnh/chạm/bút. Không tuyên bố hết lỗi hoặc sẵn sàng lên lớp khi chưa đủ bằng chứng.
+15.5. Bàn giao toàn bộ mã nguồn sau sửa đúng cấu trúc dự án:singleHTML nếu app vốn như vậy; ZIP đầy đủ asset, dữ liệu, config, manifest nếu nhiều tệp. Không ép đổi công nghệ để tạo một HTML. Kiểm bản xuất/giải nén, không chỉ preview.
+15.6. Không đưa secret, node_modules/cache, dữ liệu học sinh thật vào gói. Không bịa URL tải. Không tạo được tệp thì gửi nội dung đầy đủ từng tệp có đường dẫn; không dùng “phần còn lại giữ nguyên” hoặc dấu ba chấm thay mã.
+15.7. Kèm README ngắn:cách chạy, dùng Tự kiến tạo, xem mẫu/làm độc lập, lưu/reset, bảng thông minh, rollback. Báo cáo phân biệt lỗi đã xác nhận với giả thuyết đã/chưa tái hiện.
+
+16. TRÌNH TỰ THỰC HIỆN
+
+V0 Đọc mã, tạo checkpoint, kiểm baseline LG cũ và Tự kiến tạo, tái hiện IMG01–IMG15.
+V1 Sửa dữ liệu, đổi task, mode, stepper, nháp/kiểm/nộp và rò đáp án; không trang trí để che lỗi logic.
+V2 Sửa nhãn toán, chính xác/gần đúng, đủ dữ kiện, bộ kiểm và liên kết biểu diễn từng KT/HT.
+V3 Tối ưu UI riêng Tự kiến tạo, vùng chạm, CTA, kích thước mô hình và mobile.
+V4 Hoàn thiện ngân hàng đã kiểm, hướng dẫn, gợi ý, bài chuyển giao; không mở bài chưa có bộ kiểm/rubric đáng tin cậy.
+V5 Chạy QA01–QA28, coverage từng bài, hồi quy LG cũ và kiểm ảnh; sửa rồi kiểm lại phần chịu ảnh hưởng.
+V6 Xuất mã đầy đủ, bản chạy, báo cáo đạt/chưa đạt/chưa chạy và tồn tại cụ thể.
+
+Tự thực hiện các vòng trong phạm vi yêu cầu, nêu quyết định kỹ thuật cần thiết ngắn gọn và tiếp tục làm. Không dừng ở kế hoạch hoặc lời khuyên. Kết quả cần là phần Tự kiến tạo thao tác thật, tự làm trước, giải thích có căn cứ, kiểm được kết quả và không làm hỏng phần mô phỏng đang ổn.

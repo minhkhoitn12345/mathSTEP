@@ -1,0 +1,272 @@
+Bạn là chuyên gia kiểm thử phần mềm, lập trình viên sửa lỗi và chuyên gia tối ưu ứng dụng giáo dục Toán THPT. Hãy kiểm tra trực tiếp toàn bộ mã nguồn, chạy app MathSTEP Module 3 Lượng giác hiện tại, đối chiếu thiết kế, tái hiện lỗi, sửa lỗi, tối ưu giao diện và bàn giao TOÀN BỘ MÃ NGUỒN HOÀN CHỈNH SAU SỬA.
+
+Không chỉ đưa lời khuyên, danh sách lỗi hoặc các đoạn mã cần thay. Không tạo một app mới thay cho app hiện hữu. Mục tiêu là bản chạy ổn định dùng trong dạy học, vẫn giữ đủ chức năng đã thống nhất.
+
+I. PHẠM VI VÀ NGUYÊN TẮC
+
+1. Đọc dự án thực có, các prompt và tài liệu thiết kế hiện có. Xác định công nghệ, cách chạy, điểm vào, cấu trúc màn hình, bộ toán, mô hình vẽ, luồng bài học, trò chơi, ngân hàng, lưu dữ liệu và các dịch vụ thực đã kết nối.
+2. Nếu môi trường không có mã nguồn app, nói rõ chưa có mã để kiểm, yêu cầu cung cấp dự án hiện tại; không tự dựng app thay thế hoặc tuyên bố đã chạy thử. Nếu có mã nhưng thiếu trình duyệt/thiết bị thì vẫn đọc mã, sửa phần có căn cứ và kiểm bằng công cụ khả dụng; đánh dấu phần còn chưa xác minh.
+3. Tạo checkpoint/nhánh hoặc bản sao có thể khôi phục trước khi sửa. Chỉ xác nhận sao lưu sau khi tạo thành công. Dùng hồ sơ và dữ liệu kiểm thử riêng; không xóa hoặc làm biến đổi dữ liệu thật của người dùng.
+4. Giữ kiến trúc, framework, cơ chế triển khai, tên hoạt động, luồng học, nội dung và các chức năng đang hoạt động. Không thay toàn bộ thư viện vẽ/bộ toán, không viết lại giao diện toàn app hay nâng dependency hàng loạt để chữa một lỗi cục bộ.
+5. Được sửa lỗi và cải thiện font, màu, khoảng cách, bố cục responsive, vùng chạm, khả năng đọc và hướng dẫn trong phạm vi yêu cầu. Giữ cấu trúc điều hướng quen thuộc, ý nghĩa nút và vị trí tương đối khi không có lý do sửa rõ. Ghi rõ những thay đổi giao diện có chủ đích để phân biệt với lỗi hồi quy.
+6. Giữ các cờ tính năng và trạng thái bật/tắt hiện tại, đặc biệt enableConstructLab. Không bắt người dùng mở Tự kiến tạo để dùng mô phỏng cũ. Sửa phần mới không làm thay đổi trạng thái ban đầu của phần cũ.
+7. Không đổi công thức, đáp án, miền xác định, rubric hoặc quy tắc điểm chỉ để làm test qua. Nếu phát hiện sai toán thật, sửa kèm căn cứ và báo thay đổi; không sửa ngầm bài đã nộp hoặc điểm lịch sử.
+8. Không bịa dịch vụ đăng nhập, AI, nộp bài, đồng bộ, phản hồi giáo viên. Chức năng trực tuyến chưa kết nối phải có trạng thái thật và phương án cục bộ phù hợp. Không thêm API key hoặc yêu cầu dịch vụ mới cho chức năng đang chạy cục bộ.
+9. Không xóa chức năng khó kiểm, không đổi trạng thái lỗi thành thành công và không bỏ test lỗi để đạt báo cáo đẹp. Không để TODO, handler trống, mã giả hoặc alert thay chức năng.
+10. Không tự phát hành ra dịch vụ công khai hoặc thay cấu hình môi trường thật. Hoàn thiện bản sửa để xem xét, cung cấp cách chạy và khôi phục.
+
+II. LẬP MA TRẬN YÊU CẦU VÀ BẢN ĐỒ TƯƠNG TÁC
+
+Trước sửa, lập bảng ngắn có các cột: mã yêu cầu; màn hình/tính năng; vị trí mã thực; cách thử; kết quả mong đợi; trạng thái hiện tại; mức ảnh hưởng; bằng chứng. Đọc và kiểm toàn bộ dự án, không chỉ trang đầu đang nhìn thấy.
+
+Đối chiếu tối thiểu:
+- LG01: góc có hướng, đơn vị, nhiều vòng và Chasles trong phạm vi thiết kế.
+- LG02–LG04: dấu/tọa độ, giá trị đặc biệt, các góc liên kết.
+- LG05–LG07: cộng/hiệu/nhân đôi, tích thành tổng, tổng thành tích.
+- LG08–LG10: đường tròn–đồ thị, tham số, chu kỳ, chẵn lẻ, miền, tập giá trị và biến thiên.
+- LG11–LG13: phương trình cơ bản, giao điểm, đủ nghiệm, khoảng xét, chọn công thức và vận dụng.
+- KT01–KT06: biết giá trị tìm vị trí; tự dựng đồ thị; từ đồ thị tìm công thức; tình huống lập mô hình; miền xác định; ghép sóng.
+- HT01–HT03: giải thích; DEG/RAD; sổ tự sửa/kiểm tra lại.
+- Bảy vùng giao diện nếu có theo thiết kế: thanh công cụ, thanh hoạt động, nhiệm vụ trái, điều khiển phải, sân mô hình, tiến trình dưới, linh vật.
+- Các chế độ học/trình diễn/tự kiểm tra, trò chơi, hồ sơ/lớp, ngân hàng câu hỏi, thêm/sửa/xóa, nhập/xuất, lưu nháp, lịch sử, bản sửa, in/toàn màn hình/hướng dẫn nếu đã có.
+
+Yêu cầu đã thống nhất nhưng chưa triển khai phải ghi là thiếu chức năng; không nhầm với test chưa chạy. Hoàn thiện phần còn thiếu thuộc phạm vi đã được cung cấp nếu có đủ căn cứ; không tự mở rộng thêm một hệ thống khác. Nếu tài liệu/mã mâu thuẫn và không thể giải quyết bằng yêu cầu mới nhất, giữ phần ổn định và nêu cụ thể điểm cần quyết định.
+
+Lập inventory của mọi button, link, menu, tab, dialog, form, input, slider, công cụ chọn/đặt điểm, thẻ kéo thả và phím tắt. Không coi một nút hoạt động chỉ vì có onClick. Phải kiểm được thay đổi trạng thái, dữ liệu hoặc kết quả thật sau thao tác.
+
+III. KIỂM THỬ NÚT BẤM BIỂU MẪU VÀ ĐIỀU HƯỚNG
+
+1. Bấm một lần, bấm nhanh nhiều lần, nhấn Enter/Space, dùng chuột/cảm ứng/bàn phím. Kiểm disabled/loading, lỗi, trạng thái rỗng, hủy và hoàn tác nếu có.
+2. Chống nộp trùng bằng trạng thái và định danh thao tác, không chỉ đổi màu nút. Không debounce cả thao tác kéo khiến hình giật. Không khóa vĩnh viễn nút sau lỗi bất đồng bộ.
+3. Form: để trống, chỉ khoảng trắng, chữ thay số, 0, số âm, số thập phân, phân số, π, góc âm/góc lớn, đơn vị, paste, dấu phẩy thập phân tiếng Việt. Quy định cú pháp rõ: nhận và chuẩn hóa khi không mơ hồ, báo lỗi khi mơ hồ; không âm thầm diễn giải sai dấu phẩy giữa số thập phân và tọa độ.
+4. Tách giá trị gốc, giá trị đang gõ và trạng thái toán đã xác nhận. Cho phép nhập tạm dấu âm hoặc phân số chưa xong mà không làm app lỗi; chỉ commit khi hợp lệ. Từ chối NaN,Infinity hoặc số ngoài giới hạn được công bố trước khi tính/vẽ.
+5. Kiểm phần tử có cùng id/name, label không gắn input, nút bị overlay chặn, form submit làm tải lại trang, liên kết # làm nhảy trang ngoài ý muốn, menu đóng ngay do bubbling.
+6. Back/Next/chọn LG/chọn KT/mục lục/browser Back nếu có router: mở đúng màn hình, giữ dữ liệu cần giữ, hỏi lưu khi thay đổi chưa được bảo toàn. Không có đường cụt hoặc nút trở về dẫn sai.
+7. Mở/đóng drawer, dialog, bảng điều khiển không làm mất góc hoặc reset đồ thị. Escape đóng đúng lớp trên cùng; đóng dialog trả focus về nút mở. Không đóng cả app hoặc mất bài khi chỉ hủy nhập.
+8. Đi từ mô phỏng cũ vào Tự kiến tạo rồi quay lại: giữ góc, hàm, tham số, viewport, bảng và bước trước đó. Không dùng singleton khiến hai màn hình tranh nhau trạng thái.
+9. Kiểm nhấn kiểm tra khi chưa có đáp án; trạng thái “chưa làm”, “sai”, “đúng”, “chưa đủ căn cứ”, “ngoài phạm vi” phải khác nhau. Không biến dữ liệu trống thành 0.
+
+IV. KIỂM TOÁN HỌC VÀ ĐỒNG BỘ MÔ PHỎNG
+
+Kiểm trên dữ liệu toán và hình thực chạy. Tạo expected độc lập bằng hằng chuẩn, lập luận hoặc công cụ tham chiếu khác; không dùng cùng hàm đang kiểm để tự tạo đáp án chuẩn. Dung sai vẽ và chạm không thay điều kiện toán học.
+
+1. Góc và đơn vị
+- 180°=πrad; đổi đơn vị không đổi góc. Giữ chính xác phân số/bội hữu tỉπ khi lõi hỗ trợ; không lấy chuỗi làm tròn để tính tiếp.
+- Phân biệt góc tích lũy, phần dư có dấu, góc đại diện, số vòng và tổng quãng quay. Góc âm cần floor/trunc phù hợp.
+- Khi góc rất lớn, lấy phần dư chính xác trước chuyển sang số thực vẽ.
+- Kéo qua0°/360° không nhảy góc; chiều hiện tại không bị suy từ dấu góc tích lũy. pointercancel/mất mẫu phải xử lý, không bịa số vòng.
+
+2. Giá trị, góc liên kết và công thức
+- cos là hoành độ,sin là tung độ; hình chiếu có dấu khác độ dài không âm.
+- tan,cot kiểm mẫu; không hiển thị0 hoặc∞ như một giá trị thay không xác định. Góc gần trục không bị tự coi là trên trục.
+- Góc trên trục không thuộc phần tư. Đối xứng/quay biến đổi đúng cả điểm, cung, nhãn và điều kiện của tỉ số.
+- Kiểm hệ số,dấu,thứ tự góc,nửa tổng/nửa hiệu,điều kiện công thức. Không chứng nhận đồng nhất thức bằng vài điểm thử hoặc khớp chuỗi duy nhất.
+- Tôn trọng lời giải khác đúng trong phạm vi bộ kiểm; ngoài khả năng thì trả chưa kiểm chứng, không tự sai.
+
+3. Đường tròn và đồ thị
+- Một trạng thái toán điều khiển M=(cosφ,sinφ), bảng giá trị và P=(x,f(x)). Với y=a f(bx+c)+d,phaφ=bx+c,hoành độ đồ thị vẫn x.
+- M trở lại điểm đầu sau một vòng nhưng x đồ thị tiếp tục tăng. Đổi đơn vị phải đổi nhãn/thang/pha đúng.
+- Phân biệt viewport với miền khảo sát. Resize,pan,zoom không làm đổi hàm hoặc số liệu bài.
+- Tan/cot tách nhánh theo miền,không nối qua tiệm cận; điểm tiếp tuyến ngoài màn hình không bị kéo về mép rồi gọi là giá trị thật.
+- Hàm hằng/suy biến a=0,b=0 xét riêng. Biểu thức gốc như0·tanx vẫn giữ miền tan nếu chưa thực hiện phép thay bằng một hàm mở rộng miền có chú thích.
+- Tập giá trị,tính chẵn lẻ,chu kỳ và tăng giảm phải xét đúng miền. Không dựa khung nhìn để giới hạn tập giá trị hoặc gộp nhánh tan/cot thành một khoảng đơn điệu.
+
+4. Phương trình và bài chiều ngược
+- Phân biệt nghiệm hợp lệ và đủ nghiệm; gộp nghiệm trùng,lọc biên mở/đóng,không làm tròn rồi quyết định biên.
+- Không bỏ nghiệm tiếp xúc; không nhận tiệm cận là nghiệm. Đồ thị số không là bộ giải mọi biểu thức.
+- Miền gốc được giữ qua chia,rút gọn,bình phương; tách trường hợp biểu thức chia bằng0.
+- KT01 nhận đúng nhiều khả năng khi thiếu miền góc; không ép một điểm.
+- KT03 phải biết họ hàm và đủ dữ kiện trước kết luận công thức; nhận dạng sin/cos tương đương bằng quy tắc trong mẫu. Vài điểm không xác định duy nhất mọi hàm.
+- KT04 kiểm đơn vị,biên,chu kỳ,pha,điều kiện đầu và ý nghĩa nghiệm; đúng biên/T nhưng sai điểm xuất phát vẫn sai mô hình.
+- Bài học yêu cầu dự đoán/tự dựng thì không mở sẵn đáp án do mô hình hoặc tooltip tiết lộ.
+
+Các ca tham chiếu tối thiểu bắt buộc:
+M01 −750°: −2vòng−30°,đại diện330°,sin−1/2,cos√3/2.
+M02 25π/6=750°,đại diệnπ/6;khácπ/6 về số đo.
+M03 10^18×360°+30°: giữ đại diện30°.
+M04 +400° rồi−100°: tích lũy300°,quãng500°,chiều cuối âm.
+M05 π/2: sin1,cos0,tan không xác định,cot0;π: sin0,cos−1,tan0,cot không xác định.
+M06 π/2±ε với0<ε<π/2: cos có dấu đối nhau,không tự bằng0.
+M07 sinα=3/5,α phần tưII: cos−4/5,tan−3/4,cot−4/3;thiếu miền thì giữ hai điểm khả dĩ trong một vòng.
+M08 β=π/2+α: tọa độ(−sinα,cosα);β=π/2−α:tọa độ(sinα,cosα).
+M09 α=β=π/6: sin(α+β)=√3/2 khác sinα+sinβ=1.
+M10 α390°,β30°:u210°,v180°,sinα+sinβ=1.
+M11 sin3x+sinx=2sin2xcosx;cos3x−cosx=−2sin2xsinx.
+M12 sin(−2x) cơ bảnπ;sin0x là hàm0 không có chu kỳ dương nhỏ nhất trênR.
+M13 −2sinx+3 tập[1,5],biên độ2;cos trênR\{1} không có miền đối xứng để kết luận chẵn/lẻ.
+M14 sinx=1 trên[0,2π):chỉπ/2;kể cả tiếp xúc;sinx=2 vô nghiệm.
+M15 sinx=0:[0,2π) có0,π;[0,2π] có0,π,2π.
+M16 sinx=cosx:π/4+kπ;[0,2π) cóπ/4,5π/4.
+M17 sin2x=sinx trên[0,2π):0,π/3,π,5π/3.
+M18 sin2x=sin3x trên[0,2π):0,π/5,3π/5,π,7π/5,9π/5.
+M19 sinx=cos3x trên[0,2π):π/8,5π/8,3π/4,9π/8,13π/8,7π/4.
+M20 sin²x/sinx giữ loại kπ;sinx/(1+cosx) loạiπ+2kπ.
+M21 Đồ thị max1,min−3,Tπ,đỉnh tại0:nhận2cos2x−1 và2sin(2x+π/2)−1.
+M22 h(t)=90−75cos(πt/15),t phút:h0=15,h15=165,h30=15,h20=127.5;90+75sin(πt/15) sai điều kiện đầu.
+M23 sin30°=0.5;sin30rad≈−0.988031624;arcsin0.58≈0.6187286907rad không là toàn bộ nghiệm.
+M24 Đổi/chỉnh góc,đồ thị,công thức,điểm chiếu ở một nơi thì tất cả biểu diễn liên quan đồng bộ;ẩn/hiện panel không thay giá trị.
+
+Chạy thêm T01–T38,F01–F16 trong thiết kế gốc và N01–N20,O1–O10 trong prompt Tự kiến tạo nếu được cung cấp; hợp nhất ca trùng nhưng giữ truy vết mã nguồn yêu cầu. Phần chưa hỗ trợ là thiếu/chưa kiểm đúng nghĩa,không ghi đạt tự động.
+
+V. KIỂM TRÒ CHƠI TÍNH ĐIỂM VÀ KẾT QUẢ
+
+1. Kiểm toàn bộ vòng đời: bắt đầu→hướng dẫn→trả lời→kiểm/nộp→kết quả→chơi lại→đổi trò/thoát. Trò không có câu phải hiện trạng thái rỗng và cách xử lý,không treo ở màn hình tải.
+2. Câu hỏi,đáp án,thứ tự lựa chọn,id và phiên bản phải đi cùng nhau sau trộn. Không có đáp án đúng bị mất,hai phương án trùng ngoài chủ đích hoặc ghép cặp nhiều đáp án đúng mà bộ kiểm chỉ nhận một.
+3. Chấm từ đáp án và quy tắc thật. Một lần nhấn nhiều lần,Enter+click đồng thời hoặc callback đến muộn không cộng điểm lặp. Sau nộp,khóa hoặc mở sửa theo đúng chính sách đã ghi.
+4. Tách điểm,lượt làm,thời gian và mức trợ giúp. Không dùng số lần chạm làm thước đo hiểu. Tính tỷ lệ với mẫu số rõ;0 lượt không chia0 hoặc hiển thị NaN%.
+5. Chơi lại tạo attempt mới và làm sạch đúng trạng thái lượt;không xóa lịch sử cũ hoặc giữ đáp án,timer,lỗi và điểm của lượt trước.
+6. Đồng hồ pause/resume,ẩn tab,thoát màn và kết thúc phải nhất quán với luật công bố. Chỉ có một timer đang chạy,mốc thời gian tính từ thời gian thực phù hợp thay vì giả định interval luôn đúng. Không phạt thời gian nền nếu luật nói đã tạm dừng.
+7. Đáp án tự luận chưa kiểm chắc phải chờ xem xét,không tự chấm bằng độ dài. Điểm lịch sử không bị âm thầm tính lại sau sửa ngân hàng.
+8. Trong tự kiểm tra,khóa gợi ý/đúng sai trước nộp ở tất cả đường giao diện và dịch vụ hiện có. Bản cục bộ phải nêu giới hạn,không coi CSS ẩn đáp án là bảo mật đề.
+
+VI. LƯU DỮ LIỆU CRUD NHẬP XUẤT VÀ KHÔI PHỤC
+
+1. Kiểm hồ sơ/lớp/câu hỏi/bảng giá trị/bài làm có thêm,sửa,xóa,lưu trữ,tìm/lọc và khôi phục khi thiết kế có. Kiểm mã trùng,đổi tên,xóa đối tượng đang có bài liên quan và chỉnh câu đã có bài nộp.
+2. Giữ namespace và schema cũ,tách dữ liệu Tự kiến tạo. Nếu phải migration để sửa lỗi thật: tạo sao lưu,kiểm đầu vào,migration có phiên bản và có thể chạy lại an toàn;không tự xóa dữ liệu không đọc được.
+3. localStorage: kiểm tồn tại,try/catch đọc/ghi,JSON hỏng,phiên bản không biết,quota,bị chặn,chế độ riêng tư và reload. Không gọi localStorage.clear(),không mất bài cũ để chữa lỗi.
+4. Tự lưu phải báo đúng trạng thái. Nếu chỉ giữ trong bộ nhớ thì nói chưa lưu bền vững và cho xuất JSON. Không báo đã gửi mạng khi chỉ ghi cục bộ.
+5. Không serialize BigInt trực tiếp gây lỗi;dùng dạng lưu có thể phục hồi. Không chép đối tượng DOM,closure hoặc state vòng tròn vào JSON.
+6. Debounce lưu khi nhập,nhưng nộp/rời màn phải bảo toàn thay đổi đã xác nhận theo cơ chế thực có. Không coi beforeunload là bảo đảm lưu được mọi lúc. Tải lại khi nháp chưa lưu phải theo hành vi đã công bố,không hứa phục hồi không có dữ liệu.
+7. Nhập JSON/CSV: xem trước,UTF-8/BOM,ký tự tiếng Việt,quote,dấu phẩy,xuống dòng,mã trùng,cấu trúc sai,tệp rỗng,tệp quá lớn. Có lỗi theo dòng/trường,không import một nửa rồi báo thành công toàn bộ.
+8. Cho người dùng chọn rõ gộp/thay thế/bỏ qua bản trùng nếu phù hợp. Trước thay thế dữ liệu phải có xác nhận và bản dự phòng. Nhập Tự kiến tạo không ghi đè dữ liệu lõi.
+9. Nội dung nhập hiển thị như dữ liệu,không thực thi HTML/script/biểu thức mã. Parser toán dùng cú pháp cho phép,không eval/new Function.
+10. Xuất JSON/CSV phải tải được thật,đúng tên,đúng dữ liệu và có thể nhập lại. Với văn bản xuất CSV,xử lý nguy cơ ô bị hiểu là công thức mà không làm hỏng các trường số/toán hợp lệ. Kiểm round-trip xuất→nhập trên dữ liệu thử riêng.
+11. Đổi hồ sơ không giữ bài đang hiển thị của người trước. Hồ sơ cục bộ không phải tài khoản bảo mật;không tự thêm màn đăng nhập giả để che vấn đề.
+12. Nếu có nhiều tab/đồng bộ,kiểm bản ghi mới/cũ và xung đột;không dùng bản phản hồi AI muộn cho taskVersion mới. Không tuyên bố đã đồng bộ khi chưa có xác nhận dịch vụ.
+
+VII. TỐI ƯU GIAO DIỆN CHO ĐIỆN THOẠI VÀ BẢNG THÔNG MINH
+
+1. Giữ ngôn ngữ thiết kế hiện tại. Tối ưu để mô hình là trung tâm,đề và điều khiển dễ tìm;ẩn/hiện bảng phải trả diện tích cho mô hình. Không nhồi thêm bảng mới vào màn hình đang ổn.
+2. Chuẩn hóa font hỗ trợ tiếng Việt bằng font sẵn có hoặc được đóng gói,không bắt buộc tải font ngoài. Kiểm dấu của “lượng giác”,“đường tròn”,“kiểm chứng”,“điều kiện”,“nghiệm”,“không xác định”. Không biến chữ Việt thành ảnh chỉ để tránh lỗi font.
+3. Chữ thông thường khoảng16px trên điện thoại;nội dung không nhỏ dưới14px trừ nhãn phụ có lý do. Công thức phải đọc được,không vỡ căn/phân số/chỉ số hoặc hiện raw LaTeX ngoài chủ đích.
+4. Màu sin/cos/tan/cot nhất quán với app hiện có,kèm nhãn và nét. Không chỉ dùng đỏ/xanh để báo đúng sai. Kiểm độ tương phản chữ thường hướng tới4.5:1,chữ lớn3:1 và trạng thái focus dễ thấy.
+5. Nút/vùng chạm điện thoại tối thiểu khoảng44×44 CSSpx. Chế độ bảng thông minh hướng tới56–64px,công thức/chữ lớn hơn theo cài đặt. Không phóng to canvas bằng CSS rồi làm sai mapping tọa độ.
+6. Điện thoại: drawer/bottom sheet có nút đóng rõ;không ép ba cột. Mô hình đường tròn–đồ thị có bố cục đồng bộ xếp dọc hoặc tab phù hợp,giữ cùng trạng thái. Bàn phím ảo mở không che ô nhập và nút xác nhận.
+7. Kiểm xoay dọc/ngang,zoom trình duyệt125%,150%,200%,thay đổi cỡ chữ. Công thức dài được cuộn trong vùng riêng có dấu hiệu,không làm toàn trang tràn ngang.
+8. Pointer Events và pointer capture cho kéo;pointerup/cancel kết thúc đúng,không dính điểm vào con trỏ. touch-action chỉ áp dụng vùng cần,còn trang vẫn cuộn được. Thử chuột,ngón tay và bút nếu có phần cứng.
+9. Bảng thông minh không dựa vào hover,double-click hoặc chuột phải để dùng chức năng chính. Có bấm chọn đối tượng rồi điều chỉnh bằng nút/ô nhập. Tooltip không giữ thông tin thiết yếu duy nhất.
+10. Có focus bàn phím,Tab/Enter/Escape,nhãn input,tên nút biểu tượng,dialog quản focus. Phím tắt mô phỏng không chặn việc nhập trong textbox hoặc hành vi cuộn ngoài vùng điều khiển.
+11. Dùng ResizeObserver/biến đổi tọa độ phù hợp;kiểm DPR1/2/3 nếu công cụ cho phép. SVG/canvas rõ trên màn hình lớn,nhãn không chồng/ra ngoài khung,linh vật không che công thức/tay nắm.
+12. Fullscreen chỉ báo thành công sau API thực sự thành công. Nếu không hỗ trợ,tạo chế độ tập trung trong trang và gọi đúng tên. Có nút thoát luôn nhìn thấy.
+
+VIII. HƯỚNG DẪN CÀI ĐẶT VÀ ĐẶT LẠI
+
+Tận dụng màn hiện có nếu đã có;không tạo hai bộ cài đặt/hướng dẫn trùng nhau. Bổ sung gọn trong menu phù hợp.
+
+1. Hướng dẫn sử dụng
+- Hướng dẫn nhanh: chọn hoạt động,nhập/kéo góc,đổi đơn vị,dự đoán,kiểm chứng,giải thích và lưu.
+- Hướng dẫn riêng cho Tự kiến tạo và nút quay lại mô phỏng cũ.
+- Có trợ giúp theo ngữ cảnh cho thao tác đang dùng,đặc biệt tan/cot,đơn vị,miền và điểm khuyết.
+- Có thể bỏ qua/xem lại;tutorial không tự sửa bài thật hoặc tính tiến độ. Nếu có bài demo,dùng phiên demo tách biệt.
+- Nêu chức năng nào cần mạng,phần nào lưu cục bộ và cách xuất sao lưu bằng ngôn ngữ người dùng.
+
+2. Cài đặt
+- Cỡ chữ,cỡ điều khiển hoặc chế độ bảng thông minh,giảm chuyển động,ẩn/hiện linh vật và các tùy chọn sẵn có phù hợp.
+- Đơn vị mặc định cho phiên/bài mới;không làm đổi số đo bài hiện tại hoặc lịch sử. Nếu đổi hiển thị trong bài hiện tại thì giữ giá trị toán.
+- Âm thanh chỉ nếu app có âm thanh thật;không thêm công tắc rỗng. Áp dụng/xem trước/hủy đúng nghĩa;ghi nhớ tùy chọn khi lưu được.
+- Khôi phục cài đặt mặc định không xóa hồ sơ,câu hỏi,bài làm hoặc bật/tắt phần mở rộng trái lựa chọn người dùng một cách ngầm định.
+- Không đưa tùy chọn tắt kiểm điều kiện toán hoặc tắt bảo toàn dữ liệu để làm app nhanh hơn.
+
+3. Đặt lại có phạm vi rõ
+- “Đặt lại mô hình”: trả góc/tham số/viewport của nhiệm vụ hiện tại về giá trị đầu,không xóa bài lịch sử.
+- “Làm lại nhiệm vụ/chơi lại”: tạo lượt mới,giữ lượt cũ;thông báo nháp chưa lưu nếu cần.
+- “Khôi phục cài đặt”: chỉ sửa tùy chọn UI.
+- “Xóa dữ liệu ứng dụng”: chỉ ở phần quản lý nâng cao,có xác nhận rõ,khuyến nghị xuất trước,chỉ xóa namespace của app do người dùng chọn;không gọi clear toàn bộ storage. Xóa lõi và phần mở rộng cần phạm vi riêng.
+- Reset phần mới tuyệt đối không reset bài hoặc khóa dữ liệu phần cũ. Tất cả các thao tác này phải được kiểm trên hồ sơ thử.
+
+IX. HIỆU NĂNG VÀ ĐỘ ỔN ĐỊNH
+
+1. Đo baseline trước tối ưu trên cùng môi trường và kịch bản;ghi thời gian tới lúc dùng được,thời gian phản hồi,tác vụ dài,frame khi kéo và tài nguyên khi có công cụ. Không bịa chỉ số hoặc chỉ hứa60fps.
+2. Dùng requestAnimationFrame đúng vòng đời,tính toán dựa thời gian;dừng khi rời màn/tạm dừng theo luật. Hủy listener,timer,observer,request đang chờ khi dispose. Sau nhiều lần mở/đóng không sinh sự kiện kép hoặc giữ tham chiếu không cần thiết.
+3. Không render toàn app hoặc lưu localStorage mỗi frame kéo. Giới hạn cập nhật vùng liên quan,cache dữ liệu suy ra theo phiên bản,debounce bảng/log khi phù hợp nhưng không giảm độ chính xác toán.
+4. Tách nhánh tan/cot bằng quy tắc miền. Điều chỉnh lấy mẫu theo zoom/độ cong nếu cần,không nối qua điểm cấm và không dùng cắt giá trị để thay ý nghĩa hàm.
+5. Góc hàng triệu vòng không chạy hàng triệu vòng hoạt hình;giữ giá trị thật và biểu diễn rút gọn có nhãn. Giới hạn số điểm trace,có dọn trace minh bạch,không cắt mất bài làm cần lưu.
+6. Danh sách câu/học sinh lớn có phân trang/ảo hóa khi cần. Nhập tệp có kiểm dung lượng/chia tác vụ tránh khóa giao diện;không báo dữ liệu bị bỏ qua là đã nhập.
+7. Chỉ lazy-load phần mở rộng phù hợp cơ chế triển khai hiện tại. Không đổi một bản độc lập không mạng thành app phụ thuộc CDN để tối ưu kích thước.
+8. Kiểm lỗi console,pageerror,unhandledrejection,tài nguyên404 và network thất bại nếu có trình duyệt. Sau lỗi phải có đường phục hồi,không hiện spinner vô hạn.
+9. Công cụ/service không khả dụng: giữ phần cục bộ hoạt động,thông báo đúng thiếu gì. Không nuốt mọi exception rồi trả đáp án mặc định.
+
+X. MA TRẬN KIỂM THỬ TÌNH HUỐNG
+
+E01 Khởi động lần đầu,chưa hồ sơ,chưa câu hỏi,chưa kết quả:empty state có hành động thật,không NaN/undefined.
+E02 Chuỗi rỗng,chỉ khoảng trắng,sai cú pháp,góc rất lớn,số âm,π,dấu phẩy:thông báo đúng,không crash hoặc tự đổi nghĩa.
+E03 Nhấn kiểm/nộp/chơi lại20lần nhanh:kết quả và điểm không nhân,không sinh nhiều timer.
+E04 Kéo qua0°,đổi chiều,hủy pointer,rời vùng kéo:không nhảy/mất điều khiển.
+E05 Đổi đơn vị và resize khi đang chạy:tất cả biểu diễn vẫn đúng,không xóa góc tích lũy.
+E06 Chuyển LG/KT và quay lại10lần:khôi phục đúng,không listener/animation dư.
+E07 Tải lại sau lưu,nháp đang sửa,vừa nộp:có hành vi đúng dữ liệu đã ghi,không mất bản đầu/nhân bài nộp.
+E08 localStorage hỏng/bị chặn/quota:không xóa cũ,có trạng thái chưa lưu và xuất dự phòng.
+E09 Thêm/sửa/xóa dữ liệu liên quan:đúng id/phiên bản,không làm bài nộp cũ đổi theo câu mới.
+E10 CSV/JSON rỗng,lỗi,trùng,tệp lớn,văn bản chèn HTML:preview và báo lỗi,không thực thi hoặc ghi đè ngầm.
+E11 Chơi lại,tạm dừng,ẩn tab,thoát trò:timer và điểm đúng luật,không giữ đáp án cũ.
+E12 Tự kiểm tra:gợi ý/đáp án/đường chuẩn không lộ trước nộp;đã xem mẫu vẫn có lịch sử.
+E13 Tắt enableConstructLab:luồng cũ hoạt động;reset/xóa dữ liệu mở rộng không tác động lõi.
+E14 Đổi hồ sơ:nội dung người trước không còn trên màn hình;dữ liệu đúng hồ sơ.
+E15 Fullscreen bị từ chối/in không hỗ trợ/tải tệp lỗi:thông báo đúng,không báo thành công giả.
+E16 Mất mạng:không phá phần vốn hỗ trợ offline;AI/nộp mạng không giả đang hoạt động.
+E17 Tất cả nút/menu/dialog/slider có hành động và phản hồi đúng,không phần tử bị che.
+E18 Bảng thông minh:chữ/vùng chạm lớn,chọn bằng ngón/bút không cần hover,có cách nhập thay kéo.
+E19 Cỡ chữ lớn,giảm chuyển động,zoom200%,bàn phím ảo:không mất chức năng chính.
+E20 Xuất bản chạy cuối rồi mở lại theo đúng hướng dẫn:bản xuất giống bản đã kiểm,không chỉ preview chạy.
+
+XI. KIỂM THỬ ẢNH GIAO DIỆN VÀ THIẾT BỊ
+
+Nếu môi trường có trình duyệt tự động như Playwright/Puppeteer hoặc công cụ tương đương, sử dụng trực tiếp để chạy app,thực hiện tương tác và chụp ảnh. Không sinh ảnh mockup bằng AI làm bằng chứng kiểm thử.
+
+Viewport tối thiểu:
+- Điện thoại360×800 và390×844,dọc và ngang.
+- Tablet768×1024 và1024×768.
+- Laptop1366×768,desktop1920×1080.
+- Bảng thông minh1920×1080 với chế độ chữ/vùng chạm lớn;3840×2160 nếu môi trường cho phép.
+Ghi CSSviewport,DPR,zoom,trình duyệt và hệ điều hành khi biết. Độ phân giải cao không đồng nghĩa kiểm được chạm/bút trên bảng thật.
+
+Chụp và mở xem ảnh ít nhất các trạng thái:
+1 Trang mô phỏng cũ trước và sau sửa,bao gồm đường tròn–đồ thị.
+2 Tan/cot gần điểm không xác định.
+3 Bảng trái/phải mở và thu gọn.
+4 Một form lỗi nhập và một form đã nhập hợp lệ.
+5 Trò chơi đang chơi,kết thúc và chơi lại.
+6 Sổ học tập/nhập xuất dữ liệu với dữ liệu thử.
+7 KT01,KT03,KT04 và màn quay lại phần cũ.
+8 Cài đặt,hướng dẫn,dialog reset.
+9 Điện thoại khi mở bàn phím nếu công cụ/thiết bị hỗ trợ kiểm thật.
+
+Đối với từng ảnh,kiểm chữ Việt,căn/phân số,chồng lấn,cắt nhãn,vùng chạm,thanh cuộn,nút bị che,tương phản và khoảng trống. Sửa→chụp lại→xem lại cho những màn bị ảnh hưởng. Screenshot existence không tự là đạt.
+Đóng băng thời gian/animation và dùng cùng dữ liệu thử khi so ảnh trước/sau;không coi khác biệt do chuyển động là lỗi. Không tự cập nhật snapshot để che lỗi chưa giải thích.
+Không đưa thông tin định danh học sinh thật vào ảnh/báo cáo. Dùng hồ sơ minh họa ghi rõ.
+
+Nếu chỉ có trình duyệt giả lập viewport,ghi “đã kiểm responsive bằng giả lập”;không ghi “đã kiểm iPhone/Samsung/bảng thông minh thật”. Nếu không có browser/screenshot,ghi riêng phần chỉ đọc mã/phép toán/build đã kiểm và các màn chưa kiểm hình ảnh. Không suy rằng build thành công thì UI hoặc thao tác đã đúng.
+
+XII. QUY TRÌNH SỬA LỖI VÀ ĐIỀU KIỆN BÀN GIAO
+
+1 Lưu checkpoint→đọc thiết kế/mã→lập ma trận→chạy baseline.
+2 Tái hiện lỗi,ghi bước,input,expected,actual và vị trí mã.
+3 Ưu tiên lỗi sai toán/mất dữ liệu/không chạy/lộ trợ giúp trong bài tự kiểm tra,rồi lỗi chặn thao tác/chấm điểm/điều hướng,rồi lỗi giao diện và hiệu năng.
+4 Sửa nguyên nhân với thay đổi nhỏ;thêm test tập trung nếu lỗi ảnh hưởng logic/điểm/dữ liệu,toán hoặc đồng bộ. Không thêm test chỉ so lại nguyên dòng implementation.
+5 Kiểm lại ca lỗi và hồi quy các chức năng dùng chung. Chạy tests/build/lint sẵn có theo dự án,kiểm bản xuất cuối.
+6 Chỉ kiểm lặp/bổ sung khi có thay đổi,lỗi hoặc nghi vấn chưa giải quyết. Không bỏ kiểm tương tác chỉ vì unit test qua.
+7 Không bàn giao với tuyên bố sẵn sàng dạy học khi còn lỗi nghiêm trọng đã biết hoặc phần cốt lõi chưa chạy. Khi bị giới hạn công cụ,tách rõ bản đã sửa theo mã và phần cần thử trực tiếp;không bịa kết quả để đóng task.
+
+Bảng lỗi dùng các cột:
+ID | Mức ảnh hưởng | Màn hình | Bước tái hiện | Nguyên nhân | Sửa | Ca kiểm lại | Kết quả | Bằng chứng.
+Trạng thái tối thiểu: phát hiện,chưa sửa,đã sửa chưa kiểm lại,đã kiểm lại đạt,không tái hiện,chưa đủ môi trường.
+
+XIII. BÀN GIAO TOÀN BỘ MÃ NGUỒN HOÀN CHỈNH
+
+1. Thực hiện chỉnh sửa trong dự án và xuất lại toàn bộ mã nguồn sau sửa,có đủ cấu hình,asset,học liệu,script chạy và dependency manifest/lockfile tương ứng nếu dự án có. Không chỉ gửi diff,patch hoặc những hàm thay thế.
+2. Nếu app hiện là một HTML tự chứa,hãy xuất một HTML đầy đủ thực sự có toàn bộ chức năng,dữ liệu và tài nguyên cần thiết;kiểm mở theo cơ chế vốn có của app. Không ép app React/Vite hoặc dự án nhiều tệp sang HTML đơn chỉ để đáp ứng hình thức.
+3. Nếu dự án nhiều tệp,hãy bàn giao ZIP đầy đủ với cây tệp và hướng dẫn chạy/build đúng. Không đưa node_modules,bộ nhớ đệm hoặc secret vào gói. Có thể kèm bản build nếu đã tạo/kiểm. Kiểm lại từ thư mục giải nén sạch với công cụ hiện có để phát hiện thiếu tệp.
+4. Nếu môi trường không tạo tệp tải,đưa nội dung ĐẦY ĐỦ của từng tệp với đường dẫn rõ;không dùng dấu ba chấm,“phần còn lại giữ nguyên” hoặc mã rút gọn. Nếu giới hạn độ dài,chia gói/tệp có thứ tự và báo chưa đủ cho tới khi gửi hết;không gọi một phần là mã hoàn chỉnh.
+5. Liên kết tải phải do môi trường tạo thật. Không bịa URL hoặc tên tệp không tồn tại.
+6. Kèm README ngắn: cách chạy,cách mở phần mới,cách dùng bảng thông minh,cách lưu/sao lưu/reset,giới hạn mạng/dịch vụ,cách quay về checkpoint.
+7. Kèm báo cáo kiểm thử thực tế và bảng coverage so với thiết kế:đủ,một phần,thiếu,chưa kiểm. Ghi môi trường,ca thực chạy,lỗi còn lại và giới hạn;không hứa tuyệt đối không còn lỗi.
+8. Không ghi vào giao diện học sinh các chi tiết implementation,log phát triển hoặc checklist nội bộ. Báo cáo kỹ thuật tách khỏi luồng học.
+
+Đầu ra cuối cùng cần dẫn bằng kết quả cụ thể:
+- Bản chạy và TOÀN BỘ MÃ NGUỒN hoàn chỉnh sau sửa.
+- Các lỗi chính đã sửa và tối ưu UI đáng chú ý.
+- Kết quả kiểm toán học,tương tác,dữ liệu,hồi quy và ảnh màn hình.
+- Những phần chưa thể kiểm chứng,đặc biệt điện thoại/bảng thông minh thật,dịch vụ chưa nối và môi trường file/hosting chưa thử.
+- Hướng dẫn dùng ngay trong tiết học và cách khôi phục khi cần.
+
+Hãy bắt đầu làm việc trực tiếp trên mã app hiện tại. Tự tiến hành rà soát,sửa,kiểm và hoàn thiện trong phạm vi đã cho;không dừng ở việc nhắc lại yêu cầu này. Giữ mọi tính năng đã có và các trạm Tự kiến tạo;chỉ sửa hành vi sai và cải thiện khả năng sử dụng theo các tiêu chí trên.

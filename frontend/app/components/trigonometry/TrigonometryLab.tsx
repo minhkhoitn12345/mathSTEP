@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useRef } from "react";
+import Link from "next/link";
 import { CORE_3_MODULES, LessonUnit } from "@/app/types/curriculum";
 import {
   Compass,
@@ -250,7 +251,7 @@ export function TrigonometryLab({
     }
     if (current) paths.push(current);
     return paths;
-  }, [selectedLessonIndex, waveMode, ampA, freqB, phaseC, shiftD, graphXMin, graphXMax, waveOriginX, waveOriginY, waveScaleX, waveScaleY, graphValue]);
+  }, [graphXMin, graphXMax, waveOriginX, waveOriginY, waveScaleX, waveScaleY, graphValue]);
 
   // Synchronized point on the wave graph
   const curWaveY = graphValue(angleRad);
@@ -328,21 +329,27 @@ export function TrigonometryLab({
           </div>
         </div>
 
-        {/* Action: Hỏi Socratic AI */}
-        {onOpenSocraticDrawer && (
-          <button
-            type="button"
-            onClick={() =>
-              onOpenSocraticDrawer(
-                `Em đang tìm hiểu ${currentLesson.code}: ${currentLesson.title} thuộc Chuyên đề 3 Lượng giác. Thầy Opti hướng dẫn giúp em với ạ!`
-              )
-            }
-            className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs shadow-md shadow-purple-500/20 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
-            <OptiMascot expression="happy" size={20} animate={false} />
-            <span>Hỏi Opti về lượng giác</span>
-          </button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href={`/modules/trigonometry/lab?activity=${["LG01", "LG02", "LG04", "LG08", "LG11"][selectedLessonIndex] ?? "LG01"}`} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-purple-200 bg-white px-3.5 py-2 text-xs font-extrabold text-purple-800 shadow-sm transition hover:border-purple-400 hover:bg-purple-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700">
+            <Compass className="h-4 w-4" aria-hidden="true" />
+            <span>Phòng thí nghiệm chuyên sâu</span>
+            <span aria-hidden="true">↗</span>
+          </Link>
+          {onOpenSocraticDrawer && (
+            <button
+              type="button"
+              onClick={() =>
+                onOpenSocraticDrawer(
+                  `Em đang tìm hiểu ${currentLesson.code}: ${currentLesson.title} thuộc Chuyên đề 3 Lượng giác. Thầy Opti hướng dẫn giúp em với ạ!`
+                )
+              }
+              className="flex min-h-10 items-center gap-2 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-purple-500/20 transition hover:from-purple-700 hover:to-indigo-700"
+            >
+              <OptiMascot expression="happy" size={20} animate={false} />
+              <span>Hỏi Opti</span>
+            </button>
+          )}
+        </div>
       </div>}
 
       {/* 2. PROGRESSIVE LESSON SELECTOR TABS */}
@@ -399,7 +406,7 @@ export function TrigonometryLab({
       {embedded && (
         <div className="flex items-start gap-3 rounded-2xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm">
           <span className="mt-0.5 rounded-lg bg-purple-700 px-2 py-1 text-[10px] font-black text-white">QUAN SÁT</span>
-          <div><p className="font-bold text-purple-950"><MathFormattedText text={currentLesson.title} /></p><p className="mt-0.5 text-xs leading-relaxed text-purple-900"><MathFormattedText text={`${currentLesson.steps[0]?.instruction || currentLesson.description} Thử thay đổi góc hoặc tham số bên dưới để xem đại lượng trên hình thay đổi như thế nào.`} /></p></div>
+          <div className="min-w-0 flex-1"><p className="font-bold text-purple-950"><MathFormattedText text={currentLesson.title} /></p><p className="mt-0.5 text-xs leading-relaxed text-purple-900"><MathFormattedText text={`${currentLesson.steps[0]?.instruction || currentLesson.description} Thử thay đổi góc hoặc tham số bên dưới để xem đại lượng trên hình thay đổi như thế nào.`} /></p><Link href={`/modules/trigonometry/lab?activity=${["LG01", "LG02", "LG04", "LG08", "LG11"][selectedLessonIndex] ?? "LG01"}`} className="mt-2 inline-flex text-xs font-bold text-purple-800 underline decoration-purple-300 underline-offset-2 hover:text-purple-950">Mở phòng thí nghiệm chuyên sâu ↗</Link></div>
         </div>
       )}
 
@@ -629,9 +636,9 @@ export function TrigonometryLab({
 
           {(selectedLessonIndex === 1 || waveMode === "tan" || waveMode === "cot") && (
             <div className="w-full rounded-2xl border border-orange-200 bg-orange-50/70 p-3 text-xs leading-relaxed text-slate-700">
-              <p><strong className="text-orange-900">Đọc tan trên hình:</strong> <MathFormattedText text="Đường thẳng $OM$ cắt tiếp tuyến $x=1$ tại điểm có tung độ $\\tan\\alpha=\\frac{\\sin\\alpha}{\\cos\\alpha}$. Đường màu cam biểu diễn giá trị này." /></p>
-              <p className="mt-1"><strong className="text-purple-900">Đọc cot trên hình:</strong> <MathFormattedText text="Đường thẳng $OM$ cắt tiếp tuyến $y=1$ tại điểm có hoành độ $\\cot\\alpha=\\frac{\\cos\\alpha}{\\sin\\alpha}$. Đường màu tím biểu diễn giá trị này." /></p>
-              <p className="mt-1 text-slate-600"><MathFormattedText text="Tan không xác định khi $\\cos\\alpha=0$; cot không xác định khi $\\sin\\alpha=0$. Khi giao điểm ra ngoài khung đường tròn, hãy dùng giá trị ở bảng và xem nhánh đồ thị bên cạnh." /></p>
+              <p><strong className="text-orange-900">Đọc tan trên hình:</strong> Đường thẳng OM cắt tiếp tuyến x = 1 tại điểm có tung độ bằng tan α = sin α / cos α. Đường màu cam biểu diễn giá trị tan α.</p>
+              <p className="mt-1"><strong className="text-purple-900">Đọc cot trên hình:</strong> Đường thẳng OM cắt tiếp tuyến y = 1 tại điểm có hoành độ bằng cot α = cos α / sin α. Đường màu tím biểu diễn giá trị cot α.</p>
+              <p className="mt-1 text-slate-600">Tan α không xác định khi cos α = 0; cot α không xác định khi sin α = 0. Nếu giao điểm nằm ngoài khung đường tròn, hãy xem giá trị ở bảng và nhánh đồ thị bên cạnh.</p>
             </div>
           )}
 

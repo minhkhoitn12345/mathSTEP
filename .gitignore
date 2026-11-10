@@ -30,3 +30,6 @@ supabase/.branches/
 *.tsbuildinfo
 
 .vercel
+
+module3/.backup/
+
