@@ -889,6 +889,7 @@ export default function Stereometry3DCanvas({
   const [showHudCard, setShowHudCard] = useState<boolean>(false);
   const [showSliders, setShowSliders] = useState<boolean>(false);
   const [lowGraphics, setLowGraphics] = useState<boolean>(false);
+  const [highContrast, setHighContrast] = useState<boolean>(false);
   const [isFrozenView, setIsFrozenView] = useState<boolean>(false);
   const [freezeNotice, setFreezeNotice] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -896,6 +897,7 @@ export default function Stereometry3DCanvas({
   useEffect(() => {
     setMounted(true);
     try { setLowGraphics(localStorage.getItem("mathstep:fast-graphics") === "true"); } catch {}
+    try { setHighContrast(localStorage.getItem("mathstep:high-contrast") === "true"); } catch {}
   }, []);
 
   // ResizeObserver tự động tính toán lại kích thước khung hình khi chuyển đổi bước học hoặc thay đổi layout, chống sập WebGL context
@@ -1321,7 +1323,7 @@ export default function Stereometry3DCanvas({
         dpr={lowGraphics ? 1 : [1, 1.5]}
         gl={{ antialias: !lowGraphics, alpha: true, preserveDrawingBuffer: true, powerPreference: lowGraphics ? "low-power" : "high-performance" }}
         className="w-full h-full cursor-grab active:cursor-grabbing"
-        style={{ touchAction: "none" }}
+        style={{ touchAction: "none", filter: highContrast ? "contrast(1.45) brightness(1.25) saturate(1.2)" : undefined }}
       >
         {/* Studio Three-Point Lighting */}
         <ambientLight intensity={0.45} />
@@ -1332,7 +1334,7 @@ export default function Stereometry3DCanvas({
         {/* 1. Sàn lưới không gian Infinite Floor */}
         {showFloorGrid && (
           <gridHelper
-            args={[20, 20, "#475569", "#1e293b"]}
+            args={[20, 20, highContrast ? "#cbd5e1" : "#475569", highContrast ? "#64748b" : "#1e293b"]}
             position={[0, -0.01, 0]}
           />
         )}
@@ -1556,7 +1558,7 @@ export default function Stereometry3DCanvas({
       </div>
 
       {/* Quick Camera Controls Toolbar (Bottom Right) - Dùng icon gọn gàng */}
-      <div className={`absolute right-3 z-20 flex items-center gap-1 p-1 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-800 shadow-xl ${showSliders ? "bottom-16 sm:bottom-3" : "bottom-3"}`}>
+      <div className={`absolute right-3 z-20 flex max-w-[90vw] items-center gap-1 overflow-x-auto p-1 bg-slate-900/90 backdrop-blur-md rounded-xl border border-slate-800 shadow-xl ${showSliders ? "bottom-16 sm:bottom-3" : "bottom-3"}`}>
         <button type="button" onClick={() => {
           const controls = controlsRef.current;
           if (controls) try { localStorage.setItem(cameraStorageKey, JSON.stringify({ position: controls.object.position.toArray(), target: controls.target.toArray() })); } catch {}
@@ -1564,6 +1566,13 @@ export default function Stereometry3DCanvas({
         }} title={lowGraphics ? "Chế độ nhanh, giảm tải GPU; bấm để tăng chất lượng" : "Chất lượng cao; bấm để tiết kiệm GPU"}
           className="min-h-9 rounded-lg border border-slate-700 px-2 text-[11px] font-semibold text-slate-100 hover:bg-slate-800">
           {lowGraphics ? "Nhanh" : "Đẹp"}
+        </button>
+        <button type="button" aria-pressed={highContrast} onClick={() => setHighContrast((current) => {
+          try { localStorage.setItem("mathstep:high-contrast", String(!current)); } catch {}
+          return !current;
+        })} title="Bật hoặc tắt tương phản cao cho hình và lưới"
+          className={`min-h-9 shrink-0 rounded-lg border px-2 text-[11px] font-semibold ${highContrast ? "border-amber-400 bg-amber-300 text-slate-950" : "border-slate-700 text-slate-100 hover:bg-slate-800"}`}>
+          Tương phản
         </button>
         <select aria-label="Chọn góc nhìn chuẩn" defaultValue="" onChange={(event) => { setCameraView(event.target.value as "default" | "top" | "front" | "side"); event.currentTarget.value = ""; }}
           className="min-h-9 max-w-[96px] rounded-lg border border-slate-700 bg-slate-900 px-1 text-[11px] font-semibold text-slate-100">
