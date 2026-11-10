@@ -1,4 +1,5 @@
 import { DetailedLessonContent } from "../types/learningPath";
+import { TRIG_DETAILS } from "./trigonometryLessons";
 
 export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
   // =========================================================================
@@ -1454,5 +1455,5 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
 };
 
 export function getLessonDetailedContent(lessonId: string): DetailedLessonContent | undefined {
-  return DETAILED_LESSONS_CONTENT[lessonId];
+  return TRIG_DETAILS[lessonId] ?? DETAILED_LESSONS_CONTENT[lessonId];
 }

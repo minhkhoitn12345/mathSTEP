@@ -475,8 +475,8 @@ export default function LessonStudyClientPage({
       </main>
 
       {simulationOpen && lessonContent && (
-        <div className="fixed inset-0 z-[70] bg-slate-950/75 p-2 backdrop-blur-sm sm:p-5" role="dialog" aria-modal="true" aria-label={`Mô phỏng bài ${lessonContent.title}`}>
-          <section className="mx-auto flex h-full max-w-[1500px] flex-col overflow-hidden rounded-2xl bg-slate-50 shadow-2xl sm:rounded-3xl">
+        <div className="fixed inset-0 z-[70] bg-slate-950/75" role="dialog" aria-modal="true" aria-label={`Mô phỏng bài ${lessonContent.title}`}>
+          <section className="flex h-full w-full flex-col overflow-hidden bg-slate-50">
             <header className="z-10 flex shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
               <button type="button" onClick={() => setSimulationOpen(false)} className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-100" aria-label="Quay lại bài học">
                 <ArrowLeft className="h-4 w-4" /> <span className="hidden sm:inline">Quay lại bài học</span><span className="sm:hidden">Quay lại</span>

@@ -1,5 +1,7 @@
 "use client";
 
+import { TRIG_ACTIVITIES, TRIG_GUIDED_INDICES } from "@/app/data/trigonometryLessons";
+
 import React, { useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { CORE_3_MODULES, LessonUnit } from "@/app/types/curriculum";
@@ -85,6 +87,7 @@ export function TrigonometryLab({
   }, [initialLessonIndex]);
 
   const currentLesson: LessonUnit = moduleConfig.lessons[selectedLessonIndex] || moduleConfig.lessons[0];
+  const guidedLessonIndex = TRIG_GUIDED_INDICES[selectedLessonIndex] ?? 0;
 
   // Core angle in degrees (Defaults to -765° from Task LG-MH01)
   const [angleDeg, setAngleDeg] = useState<number>(-765);
@@ -227,7 +230,7 @@ export function TrigonometryLab({
   const graphValue = (x: number) => {
     if (waveMode === "tan") return Math.tan(x);
     if (waveMode === "cot") return Math.cos(x) / Math.sin(x);
-    if (selectedLessonIndex === 3) {
+    if (guidedLessonIndex === 3) {
       return waveMode === "sin"
         ? ampA * Math.sin(freqB * x + phaseC) + shiftD
         : ampA * Math.cos(freqB * x + phaseC) + shiftD;
@@ -274,8 +277,8 @@ export function TrigonometryLab({
     setGuidedStep(0);
     setGuidedChoice(null);
     setGuidedResultShown(false);
-    setWaveMode(selectedLessonIndex === 1 ? "tan" : "sin");
-  }, [selectedLessonIndex]);
+    setWaveMode(guidedLessonIndex === 1 ? "tan" : "sin");
+  }, [selectedLessonIndex, guidedLessonIndex]);
 
   // Lesson 5 Equation Solving: sin(x) = eqM on [-pi; pi]
   const eqRoots = useMemo(() => {
@@ -298,11 +301,11 @@ export function TrigonometryLab({
   const eqCircleScreenY = cY - cR * eqM;
   const eqCircleIntersectX1 = cX + cR * Math.sqrt(Math.max(0, 1 - eqM * eqM));
   const eqCircleIntersectX2 = cX - cR * Math.sqrt(Math.max(0, 1 - eqM * eqM));
-  const currentGuidedSteps = GUIDED_STEPS[selectedLessonIndex] ?? GUIDED_STEPS[0];
+  const currentGuidedSteps = GUIDED_STEPS[guidedLessonIndex] ?? GUIDED_STEPS[0];
   const currentGuidedQuestion = currentGuidedSteps[guidedStep];
 
   return (
-    <div className={`max-w-7xl mx-auto px-3 sm:px-6 ${embedded ? "py-3 sm:py-4 space-y-4" : "py-4 sm:py-6 space-y-6"}`}>
+    <div className={`w-full mx-auto px-3 sm:px-6 ${embedded ? "py-3 sm:py-4 space-y-4" : "py-4 sm:py-6 space-y-6"}`}>
       {/* 1. TOP HEADER & BREADCRUMB */}
       {!embedded && <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
         <div className="flex items-center gap-2.5">
@@ -330,7 +333,7 @@ export function TrigonometryLab({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Link href={`/modules/trigonometry/lab?activity=${["LG01", "LG02", "LG04", "LG08", "LG11"][selectedLessonIndex] ?? "LG01"}`} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-purple-200 bg-white px-3.5 py-2 text-xs font-extrabold text-purple-800 shadow-sm transition hover:border-purple-400 hover:bg-purple-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700">
+          <Link href={`/modules/trigonometry/lab?activity=${TRIG_ACTIVITIES[selectedLessonIndex] ?? "LG01"}`} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-purple-200 bg-white px-3.5 py-2 text-xs font-extrabold text-purple-800 shadow-sm transition hover:border-purple-400 hover:bg-purple-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-700">
             <Compass className="h-4 w-4" aria-hidden="true" />
             <span>Phòng thí nghiệm chuyên sâu</span>
             <span aria-hidden="true">↗</span>
@@ -406,7 +409,7 @@ export function TrigonometryLab({
       {embedded && (
         <div className="flex items-start gap-3 rounded-2xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm">
           <span className="mt-0.5 rounded-lg bg-purple-700 px-2 py-1 text-[10px] font-black text-white">QUAN SÁT</span>
-          <div className="min-w-0 flex-1"><p className="font-bold text-purple-950"><MathFormattedText text={currentLesson.title} /></p><p className="mt-0.5 text-xs leading-relaxed text-purple-900"><MathFormattedText text={`${currentLesson.steps[0]?.instruction || currentLesson.description} Thử thay đổi góc hoặc tham số bên dưới để xem đại lượng trên hình thay đổi như thế nào.`} /></p><Link href={`/modules/trigonometry/lab?activity=${["LG01", "LG02", "LG04", "LG08", "LG11"][selectedLessonIndex] ?? "LG01"}`} className="mt-2 inline-flex text-xs font-bold text-purple-800 underline decoration-purple-300 underline-offset-2 hover:text-purple-950">Mở phòng thí nghiệm chuyên sâu ↗</Link></div>
+          <div className="min-w-0 flex-1"><p className="font-bold text-purple-950"><MathFormattedText text={currentLesson.title} /></p><p className="mt-0.5 text-xs leading-relaxed text-purple-900"><MathFormattedText text={`${currentLesson.steps[0]?.instruction || currentLesson.description} Thử thay đổi góc hoặc tham số bên dưới để xem đại lượng trên hình thay đổi như thế nào.`} /></p><Link href={`/modules/trigonometry/lab?activity=${TRIG_ACTIVITIES[selectedLessonIndex] ?? "LG01"}`} className="mt-2 inline-flex text-xs font-bold text-purple-800 underline decoration-purple-300 underline-offset-2 hover:text-purple-950">Mở phòng thí nghiệm chuyên sâu ↗</Link></div>
         </div>
       )}
 
@@ -418,11 +421,7 @@ export function TrigonometryLab({
             <div className="flex items-center gap-2">
               <Compass className="w-4 h-4 text-purple-600" />
               <span className="font-bold text-slate-800">
-                {selectedLessonIndex === 0 && "Bài 1: Góc lượng giác α & Vệt quay xoắn ốc"}
-                {selectedLessonIndex === 1 && "Bài 2: Giá trị Sin, Cos & 4 góc phần tư"}
-                {selectedLessonIndex === 2 && "Bài 3: Cung liên kết đối xứng & Nhân đôi"}
-                {selectedLessonIndex === 3 && "Bài 4: Chuyển động tròn sinh ra sóng"}
-                {selectedLessonIndex === 4 && "Bài 5: Nghiệm sin(x) = m trên đường tròn"}
+                {currentLesson.code}: {currentLesson.title}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -472,7 +471,7 @@ export function TrigonometryLab({
               <circle cx={cX} cy={cY} r={cR} fill="none" stroke="#8B5CF6" strokeWidth="2" />
 
               {/* LESSON 1: Archimedean Spiral Arc showing multi-turn rotation */}
-              {selectedLessonIndex === 0 && spiralPath && (
+              {guidedLessonIndex === 0 && spiralPath && (
                 <path
                   d={spiralPath}
                   fill="none"
@@ -516,7 +515,7 @@ export function TrigonometryLab({
               <line x1={cX} y1={cY} x2={cX} y2={mScreenY} stroke="#10B981" strokeWidth="3" />
 
               {/* LESSON 2: Tangent Axis x = 1 and Cotangent Axis y = 1 */}
-              {(selectedLessonIndex === 1 || waveMode === "tan" || waveMode === "cot") && (
+              {(guidedLessonIndex === 1 || waveMode === "tan" || waveMode === "cot") && (
                 <>
                   {/* Axis Tan x = 1 */}
                   <line
@@ -563,7 +562,7 @@ export function TrigonometryLab({
               )}
 
               {/* LESSON 3: Reflections: M' (Cung bù) and M'' (Cung đối) */}
-              {selectedLessonIndex === 2 && (
+              {guidedLessonIndex === 2 && (
                 <>
                   {/* Supplementary M' (pi - a) */}
                   {showSupplementary && (
@@ -600,7 +599,7 @@ export function TrigonometryLab({
               )}
 
               {/* LESSON 5: Cutting line y = eqM on Unit Circle */}
-              {selectedLessonIndex === 4 && (
+              {guidedLessonIndex === 4 && (
                 <>
                   <line
                     x1="20"
@@ -634,7 +633,7 @@ export function TrigonometryLab({
             </svg>
           </div>
 
-          {(selectedLessonIndex === 1 || waveMode === "tan" || waveMode === "cot") && (
+          {(guidedLessonIndex === 1 || waveMode === "tan" || waveMode === "cot") && (
             <div className="w-full rounded-2xl border border-orange-200 bg-orange-50/70 p-3 text-xs leading-relaxed text-slate-700">
               <p><strong className="text-orange-900">Đọc tan trên hình:</strong> Đường thẳng OM cắt tiếp tuyến x = 1 tại điểm có tung độ bằng tan α = sin α / cos α. Đường màu cam biểu diễn giá trị tan α.</p>
               <p className="mt-1"><strong className="text-purple-900">Đọc cot trên hình:</strong> Đường thẳng OM cắt tiếp tuyến y = 1 tại điểm có hoành độ bằng cot α = cos α / sin α. Đường màu tím biểu diễn giá trị cot α.</p>
@@ -688,7 +687,7 @@ export function TrigonometryLab({
           </div>
 
           {/* Lesson 2: 4-Quadrant Signs Table */}
-          {selectedLessonIndex === 1 && (
+          {guidedLessonIndex === 1 && (
             <div className="w-full mt-3 p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
               <div className="font-bold text-slate-800 mb-2 flex items-center justify-between">
                 <span>Bảng xét dấu 4 góc phần tư (&quot;Nhất CẢ, Nhì SIN, Tam TAN, Tứ COS&quot;):</span>
@@ -725,7 +724,7 @@ export function TrigonometryLab({
           )}
 
           {/* Lesson 3: Reflection Toggles and Double Angle */}
-          {selectedLessonIndex === 2 && (
+          {guidedLessonIndex === 2 && (
             <div className="w-full mt-3 p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
               <div className="font-bold text-slate-800">Khảo sát cung liên kết & Công thức nhân đôi:</div>
               <div className="flex flex-wrap gap-2">
@@ -777,7 +776,7 @@ export function TrigonometryLab({
               <div className="flex items-center gap-2">
                 <Activity className="w-4 h-4 text-purple-600" />
                 <h3 className="font-bold text-xs text-slate-800">
-                  {selectedLessonIndex === 3 && (waveMode === "sin" || waveMode === "cos")
+                  {guidedLessonIndex === 3 && (waveMode === "sin" || waveMode === "cos")
                     ? `y = ${ampA !== 1 ? ampA + "·" : ""}${waveMode}(${freqB !== 1 ? freqB + "·" : ""}x${phaseC !== 0 ? (phaseC > 0 ? " + " + phaseC.toFixed(1) : " − " + Math.abs(phaseC).toFixed(1)) : ""})${shiftD !== 0 ? (shiftD > 0 ? " + " + shiftD : " − " + Math.abs(shiftD)) : ""}`
                     : `Đồ thị y = ${waveMode}(x) · chu kỳ ${waveMode === "tan" || waveMode === "cot" ? "π" : "2π"}`}
                 </h3>
@@ -814,7 +813,7 @@ export function TrigonometryLab({
                 {curWaveScreenY !== null && <><line x1={curWaveScreenX} y1={waveOriginY} x2={curWaveScreenX} y2={curWaveScreenY} stroke="#FBBF24" strokeWidth="1.5" strokeDasharray="3 3" /><circle cx={curWaveScreenX} cy={curWaveScreenY} r="5.5" fill="#F59E0B" stroke="#FFFFFF" strokeWidth="1.5" /></>}
 
                 {/* LESSON 5: Horizontal line y = eqM cutting the wave */}
-                {selectedLessonIndex === 4 && (
+                {guidedLessonIndex === 4 && (
                   <>
                     <line
                       x1="10"
@@ -837,12 +836,12 @@ export function TrigonometryLab({
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[11px]">
               <span className="font-semibold text-slate-700">Trục ngang là góc α, trục dọc là giá trị {waveMode}(α). Khung chỉ là một phần; hai mũi tên cho biết đồ thị còn tiếp tục vô hạn.</span>
               {(waveMode === "tan" || waveMode === "cot") && <span className="inline-flex items-center gap-2 font-bold text-rose-800"><span className="h-0 w-7 border-t-2 border-dashed border-rose-500" />Tiệm cận đứng: {waveMode === "tan" ? "α = π/2 + kπ" : "α = kπ"}; nhánh đồ thị tiến gần nhưng không cắt tiệm cận</span>}
-              <span className="rounded-lg bg-purple-100 px-2 py-1 font-bold text-purple-900">Chu kỳ: {waveMode === "tan" || waveMode === "cot" ? "π" : selectedLessonIndex === 3 ? (2 * Math.PI / freqB).toFixed(2) + " rad" : "2π"}</span>
+              <span className="rounded-lg bg-purple-100 px-2 py-1 font-bold text-purple-900">Chu kỳ: {waveMode === "tan" || waveMode === "cot" ? "π" : guidedLessonIndex === 3 ? (2 * Math.PI / freqB).toFixed(2) + " rad" : "2π"}</span>
               {curWaveScreenY === null && <span className="font-bold text-rose-700">Tại góc này, {waveMode} không xác định hoặc nằm ngoài khung tung độ.</span>}
             </div>
 
             {/* LESSON 4: Sliders for Amplitude, Frequency, Phase, Shift */}
-            {selectedLessonIndex === 3 && (
+            {guidedLessonIndex === 3 && (
               <div className="grid grid-cols-2 gap-2 pt-2 text-xs">
                 <div>
                   <div className="flex justify-between text-slate-600 mb-0.5">
@@ -912,7 +911,7 @@ export function TrigonometryLab({
             )}
 
             {/* LESSON 5: Equation Solving Controls for sin(x) = m on [-pi; pi] */}
-            {selectedLessonIndex === 4 && (
+            {guidedLessonIndex === 4 && (
               <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-xs space-y-2">
                 <div className="flex justify-between items-center text-rose-900 font-bold">
                   <span>Giải phương trình: sin(x) = {eqM.toFixed(3)} trên [-π; π]</span>
@@ -954,7 +953,7 @@ export function TrigonometryLab({
             )}
 
             {/* Lesson 0 & general insight */}
-            {selectedLessonIndex === 0 && (
+            {guidedLessonIndex === 0 && (
               <div className="text-[11px] text-slate-600 bg-purple-50/50 p-2.5 rounded-xl border border-purple-100">
                 <strong>Đối chiếu Task LG-MH01:</strong> Góc α = -765° tách thành <code>(-2) × 360° - 45°</code>, tương ứng với quay 2 vòng theo chiều âm và đi tiếp -45° (trùng điểm biểu diễn góc 315° = 7π/4 ở góc phần tư IV).
               </div>
@@ -978,11 +977,11 @@ export function TrigonometryLab({
                 <div className="rounded-2xl border border-purple-100 bg-purple-50/60 p-4">
                   <p className="text-xs font-extrabold text-purple-800">{currentGuidedQuestion.title}</p>
                   <p className="mt-2 text-sm font-bold leading-relaxed text-slate-900"><MathFormattedText text={currentGuidedQuestion.prompt} /></p>
-                  {selectedLessonIndex === 1 && guidedStep >= 2 && guidedStep <= 5 && <p className="mt-2 text-[11px] text-slate-600"><MathFormattedText text="Quan sát giao điểm của đường thẳng $OM$ với hai tiếp tuyến màu cam $x=1$ và màu tím $y=1$." /></p>}
-                  {selectedLessonIndex === 1 && guidedStep === 4 && <p className="mt-1 text-[11px] font-semibold text-orange-800"><MathFormattedText text="Chọn góc $90^\\circ$ để thấy đường thẳng $OM$ song song với tiếp tuyến $x=1$." /></p>}
-                  {selectedLessonIndex === 1 && guidedStep === 5 && <p className="mt-1 text-[11px] font-semibold text-violet-800"><MathFormattedText text="Chọn góc $0^\\circ$ để thấy đường thẳng $OM$ song song với tiếp tuyến $y=1$." /></p>}
-                  {selectedLessonIndex === 0 && <p className="mt-2 text-[11px] text-slate-600">Bài mẫu đang xét góc −765°. Nếu đã đổi góc, chọn lại nút −765° phía trên để đối chiếu đúng cấu hình.</p>}
-                  {selectedLessonIndex === 3 && <p className="mt-2 text-[11px] text-slate-600">Kéo góc α ở hình tròn. Điểm màu vàng trên đồ thị sẽ theo góc; hai mũi tên ở hai đầu nhắc rằng đường cong còn tiếp tục.</p>}
+                  {guidedLessonIndex === 1 && guidedStep >= 2 && guidedStep <= 5 && <p className="mt-2 text-[11px] text-slate-600"><MathFormattedText text="Quan sát giao điểm của đường thẳng $OM$ với hai tiếp tuyến màu cam $x=1$ và màu tím $y=1$." /></p>}
+                  {guidedLessonIndex === 1 && guidedStep === 4 && <p className="mt-1 text-[11px] font-semibold text-orange-800"><MathFormattedText text="Chọn góc $90^\\circ$ để thấy đường thẳng $OM$ song song với tiếp tuyến $x=1$." /></p>}
+                  {guidedLessonIndex === 1 && guidedStep === 5 && <p className="mt-1 text-[11px] font-semibold text-violet-800"><MathFormattedText text="Chọn góc $0^\\circ$ để thấy đường thẳng $OM$ song song với tiếp tuyến $y=1$." /></p>}
+                  {guidedLessonIndex === 0 && <p className="mt-2 text-[11px] text-slate-600">Bài mẫu đang xét góc −765°. Nếu đã đổi góc, chọn lại nút −765° phía trên để đối chiếu đúng cấu hình.</p>}
+                  {guidedLessonIndex === 3 && <p className="mt-2 text-[11px] text-slate-600">Kéo góc α ở hình tròn. Điểm màu vàng trên đồ thị sẽ theo góc; hai mũi tên ở hai đầu nhắc rằng đường cong còn tiếp tục.</p>}
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {currentGuidedQuestion.choices.map((choice, index) => (
