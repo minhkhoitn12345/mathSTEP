@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useMemo } from "react";
 import { Activity, Compass, Pause, Play } from "lucide-react";
-import { formatVNFloat } from "../KatexMath";
+import KatexMath, { formatVNFloat } from "../KatexMath";
+import { SPECIAL_ANGLES } from "../TrigonometricCircleCanvas";
 import { useDynamicMathStore } from "./useDynamicMathStore";
 import TrigonometryPracticeTools from "./TrigonometryPracticeTools";
 
@@ -43,6 +44,8 @@ export default function DynamicTrigonometryLab() {
   const sinVal = Math.sin(thetaRad);
   const tanVal = Math.abs(cosVal) > 1e-4 ? sinVal / cosVal : null;
   const cotVal = Math.abs(sinVal) > 1e-4 ? cosVal / sinVal : null;
+  const angleKey = ((Math.round(thetaDeg) % 360) + 360) % 360;
+  const exactAngle = SPECIAL_ANGLES[angleKey];
 
   // Period T
   const period = Math.abs(omega) > 1e-4 ? (2 * Math.PI) / Math.abs(omega) : 0;
@@ -138,12 +141,12 @@ export default function DynamicTrigonometryLab() {
               <span>Đường tròn đơn vị (R = 1)</span>
             </span>
             <span className="font-mono text-xs font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
-              α = {Math.round(thetaDeg)}° ({(thetaRad).toFixed(2)} rad)
+              {angleUnit === "degree" ? `\u03B1 = ${Math.round(thetaDeg)}\u00B0` : <KatexMath math={exactAngle?.radLatex ?? `${(thetaRad / Math.PI).toFixed(2)}\\pi`} />}
             </span>
           </div>
 
           <div className="mb-2 flex w-full flex-wrap gap-2"><button type="button" onClick={() => setIsPlaying((playing) => !playing)} className="inline-flex items-center gap-1 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white">{isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}{isPlaying ? "\u0054\u1ea1m d\u1eebng" : "Cho \u0111i\u1ec3m M chuy\u1ec3n \u0111\u1ed9ng"}</button><button type="button" onClick={() => setAngleUnit((unit) => unit === "degree" ? "radian" : "degree")} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800">{angleUnit === "degree" ? "Hi\u1ec7n theo radian" : "Hi\u1ec7n theo \u0111\u1ed9"}</button></div>
-          <button type="button" onClick={() => setShowTanCot((value) => !value)} className="mb-2 self-start rounded-lg border border-violet-300 px-3 py-2 text-xs font-bold text-violet-900">{showTanCot ? "?n" : "Hi?n"} hai ti?p tuy?n tan, cot</button>
+          <button type="button" onClick={() => setShowTanCot((value) => !value)} className="mb-2 self-start rounded-lg border border-violet-300 px-3 py-2 text-xs font-bold text-violet-900">{showTanCot ? "\u1ea8n" : "Hi\u1ec7n"} hai ti\u1ebfp tuy\u1ebfn tan, cot</button>
           <div className="relative w-full overflow-hidden rounded-xl border border-slate-200 bg-[#fbfdfc] flex justify-center p-2">
             <svg
               ref={circleSvgRef}
@@ -238,22 +241,22 @@ export default function DynamicTrigonometryLab() {
           <div className="w-full grid grid-cols-2 gap-2 mt-2.5 text-xs font-mono">
             <div className="p-2 bg-blue-50/70 border border-blue-200 rounded-xl">
               <span className="text-blue-700 font-sans font-bold block text-[10px]">Hoành độ (cos α):</span>
-              <span className="text-sm font-extrabold text-blue-950">{formatVNFloat(cosVal)}</span>
+              <span className="text-sm font-extrabold text-blue-950">{exactAngle ? <KatexMath math={exactAngle.cosLatex} /> : formatVNFloat(cosVal)}</span>
             </div>
             <div className="p-2 bg-red-50/70 border border-red-200 rounded-xl">
               <span className="text-red-700 font-sans font-bold block text-[10px]">Tung độ (sin α):</span>
-              <span className="text-sm font-extrabold text-red-950">{formatVNFloat(sinVal)}</span>
+              <span className="text-sm font-extrabold text-red-950">{exactAngle ? <KatexMath math={exactAngle.sinLatex} /> : formatVNFloat(sinVal)}</span>
             </div>
             <div className="p-2 bg-purple-50/70 border border-purple-200 rounded-xl">
               <span className="text-purple-700 font-sans font-bold block text-[10px]">tan α = sin/cos:</span>
               <span className="text-sm font-extrabold text-purple-950">
-                {tanVal !== null ? formatVNFloat(tanVal) : "Không XĐ"}
+                {tanVal !== null ? exactAngle ? <KatexMath math={exactAngle.tanLatex} /> : formatVNFloat(tanVal) : "Không XĐ"}
               </span>
             </div>
             <div className="p-2 bg-emerald-50/70 border border-emerald-200 rounded-xl">
               <span className="text-emerald-700 font-sans font-bold block text-[10px]">cot α = cos/sin:</span>
               <span className="text-sm font-extrabold text-emerald-950">
-                {cotVal !== null ? formatVNFloat(cotVal) : "Không XĐ"}
+                {cotVal !== null ? exactAngle ? <KatexMath math={exactAngle.cotLatex} /> : formatVNFloat(cotVal) : "Không XĐ"}
               </span>
             </div>
           </div>

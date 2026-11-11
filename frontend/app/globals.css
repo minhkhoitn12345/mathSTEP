@@ -568,3 +568,6 @@ html,body{overflow-x:hidden}
     display: none;
   }
 }
+
+/* Inline KaTeX shares a stable text baseline with Vietnamese body copy. */
+.math-inline .katex{vertical-align:-0.08em;margin:0!important;line-height:1.2}.math-inline{vertical-align:baseline;max-width:100%}.katex-display{box-sizing:border-box}

@@ -111,7 +111,7 @@ export default function KatexMath({ math, display = false, className = "" }: Kat
   const html = useMemo(() => renderKatex(math, display), [math, display]);
   return (
     <span
-      className={`${display ? "my-2 block w-full max-w-full overflow-x-auto py-1 text-center" : "inline-flex items-baseline mx-1 align-baseline"} ${className}`}
+      className={`${display ? "my-2 block w-full max-w-full overflow-x-auto py-1 text-center" : "math-inline inline-block align-baseline mx-0.5 leading-normal"} ${className}`}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
