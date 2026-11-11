@@ -134,9 +134,6 @@ export const Header: React.FC<HeaderProps> = ({
               <strong className="font-sans text-xs tracking-wide font-bold block text-slate-100 group-hover:text-blue-400 transition-colors">
                 MathSTEP
               </strong>
-              <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-blue-500/20 text-blue-300 border border-blue-400/30 tracking-wider uppercase">
-                OPTIMATH
-              </span>
             </div>
             <span className="text-[10px] text-slate-400 font-sans hidden sm:inline">
               Học liệu số & Phòng thí nghiệm Toán THPT
@@ -350,7 +347,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </nav>
 
-        {/* 3. RIGHT SECTION: Nút Hỏi Opti & Tài khoản */}
+        {/* 3. RIGHT SECTION: Trợ lý MathSTEP & tài khoản */}
         <div className="flex items-center gap-2 sm:gap-2.5">
           <Link
             href="/leaderboard"
@@ -360,7 +357,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Trophy className="h-4 w-4 text-amber-300" />
             <span className="hidden text-xs font-bold md:inline">Xếp hạng</span>
           </Link>
-          {/* Nút Hỏi Opti rõ ràng */}
+          {/* Nút mở trợ lý MathSTEP */}
           {onToggleChatDrawer && (
             <button
               type="button"
@@ -370,10 +367,10 @@ export const Header: React.FC<HeaderProps> = ({
                   ? "bg-blue-600 text-white border-blue-400 shadow-blue-500/30"
                   : "bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 hover:text-white border-blue-500/30 hover:border-blue-400"
               }`}
-              title="Mở trợ lý học tập Opti"
+              title="Mở trợ lý học tập MathSTEP"
             >
               <OptiMascot expression="happy" size={20} animate={false} />
-              <span className="font-bold">Hỏi Opti</span>
+              <span className="font-bold">Hỏi MathSTEP</span>
             </button>
           )}
 

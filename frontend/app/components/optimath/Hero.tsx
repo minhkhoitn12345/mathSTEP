@@ -26,7 +26,7 @@ export const Hero: React.FC<HeroProps> = ({
             {/* Pill Tag */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-300 text-xs font-bold mb-3 shadow-xs">
               <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-              <span>OPTIMATH LAB · PHÒNG THÍ NGHIỆM TOÁN HỌC GDPT 2018</span>
+              <span>MATHSTEP · HỌC TOÁN THPT THEO CHƯƠNG TRÌNH GDPT 2018</span>
             </div>
 
             {/* Slogan */}
@@ -80,7 +80,7 @@ export const Hero: React.FC<HeroProps> = ({
               <OptiMascot expression="happy" pose="waving" size={72} />
             </div>
             <div className="text-left pr-2">
-              <div className="text-xs font-bold text-blue-300">Trợ lý học tập Opti</div>
+              <div className="text-xs font-bold text-blue-300">Trợ lý học tập MathSTEP</div>
               <p className="text-[11px] text-slate-300 max-w-[180px] leading-snug mt-0.5">
                 "Chào em! Chọn bài học bên dưới hoặc vào Lộ trình học nhé!"
               </p>

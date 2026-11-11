@@ -285,7 +285,7 @@ export default function DynamicLinearProgrammingLab() {
 
   return (
     <div className="w-full flex flex-col gap-4">
-      {/* Thanh chuyển chế độ phòng học Optimath */}
+      {/* Thanh chuyển chế độ mô phỏng MathSTEP */}
       <div className="w-full flex flex-wrap items-center justify-between gap-2.5 p-2.5 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xs">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 flex items-center justify-center shrink-0">
@@ -293,7 +293,7 @@ export default function DynamicLinearProgrammingLab() {
           </div>
           <div>
             <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-              <span>Phòng Thí Nghiệm Optimath</span>
+              <span>Mô phỏng Toán học</span>
               <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 font-semibold border border-blue-500/30">
                 Native 60fps
               </span>

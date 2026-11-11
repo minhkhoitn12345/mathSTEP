@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = "https://mathstep-vn.vercel.app";
+  const baseUrl = "https://mathstep.click";
 
   return {
     rules: [

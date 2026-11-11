@@ -142,7 +142,7 @@ export const SevenStepWizard: React.FC<SevenStepWizardProps> = ({
   // Shading mode (Solution highlight vs SGK exclusion)
   const [shadingMode, setShadingMode] = useState<ShadingMode>('solution');
 
-  // Opti Mascot UI Controls (Mobile & Desktop)
+  // Assistant UI controls (mobile and desktop)
   const [optiVisible, setOptiVisible] = useState(true);
   const [optiExpanded, setOptiExpanded] = useState(false);
   const [activeHintTier, setActiveHintTier] = useState<1 | 2 | 3 | null>(null);
@@ -258,7 +258,7 @@ export const SevenStepWizard: React.FC<SevenStepWizardProps> = ({
     }
   }, [currentStep, ineq, expectedLineStyle, pointA, pointB, isThroughOrigin, testPoint, isTestPointOnLine, testSub, testEval, isClosed]);
 
-  // Dynamic reaction of Opti mascot
+  // Dynamic mascot reaction
   const optiMessage = useMemo<{
     text: string;
     expression: OptiExpression;
@@ -787,7 +787,7 @@ export const SevenStepWizard: React.FC<SevenStepWizardProps> = ({
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-blue-600 text-white">
-                    Opti
+                    MathSTEP
                   </span>
                   <span className="text-[11px] text-slate-500 truncate hidden sm:inline">
                     Bước {currentStep}: {STEP_TITLES[currentStep - 1].title}
@@ -883,7 +883,7 @@ export const SevenStepWizard: React.FC<SevenStepWizardProps> = ({
       )}
 
       {/* 3. MULTI-COLUMN WORKSPACE
-          Desktop: 3 Columns (Left: Action Controls, Center: Graph, Right: Opti & Math Analysis)
+          Desktop: 3 Columns (Left: Action Controls, Center: Graph, Right: Assistant & Math Analysis)
           Mobile: Stacked (Step Action -> Graph -> Bottom Nav)
       */}
       <div className={`grid gap-4 items-start ${isPresentationExpanded ? 'grid-cols-1' : 'grid-cols-1 xl:grid-cols-12'}`}>
@@ -1775,13 +1775,13 @@ export const SevenStepWizard: React.FC<SevenStepWizardProps> = ({
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Desktop Opti & Live Math Analysis (xl: 3 cols, hidden on mobile) */}
+        {/* RIGHT COLUMN: Assistant & live math analysis (xl: 3 cols, hidden on mobile) */}
         {!isPresentationExpanded && (
           <div className="hidden xl:flex xl:col-span-3 flex-col gap-3.5 order-3">
-            {/* Desktop Opti Character Card */}
+            {/* Desktop mascot card */}
             <div className="bg-gradient-to-b from-blue-50/80 to-white rounded-2xl border border-blue-200 p-4 shadow-xs flex flex-col items-center text-center">
               <OptiMascot expression={optiMessage.expression} actionState={optiMessage.actionState} size={72} />
-              <div className="mt-2 font-bold text-sm text-blue-900">Trợ Lý Toán Opti</div>
+              <div className="mt-2 font-bold text-sm text-blue-900">Trợ lý Toán MathSTEP</div>
               <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                 {optiMessage.text}
               </p>

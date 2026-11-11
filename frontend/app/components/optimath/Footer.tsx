@@ -12,7 +12,7 @@ export const Footer: React.FC = () => (
           </svg>
         </div>
         <div>
-          <p className="text-sm font-extrabold tracking-tight text-white">OPTIMATH LAB</p>
+          <p className="text-sm font-extrabold tracking-tight text-white">MathSTEP</p>
           <p className="mt-0.5 text-xs">Phòng học Toán tương tác THPT</p>
         </div>
       </div>
@@ -22,7 +22,7 @@ export const Footer: React.FC = () => (
       </p>
 
       <div className="flex items-center gap-2 text-xs text-slate-500">
-        <span>© {new Date().getFullYear()} OPTIMATH LAB</span>
+        <span>© {new Date().getFullYear()} MathSTEP</span>
         <OptiMascot expression="happy" size={24} animate={false} />
       </div>
     </div>

@@ -302,11 +302,11 @@ export const OptimizationLab: React.FC<OptimizationLabProps> = ({
                     onSelectScenario={handleSelectScenario}
                   />
 
-                  {/* Opti Dialogue Card */}
+                  {/* Gợi ý học tập */}
                   <div className="bg-white rounded-2xl border border-slate-200 p-3.5 shadow-xs flex items-center gap-3">
                     <OptiMascot expression="happy" actionState="nod" size={40} />
                     <div className="text-xs text-slate-700 leading-relaxed">
-                      <span className="font-bold text-purple-900 block mb-0.5">Opti gợi ý:</span>
+                      <span className="font-bold text-purple-900 block mb-0.5">MathSTEP gợi ý:</span>
                       Chỉnh sửa hệ số hoặc ràng buộc ở trên, sau đó bấm nút bên dưới để quay lại quan sát đồ thị nhé!
                     </div>
                   </div>
@@ -365,11 +365,11 @@ export const OptimizationLab: React.FC<OptimizationLabProps> = ({
                     onSelectScenario={handleSelectScenario}
                   />
 
-                  {/* Quick Opti Dialogue Card */}
+                  {/* Gợi ý nhanh */}
                   <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center gap-3">
                     <OptiMascot expression="happy" actionState="nod" size={46} />
                     <div className="text-xs text-slate-700 leading-relaxed">
-                      <span className="font-bold text-purple-900 block mb-0.5">Opti gợi ý:</span>
+                      <span className="font-bold text-purple-900 block mb-0.5">MathSTEP gợi ý:</span>
                       Kéo thanh trượt k hoặc bấm "Phát" trên đồ thị để quan sát đường mức tịnh tiến song song qua 4 đỉnh nhé!
                     </div>
                   </div>

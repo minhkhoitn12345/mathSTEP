@@ -88,7 +88,7 @@ export const SystemSevenStepWizard: React.FC<SystemSevenStepWizardProps> = ({
   // Layer toggles
   const [activeConstraintLayer, setActiveConstraintLayer] = useState<number | 'all'>('all');
 
-  // Opti Mascot controls & hints
+  // Mascot controls and hints
   const [optiHintTier, setOptiHintTier] = useState<1 | 2 | 3>(1);
   const [speechEnabled, setSpeechEnabled] = useState(false);
   const [copyToast, setCopyToast] = useState<string | null>(null);
@@ -328,7 +328,7 @@ Các đỉnh của miền nghiệm: ${
     }
   };
 
-  // Opti voice
+  // Assistant voice
   const handleSpeak = () => {
     if (!('speechSynthesis' in window)) return;
     if (speechEnabled) {
@@ -344,7 +344,7 @@ Các đỉnh của miền nghiệm: ${
     window.speechSynthesis.speak(utterance);
   };
 
-  // Opti Guidance Content for current step
+  // Guidance content for the current step
   const optiGuidance = useMemo(() => {
     switch (currentStep) {
       case 1:
@@ -412,7 +412,7 @@ Các đỉnh của miền nghiệm: ${
         };
       default:
         return {
-          text: 'Hãy tiếp tục khám phá phòng thí nghiệm Toán học cùng Opti!',
+          text: 'Hãy tiếp tục khám phá Toán học cùng MathSTEP!',
           hints: { tier1: '', tier2: '', tier3: '' }
         };
     }
@@ -479,7 +479,7 @@ Các đỉnh của miền nghiệm: ${
             <OptiMascot expression="happy" actionState="nod" size={36} />
             <div className="min-w-0">
               <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-blue-600 text-white block w-fit mb-0.5">
-                Opti Hướng Dẫn Bước {currentStep}
+                MathSTEP · Hướng dẫn bước {currentStep}
               </span>
               <p className="text-xs text-slate-800 font-medium line-clamp-2">
                 {optiGuidance.text}
@@ -504,7 +504,7 @@ Các đỉnh của miền nghiệm: ${
           <div className="flex items-center gap-1">
             <span className="text-[11px] text-blue-900 font-bold flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-amber-500" />
-              Gợi ý Opti:
+              Gợi ý từ MathSTEP:
             </span>
             <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-blue-200">
               <button
@@ -1350,7 +1350,7 @@ Các đỉnh của miền nghiệm: ${
         <div className="hidden xl:flex xl:col-span-3 flex-col gap-3.5 order-3">
           <div className="bg-gradient-to-b from-blue-50/80 to-white rounded-2xl border border-blue-200 p-4 shadow-xs flex flex-col items-center text-center">
             <OptiMascot expression="happy" actionState="nod" size={64} />
-            <div className="mt-2 font-bold text-sm text-blue-900">Trợ Lý Toán Opti</div>
+            <div className="mt-2 font-bold text-sm text-blue-900">Trợ lý Toán MathSTEP</div>
             <p className="text-xs text-slate-600 mt-1 leading-relaxed">
               {analysis.description}
             </p>

@@ -52,7 +52,7 @@ type ActiveView =
   | "optimization"
   | "quiz";
 
-function OptimathMainContent() {
+function MathStepMainContent() {
   const searchParams = useSearchParams();
 
   // 1. Navigation state
@@ -105,7 +105,7 @@ function OptimathMainContent() {
       id: "opti-welcome-1",
       role: "assistant",
       content:
-        "Xin chào em! Thầy là **Trợ lý Socratic Opti** đồng hành cùng em trong hệ thống học liệu số **MATHSTEP** (3 Chuyên đề chuẩn GDPT 2018).\n\nEm đang khám phá Chuyên đề nào (1. BPT & Tối ưu, 2. Không gian 3D, hay 3. Lượng giác)? Cần thầy gợi ý bước nào cứ chia sẻ cùng thầy nhé!",
+        "Xin chào em! Thầy là **Trợ lý Toán MathSTEP**, đồng hành cùng em trong ba chuyên đề theo chương trình GDPT 2018.\n\nEm đang học bất phương trình và tối ưu, hình học không gian hay lượng giác? Cần gợi ý bước nào, em cứ hỏi thầy nhé!",
     },
   ]);
   const [chatInput, setChatInput] = useState("");
@@ -808,12 +808,12 @@ function OptimathMainContent() {
         type="button"
         onClick={() => setChatDrawerOpen(true)}
         className="fixed bottom-5 right-5 z-40 flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-white/20 select-none group"
-        title="Nhấn để mở Trợ lý Opti Socratic AI"
+        title="Mở trợ lý học Toán MathSTEP"
       >
         <div className="shrink-0 -my-1">
           <OptiMascot expression="wink" size={26} animate={false} />
         </div>
-        <span className="font-extrabold tracking-tight">Hỏi Opti Socratic</span>
+        <span className="font-extrabold tracking-tight">Hỏi MathSTEP</span>
         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
       </button>
 
@@ -1127,7 +1127,7 @@ export default function Home() {
         </div>
       }
     >
-      <OptimathMainContent />
+      <MathStepMainContent />
     </Suspense>
   );
 }

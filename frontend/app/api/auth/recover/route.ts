@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isJsonRequest, isSameOrigin, jsonError } from "@/lib/security";
 import { getSupabaseConfig } from "@/lib/supabase";
+import { getAppUrl } from "@/lib/app-url";
 import { checkRateLimit, getClientIp, RATE_LIMIT_RULES } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
   }
   try {
     const { url, anonKey } = getSupabaseConfig();
-    const redirectTo = new URL("/auth/reset-password", request.nextUrl.origin).toString();
+    const redirectTo = getAppUrl("/auth/reset-password", request);
     const upstream = await fetch(`${url}/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`, {
       method: "POST", headers: { apikey: anonKey, "Content-Type": "application/json" },
       body: JSON.stringify({ email: body.email.trim().toLowerCase() }), cache: "no-store", signal: AbortSignal.timeout(10000),

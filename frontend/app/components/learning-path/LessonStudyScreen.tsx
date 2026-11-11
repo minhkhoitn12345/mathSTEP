@@ -100,7 +100,7 @@ export function LessonStudyScreen({
   const [aiMessages, setAiMessages] = useState<Array<{ role: "user" | "assistant"; text: string }>>([
     {
       role: "assistant",
-      text: `Chào em! Thầy là **trợ lý học tập Opti**. Thầy đang cùng em học **${content.code}: ${content.title}**.\n\nNếu em gặp khó khăn ở công thức nào hay cần gợi ý giải bài tập, hãy nhắn cho thầy nhé. Thầy sẽ gợi ý từng bước để em tự tìm ra câu trả lời.`,
+      text: `Chào em! Thầy là **trợ lý Toán MathSTEP**. Thầy đang cùng em học **${content.code}: ${content.title}**.\n\nNếu em gặp khó khăn ở công thức nào hay cần gợi ý giải bài tập, hãy nhắn cho thầy nhé. Thầy sẽ gợi ý từng bước để em tự tìm ra câu trả lời.`,
     },
   ]);
   const [aiInput, setAiInput] = useState<string>("");
@@ -269,7 +269,7 @@ export function LessonStudyScreen({
         body: JSON.stringify({
           message: `[Bài học đang học: ${content.code} - ${content.title} (${content.moduleId})]\nCâu hỏi của học sinh: ${text}`,
           conversationId: `study-${content.lessonId}`,
-          systemContext: `Bạn là Trợ lý Toán học Socratic Opti đồng hành cùng học sinh trong bài học: ${content.title}. Mục tiêu bài học: ${content.objectives.join("; ")}. Nguyên tắc: Trả lời bằng tiếng Việt thân thiện, gợi mở từng bước, không đưa lời giải trọn vẹn ngay, dùng câu hỏi dẫn dắt kiểu Socratic.`,
+          systemContext: `Bạn là Trợ lý Toán học MathSTEP đồng hành cùng học sinh trong bài học: ${content.title}. Mục tiêu bài học: ${content.objectives.join("; ")}. Nguyên tắc: Trả lời bằng tiếng Việt thân thiện, gợi mở từng bước, không đưa lời giải trọn vẹn ngay, dùng câu hỏi dẫn dắt kiểu Socratic.`,
         }),
       });
 
@@ -360,11 +360,11 @@ export function LessonStudyScreen({
               type="button"
               onClick={() => setAiDrawerOpen((prev) => !prev)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 border border-purple-300 text-purple-800 text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
-              title="Hỏi trợ lý học tập Opti"
+              title="Hỏi trợ lý học tập MathSTEP"
             >
               <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-              <span className="hidden sm:inline">Hỏi Opti</span>
-              <span className="sm:hidden">Opti</span>
+              <span className="hidden sm:inline">Hỏi MathSTEP</span>
+              <span className="sm:hidden">Hỏi</span>
             </button>
           </div>
         </div>
@@ -997,7 +997,7 @@ export function LessonStudyScreen({
                 <OptiMascot expression="happy" size={24} animate={false} />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-white">Trợ lý học tập Opti</h4>
+                <h4 className="text-xs font-bold text-white">Trợ lý Toán MathSTEP</h4>
                 <p className="text-[10px] text-slate-300">Hỗ trợ bài: {content.code}</p>
               </div>
             </div>
@@ -1032,7 +1032,7 @@ export function LessonStudyScreen({
             {aiBusy && (
               <div className="flex items-center gap-1.5 text-xs text-slate-400 italic">
                 <Sparkles className="w-3.5 h-3.5 text-purple-600 animate-spin" />
-                <span>Opti đang suy ngẫm câu hỏi gợi mở...</span>
+                <span>MathSTEP đang xử lí câu hỏi...</span>
               </div>
             )}
           </div>
@@ -1074,7 +1074,7 @@ export function LessonStudyScreen({
               type="text"
               value={aiInput}
               onChange={(e) => setAiInput(e.target.value)}
-              placeholder="Hỏi Opti về bài học này..."
+              placeholder="Hỏi trợ lý MathSTEP về bài học này..."
               className="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 focus:bg-white"
             />
             <button

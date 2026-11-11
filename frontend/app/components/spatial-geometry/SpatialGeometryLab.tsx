@@ -366,13 +366,13 @@ export function SpatialGeometryLab({
             type="button"
             onClick={() =>
               onOpenSocraticDrawer(
-                `Em đang thực hành ${currentLesson.code}: ${currentLesson.title} thuộc Chuyên đề 2 Hình học không gian. Thầy Opti hướng dẫn giúp em với ạ!`
+                `Em đang thực hành ${currentLesson.code}: ${currentLesson.title} thuộc Chuyên đề 2 Hình học không gian. Trợ lý MathSTEP hướng dẫn em với ạ!`
               )
             }
             className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all cursor-pointer"
           >
             <OptiMascot expression="thinking" size={20} animate={false} />
-            <span>Hỏi Opti về hình này</span>
+            <span>Hỏi MathSTEP về hình này</span>
           </button>
         )}
       </div>}

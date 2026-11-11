@@ -46,7 +46,7 @@ export const ErrorAnalysisView: React.FC<ErrorAnalysisViewProps> = ({
             Những lỗi thường gặp và cách khắc phục
           </h2>
           <p className="text-xs text-slate-600">
-            Xem nguyên nhân, đọc gợi ý của Opti và làm bài tập để củng cố phần còn nhầm lẫn.
+            Xem nguyên nhân, đọc gợi ý từ MathSTEP và làm bài tập để củng cố phần còn nhầm lẫn.
           </p>
         </div>
 
@@ -158,13 +158,13 @@ export const ErrorAnalysisView: React.FC<ErrorAnalysisViewProps> = ({
             </ul>
           </div>
 
-          {/* Gợi ý từ Opti */}
+          {/* Gợi ý từ MathSTEP */}
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3">
             <OptiMascot expression="thinking" size={40} animate={false} />
             <div className="space-y-1 text-xs">
               <span className="font-bold text-indigo-900 flex items-center gap-1.5">
                 <HelpCircle className="w-3.5 h-3.5 text-indigo-600" />
-                <span>Gợi ý từ Opti:</span>
+                <span>Gợi ý từ MathSTEP:</span>
               </span>
               <p className="text-slate-800 font-medium leading-relaxed">
                 “{activeErrorDef.socraticQuestion}”

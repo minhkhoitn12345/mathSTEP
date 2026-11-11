@@ -121,7 +121,7 @@ export const PersonalizedPathView: React.FC<PersonalizedPathViewProps> = ({
             <OptiMascot expression="happy" size={42} animate={false} />
             <div>
               <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                Lộ trình Luyện tập Cá nhân hóa (Đề xuất từ Opti)
+                Lộ trình luyện tập cá nhân hóa
               </h2>
               <p className="text-xs text-slate-500">
                 Hệ thống tự động suy diễn bài tập tiếp theo dựa trên độ thành thạo 4 chủ đề, mã lỗi lặp lại và mức độ sử dụng gợi ý

@@ -459,7 +459,7 @@ export function computeStudentAnalytics(
     },
     {
       id: 'badge_grand_master',
-      title: 'Bậc Thầy OPTIMATH 10',
+      title: 'Bậc thầy Toán 10',
       description: 'Hoàn thành từ 20 bài tập trở lên trên cả 4 chủ đề Toán 10.',
       iconName: 'Trophy',
       unlockedAt: completedIds.length >= 20 ? Date.now() : null,

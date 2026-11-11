@@ -53,7 +53,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           </div>
           <div className="flex min-w-0 flex-col">
             <span className="whitespace-nowrap text-sm font-black tracking-tight text-slate-900 dark:text-slate-100 sm:text-base">
-              OPTIMATH LAB
+              MathSTEP
             </span>
             <span className="-mt-0.5 hidden whitespace-nowrap text-[10px] text-slate-400 sm:inline">
               Lượng giác · Toán 11

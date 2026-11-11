@@ -27,15 +27,15 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://mathstep-vn.vercel.app"),
+  metadataBase: new URL("https://mathstep.click"),
   title: {
-    default: "OPTIMATH LAB · Phòng Thí Nghiệm Toán Học Tương Tác & Socratic AI",
-    template: "%s | OPTIMATH LAB",
+    default: "MathSTEP · Học Toán THPT qua bài học và mô phỏng tương tác",
+    template: "%s | MathSTEP",
   },
   description:
-    "Phòng thí nghiệm Toán học trực quan 2D Oxy, mô phỏng quy hoạch tuyến tính và Trợ lý Socratic AI chuẩn GDPT 2018.",
+    "Học Toán THPT qua bài học có hướng dẫn, mô phỏng trực quan và trợ lý học tập theo chương trình GDPT 2018.",
   keywords: [
-    "OPTIMATH LAB",
+    "MathSTEP",
     "Toán 10",
     "Bất phương trình bậc nhất hai ẩn",
     "Hệ bất phương trình",
@@ -43,29 +43,29 @@ export const metadata: Metadata = {
     "Socratic AI",
     "GDPT 2018",
   ],
-  authors: [{ name: "OPTIMATH LAB", url: "https://mathstep-vn.vercel.app" }],
-  creator: "OPTIMATH LAB Team",
-  publisher: "OPTIMATH LAB",
+  authors: [{ name: "MathSTEP", url: "https://mathstep.click" }],
+  creator: "MathSTEP",
+  publisher: "MathSTEP",
   manifest: "/manifest.json",
   openGraph: {
     type: "website",
     locale: "vi_VN",
-    url: "https://mathstep-vn.vercel.app",
-    siteName: "OPTIMATH LAB",
-    title: "OPTIMATH LAB · Phòng Thí Nghiệm Toán Học Tương Tác & Socratic AI",
+    url: "https://mathstep.click",
+    siteName: "MathSTEP",
+    title: "MathSTEP · Học Toán THPT qua bài học và mô phỏng tương tác",
     description:
       "Học Toán 10 và 11 qua ba chuyên đề: bất phương trình và quy hoạch tuyến tính, hình học không gian, lượng giác.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "OPTIMATH LAB · Phòng Thí Nghiệm Toán Học Tương Tác",
+    title: "MathSTEP · Học Toán THPT qua mô phỏng tương tác",
     description:
       "Khám phá miền nghiệm, trực quan hóa 2D Oxy và đồng hành cùng Trợ lý Socratic AI chuẩn GDPT 2018.",
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "OPTIMATH LAB",
+    title: "MathSTEP",
   },
 };
 

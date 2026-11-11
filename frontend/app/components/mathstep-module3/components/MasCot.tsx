@@ -99,7 +99,7 @@ export const MasCot: React.FC<MasCotProps> = ({
   const displayText =
     currentHint?.content ||
     speechText ||
-    'Chào em! Opti sẽ cùng em khám phá lượng giác. Hãy kéo điểm trên đường tròn và quan sát đồ thị thay đổi nhé!';
+    'Chào em! MathSTEP sẽ cùng em khám phá lượng giác. Hãy kéo điểm trên đường tròn và quan sát đồ thị thay đổi nhé!';
 
   return (
     <div className="relative flex items-end gap-3 pointer-events-auto select-none">
@@ -108,12 +108,12 @@ export const MasCot: React.FC<MasCotProps> = ({
         <button
           onClick={() => setIsMinimized(false)}
           className="flex items-center gap-2 px-3 py-2 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-full shadow-lg border border-slate-200 dark:border-slate-700 hover:scale-105 transition-all text-xs font-semibold text-slate-700 dark:text-slate-200"
-          title="Mở trợ lý Opti"
+          title="Mở trợ lý MathSTEP"
         >
           <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-xs">
             🦉
           </div>
-          <span>Gợi ý của Opti</span>
+          <span>Gợi ý học tập</span>
         </button>
       ) : (
         <>

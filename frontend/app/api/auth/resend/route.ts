@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isJsonRequest, isSameOrigin, jsonError } from "@/lib/security";
 import { getSupabaseConfig } from "@/lib/supabase";
+import { getAppUrl } from "@/lib/app-url";
 import { checkRateLimit, getClientIp, RATE_LIMIT_RULES } from "@/lib/rateLimit";
 import { sanitizeUserText } from "@/lib/xssSanitizer";
 
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { url, anonKey } = getSupabaseConfig();
-    const redirectTo = new URL("/auth/callback", request.nextUrl.origin).toString();
+    const redirectTo = getAppUrl("/auth/callback", request);
     const upstream = await fetch(`${url}/auth/v1/resend?redirect_to=${encodeURIComponent(redirectTo)}`, {
       method: "POST",
       headers: { apikey: anonKey, "Content-Type": "application/json" },

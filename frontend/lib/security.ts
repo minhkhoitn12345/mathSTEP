@@ -1,11 +1,12 @@
 import type { NextRequest } from "next/server";
+import { getAppOrigin } from "@/lib/app-url";
 
 export function isSameOrigin(request: NextRequest): boolean {
   const origin = request.headers.get("origin");
   if (!origin) return false;
   try {
     const parsedOrigin = new URL(origin);
-    return parsedOrigin.origin === request.nextUrl.origin;
+    return parsedOrigin.origin === getAppOrigin(request);
   } catch {
     return false;
   }

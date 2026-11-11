@@ -296,13 +296,13 @@ export function TrigonometryLab({
               type="button"
               onClick={() =>
                 onOpenSocraticDrawer(
-                  `Em đang tìm hiểu ${currentLesson.code}: ${currentLesson.title} thuộc Chuyên đề 3 Lượng giác. Thầy Opti hướng dẫn giúp em với ạ!`
+                  `Em đang tìm hiểu ${currentLesson.code}: ${currentLesson.title} thuộc Chuyên đề 3 Lượng giác. Trợ lý MathSTEP hướng dẫn em với ạ!`
                 )
               }
               className="flex min-h-10 items-center gap-2 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-purple-500/20 transition hover:from-purple-700 hover:to-indigo-700"
             >
               <OptiMascot expression="happy" size={20} animate={false} />
-              <span>Hỏi Opti</span>
+              <span>Hỏi MathSTEP</span>
             </button>
           )}
         </div>

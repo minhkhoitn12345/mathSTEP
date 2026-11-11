@@ -119,7 +119,7 @@ export const OptiMascot: React.FC<OptiMascotProps> = ({
         animate ? 'transition-transform duration-300 hover:scale-105' : ''
       } ${className}`}
       style={{ width: pixelSize, height: pixelSize }}
-      aria-label={`Linh vật Opti biểu cảm ${expression}`}
+      aria-label={`Linh vật MathSTEP biểu cảm ${expression}`}
     >
       <svg
         viewBox="0 0 320 320"

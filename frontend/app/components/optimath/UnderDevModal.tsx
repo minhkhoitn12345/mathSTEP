@@ -48,7 +48,7 @@ export const UnderDevModal: React.FC<UnderDevModalProps> = ({
           <OptiMascot expression="thinking" pose="pointing" size={130} />
 
           <h4 className="mt-4 font-bold text-slate-900 text-base">
-            Opti đang cùng đội ngũ chuẩn bị cho Giai đoạn 2!
+            MathSTEP đang được tiếp tục hoàn thiện.
           </h4>
           <p className="mt-2 text-xs sm:text-sm text-slate-600 max-w-md leading-relaxed">
             Theo lộ trình phát triển được duyệt, hiện tại hệ thống tập trung hoàn thiện tối đa <strong>Phòng Thí Nghiệm Miền Nghiệm Mẫu (Giai đoạn 1)</strong> với bất phương trình <code className="bg-blue-50 text-blue-700 px-1 py-0.5 rounded font-mono font-bold">2x + y ≤ 6</code> và bộ điều khiển đại số tương tác.

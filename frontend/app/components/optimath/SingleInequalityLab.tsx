@@ -36,7 +36,7 @@ export const SingleInequalityLab: React.FC<SingleInequalityLabProps> = ({
   // Learning mode: 'practice' | 'guided' | 'teacher'
   const [learningMode, setLearningMode] = useState<LearningMode>(initialLearningMode);
 
-  // Opti assistant visibility
+  // Assistant visibility
   const [optiVisible, setOptiVisible] = useState(true);
 
   // Guided tutorial current step index (for 'guided' mode)
@@ -47,7 +47,7 @@ export const SingleInequalityLab: React.FC<SingleInequalityLabProps> = ({
     return evaluatePointWithSteps(inequality, pointM);
   }, [inequality, pointM]);
 
-  // Dynamic Opti message calculation
+  // Dynamic assistant message calculation
   const optiState = useMemo(() => {
     const isOrigin = pointM.x === 0 && pointM.y === 0;
     const _isDefaultIneq = inequality.a === 2 && inequality.b === 1 && inequality.op === '<=' && inequality.c === 6;
@@ -66,7 +66,7 @@ export const SingleInequalityLab: React.FC<SingleInequalityLabProps> = ({
 
       const guidedSteps = [
         {
-          text: `Chào bạn! Mình là Opti. Ta cùng học cách biểu diễn miền nghiệm của ${formatInequality(inequality)}. Bước 1: Quan sát đường thẳng bờ d: ${formatBoundaryLine(inequality.a, inequality.b, inequality.c)}. Nó chia mặt phẳng thành 2 nửa! Dấu "${inequality.op}" quy định vẽ nét ${inequality.op === '<=' || inequality.op === '>=' ? 'liền (lấy bờ)' : 'đứt (không lấy bờ)'}.`,
+          text: `Chào em! Trợ lý MathSTEP sẽ cùng em học cách biểu diễn miền nghiệm của ${formatInequality(inequality)}. Bước 1: Quan sát đường thẳng bờ d: ${formatBoundaryLine(inequality.a, inequality.b, inequality.c)}. Nó chia mặt phẳng thành hai nửa. Dấu "${inequality.op}" quy định vẽ nét ${inequality.op === '<=' || inequality.op === '>=' ? 'liền (lấy bờ)' : 'đứt (không lấy bờ)'}.`,
           expression: 'happy' as OptiExpression,
           theme: 'blue' as const,
           badge: 'Bước 1: Vẽ bờ',
@@ -303,7 +303,7 @@ export const SingleInequalityLab: React.FC<SingleInequalityLabProps> = ({
               </button>
             </div>
 
-            {/* Opti Mascot Assistant Banner */}
+            {/* Assistant banner */}
             <OptiDialogue
               message={optiState.text}
               expression={optiState.expression}

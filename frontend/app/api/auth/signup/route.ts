@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isJsonRequest, isSameOrigin, jsonError, isValidEmail, isValidPassword } from "@/lib/security";
 import { getSupabaseConfig, setAuthCookies } from "@/lib/supabase";
+import { getAppUrl } from "@/lib/app-url";
 import { checkRateLimit, getClientIp, RATE_LIMIT_RULES } from "@/lib/rateLimit";
 import { sanitizeUserText } from "@/lib/xssSanitizer";
 import { verifyMathCaptcha } from "@/lib/captcha";
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { url, anonKey } = getSupabaseConfig();
-    const redirectTo = new URL("/auth/callback", request.nextUrl.origin).toString();
+    const redirectTo = getAppUrl("/auth/callback", request);
 
     // 4. ROLE ENFORCEMENT: Gán cứng role: "student" để ngăn chặn Privilege Escalation
     const upstream = await fetch(`${url}/auth/v1/signup?redirect_to=${encodeURIComponent(redirectTo)}`, {

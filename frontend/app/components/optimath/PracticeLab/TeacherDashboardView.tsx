@@ -118,7 +118,7 @@ export const TeacherDashboardView: React.FC<TeacherDashboardViewProps> = ({
       onImportData(res.attempts, res.assignments);
       setStatusBanner(`Đã nhập thành công ${res.importedCount} bản ghi từ tệp ${file.name}.`);
     } catch {
-      setStatusBanner('Tệp nhập vào không đúng định dạng JSON/CSV của OPTIMATH LAB.');
+      setStatusBanner('Tệp nhập vào không đúng định dạng JSON/CSV của MathSTEP.');
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }

@@ -84,10 +84,10 @@ export const OptiDialogue: React.FC<OptiDialogueProps> = ({
         <button
           onClick={onToggleVisibility}
           className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-full bg-blue-100 hover:bg-blue-200 text-blue-700 transition-colors shadow-sm"
-          title="Hiện trợ lý Opti"
+          title="Hiện trợ lý MathSTEP"
         >
           <OptiMascot expression="happy" size={24} animate={false} />
-          <span>Hiện Opti</span>
+          <span>Hiện trợ lý</span>
           <Eye className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -116,11 +116,11 @@ export const OptiDialogue: React.FC<OptiDialogueProps> = ({
     <div
       className={`relative flex flex-col sm:flex-row items-center sm:items-start gap-4 p-4 rounded-2xl border ${themeStyles.border} ${themeStyles.bg} shadow-md ${themeStyles.glow} backdrop-blur-sm transition-all duration-300 ${className}`}
     >
-      {/* Opti mascot avatar / full */}
+      {/* Mascot avatar */}
       <div className="shrink-0 flex flex-col items-center">
         <OptiMascot expression={expression} pose={pose} size={88} actionState={effectiveActionState} />
         <div className="mt-1 flex items-center gap-1.5">
-          <span className="text-[11px] font-bold text-blue-700">Opti</span>
+          <span className="text-[11px] font-bold text-blue-700">MathSTEP</span>
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
         </div>
       </div>
@@ -161,7 +161,7 @@ export const OptiDialogue: React.FC<OptiDialogueProps> = ({
                 type="button"
                 onClick={onToggleVisibility}
                 className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-white/80 transition-colors"
-                title="Thu gọn Opti"
+                title="Thu gọn trợ lý MathSTEP"
               >
                 <EyeOff className="w-3.5 h-3.5" />
               </button>

@@ -156,7 +156,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
           <span>Esc mở/đóng bảng điều khiển</span>
         </div>
         <div>
-          OPTIMATH LAB · Toán 11
+          MathSTEP · Toán 11
         </div>
       </div>
     </div>

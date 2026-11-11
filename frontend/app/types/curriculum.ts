@@ -1,4 +1,4 @@
-// Cấu trúc 3 Chuyên đề cốt lõi của MathSTEP / OPTIMATH LAB (Chuẩn GDPT 2018)
+// Cấu trúc ba chuyên đề cốt lõi của MathSTEP (chuẩn GDPT 2018)
 import { TRIG_LESSONS } from "../data/trigonometryLessons";
 
 // Module 1: Bất phương trình & Quy hoạch tuyến tính (Toán 10)

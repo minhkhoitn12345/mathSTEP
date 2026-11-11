@@ -172,11 +172,11 @@ export const SystemInequalityLab: React.FC<SystemInequalityLabProps> = ({
                     onSelectPreset={handleSelectPreset}
                   />
 
-                  {/* Quick Opti Dialogue Card */}
+                  {/* Gợi ý nhanh */}
                   <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex items-center gap-3">
                     <OptiMascot expression="thinking" actionState="nod" size={46} />
                     <div className="text-xs text-slate-700 leading-relaxed">
-                      <span className="font-bold text-blue-900 block mb-0.5">Opti khuyên bạn:</span>
+                      <span className="font-bold text-blue-900 block mb-0.5">MathSTEP gợi ý:</span>
                       Hãy thử kéo điểm thử M trên đồ thị để kiểm tra sự thay đổi tính thỏa mãn đối với từng ràng buộc trong hệ!
                     </div>
                   </div>

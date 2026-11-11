@@ -454,7 +454,7 @@ export const InteractiveExercisePlayer: React.FC<InteractiveExercisePlayerProps>
           )}
         </div>
 
-        {/* RIGHT COLUMN (5 cols): Question, Step-by-Step Grader & Socratic Opti */}
+        {/* RIGHT COLUMN (5 cols): Question, step-by-step grader and Socratic guidance */}
         <div className="lg:col-span-5 space-y-4">
           {/* Problem Statement Card */}
           <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 space-y-3">
@@ -700,7 +700,7 @@ export const InteractiveExercisePlayer: React.FC<InteractiveExercisePlayerProps>
             )}
           </div>
 
-          {/* Socratic Opti Assistant Card (3 Hint Tiers + Post-Exercise Insight) */}
+          {/* Socratic assistant card (three hint tiers and post-exercise insight) */}
           <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 space-y-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -717,7 +717,7 @@ export const InteractiveExercisePlayer: React.FC<InteractiveExercisePlayerProps>
                 />
                 <div>
                   <h4 className="text-xs font-bold text-slate-900">
-                    Gợi ý từ Opti
+                    Gợi ý từ MathSTEP
                   </h4>
                   <p className="text-[11px] text-slate-500">
                     Gợi mở từng bước · Không tiết lộ đáp án sẵn

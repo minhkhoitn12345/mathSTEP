@@ -186,7 +186,7 @@ export function generateSmartSocraticResponse(
   // 3. Xử lý các câu hỏi giao tiếp cơ bản (Chào hỏi, giới thiệu vai trò)
   if (/^(chào|hello|hi|xin chào|hey|alo|bạn là ai|giới thiệu|ai đó)/i.test(q)) {
     return {
-      answer: `Chào em! Thầy là Opti, trợ lý học Toán. Thầy có thể giải thích công thức, gợi ý từng bước và cùng em kiểm tra cách làm. Em đang học phần nào?`,
+      answer: `Chào em! Thầy là trợ lý Toán MathSTEP. Thầy có thể giải thích công thức, gợi ý từng bước và cùng em kiểm tra cách làm. Em đang học phần nào?`,
       intent: "greet",
       nextQuestion: "Em muốn bắt đầu tìm hiểu trạm nào trước?",
     };
@@ -228,13 +228,13 @@ export function generateSmartSocraticResponse(
     : undefined;
   if (!currentScope) {
     return {
-      answer: "Câu hỏi này nằm ngoài phạm vi hỗ trợ hiện tại của Opti. Opti đang hỗ trợ ba chuyên đề: bất phương trình và quy hoạch tuyến tính, hình học không gian, lượng giác. Em muốn hỏi phần nào trong một trong ba chuyên đề đó?",
+      answer: "Câu hỏi này nằm ngoài phạm vi hỗ trợ hiện tại của MathSTEP. MathSTEP hỗ trợ ba chuyên đề: bất phương trình và quy hoạch tuyến tính, hình học không gian, lượng giác. Em muốn hỏi phần nào trong một trong ba chuyên đề đó?",
       intent: "out_of_scope",
     };
   }
 
   return {
-    answer: `Câu hỏi này nằm ngoài phạm vi bài học hiện tại của Opti. Opti đang hỗ trợ em về ${currentScope.title}, chẳng hạn như ${currentScope.examples}. Em muốn hỏi phần nào trong bài này?`,
+    answer: `Câu hỏi này nằm ngoài phạm vi bài học hiện tại của MathSTEP. MathSTEP đang hỗ trợ em về ${currentScope.title}, chẳng hạn như ${currentScope.examples}. Em muốn hỏi phần nào trong bài này?`,
     intent: "out_of_scope",
   };
 }

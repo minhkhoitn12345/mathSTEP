@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function OptimathRedirect() {
+export default function LegacyMathStepRedirect() {
   const router = useRouter();
   useEffect(() => {
     router.replace("/");

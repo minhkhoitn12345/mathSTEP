@@ -246,7 +246,7 @@ export const SettingsAndGuideModal: React.FC<SettingsAndGuideModalProps> = ({
               <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                 <div>
                   <strong className="text-sm text-slate-900 dark:text-slate-100 block">
-                    🦉 Trợ lý học tập Opti
+                    🦉 Trợ lý học tập MathSTEP
                   </strong>
                   <span className="text-slate-500 text-[11px]">
                     Hiển thị linh vật thông thái đồng hành và gợi ý sư phạm gián tiếp 5 cấp độ (H0–H4).

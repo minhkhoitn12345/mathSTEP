@@ -115,7 +115,7 @@ export default function App() {
   const [hintLevel, setHintLevel] = useState<HintLevel>('H0');
   const [mascotMood, setMascotMood] = useState<MascotMood>('neutral');
   const [mascotSpeech, setMascotSpeech] = useState<string>(
-    'Chào em! Opti sẽ cùng em khám phá lượng giác. Hãy kéo điểm trên đường tròn và quan sát đồ thị thay đổi nhé!'
+    'Chào em! MathSTEP sẽ cùng em khám phá lượng giác. Hãy kéo điểm trên đường tròn và quan sát đồ thị thay đổi nhé!'
   );
 
   // Modals & Settings

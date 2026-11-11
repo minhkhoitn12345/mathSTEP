@@ -48,7 +48,7 @@ export const TeacherGuideModal: React.FC<TeacherGuideModalProps> = ({
           <div className="flex items-start gap-4 p-4 rounded-2xl bg-purple-50/70 border border-purple-200">
             <OptiMascot expression="thinking" pose="pointing" size={72} animate={false} />
             <div>
-              <h4 className="font-bold text-purple-950">Triết lý dạy học tương tác OPTIMATH</h4>
+              <h4 className="font-bold text-purple-950">Triết lý dạy học tương tác MathSTEP</h4>
               <p className="text-xs text-purple-900 mt-1 leading-relaxed">
                 "Quan sát → Dự đoán → Thao tác → Kiểm chứng → Giải thích → Vận dụng". Thay vì vẽ tĩnh lên bảng đen, thầy cô cho học sinh tự dự đoán điểm thử rồi kéo thả trực tiếp để thấy kết quả tức thì.
               </p>

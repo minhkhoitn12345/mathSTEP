@@ -248,7 +248,7 @@ export function exportAttemptsToCSV(attempts: ExerciseAttemptRecord[]): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `optimath_module5_ket_qua_${new Date().toISOString().slice(0, 10)}.csv`;
+  link.download = `mathstep_ket_qua_${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -263,7 +263,7 @@ export function exportAssessmentDataJSON(
   assignments: TeacherAssignment[]
 ): void {
   const payload = {
-    app: 'OPTIMATH_LAB_MODULE_5',
+    app: 'MATHSTEP_MODULE_5',
     version: '1.0',
     exportedAt: new Date().toISOString(),
     attempts,
@@ -275,7 +275,7 @@ export function exportAssessmentDataJSON(
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `optimath_module5_backup_${new Date().toISOString().slice(0, 10)}.json`;
+  link.download = `mathstep_sao_luu_${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

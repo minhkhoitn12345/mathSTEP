@@ -111,7 +111,7 @@ export interface AssessmentExercise {
   canonicalAnswerSummary: string;
   solutionExplanation: string;
 
-  // Hệ thống 3 cấp gợi ý Socratic của Opti
+  // Hệ thống ba cấp gợi ý Socratic của MathSTEP
   hints: {
     tier1: string; // Câu hỏi định hướng Socratic
     tier2: string; // Gợi ý phương pháp Toán học

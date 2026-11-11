@@ -114,7 +114,7 @@ export default function PlatformHeader({
         </Link>
       </div>
 
-      {/* THANH ĐIỀU HƯỚNG TỐI GIẢN (3 CHUYÊN ĐỀ MỚI THEO OPTIMATH LAB) */}
+      {/* Thanh điều hướng cho ba chuyên đề của MathSTEP */}
       <nav className="flex items-center gap-3 sm:gap-6">
         <button
           type="button"
@@ -128,7 +128,7 @@ export default function PlatformHeader({
         </button>
 
         <Link
-          href="/optimath"
+          href="/"
           className="text-xs sm:text-sm font-medium px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-1.5"
         >
           <Sparkles className="w-3.5 h-3.5 text-blue-400" />
@@ -174,16 +174,16 @@ export default function PlatformHeader({
 
       {/* USER MENU & AUTH */}
       <div className="flex items-center gap-2 sm:gap-2.5">
-        {/* Nút truy cập nhanh Optimath Lab kèm Linh vật Opti */}
+        {/* Lối tắt vào mô phỏng MathSTEP */}
         <Link
-          href="/optimath"
+          href="/"
           className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 hover:border-blue-400 text-blue-300 hover:text-white text-xs font-semibold transition-all duration-150 cursor-pointer shadow-xs active:scale-95 group"
-          title="Mở phòng thí nghiệm Toán học tương tác OPTIMATH LAB"
+          title="Mở mô phỏng Toán học MathSTEP"
         >
           <div className="w-5 h-5 flex items-center justify-center shrink-0">
             <OptiMascot expression="happy" size={22} animate={false} />
           </div>
-          <span className="hidden sm:inline font-bold tracking-tight">Optimath Lab</span>
+          <span className="hidden sm:inline font-bold tracking-tight">MathSTEP</span>
           <span className="px-1 py-0.2 rounded text-[9px] font-extrabold bg-blue-500/30 text-blue-200 hidden md:inline">
             7 Bước
           </span>

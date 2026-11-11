@@ -72,7 +72,7 @@ export const OptimizationSevenStepWizard: React.FC<OptimizationSevenStepWizardPr
   const [step6Feedback, setStep6Feedback] = useState<{ isCorrect: boolean; message: string } | null>(null);
   const [tableAllVerified, setTableAllVerified] = useState<boolean>(false);
 
-  // Opti Voice & Hints
+  // Assistant voice and hints
   const [optiHintTier, setOptiHintTier] = useState<1 | 2 | 3>(1);
   const [speechEnabled, setSpeechEnabled] = useState(false);
   const [copyToast, setCopyToast] = useState<string | null>(null);
@@ -236,7 +236,7 @@ ${result.practicalAnswer}`;
     }
   };
 
-  // Opti Voice synthesis
+  // Assistant voice synthesis
   const handleSpeak = () => {
     if (!('speechSynthesis' in window)) return;
     if (speechEnabled) {
@@ -254,7 +254,7 @@ ${result.practicalAnswer}`;
 
   const canRevealOptimal = currentStep >= 7 || completedSteps.has(6) || tableAllVerified;
 
-  // Opti Socrates Guidance per step
+  // Socratic guidance for each step
   const optiGuidance = useMemo(() => {
     const verticesText = vertexEvaluations
       .map(ve => `${ve.label}${formatPointCoord(ve.vertex)}`)
@@ -326,7 +326,7 @@ ${result.practicalAnswer}`;
         };
       default:
         return {
-          text: 'Khám phá bài toán tối ưu thực tế cùng Opti!',
+          text: 'Khám phá bài toán tối ưu thực tế cùng MathSTEP!',
           hints: { tier1: '', tier2: '', tier3: '' }
         };
     }
@@ -393,7 +393,7 @@ ${result.practicalAnswer}`;
             <OptiMascot expression="thinking" actionState="nod" size={36} />
             <div className="min-w-0">
               <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-purple-600 text-white block w-fit mb-0.5">
-                Opti Hướng Dẫn Bước {currentStep}
+                MathSTEP · Hướng dẫn bước {currentStep}
               </span>
               <p className="text-xs text-slate-800 font-medium line-clamp-2">
                 {optiGuidance.text}
@@ -1126,7 +1126,7 @@ ${result.practicalAnswer}`;
           {/* Quick Mascot Advice */}
           <div className="bg-gradient-to-b from-purple-50/80 to-white rounded-2xl border border-purple-200 p-4 shadow-xs flex flex-col items-center text-center">
             <OptiMascot expression="happy" actionState="nod" size={60} />
-            <div className="mt-2 font-bold text-sm text-purple-900">Trợ Lý Tối Ưu Opti</div>
+            <div className="mt-2 font-bold text-sm text-purple-900">Trợ lý tối ưu MathSTEP</div>
             <p className="text-xs text-slate-600 mt-1 leading-relaxed">
               Hãy tự tính giá trị tại 4 đỉnh O, A, B, C ở bảng dưới hoặc kéo đường mức k để tìm đúng điểm tiếp xúc cuối cùng!
             </p>

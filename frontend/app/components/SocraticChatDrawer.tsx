@@ -100,7 +100,7 @@ export default function SocraticChatDrawer({
 
   return (
     <div className="fixed inset-0 z-50 pointer-events-none flex justify-end items-end xl:items-stretch">
-      <aside aria-label="Trợ lý học tập Opti" className="pointer-events-auto w-full sm:w-[420px] xl:w-[420px] bg-slate-950 border border-slate-800 flex flex-col h-[min(60dvh,620px)] xl:h-full shadow-2xl rounded-t-2xl xl:rounded-none animate-in slide-in-from-right duration-200">
+      <aside aria-label="Trợ lý học Toán MathSTEP" className="pointer-events-auto w-full sm:w-[420px] xl:w-[420px] bg-slate-950 border border-slate-800 flex flex-col h-[min(60dvh,620px)] xl:h-full shadow-2xl rounded-t-2xl xl:rounded-none animate-in slide-in-from-right duration-200">
         {/* Header */}
         <div className="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -109,7 +109,7 @@ export default function SocraticChatDrawer({
             </div>
             <div className="min-w-0">
               <h3 className="text-xs font-bold text-slate-100 flex items-center gap-1.5 truncate">
-                <span>Trợ lý Opti Socratic</span>
+                <span>Trợ lý Toán MathSTEP</span>
                 {stationId && (
                   <span className="px-1.5 py-0.2 rounded bg-blue-900/60 text-blue-300 font-mono text-[10px]">
                     {stationId}
