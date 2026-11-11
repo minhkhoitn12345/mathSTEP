@@ -239,7 +239,9 @@ export default function ModuleLabWorkbenchClient({
         onSendMessage={handleSendMessage}
         stationId={currentStation.id}
         moduleTitle={module.title}
-        quickPrompts={module.id === "conics_and_solids"
+        quickPrompts={module.id === "trigonometry"
+          ? ["Vì sao tan không xác định tại góc hiện tại?", "Kiểm tra dấu của sin α và cos α tại điểm M.", "Giải thích sin² α + cos² α = 1 theo tọa độ M."]
+          : module.id === "conics_and_solids"
           ? ["Thiết diện hiện tại là đường gì?", "Vì sao β và α quyết định loại thiết diện?", "Nếu tăng β thêm 5° thì hình đổi thế nào?"]
           : ["Em nên quan sát yếu tố nào trước?", "Cho em một gợi ý nhỏ.", "Em kiểm tra kết luận này thế nào?"]}
       />

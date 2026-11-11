@@ -19,6 +19,7 @@ export default function TrigonometryPracticeTools() {
   const [angleA, setAngleA] = useState(35);
   const [angleB, setAngleB] = useState(70);
   const [identity, setIdentity] = useState<"cos-sum" | "sin-sum" | "double-sin">("cos-sum");
+  const [inequalityFunction, setInequalityFunction] = useState<"sin" | "cos">("sin");
 
   const alpha = Math.asin(Math.max(-1, Math.min(1, level)));
   const roots = useMemo(() => [((alpha % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI), ((Math.PI - alpha) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI)], [alpha]);
@@ -32,7 +33,8 @@ export default function TrigonometryPracticeTools() {
   const formula = identity === "cos-sum" ? "\\cos(a+b)=\\cos a\\cos b-\\sin a\\sin b" : identity === "sin-sum" ? "\\sin(a+b)=\\sin a\\cos b+\\cos a\\sin b" : "\\sin 2a=2\\sin a\\cos a";
   const pointA = point(roots[0]);
   const pointB = point(roots[1]);
-  const positiveArcs = level < 1 ? [[alpha, Math.PI - alpha]] : [];
+  const beta = Math.acos(Math.max(-1, Math.min(1, level)));
+  const positiveArcs = level < 1 ? (inequalityFunction === "sin" ? [[alpha, Math.PI - alpha]] : [[-beta, beta]]) : [];
 
   const tabs: [ToolTab, string][] = [["solutions", "Họ nghiệm"], ["inequality", "Bất phương trình"], ["identities", "Kiểm chứng công thức"]];
   return <section className="w-full rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -49,7 +51,7 @@ export default function TrigonometryPracticeTools() {
           <circle cx={pointA.x} cy={pointA.y} r="7" fill="#dc2626"/><circle cx={pointB.x} cy={pointB.y} r="7" fill="#2563eb"/>
           <text x={pointA.x + 8} y={pointA.y - 6} fontSize="12" fill="#991b1b" fontWeight="700">M₁</text><text x={pointB.x + 8} y={pointB.y - 6} fontSize="12" fill="#1e40af" fontWeight="700">M₂</text>
         </>}
-        {tab === "inequality" && <><line x1="50" y1={C - R * level} x2="250" y2={C - R * level} stroke="#ea580c" strokeDasharray="5 4"/><circle cx={pointA.x} cy={pointA.y} r="5" fill="#dc2626"/><circle cx={pointB.x} cy={pointB.y} r="5" fill="#dc2626"/></>}
+        {tab === "inequality" && <><line x1={inequalityFunction === "sin" ? 50 : C + R * level} y1={inequalityFunction === "sin" ? C - R * level : 50} x2={inequalityFunction === "sin" ? 250 : C + R * level} y2={inequalityFunction === "sin" ? C - R * level : 250} stroke="#ea580c" strokeDasharray="5 4"/><circle cx={pointA.x} cy={pointA.y} r="5" fill="#dc2626"/><circle cx={pointB.x} cy={pointB.y} r="5" fill="#dc2626"/></>}
         <text x="260" y={C - 6} fontSize="12" fill="#334155">cos x</text><text x={C + 6} y="42" fontSize="12" fill="#334155">sin x</text>
       </svg>
       <div className="space-y-3">
@@ -59,10 +61,10 @@ export default function TrigonometryPracticeTools() {
           <div className="grid gap-2 sm:grid-cols-2 text-sm"><p className="rounded-lg bg-red-50 p-2"><KatexMath math={`x_1 \\approx ${((roots[0] + 2 * Math.PI * k) * 180 / Math.PI).toFixed(1)}^\\circ`} /></p><p className="rounded-lg bg-blue-50 p-2"><KatexMath math={`x_2 \\approx ${((roots[1] + 2 * Math.PI * k) * 180 / Math.PI).toFixed(1)}^\\circ`} /></p></div>
           <KatexMath display math="x=\\arcsin(c)+2k\\pi \\quad\\text{hoặc}\\quad x=\\pi-\\arcsin(c)+2k\\pi,\ k\\in\\mathbb Z" />
         </> : <>
-          <div className="rounded-xl bg-green-50 p-3"><KatexMath display math={`\\sin x > ${level.toFixed(2)}`} /><p className="mt-2 text-sm text-slate-700">Cung xanh biểu diễn phần đường tròn thỏa bất phương trình trong một chu kỳ.</p></div>
+          <div className="rounded-xl bg-green-50 p-3"><div className="mb-2 flex gap-2"><button type="button" onClick={() => setInequalityFunction("sin")} className={`rounded px-2 py-1 text-xs font-bold ${inequalityFunction === "sin" ? "bg-emerald-800 text-white" : "bg-white text-slate-800"}`}>sin x</button><button type="button" onClick={() => setInequalityFunction("cos")} className={`rounded px-2 py-1 text-xs font-bold ${inequalityFunction === "cos" ? "bg-emerald-800 text-white" : "bg-white text-slate-800"}`}>cos x</button></div><KatexMath display math={`\\${inequalityFunction} x > ${level.toFixed(2)}`} /><p className="mt-2 text-sm text-slate-700">Cung xanh biểu diễn phần đường tròn thỏa bất phương trình trong một chu kỳ.</p></div>
           <label className="block text-sm font-semibold">Mức c = {level.toFixed(2)}<input aria-label="Mức c trong bất phương trình sin x lớn hơn c" className="mt-2 w-full accent-green-700" type="range" min="-1" max="1" step="0.01" value={level} onChange={(e) => setLevel(Number(e.target.value))} /></label>
-          {level >= 1 ? <p className="text-sm font-semibold text-slate-700">Vô nghiệm vì sin x ≤ 1.</p> : level < -1 ? <p className="text-sm">Mọi số thực đều thỏa.</p> : <KatexMath display math={`\\arcsin(${level.toFixed(2)})+2k\\pi < x < \\pi-\\arcsin(${level.toFixed(2)})+2k\\pi,\\quad k\\in\\mathbb Z`} />}
-          <p className="text-xs text-slate-500">Đường cam là mức sin x = c; cung xanh nằm phía trên đường mức.</p>
+          {level >= 1 ? <p className="text-sm font-semibold text-slate-700">Vô nghiệm vì giá trị hàm không vượt quá 1.</p> : <KatexMath display math={inequalityFunction === "sin" ? `\\arcsin(${level.toFixed(2)})+2k\\pi < x < \\pi-\\arcsin(${level.toFixed(2)})+2k\\pi,\\quad k\\in\\mathbb Z` : `-\\arccos(${level.toFixed(2)})+2k\\pi < x < \\arccos(${level.toFixed(2)})+2k\\pi,\\quad k\\in\\mathbb Z`} />}
+          <p className="text-xs text-slate-500">Đường cam là mức {inequalityFunction} x = c; cung xanh biểu diễn miền nghiệm.</p>
         </>}
       </div>
     </div> : <div className="mt-4 grid gap-4 md:grid-cols-[1fr_1fr]">

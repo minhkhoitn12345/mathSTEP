@@ -13,6 +13,7 @@ export default function DynamicTrigonometryLab() {
   const [isGeneralWave, setIsGeneralWave] = useState<boolean>(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [angleUnit, setAngleUnit] = useState<"degree" | "radian">("degree");
+  const [showTanCot, setShowTanCot] = useState(true);
 
   // Angle theta in degrees from store (can be > 360 or < 0)
   React.useEffect(() => {
@@ -54,6 +55,18 @@ export default function DynamicTrigonometryLab() {
   // Screen coords of M on Circle
   const mScreenX = cX + cR * cosVal;
   const mScreenY = cY - cR * sinVal;
+  const spiralPath = useMemo(() => {
+    if (Math.abs(thetaDeg) < 360) return "";
+    const end = (thetaDeg * Math.PI) / 180;
+    const steps = Math.max(2, Math.ceil(Math.abs(end) * 8));
+    return Array.from({ length: steps + 1 }, (_, index) => {
+      const angle = (end * index) / steps;
+      const radius = cR + (Math.abs(angle) / (2 * Math.PI)) * 11;
+      const x = cX + radius * Math.cos(angle);
+      const y = cY - radius * Math.sin(angle);
+      return `${index === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(" ");
+  }, [thetaDeg]);
 
   // Drag handler for Point M on Circle
   const handleCirclePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -130,11 +143,12 @@ export default function DynamicTrigonometryLab() {
           </div>
 
           <div className="mb-2 flex w-full flex-wrap gap-2"><button type="button" onClick={() => setIsPlaying((playing) => !playing)} className="inline-flex items-center gap-1 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white">{isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}{isPlaying ? "\u0054\u1ea1m d\u1eebng" : "Cho \u0111i\u1ec3m M chuy\u1ec3n \u0111\u1ed9ng"}</button><button type="button" onClick={() => setAngleUnit((unit) => unit === "degree" ? "radian" : "degree")} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800">{angleUnit === "degree" ? "Hi\u1ec7n theo radian" : "Hi\u1ec7n theo \u0111\u1ed9"}</button></div>
+          <button type="button" onClick={() => setShowTanCot((value) => !value)} className="mb-2 self-start rounded-lg border border-violet-300 px-3 py-2 text-xs font-bold text-violet-900">{showTanCot ? "?n" : "Hi?n"} hai ti?p tuy?n tan, cot</button>
           <div className="relative w-full overflow-hidden rounded-xl border border-slate-200 bg-[#fbfdfc] flex justify-center p-2">
             <svg
               ref={circleSvgRef}
               viewBox="0 0 340 340"
-              className="w-full max-w-[340px] h-auto cursor-crosshair select-none"
+              className="w-full max-w-[340px] h-auto cursor-crosshair select-none touch-none"
               onPointerDown={handleCirclePointerDown}
               onPointerMove={handleCirclePointerMove}
               onPointerUp={handleCirclePointerUp}
@@ -154,6 +168,11 @@ export default function DynamicTrigonometryLab() {
 
               {/* Đường tròn đơn vị */}
               <circle cx={cX} cy={cY} r={cR} fill="none" stroke="#0d9488" strokeWidth="2.2" />
+              {spiralPath && <><path d={spiralPath} fill="none" stroke="#f59e0b" strokeWidth="2" opacity="0.8"/><text x="12" y="328" fontSize="10" fill="#92400e" fontWeight="700">Số vòng quay k = {Math.trunc(thetaDeg / 360)}; điểm M lặp lại sau mỗi 2π</text></>}
+              {showTanCot && <g fill="none" stroke="#7c3aed" strokeWidth="1.5" strokeDasharray="5 4"><line x1={cX + cR} y1="25" x2={cX + cR} y2="315"/><line x1="25" y1={cY - cR} x2="315" y2={cY - cR}/></g>}
+              {showTanCot && Math.abs(cosVal) > 0.02 && <line x1={cX} y1={cY} x2={cX+cR} y2={cY-cR*tanVal!} stroke="#7c3aed" strokeWidth="2.5"/>}
+              {showTanCot && Math.abs(sinVal) > 0.02 && <line x1={cX} y1={cY} x2={cX+cR*cotVal!} y2={cY-cR} stroke="#db2777" strokeWidth="2.5"/>}
+              {showTanCot && <g fill="#5b21b6" fontSize="10" fontWeight="700"><text x={cX+cR+4} y="35">x=1 (tan)</text><text x="22" y={cY-cR-5}>y=1 (cot)</text>{Math.abs(cosVal)<=0.02 && <text x="190" y="42">tan α không xác định</text>}{Math.abs(sinVal)<=0.02 && <text x="30" y="65">cot α không xác định</text>}</g>}
 
               {/* Bán kính qua điểm M */}
               <line x1={cX} y1={cY} x2={mScreenX} y2={mScreenY} stroke="#0f766e" strokeWidth="2" />
