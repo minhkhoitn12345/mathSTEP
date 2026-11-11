@@ -74,6 +74,9 @@ function MathStepMainContent() {
   // 3. User session & auth state
   const [session, setSession] = useState<SessionData | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
+  const canAccessTeacherDashboard = Boolean(
+    session?.authenticated && (session.role === "teacher" || session.role === "admin")
+  );
   useCloudLearningProgress(sessionLoading ? undefined : session?.userId ?? null, userProgress, setUserProgress);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup" | "verify_email">("login");
@@ -386,11 +389,13 @@ function MathStepMainContent() {
   }, [activeLessonId]);
 
   const handleOpenTeacherGuide = () => {
+    if (!canAccessTeacherDashboard) return;
     setIsTeacherModalOpen(true);
   };
 
   const handleLaunchTeacherLab = () => {
     setIsTeacherModalOpen(false);
+    if (!canAccessTeacherDashboard) return;
     setLearningMode("teacher");
     setCurrentView("linear_programming");
     setLpSubTab("single");
@@ -579,7 +584,7 @@ function MathStepMainContent() {
       <main className={`flex-1 transition-[margin] duration-200 ${chatDrawerOpen ? "xl:mr-[420px]" : ""}`}>
         {currentView === "home" ? (
           <LessonCatalogHome
-            onOpenTeacherGuide={handleOpenTeacherGuide}
+            onOpenTeacherGuide={canAccessTeacherDashboard ? handleOpenTeacherGuide : undefined}
             onOpenKnowledgeBase={() => setIsKnowledgeModalOpen(true)}
             focusModuleId={pendingModuleFocus}
             onModuleFocusHandled={() => setPendingModuleFocus(null)}
@@ -793,6 +798,7 @@ function MathStepMainContent() {
             ) : (
               <PracticeLab
                 initialLearningMode={learningMode}
+                canAccessTeacherDashboard={canAccessTeacherDashboard}
                 onBackToHome={() => setCurrentView("home")}
               />
             )}
@@ -849,7 +855,7 @@ function MathStepMainContent() {
         onGoToLab={handleGoToLabFromModal}
       />}
 
-      {isTeacherModalOpen && <TeacherGuideModal
+      {isTeacherModalOpen && canAccessTeacherDashboard && <TeacherGuideModal
         isOpen={isTeacherModalOpen}
         onClose={() => setIsTeacherModalOpen(false)}
         onOpenTeacherLab={handleLaunchTeacherLab}

@@ -101,6 +101,9 @@ export default function LessonStudyClientPage({
 
   // 3. User session & auth state
   const [session, setSession] = useState<SessionData | null>(null);
+  const canAccessTeacherDashboard = Boolean(
+    session?.authenticated && (session.role === "teacher" || session.role === "admin")
+  );
   const [sessionLoading, setSessionLoading] = useState(true);
   useCloudLearningProgress(sessionLoading ? undefined : session?.userId ?? null, userProgress, setUserProgress);
 
@@ -291,7 +294,9 @@ export default function LessonStudyClientPage({
             else if (mod === "linear_programming" || mod === "spatial_geometry" || mod === "trigonometry") router.push(`/?focusModule=${mod}`);
             else router.push(`/?view=${mod}`);
           }}
-          onOpenTeacherGuide={() => setIsTeacherModalOpen(true)}
+          onOpenTeacherGuide={() => {
+            if (canAccessTeacherDashboard) setIsTeacherModalOpen(true);
+          }}
           session={session}
           sessionLoading={sessionLoading}
         />
@@ -362,7 +367,9 @@ export default function LessonStudyClientPage({
           else if (mod === "linear_programming" || mod === "spatial_geometry" || mod === "trigonometry") router.push(`/?focusModule=${mod}`);
           else router.push(`/?view=${mod}`);
         }}
-        onOpenTeacherGuide={() => setIsTeacherModalOpen(true)}
+        onOpenTeacherGuide={() => {
+          if (canAccessTeacherDashboard) setIsTeacherModalOpen(true);
+        }}
         onToggleChatDrawer={() => setChatDrawerOpen((prev) => !prev)}
         chatDrawerOpen={chatDrawerOpen}
         session={session}
@@ -517,7 +524,7 @@ export default function LessonStudyClientPage({
 
       {/* 5. Modals */}
       <TeacherGuideModal
-        isOpen={isTeacherModalOpen}
+        isOpen={isTeacherModalOpen && canAccessTeacherDashboard}
         onClose={() => setIsTeacherModalOpen(false)}
         onOpenTeacherLab={() => {
           setIsTeacherModalOpen(false);

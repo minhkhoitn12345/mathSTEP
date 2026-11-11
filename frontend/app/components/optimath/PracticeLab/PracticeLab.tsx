@@ -38,15 +38,17 @@ export type Module5Tab =
 
 interface PracticeLabProps {
   initialLearningMode?: LearningMode;
+  canAccessTeacherDashboard: boolean;
   onBackToHome: () => void;
 }
 
 export const PracticeLab: React.FC<PracticeLabProps> = ({
   initialLearningMode = 'guided',
+  canAccessTeacherDashboard,
   onBackToHome
 }) => {
   const [activeTab, setActiveTab] = useState<Module5Tab>(
-    initialLearningMode === 'teacher' ? 'teacher' : 'interactive'
+    initialLearningMode === 'teacher' && canAccessTeacherDashboard ? 'teacher' : 'interactive'
   );
   const [activeExercise, setActiveExercise] = useState<AssessmentExercise>(
     ASSESSMENT_EXERCISE_BANK[0]
@@ -70,6 +72,12 @@ export const PracticeLab: React.FC<PracticeLabProps> = ({
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!canAccessTeacherDashboard && activeTab === 'teacher') {
+      setActiveTab('interactive');
+    }
+  }, [activeTab, canAccessTeacherDashboard]);
 
   const handleCompleteExercise = async (record: ExerciseAttemptRecord) => {
     const updated = await saveAttemptRecord(record);
@@ -213,18 +221,20 @@ export const PracticeLab: React.FC<PracticeLabProps> = ({
               <span>4. Lộ trình Cá nhân & Học sinh</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab('teacher')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
-                activeTab === 'teacher'
-                  ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              <Presentation className="w-3.5 h-3.5" />
-              <span>5. Dashboard Giáo viên</span>
-            </button>
+            {canAccessTeacherDashboard && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('teacher')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                  activeTab === 'teacher'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                <Presentation className="w-3.5 h-3.5" />
+                <span>Dashboard Giáo viên</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -261,7 +271,7 @@ export const PracticeLab: React.FC<PracticeLabProps> = ({
             onSelectExercise={handleSelectExercise}
             onOpenErrorAnalysis={handleOpenErrorAnalysis}
           />
-        ) : (
+        ) : activeTab === 'teacher' && canAccessTeacherDashboard ? (
           <TeacherDashboardView
             attempts={attempts}
             assignments={assignments}
@@ -270,6 +280,13 @@ export const PracticeLab: React.FC<PracticeLabProps> = ({
             onImportData={handleImportData}
             onClearAttempts={handleClearAttempts}
             onSelectExercise={handleSelectExercise}
+          />
+        ) : (
+          <InteractiveExercisePlayer
+            exercise={activeExercise}
+            onCompleteExercise={handleCompleteExercise}
+            onSelectExercise={handleSelectExercise}
+            onOpenErrorAnalysis={handleOpenErrorAnalysis}
           />
         )}
       </div>
