@@ -1,135 +1,58 @@
-[
-  {
-    "id": "hhkg_11_cap1_chan_duong_cao",
-    "level": 1,
-    "interactionType": "identify_point",
-    "title": "Chân đường cao của hình chóp đều",
-    "question": "Xoay khối chóp tam giác đều và chọn hình chiếu vuông góc của đỉnh S lên mặt phẳng đáy (ABC).",
-    "sceneConfig": { "cameraPosition": [4, 5, 6], "target": [0, 1.2, 0] },
-    "geometry": {
-      "type": "regular_pyramid",
-      "baseRadius": 2.5,
-      "baseSides": 3,
-      "height": 4,
-      "apexName": "S",
-      "baseNames": ["A", "B", "C"],
-      "centerName": "H"
-    },
-    "interactiveNodes": [
-      { "id": "A", "label": "Đỉnh A", "coord": [2.5, 0, 0] },
-      { "id": "B", "label": "Đỉnh B", "coord": [-1.25, 0, 2.165] },
-      { "id": "C", "label": "Đỉnh C", "coord": [-1.25, 0, -2.165] },
-      { "id": "H", "label": "Tâm đáy H", "coord": [0, 0, 0] },
-      { "id": "M", "label": "Trung điểm BC", "coord": [-1.25, 0, 0] }
-    ],
-    "correctNodeId": "H",
-    "feedback": {
-      "correct": "Chính xác. Với hình chóp đều, đường cao đi qua tâm đường tròn ngoại tiếp đáy. Ở tam giác đều, tâm này cũng là trọng tâm H.",
-      "incorrect": "Hãy dùng tính chất SA = SB = SC: hình chiếu của S xuống đáy phải cách đều A, B, C. Điểm nào trong hình thỏa mãn điều đó?"
-    }
+{
+  "problemMetadata": {
+    "title": "Góc giữa đường thẳng và mặt phẳng; thiết diện song song đáy",
+    "gradeLevel": "Lớp 11",
+    "topic": "Hình học không gian – hình chóp, góc và thiết diện",
+    "originalText": "Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a. Cạnh bên SA vuông góc với đáy (ABCD) và SA = a√3. Gọi M là trung điểm của cạnh SB. Hãy xác định góc giữa đường thẳng SC và mặt phẳng đáy (ABCD), đồng thời tìm thiết diện tạo bởi mặt phẳng đi qua M và song song với (ABCD)."
   },
-  {
-    "id": "hhkg_11_cap1_tam_da_giac_day",
-    "level": 1,
-    "interactionType": "identify_point",
-    "title": "Tâm của đáy hình chóp tứ giác đều",
-    "question": "Chọn điểm là hình chiếu vuông góc của đỉnh S xuống đáy hình vuông ABCD.",
-    "sceneConfig": { "cameraPosition": [5, 4, 6], "target": [0, 1.2, 0] },
-    "geometry": {
-      "type": "pyramid_quad",
-      "base": [[-2, 0, -2], [2, 0, -2], [2, 0, 2], [-2, 0, 2]],
-      "apex": [0, 4, 0],
-      "labels": { "apex": "S", "base": ["A", "B", "C", "D"] }
-    },
-    "interactiveNodes": [
-      { "id": "A", "label": "Đỉnh A", "coord": [-2, 0, -2] },
-      { "id": "B", "label": "Đỉnh B", "coord": [2, 0, -2] },
-      { "id": "C", "label": "Đỉnh C", "coord": [2, 0, 2] },
-      { "id": "D", "label": "Đỉnh D", "coord": [-2, 0, 2] },
-      { "id": "O", "label": "Giao điểm hai đường chéo O", "coord": [0, 0, 0] }
-    ],
-    "correctNodeId": "O",
-    "feedback": {
-      "correct": "Đúng. Đường cao của hình chóp tứ giác đều đi qua tâm O của hình vuông đáy.",
-      "incorrect": "Đường cao phải vuông góc với cả hai đường chéo của hình vuông. Hãy chọn giao điểm của AC và BD."
-    }
+  "sceneConfig": {
+    "cameraPosition": [4, 4, 5],
+    "target": [0.5, 0.8, 0.5]
   },
-  {
-    "id": "hhkg_11_cap2_thiet_dien_song_song",
-    "level": 2,
-    "interactionType": "construct_section",
-    "title": "Tự dựng thiết diện qua ba điểm",
-    "question": "Chọn lần lượt ba điểm trên các cạnh bên. Mặt phẳng qua ba điểm sẽ cắt khối chóp và hiện thiết diện tương ứng.",
-    "sceneConfig": { "cameraPosition": [5, 4, 6], "target": [0, 1.6, 0] },
-    "geometry": {
-      "type": "pyramid_quad",
-      "base": [[-2, 0, -2], [2, 0, -2], [2, 0, 2], [-2, 0, 2]],
-      "apex": [0, 4, 0],
-      "labels": { "apex": "S", "base": ["A", "B", "C", "D"] }
-    },
-    "interactiveNodes": [
-      { "id": "M", "label": "M trên SA", "edge": ["S", "A"], "t": 0.5 },
-      { "id": "N", "label": "N trên SB", "edge": ["S", "B"], "t": 0.5 },
-      { "id": "P", "label": "P trên SC", "edge": ["S", "C"], "t": 0.5 },
-      { "id": "Q", "label": "Q trên SD", "edge": ["S", "D"], "t": 0.5 }
+  "geometry": {
+    "type": "pyramid",
+    "vertices": [
+      { "id": "A", "label": "A", "coords": [0, 0, 0] },
+      { "id": "B", "label": "B", "coords": [1, 0, 0] },
+      { "id": "C", "label": "C", "coords": [1, 0, 1] },
+      { "id": "D", "label": "D", "coords": [0, 0, 1] },
+      { "id": "S", "label": "S", "coords": [0, 1.7320508075688772, 0] },
+      { "id": "M", "label": "M (trung điểm SB)", "coords": [0.5, 0.8660254037844386, 0] },
+      { "id": "Q", "label": "Q (trung điểm SA)", "coords": [0, 0.8660254037844386, 0] },
+      { "id": "N", "label": "N (trung điểm SC)", "coords": [0.5, 0.8660254037844386, 0.5] },
+      { "id": "P", "label": "P (trung điểm SD)", "coords": [0, 0.8660254037844386, 0.5] }
     ],
-    "feedback": {
-      "correct": "Ba điểm đã xác định một mặt phẳng. Quan sát các giao điểm còn lại để nhận ra thiết diện; trong cấu hình này thiết diện song song với đáy.",
-      "incorrect": "Ba điểm đang thẳng hàng hoặc chưa tạo được đa giác kín. Chọn lại ba điểm không thẳng hàng trên các cạnh."
-    }
+    "solidEdges": [["S", "B"], ["S", "C"], ["S", "D"], ["B", "C"], ["C", "D"]],
+    "dashedEdges": [["S", "A"], ["A", "B"], ["A", "D"]],
+    "faces": [["A", "B", "C", "D"], ["S", "A", "B"], ["S", "B", "C"], ["S", "C", "D"], ["S", "D", "A"]],
+    "heightLine": { "start": "S", "end": "A", "hasRightAngleMark": true },
+    "angleMarker": { "vertex": "C", "firstRay": "S", "secondRay": "A", "label": "∠SCA" }
   },
-  {
-    "id": "hhkg_11_cap2_thiet_dien_tam_giac",
-    "level": 2,
-    "interactionType": "construct_section",
-    "title": "Thiết diện tam giác của hình chóp",
-    "question": "Chọn ba điểm M, N, P trên ba cạnh bên để quan sát mặt phẳng cắt khối chóp. Xoay hình để kiểm tra các cạnh khuất.",
-    "sceneConfig": { "cameraPosition": [4, 5, 6], "target": [0, 1.3, 0] },
-    "geometry": {
-      "type": "regular_pyramid",
-      "baseRadius": 2.4,
-      "baseSides": 3,
-      "height": 4,
-      "apexName": "S",
-      "baseNames": ["A", "B", "C"],
-      "centerName": "H"
+  "pedagogy": {
+    "level1_Identify": {
+      "question": "Để xác định góc giữa SC và mặt phẳng đáy, hãy chọn hình chiếu vuông góc của S trên đáy. Từ điểm đó, em sẽ dựng hình chiếu của SC như thế nào?",
+      "targetNodeId": "A",
+      "successExplanation": "Hình chiếu vuông góc của S lên đáy là A vì SA ⟂ (ABCD). Hình chiếu của SC lên đáy là AC, nên góc cần tìm là ∠SCA trong tam giác vuông SAC. Ta có AC = a√2, SA = a√3, SC = a√5; do đó tan ∠SCA = SA/AC = √(3/2), suy ra ∠SCA ≈ 50,8°."
     },
-    "interactiveNodes": [
-      { "id": "M", "label": "M trên SA", "edge": ["S", "A"], "t": 0.42 },
-      { "id": "N", "label": "N trên SB", "edge": ["S", "B"], "t": 0.58 },
-      { "id": "P", "label": "P trên SC", "edge": ["S", "C"], "t": 0.46 }
-    ],
-    "feedback": {
-      "correct": "Thiết diện được dựng từ ba điểm không thẳng hàng. Đếm các cạnh giao với mặt phẳng cắt để xác định tên đa giác.",
-      "incorrect": "Ba điểm này chưa xác định được mặt phẳng cắt hợp lệ. Hãy thử lại với một điểm trên cạnh khác."
-    }
-  },
-  {
-    "id": "hhkg_11_cap3_ti_so_thiet_dien",
-    "level": 3,
-    "interactionType": "parameter_slider",
-    "title": "Tỉ số diện tích thiết diện",
-    "question": "Điều chỉnh điểm M trên SA để mặt phẳng song song đáy tạo thiết diện có diện tích bằng 25% diện tích đáy ABCD.",
-    "sceneConfig": { "cameraPosition": [5, 4, 6], "target": [0, 1.6, 0] },
-    "geometry": {
-      "type": "pyramid_quad",
-      "base": [[-2, 0, -2], [2, 0, -2], [2, 0, 2], [-2, 0, 2]],
-      "apex": [0, 4, 0],
-      "labels": { "apex": "S", "base": ["A", "B", "C", "D"] }
+    "level2_Construction": {
+      "question": "M là trung điểm SB. Hãy chọn M và hai điểm bất kỳ trong Q, N, P để dựng mặt phẳng qua M song song với đáy. Quan sát mặt phẳng cắt bốn cạnh bên và gọi tên thiết diện.",
+      "cutPlaneEquation": "2y − √3 = 0 (với a = 1)",
+      "expectedPolygonType": "hình vuông QMNP",
+      "crossSectionVertices": ["Q", "M", "N", "P"],
+      "requiredNodeIds": ["M"]
     },
-    "slider": {
-      "param": "k",
+    "level3_ParametricSlider": {
+      "parameter": "k = SM/SB",
       "min": 0.05,
       "max": 0.95,
       "step": 0.01,
-      "defaultValue": 0.8,
-      "label": "Tỉ số SM / SA"
+      "formulaLatex": "\\frac{S_{QMNP}}{S_{ABCD}}=k^2,\\quad \\frac{V_{S.QMNP}}{V_{S.ABCD}}=k^3;\\quad k=\\sqrt{0.25}=0.5",
+      "targetRatio": 0.25
     },
-    "targetCondition": { "type": "area_ratio", "targetValue": 0.25, "tolerance": 0.03 },
-    "explanationFormula": "\\frac{S_{\\text{thiết diện}}}{S_{ABCD}} = k^2 \\Rightarrow k = \\sqrt{0.25} = 0.5",
-    "feedback": {
-      "correct": "Chuẩn rồi. Khi thiết diện song song với đáy, tỉ số diện tích bằng bình phương tỉ số đồng dạng. Với k = 0,5 thì diện tích bằng 1/4 diện tích đáy.",
-      "incorrect": "Hãy liên hệ tỉ số diện tích với tỉ số đồng dạng k. Diện tích thay đổi theo k hay theo k²?"
-    }
+    "socraticHints": [
+      "Góc giữa một đường thẳng và mặt phẳng là góc giữa đường thẳng đó với hình chiếu vuông góc của nó trên mặt phẳng. Hãy tìm hình chiếu của S trước.",
+      "Vì mặt phẳng cắt song song với đáy và đi qua trung điểm M của SB, các giao điểm trên SA, SC, SD cũng chia những cạnh ấy theo cùng tỉ số từ S.",
+      "Ba điểm không thẳng hàng xác định một mặt phẳng. Hãy chọn M cùng hai điểm trong Q, N, P; kiểm tra xem bốn giao điểm có tạo thành hình vuông đồng dạng với đáy không."
+    ]
   }
-]
+}

@@ -1,148 +1,98 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mathstep-vn.vercel.app/schemas/spatial-geometry-exercises.schema.json",
-  "title": "MathSTEP spatial geometry exercises",
-  "type": "array",
-  "items": {
-    "type": "object",
-    "required": ["id", "level", "interactionType", "title", "question", "sceneConfig", "geometry", "feedback"],
-    "properties": {
-      "id": { "type": "string", "minLength": 1 },
-      "level": { "type": "integer", "enum": [1, 2, 3] },
-      "interactionType": { "type": "string", "enum": ["identify_point", "construct_section", "parameter_slider"] },
-      "title": { "type": "string", "minLength": 1 },
-      "question": { "type": "string", "minLength": 1 },
-      "sceneConfig": {
-        "type": "object",
-        "required": ["cameraPosition", "target"],
-        "properties": {
-          "cameraPosition": { "$ref": "#/$defs/vector3" },
-          "target": { "$ref": "#/$defs/vector3" }
-        },
-        "additionalProperties": false
-      },
-      "geometry": {
-        "oneOf": [
-          {
-            "type": "object",
-            "required": ["type", "baseRadius", "baseSides", "height", "apexName", "baseNames", "centerName"],
-            "properties": {
-              "type": { "const": "regular_pyramid" },
-              "baseRadius": { "type": "number", "exclusiveMinimum": 0 },
-              "baseSides": { "type": "integer", "minimum": 3, "maximum": 12 },
-              "height": { "type": "number", "exclusiveMinimum": 0 },
-              "apexName": { "type": "string" },
-              "baseNames": { "type": "array", "items": { "type": "string" } },
-              "centerName": { "type": "string" }
-            },
-            "additionalProperties": false
-          },
-          {
-            "type": "object",
-            "required": ["type", "base", "apex", "labels"],
-            "properties": {
-              "type": { "const": "pyramid_quad" },
-              "base": { "type": "array", "minItems": 3, "items": { "$ref": "#/$defs/vector3" } },
-              "apex": { "$ref": "#/$defs/vector3" },
-              "labels": {
-                "type": "object",
-                "required": ["apex", "base"],
-                "properties": {
-                  "apex": { "type": "string" },
-                  "base": { "type": "array", "items": { "type": "string" } }
-                },
-                "additionalProperties": false
-              }
-            },
-            "additionalProperties": false
-          }
-        ]
-      },
-      "interactiveNodes": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "required": ["id", "label"],
-          "properties": {
-            "id": { "type": "string" },
-            "label": { "type": "string" },
-            "coord": { "$ref": "#/$defs/vector3" },
-            "edge": { "type": "array", "prefixItems": [{ "type": "string" }, { "type": "string" }], "minItems": 2, "maxItems": 2 },
-            "t": { "type": "number", "minimum": 0, "maximum": 1 }
-          },
-          "oneOf": [{ "required": ["coord"] }, { "required": ["edge", "t"] }],
-          "additionalProperties": false
-        }
-      },
-      "correctNodeId": { "type": "string" },
-      "slider": {
-        "type": "object",
-        "required": ["param", "min", "max", "step", "defaultValue", "label"],
-        "properties": {
-          "param": { "const": "k" },
-          "min": { "type": "number" },
-          "max": { "type": "number" },
-          "step": { "type": "number", "exclusiveMinimum": 0 },
-          "defaultValue": { "type": "number" },
-          "label": { "type": "string" }
-        },
-        "additionalProperties": false
-      },
-      "targetCondition": {
-        "type": "object",
-        "required": ["type", "targetValue", "tolerance"],
-        "properties": {
-          "type": { "const": "area_ratio" },
-          "targetValue": { "type": "number", "minimum": 0 },
-          "tolerance": { "type": "number", "minimum": 0 }
-        },
-        "additionalProperties": false
-      },
-      "explanationFormula": { "type": "string" },
-      "feedback": {
-        "type": "object",
-        "required": ["correct", "incorrect"],
-        "properties": {
-          "correct": { "type": "string" },
-          "incorrect": { "type": "string" }
-        },
-        "additionalProperties": false
+  "$id": "https://mathstep-vn.vercel.app/schemas/spatial-geometry-problem.schema.json",
+  "title": "MathSTEP spatial geometry problem",
+  "type": "object",
+  "required": ["problemMetadata", "sceneConfig", "geometry", "pedagogy"],
+  "properties": {
+    "problemMetadata": {
+      "type": "object",
+      "required": ["title", "gradeLevel", "topic", "originalText"],
+      "properties": {
+        "title": { "type": "string" },
+        "gradeLevel": { "type": "string" },
+        "topic": { "type": "string" },
+        "originalText": { "type": "string" }
       }
     },
-    "allOf": [
-      {
-        "if": { "properties": { "interactionType": { "const": "identify_point" } } },
-        "then": { "required": ["interactiveNodes", "correctNodeId"] }
-      },
-      {
-        "if": { "properties": { "interactionType": { "const": "construct_section" } } },
-        "then": { "required": ["interactiveNodes"] }
-      },
-      {
-        "if": { "properties": { "interactionType": { "const": "parameter_slider" } } },
-        "then": { "required": ["slider", "targetCondition", "explanationFormula"] }
-      },
-      {
-        "if": { "properties": { "level": { "const": 1 } } },
-        "then": { "properties": { "interactionType": { "const": "identify_point" } } }
-      },
-      {
-        "if": { "properties": { "level": { "const": 2 } } },
-        "then": { "properties": { "interactionType": { "const": "construct_section" } } }
-      },
-      {
-        "if": { "properties": { "level": { "const": 3 } } },
-        "then": { "properties": { "interactionType": { "const": "parameter_slider" } } }
+    "sceneConfig": {
+      "type": "object",
+      "required": ["cameraPosition", "target"],
+      "properties": {
+        "cameraPosition": { "$ref": "#/$defs/vector3" },
+        "target": { "$ref": "#/$defs/vector3" }
       }
-    ],
-    "additionalProperties": false
+    },
+    "geometry": {
+      "type": "object",
+      "required": ["type", "vertices", "solidEdges", "dashedEdges", "faces"],
+      "properties": {
+        "type": { "type": "string", "enum": ["pyramid", "prism", "cylinder", "cone", "sphere"] },
+        "vertices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "label", "coords"],
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "coords": { "$ref": "#/$defs/vector3" }
+            }
+          }
+        },
+        "solidEdges": { "$ref": "#/$defs/edges" },
+        "dashedEdges": { "$ref": "#/$defs/edges" },
+        "faces": { "type": "array", "items": { "type": "array", "items": { "type": "string" }, "minItems": 3 } },
+        "heightLine": {
+          "type": "object",
+          "required": ["start", "end", "hasRightAngleMark"],
+          "properties": { "start": { "type": "string" }, "end": { "type": "string" }, "hasRightAngleMark": { "type": "boolean" } }
+        },
+        "angleMarker": {
+          "type": "object",
+          "required": ["vertex", "firstRay", "secondRay", "label"],
+          "properties": { "vertex": { "type": "string" }, "firstRay": { "type": "string" }, "secondRay": { "type": "string" }, "label": { "type": "string" } }
+        }
+      }
+    },
+    "pedagogy": {
+      "type": "object",
+      "required": ["level1_Identify", "socraticHints"],
+      "properties": {
+        "level1_Identify": {
+          "type": "object",
+          "required": ["question", "targetNodeId", "successExplanation"],
+          "properties": { "question": { "type": "string" }, "targetNodeId": { "type": "string" }, "successExplanation": { "type": "string" } }
+        },
+        "level2_Construction": {
+          "type": "object",
+          "required": ["question", "cutPlaneEquation", "expectedPolygonType", "crossSectionVertices"],
+          "properties": {
+            "question": { "type": "string" },
+            "cutPlaneEquation": { "type": "string" },
+            "expectedPolygonType": { "type": "string" },
+            "crossSectionVertices": { "type": "array", "items": { "type": "string" } },
+            "requiredNodeIds": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "level3_ParametricSlider": {
+          "type": "object",
+          "required": ["parameter", "min", "max", "step", "formulaLatex", "targetRatio"],
+          "properties": {
+            "parameter": { "type": "string" },
+            "min": { "type": "number" },
+            "max": { "type": "number" },
+            "step": { "type": "number", "exclusiveMinimum": 0 },
+            "formulaLatex": { "type": "string" },
+            "targetRatio": { "type": "number", "minimum": 0 }
+          }
+        },
+        "socraticHints": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "string" } }
+      }
+    }
   },
   "$defs": {
-    "vector3": {
-      "type": "array",
-      "prefixItems": [{ "type": "number" }, { "type": "number" }, { "type": "number" }],
-      "minItems": 3,
-      "maxItems": 3
-    }
+    "vector3": { "type": "array", "prefixItems": [{ "type": "number" }, { "type": "number" }, { "type": "number" }], "minItems": 3, "maxItems": 3 },
+    "edges": { "type": "array", "items": { "type": "array", "prefixItems": [{ "type": "string" }, { "type": "string" }], "minItems": 2, "maxItems": 2 } }
   }
 }

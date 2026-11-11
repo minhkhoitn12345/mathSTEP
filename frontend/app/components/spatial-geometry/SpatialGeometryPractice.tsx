@@ -6,12 +6,29 @@ import { Html, Line, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { Check, CircleHelp, RotateCcw, Rotate3D, ZoomIn, ZoomOut } from "lucide-react";
 import { MathFormattedText } from "@/app/components/KatexMath";
-import exerciseData from "@/app/data/spatial-geometry/exercises.json";
+import problemData from "@/app/data/spatial-geometry/exercises.json";
 
 type Vec3 = [number, number, number];
-type GeometryConfig =
-  | { type: "regular_pyramid"; baseRadius: number; baseSides: number; height: number; apexName: string; baseNames: string[]; centerName: string }
-  | { type: "pyramid_quad"; base: Vec3[]; apex: Vec3; labels: { apex: string; base: string[] } };
+type ProblemGeometry = {
+  type: "pyramid" | "prism" | "cylinder" | "cone" | "sphere";
+  vertices: Array<{ id: string; label: string; coords: Vec3 }>;
+  solidEdges: string[][];
+  dashedEdges: string[][];
+  faces: string[][];
+  heightLine?: { start: string; end: string; hasRightAngleMark: boolean };
+  angleMarker?: { vertex: string; firstRay: string; secondRay: string; label: string };
+};
+type SpatialProblem = {
+  problemMetadata: { title: string; gradeLevel: string; topic: string; originalText: string };
+  sceneConfig: { cameraPosition: Vec3; target: Vec3 };
+  geometry: ProblemGeometry;
+  pedagogy: {
+    level1_Identify: { question: string; targetNodeId: string; successExplanation: string };
+    level2_Construction?: { question: string; cutPlaneEquation: string; expectedPolygonType: string; crossSectionVertices: string[]; requiredNodeIds?: string[] };
+    level3_ParametricSlider?: { parameter: string; min: number; max: number; step: number; formulaLatex: string; targetRatio: number };
+    socraticHints: string[];
+  };
+};
 type InteractiveNode = { id: string; label: string; coord?: Vec3; edge?: [string, string]; t?: number };
 type SpatialExercise = {
   id: string;
@@ -20,9 +37,13 @@ type SpatialExercise = {
   title: string;
   question: string;
   sceneConfig: { cameraPosition: Vec3; target: Vec3 };
-  geometry: GeometryConfig;
+  geometry: ProblemGeometry;
   interactiveNodes?: InteractiveNode[];
   correctNodeId?: string;
+  requiredNodeIds?: string[];
+  expectedNodeIds?: string[];
+  expectedPolygonType?: string;
+  cutPlaneEquation?: string;
   slider?: { param: "k"; min: number; max: number; step: number; defaultValue: number; label: string };
   targetCondition?: { type: "area_ratio"; targetValue: number; tolerance: number };
   explanationFormula?: string;
@@ -30,42 +51,73 @@ type SpatialExercise = {
 };
 
 type Solid = {
+  vertices: Map<string, Vec3>;
+  faces: string[][];
+  edges: Array<{ ids: [string, string]; hidden: boolean }>;
   base: Vec3[];
   apex: Vec3;
   baseNames: string[];
   apexName: string;
   center: Vec3;
   centerName?: string;
+  heightLine?: ProblemGeometry["heightLine"];
+  angleMarker?: ProblemGeometry["angleMarker"];
 };
 
-const EXERCISES = exerciseData as SpatialExercise[];
+const PROBLEM = problemData as SpatialProblem;
+const EXERCISES: SpatialExercise[] = [
+  {
+    id: "hhkg_11_goc_sc_mat_phang_day", level: 1, interactionType: "identify_point",
+    title: PROBLEM.problemMetadata.title, question: PROBLEM.pedagogy.level1_Identify.question,
+    sceneConfig: PROBLEM.sceneConfig, geometry: PROBLEM.geometry,
+    interactiveNodes: PROBLEM.geometry.vertices.map(({ id, label, coords }) => ({ id, label, coord: coords })),
+    correctNodeId: PROBLEM.pedagogy.level1_Identify.targetNodeId,
+    feedback: { correct: PROBLEM.pedagogy.level1_Identify.successExplanation, incorrect: "Hãy xác định hình chiếu vuông góc của S lên mặt phẳng đáy trước. Vì SA vuông góc với đáy, hình chiếu ấy nằm trên cạnh đáy nào?" },
+  },
+  ...(PROBLEM.pedagogy.level2_Construction ? [{
+    id: "hhkg_11_thiet_dien_song_song_day", level: 2 as const, interactionType: "construct_section" as const,
+    title: "Dựng thiết diện song song với đáy", question: PROBLEM.pedagogy.level2_Construction.question,
+    sceneConfig: PROBLEM.sceneConfig, geometry: PROBLEM.geometry,
+    interactiveNodes: PROBLEM.pedagogy.level2_Construction.crossSectionVertices.map((id) => {
+      const vertex = PROBLEM.geometry.vertices.find((item) => item.id === id)!;
+      return { id, label: vertex.label, coord: vertex.coords };
+    }),
+    requiredNodeIds: PROBLEM.pedagogy.level2_Construction.requiredNodeIds ?? [],
+    expectedNodeIds: PROBLEM.pedagogy.level2_Construction.crossSectionVertices,
+    expectedPolygonType: PROBLEM.pedagogy.level2_Construction.expectedPolygonType,
+    cutPlaneEquation: PROBLEM.pedagogy.level2_Construction.cutPlaneEquation,
+    feedback: { correct: `Đúng. Mặt phẳng cắt có phương trình ${PROBLEM.pedagogy.level2_Construction.cutPlaneEquation}; thiết diện là ${PROBLEM.pedagogy.level2_Construction.expectedPolygonType}.`, incorrect: "Hãy chọn ba điểm thuộc mặt phẳng cắt, trong đó phải có M là trung điểm SB. Kiểm tra xem các điểm có cùng tung độ hay không." },
+  }] : []),
+  ...(PROBLEM.pedagogy.level3_ParametricSlider ? [{
+    id: "hhkg_11_ti_so_thiet_dien", level: 3 as const, interactionType: "parameter_slider" as const,
+    title: "Kiểm chứng tỉ số diện tích và thể tích",
+    question: "Điều chỉnh k = SM/SB để thiết diện song song với đáy có diện tích bằng 25% diện tích đáy.",
+    sceneConfig: PROBLEM.sceneConfig, geometry: PROBLEM.geometry,
+    slider: { param: "k" as const, min: PROBLEM.pedagogy.level3_ParametricSlider.min, max: PROBLEM.pedagogy.level3_ParametricSlider.max, step: PROBLEM.pedagogy.level3_ParametricSlider.step, defaultValue: 0.8, label: "Tỉ số SM / SB" },
+    targetCondition: { type: "area_ratio" as const, targetValue: PROBLEM.pedagogy.level3_ParametricSlider.targetRatio, tolerance: 0.01 },
+    explanationFormula: PROBLEM.pedagogy.level3_ParametricSlider.formulaLatex,
+    feedback: { correct: "Chính xác. Thiết diện song song với đáy đồng dạng với đáy; tỉ số diện tích bằng bình phương tỉ số đồng dạng.", incorrect: "Diện tích biến đổi theo bình phương tỉ số đồng dạng. Hãy tìm k sao cho k² = 0,25." },
+  }] : []),
+];
 const AXIS_SIZE = 6;
 const EPSILON = 1e-5;
 
-function buildSolid(config: GeometryConfig): Solid {
-  if (config.type === "regular_pyramid") {
-    const base = Array.from({ length: config.baseSides }, (_, index) => {
-      const angle = (Math.PI * 2 * index) / config.baseSides;
-      return [Math.cos(angle) * config.baseRadius, 0, Math.sin(angle) * config.baseRadius] as Vec3;
-    });
-    return {
-      base,
-      apex: [0, config.height, 0],
-      baseNames: config.baseNames,
-      apexName: config.apexName,
-      center: [0, 0, 0],
-      centerName: config.centerName,
-    };
-  }
-  const center = config.base.reduce<Vec3>((sum, p) => [sum[0] + p[0] / config.base.length, sum[1] + p[1] / config.base.length, sum[2] + p[2] / config.base.length], [0, 0, 0]);
-  return { base: config.base, apex: config.apex, baseNames: config.labels.base, apexName: config.labels.apex, center };
+function buildSolid(config: ProblemGeometry): Solid {
+  const vertices = new Map(config.vertices.map(({ id, coords }) => [id, coords]));
+  const baseFace = config.faces.find((face) => face.every((id) => Math.abs(vertices.get(id)?.[1] ?? Infinity) < EPSILON)) ?? config.faces[0];
+  const apexEntry = config.vertices.reduce((highest, item) => item.coords[1] > highest.coords[1] ? item : highest, config.vertices[0]);
+  const base = baseFace.map((id) => vertices.get(id)!).filter(Boolean);
+  const center = base.reduce<Vec3>((sum, p) => [sum[0] + p[0] / base.length, sum[1] + p[1] / base.length, sum[2] + p[2] / base.length], [0, 0, 0]);
+  return {
+    vertices, faces: config.faces,
+    edges: [...config.solidEdges.map((ids) => ({ ids: [ids[0], ids[1]] as [string, string], hidden: false })), ...config.dashedEdges.map((ids) => ({ ids: [ids[0], ids[1]] as [string, string], hidden: true }))],
+    base, apex: apexEntry.coords, baseNames: baseFace, apexName: apexEntry.id, center,
+    heightLine: config.heightLine, angleMarker: config.angleMarker,
+  };
 }
 
 function getLabeledVertices(solid: Solid): Map<string, Vec3> {
-  const points = new Map<string, Vec3>([[solid.apexName, solid.apex]]);
-  if (solid.centerName) points.set(solid.centerName, solid.center);
-  solid.base.forEach((point, index) => points.set(solid.baseNames[index] ?? String.fromCharCode(65 + index), point));
-  return points;
+  return solid.vertices;
 }
 
 function getNodeCoordinate(node: InteractiveNode, vertices: Map<string, Vec3>): Vec3 | null {
@@ -78,10 +130,10 @@ function getNodeCoordinate(node: InteractiveNode, vertices: Map<string, Vec3>): 
 }
 
 function getSolidEdges(solid: Solid): Array<[Vec3, Vec3]> {
-  const edges: Array<[Vec3, Vec3]> = [];
-  solid.base.forEach((point, index) => edges.push([point, solid.base[(index + 1) % solid.base.length]]));
-  solid.base.forEach((point) => edges.push([point, solid.apex]));
-  return edges;
+  return solid.edges.flatMap(({ ids }) => {
+    const start = solid.vertices.get(ids[0]); const end = solid.vertices.get(ids[1]);
+    return start && end ? [[start, end] as [Vec3, Vec3]] : [];
+  });
 }
 
 function getSectionFromPlane(solid: Solid, planePoints: Vec3[]): Vec3[] {
@@ -177,7 +229,6 @@ function PyramidModel({ solid, section, nodes, selectedNodeIds, onSelectNode }: 
 }) {
   const faceRefs = useRef<THREE.Mesh[]>([]);
   const vertices = useMemo(() => getLabeledVertices(solid), [solid]);
-  const edges = useMemo(() => getSolidEdges(solid), [solid]);
   const baseMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.2, side: THREE.DoubleSide, depthWrite: false }), []);
   const sideMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: 0x60a5fa, transparent: true, opacity: 0.2, side: THREE.DoubleSide, depthWrite: false }), []);
   const sectionMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false }), []);
@@ -193,12 +244,16 @@ function PyramidModel({ solid, section, nodes, selectedNodeIds, onSelectNode }: 
       <Html position={[0, AXIS_SIZE + 0.2, 0]} center style={{ pointerEvents: "none" }}><span className="rounded bg-white/90 px-1 text-[11px] font-bold text-emerald-600">y</span></Html>
       <Html position={[0, 0, AXIS_SIZE + 0.2]} center style={{ pointerEvents: "none" }}><span className="rounded bg-white/90 px-1 text-[11px] font-bold text-blue-600">z</span></Html>
 
-      <FaceMesh points={solid.base} material={baseMaterial} faceRefs={faceRefs} />
       <GeometryMarkers solid={solid} />
-      {solid.base.map((point, index) => (
-        <FaceMesh key={`face-${index}`} points={[solid.apex, point, solid.base[(index + 1) % solid.base.length]]} material={sideMaterial} faceRefs={faceRefs} />
-      ))}
-      {edges.map(([start, end], index) => <VisibleOrHiddenEdge key={`edge-${index}`} start={start} end={end} faceRefs={faceRefs} />)}
+      {solid.faces.map((face, index) => {
+        const points = face.map((id) => vertices.get(id)).filter((point): point is Vec3 => Boolean(point));
+        const isBase = face.every((id) => Math.abs(vertices.get(id)?.[1] ?? Infinity) < EPSILON);
+        return <FaceMesh key={`face-${index}`} points={points} material={isBase ? baseMaterial : sideMaterial} faceRefs={faceRefs} />;
+      })}
+      {solid.edges.map(({ ids, hidden }, index) => {
+        const start = vertices.get(ids[0]); const end = vertices.get(ids[1]);
+        return start && end ? <VisibleOrHiddenEdge key={`edge-${index}`} start={start} end={end} faceRefs={faceRefs} initiallyHidden={hidden} /> : null;
+      })}
       {section.length >= 3 && (
         <>
           <FaceMesh points={section} material={sectionMaterial} />
@@ -237,18 +292,18 @@ function PyramidModel({ solid, section, nodes, selectedNodeIds, onSelectNode }: 
 }
 
 function GeometryMarkers({ solid }: { solid: Solid }) {
-  const foot = new THREE.Vector3(...solid.center);
-  const vertical = new THREE.Vector3(...solid.apex).sub(foot).normalize();
-  const baseDirection = new THREE.Vector3(...solid.base[0]).sub(foot).normalize();
-  const markerSize = 0.32;
-  const rightAnglePoints = [
-    foot.clone().addScaledVector(vertical, markerSize),
-    foot.clone().addScaledVector(vertical, markerSize).addScaledVector(baseDirection, markerSize),
-    foot.clone().addScaledVector(baseDirection, markerSize),
-  ];
-  const vertex = new THREE.Vector3(...solid.base[0]);
-  const directionA = new THREE.Vector3(...solid.apex).sub(vertex).normalize();
-  const directionB = new THREE.Vector3(...solid.base[1]).sub(vertex).normalize();
+  const footCoord = solid.heightLine ? solid.vertices.get(solid.heightLine.end) : solid.center;
+  const startCoord = solid.heightLine ? solid.vertices.get(solid.heightLine.start) : solid.apex;
+  const foot = new THREE.Vector3(...(footCoord ?? solid.center));
+  const vertical = new THREE.Vector3(...(startCoord ?? solid.apex)).sub(foot).normalize();
+  const basePoint = solid.base.find((point) => new THREE.Vector3(...point).distanceTo(foot) > EPSILON) ?? solid.base[0];
+  const baseDirection = new THREE.Vector3(...basePoint).sub(foot).normalize();
+  const markerSize = 0.22;
+  const rightAnglePoints = [foot.clone().addScaledVector(vertical, markerSize), foot.clone().addScaledVector(vertical, markerSize).addScaledVector(baseDirection, markerSize), foot.clone().addScaledVector(baseDirection, markerSize)];
+  const angleMarker = solid.angleMarker;
+  const vertex = new THREE.Vector3(...(angleMarker ? solid.vertices.get(angleMarker.vertex)! : solid.base[0]));
+  const directionA = new THREE.Vector3(...(angleMarker ? solid.vertices.get(angleMarker.firstRay)! : solid.apex)).sub(vertex).normalize();
+  const directionB = new THREE.Vector3(...(angleMarker ? solid.vertices.get(angleMarker.secondRay)! : solid.base[1])).sub(vertex).normalize();
   const normal = new THREE.Vector3().crossVectors(directionA, directionB).normalize();
   const angle = Math.acos(THREE.MathUtils.clamp(directionA.dot(directionB), -1, 1));
   const anglePoints = Array.from({ length: 18 }, (_, index) => {
@@ -258,20 +313,18 @@ function GeometryMarkers({ solid }: { solid: Solid }) {
 
   return (
     <>
-      <Line points={rightAnglePoints} color="#d97706" lineWidth={2} />
-      <Line points={anglePoints} color="#d97706" lineWidth={2} />
-      <Html position={vertex.clone().addScaledVector(directionA.clone().add(directionB).normalize(), 0.55).toArray()} center style={{ pointerEvents: "none" }}>
-        <span className="rounded bg-white/90 px-1 text-[10px] font-bold text-amber-700">∠SAB</span>
-      </Html>
+      {solid.heightLine?.hasRightAngleMark && <Line points={rightAnglePoints} color="#d97706" lineWidth={2} />}
+      {angleMarker && <><Line points={anglePoints} color="#d97706" lineWidth={2} /><Html position={vertex.clone().addScaledVector(directionA.clone().add(directionB).normalize(), 0.55).toArray()} center style={{ pointerEvents: "none" }}><span className="rounded bg-white/90 px-1 text-[10px] font-bold text-amber-700">{angleMarker.label}</span></Html></>}
     </>
   );
 }
 
-function SolidEdge({ start, end, color = 0x0284c7, faceRefs }: {
+function SolidEdge({ start, end, color = 0x0284c7, faceRefs, initiallyHidden = false }: {
   start: Vec3;
   end: Vec3;
   color?: THREE.ColorRepresentation;
   faceRefs?: React.MutableRefObject<THREE.Mesh[]>;
+  initiallyHidden?: boolean;
 }) {
   const solidRef = useRef<THREE.Line>(null);
   const dashedRef = useRef<THREE.Line>(null);
@@ -297,8 +350,8 @@ function SolidEdge({ start, end, color = 0x0284c7, faceRefs }: {
     raycaster.set(camera.position, direction);
     raycaster.far = Math.max(0, distance - 0.025);
     const hidden = raycaster.intersectObjects(faceRefs.current, false).length > 0;
-    solidRef.current.visible = !hidden;
-    dashedRef.current.visible = hidden;
+    solidRef.current.visible = hidden ? false : !initiallyHidden;
+    dashedRef.current.visible = hidden || initiallyHidden;
   });
 
   return (
@@ -346,7 +399,7 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
   const [cameraRevision, setCameraRevision] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [completed, setCompleted] = useState<string[]>([]);
-  const [hintOpen, setHintOpen] = useState(false);
+  const [hintIndex, setHintIndex] = useState(-1);
 
   useEffect(() => {
     try {
@@ -396,7 +449,7 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
     setActiveNodeId(null);
     setConstructedSection([]);
     setFeedback(null);
-    setHintOpen(false);
+    setHintIndex(-1);
     setSliderValue(nextExercise.slider?.defaultValue ?? 0.5);
     setCameraView("default");
     setZoom(1);
@@ -424,11 +477,16 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
     const points = next.map((nodeId) => nodeById.get(nodeId)?.position).filter((point): point is Vec3 => Boolean(point));
     const sectionPoints = getSectionFromPlane(solid, points);
     setConstructedSection(sectionPoints);
-    if (sectionPoints.length >= 3) {
-      setFeedback({ correct: true, message: exercise.feedback.correct + " Giao tuyến tạo thành một " + classifySection(sectionPoints.length) + " có " + sectionPoints.length + " đỉnh." });
+    const selectedRequiredNodes = (exercise.requiredNodeIds ?? []).every((nodeId) => next.includes(nodeId));
+    const sectionMatchesExpected = !exercise.expectedNodeIds || exercise.expectedNodeIds.every((nodeId) => {
+      const expected = nodeById.get(nodeId)?.position;
+      return expected && sectionPoints.some((point) => distance(point, expected) < 1e-3);
+    });
+    if (sectionPoints.length >= 3 && selectedRequiredNodes && sectionMatchesExpected) {
+      setFeedback({ correct: true, message: exercise.feedback.correct + " Thiết diện là " + (exercise.expectedPolygonType ?? classifySection(sectionPoints.length)) + "." });
       markCompleted(exercise.id);
     } else {
-      setFeedback({ correct: false, message: exercise.feedback.incorrect });
+      setFeedback({ correct: false, message: selectedRequiredNodes ? exercise.feedback.incorrect : "Mặt phẳng cần đi qua M. Hãy chọn M cùng hai điểm khác trong Q, N, P để xác định đúng mặt phẳng song song với đáy." });
     }
   };
 
@@ -449,9 +507,12 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
   const exercisesByLevel = [1, 2, 3].map((level) => ({ level: level as 1 | 2 | 3, exercises: EXERCISES.filter((item) => item.level === level) }));
   const baseCameraPosition = getCameraPosition(exercise, cameraView);
   const cameraPosition = baseCameraPosition.map((value, axis) => exercise.sceneConfig.target[axis] + (value - exercise.sceneConfig.target[axis]) * zoom) as Vec3;
-  const lateralLength = distance(solid.apex, solid.base[0]);
-  const sideLength = distance(solid.base[0], solid.base[1]);
-  const baseAngle = angleDegrees(solid.base[0], solid.apex, solid.base[1]);
+  const angleSpec = solid.angleMarker;
+  const angleVertex = angleSpec ? solid.vertices.get(angleSpec.vertex) : solid.base[0];
+  const angleFirst = angleSpec ? solid.vertices.get(angleSpec.firstRay) : solid.apex;
+  const angleSecond = angleSpec ? solid.vertices.get(angleSpec.secondRay) : solid.base[1];
+  const angleValue = angleVertex && angleFirst && angleSecond ? angleDegrees(angleVertex, angleFirst, angleSecond) : 0;
+  const projectionLength = solid.vertices.has("A") && solid.vertices.has("C") ? distance(solid.vertices.get("A")!, solid.vertices.get("C")!) : distance(solid.base[0], solid.base[1]);
 
   return (
     <section className="overflow-hidden rounded-[1.75rem] bg-slate-50 text-slate-900" aria-label="Phòng thực hành hình học không gian 3D">
@@ -503,7 +564,7 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
               <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">Chọn nhiệm vụ</p>
               <h3 className="mt-1 text-lg font-extrabold text-slate-900">Bài tập tương tác</h3>
             </div>
-            <button type="button" onClick={() => setHintOpen((value) => !value)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100" aria-label="Hiện gợi ý">
+            <button type="button" onClick={() => setHintIndex((value) => (value + 1) % PROBLEM.pedagogy.socraticHints.length)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100" aria-label="Xem gợi ý tiếp theo">
               <CircleHelp className="h-4 w-4" />
             </button>
           </div>
@@ -533,13 +594,13 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
             <h4 className="mt-2 text-base font-extrabold leading-snug text-slate-900">{exercise.title}</h4>
             <div className="mt-2 text-sm leading-6 text-slate-600"><MathFormattedText text={exercise.question} /></div>
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-slate-500" aria-label="Số đo trên hình">
-              <span>SA = {lateralLength.toFixed(2)}</span>
-              <span>AB = {sideLength.toFixed(2)}</span>
-              <span>∠SAB = {baseAngle.toFixed(1)}°</span>
+              <span>SA = √3</span>
+              <span>AC = {projectionLength.toFixed(2)}</span>
+              <span>∠SCA = {angleValue.toFixed(1)}°</span>
             </div>
-            {hintOpen && (
+            {hintIndex >= 0 && (
               <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-950">
-                {exercise.interactionType === "identify_point" ? "Mẹo: xoay để so sánh khoảng cách từ hình chiếu đến các đỉnh của đáy." : exercise.interactionType === "construct_section" ? "Mẹo: ba điểm không thẳng hàng xác định một mặt phẳng. Đếm giao điểm của mặt phẳng đó với các cạnh." : "Mẹo: thiết diện song song với đáy đồng dạng với đáy; tỉ số diện tích bằng bình phương tỉ số cạnh tương ứng."}
+                <strong>Gợi ý {hintIndex + 1}/{PROBLEM.pedagogy.socraticHints.length}: </strong>{PROBLEM.pedagogy.socraticHints[hintIndex]}
               </p>
             )}
           </div>
@@ -573,7 +634,7 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
               <input id="section-ratio-slider" type="range" min={exercise.slider.min} max={exercise.slider.max} step={exercise.slider.step} value={sliderValue} onChange={(event) => { setSliderValue(Number(event.target.value)); setFeedback(null); }} className="w-full accent-blue-700" />
               <div className="space-y-2 rounded-2xl bg-slate-50 px-3 py-3 text-xs">
                 <div className="flex items-center justify-between gap-3"><span className="text-slate-600">Diện tích thiết diện / diện tích đáy</span><strong className="font-mono text-slate-900">k² = {areaRatio.toFixed(3)}</strong></div>
-                <div className="flex items-center justify-between gap-3"><span className="text-slate-600">Thể tích chóp nhỏ / chóp ban đầu</span><strong className="font-mono text-slate-900">k³ = {volumeRatio.toFixed(3)}</strong></div>
+                <div className="flex items-center justify-between gap-3"><span className="text-slate-600">Thể tích khối chóp nhỏ / khối chóp ban đầu</span><strong className="font-mono text-slate-900">k³ = {volumeRatio.toFixed(3)}</strong></div>
                 {exercise.explanationFormula && <div className="border-t border-slate-200 pt-2 text-center text-blue-900"><MathFormattedText text={`$${exercise.explanationFormula}$`} /></div>}
               </div>
               <button type="button" onClick={checkSlider} className="w-full rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-800">Kiểm tra thiết diện</button>
