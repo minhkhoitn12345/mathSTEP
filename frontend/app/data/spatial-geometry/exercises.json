@@ -7,20 +7,20 @@
   },
   "sceneConfig": {
     "cameraPosition": [4, 4, 5],
-    "target": [0.5, 0.8, 0.5]
+    "target": [1, 1.6, 1]
   },
   "geometry": {
     "type": "pyramid",
     "vertices": [
       { "id": "A", "label": "A", "coords": [0, 0, 0] },
-      { "id": "B", "label": "B", "coords": [1, 0, 0] },
-      { "id": "C", "label": "C", "coords": [1, 0, 1] },
-      { "id": "D", "label": "D", "coords": [0, 0, 1] },
-      { "id": "S", "label": "S", "coords": [0, 1.7320508075688772, 0] },
-      { "id": "M", "label": "M (trung điểm SB)", "coords": [0.5, 0.8660254037844386, 0] },
-      { "id": "Q", "label": "Q (trung điểm SA)", "coords": [0, 0.8660254037844386, 0] },
-      { "id": "N", "label": "N (trung điểm SC)", "coords": [0.5, 0.8660254037844386, 0.5] },
-      { "id": "P", "label": "P (trung điểm SD)", "coords": [0, 0.8660254037844386, 0.5] }
+      { "id": "B", "label": "B", "coords": [2, 0, 0] },
+      { "id": "C", "label": "C", "coords": [2, 0, 2] },
+      { "id": "D", "label": "D", "coords": [0, 0, 2] },
+      { "id": "S", "label": "S", "coords": [0, 3.4641016151377544, 0] },
+      { "id": "M", "label": "M (trung điểm SB)", "coords": [1, 1.7320508075688772, 0] },
+      { "id": "Q", "label": "Q (trung điểm SA)", "coords": [0, 1.7320508075688772, 0] },
+      { "id": "N", "label": "N (trung điểm SC)", "coords": [1, 1.7320508075688772, 1] },
+      { "id": "P", "label": "P (trung điểm SD)", "coords": [0, 1.7320508075688772, 1] }
     ],
     "solidEdges": [["S", "B"], ["S", "C"], ["S", "D"], ["B", "C"], ["C", "D"]],
     "dashedEdges": [["S", "A"], ["A", "B"], ["A", "D"]],
@@ -36,7 +36,7 @@
     },
     "level2_Construction": {
       "question": "M là trung điểm SB. Hãy chọn M và hai điểm bất kỳ trong Q, N, P để dựng mặt phẳng qua M song song với đáy. Quan sát mặt phẳng cắt bốn cạnh bên và gọi tên thiết diện.",
-      "cutPlaneEquation": "2y − √3 = 0 (với a = 1)",
+      "cutPlaneEquation": "2y − 2√3 = 0 (mô hình dùng a = 2)",
       "expectedPolygonType": "hình vuông QMNP",
       "crossSectionVertices": ["Q", "M", "N", "P"],
       "requiredNodeIds": ["M"]

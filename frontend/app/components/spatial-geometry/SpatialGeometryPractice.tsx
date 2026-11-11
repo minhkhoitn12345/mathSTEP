@@ -99,7 +99,7 @@ const EXERCISES: SpatialExercise[] = [
     feedback: { correct: "Chính xác. Thiết diện song song với đáy đồng dạng với đáy; tỉ số diện tích bằng bình phương tỉ số đồng dạng.", incorrect: "Diện tích biến đổi theo bình phương tỉ số đồng dạng. Hãy tìm k sao cho k² = 0,25." },
   }] : []),
 ];
-const AXIS_SIZE = 6;
+const AXIS_SIZE = 3.5;
 const EPSILON = 1e-5;
 
 function buildSolid(config: ProblemGeometry): Solid {
@@ -238,7 +238,7 @@ function PyramidModel({ solid, section, nodes, selectedNodeIds, onSelectNode }: 
     <>
       <ambientLight intensity={1.2} />
       <directionalLight position={[4, 8, 5]} intensity={1.4} />
-      <gridHelper args={[12, 12, 0x94a3b8, 0xe2e8f0]} position={[0, -0.012, 0]} />
+      <gridHelper args={[6, 12, 0x94a3b8, 0xe2e8f0]} position={[0, -0.012, 0]} />
       <axesHelper args={[AXIS_SIZE]} />
       <Html position={[AXIS_SIZE + 0.2, 0, 0]} center style={{ pointerEvents: "none" }}><span className="rounded bg-white/90 px-1 text-[11px] font-bold text-red-600">x</span></Html>
       <Html position={[0, AXIS_SIZE + 0.2, 0]} center style={{ pointerEvents: "none" }}><span className="rounded bg-white/90 px-1 text-[11px] font-bold text-emerald-600">y</span></Html>
@@ -263,7 +263,7 @@ function PyramidModel({ solid, section, nodes, selectedNodeIds, onSelectNode }: 
 
       {labelEntries.map(([name, position]) => (
         <Html key={`label-${name}`} position={position} center distanceFactor={10} style={{ pointerEvents: "none" }}>
-          <span className="rounded-md bg-white/95 px-1.5 py-0.5 text-xs font-extrabold text-slate-800 shadow-sm">{name}</span>
+          <span className="inline-block rounded-sm bg-white/80 px-1 py-0 text-[9px] font-bold leading-3 text-slate-800 shadow-sm" style={{ transform: "translate(5px, -9px)" }}>{name}</span>
         </Html>
       ))}
       {nodes.map((node) => {
@@ -512,7 +512,9 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
   const angleFirst = angleSpec ? solid.vertices.get(angleSpec.firstRay) : solid.apex;
   const angleSecond = angleSpec ? solid.vertices.get(angleSpec.secondRay) : solid.base[1];
   const angleValue = angleVertex && angleFirst && angleSecond ? angleDegrees(angleVertex, angleFirst, angleSecond) : 0;
+  const baseLength = solid.vertices.has("A") && solid.vertices.has("B") ? distance(solid.vertices.get("A")!, solid.vertices.get("B")!) : distance(solid.base[0], solid.base[1]);
   const projectionLength = solid.vertices.has("A") && solid.vertices.has("C") ? distance(solid.vertices.get("A")!, solid.vertices.get("C")!) : distance(solid.base[0], solid.base[1]);
+  const heightLength = solid.heightLine ? distance(solid.vertices.get(solid.heightLine.start)!, solid.vertices.get(solid.heightLine.end)!) : distance(solid.apex, solid.center);
 
   return (
     <section className="overflow-hidden rounded-[1.75rem] bg-slate-50 text-slate-900" aria-label="Phòng thực hành hình học không gian 3D">
@@ -594,8 +596,8 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
             <h4 className="mt-2 text-base font-extrabold leading-snug text-slate-900">{exercise.title}</h4>
             <div className="mt-2 text-sm leading-6 text-slate-600"><MathFormattedText text={exercise.question} /></div>
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-slate-500" aria-label="Số đo trên hình">
-              <span>SA = √3</span>
-              <span>AC = {projectionLength.toFixed(2)}</span>
+              <span>SA/a = {(heightLength / baseLength).toFixed(2)}</span>
+              <span>AC/a = {(projectionLength / baseLength).toFixed(2)}</span>
               <span>∠SCA = {angleValue.toFixed(1)}°</span>
             </div>
             {hintIndex >= 0 && (
