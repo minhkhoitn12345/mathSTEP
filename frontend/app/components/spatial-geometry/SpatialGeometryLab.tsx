@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
 import { MathFormattedText } from "@/app/components/KatexMath";
+import { SpatialGeometryPractice } from "./SpatialGeometryPractice";
 
 type DiscoveryPrompt = { prompt: string; choices: string[]; answer: number; explanation: string };
 
@@ -36,7 +37,7 @@ interface SpatialGeometryLabProps {
   embedded?: boolean;
 }
 
-export function SpatialGeometryLab({
+function SpatialGeometryLessonLab({
   onBackToHome,
   onOpenSocraticDrawer,
   initialLessonIndex = 0,
@@ -1151,6 +1152,47 @@ export function SpatialGeometryLab({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function SpatialGeometryLab(props: SpatialGeometryLabProps) {
+  const [activeExperience, setActiveExperience] = useState<"practice" | "lessons">("practice");
+  const lessonExerciseIds = [
+    "hhkg_11_cap1_chan_duong_cao",
+    "hhkg_11_cap2_thiet_dien_song_song",
+    "hhkg_11_cap2_thiet_dien_tam_giac",
+    "hhkg_11_cap3_ti_so_thiet_dien",
+    "hhkg_11_cap2_thiet_dien_song_song",
+  ];
+  const initialExerciseId = lessonExerciseIds[props.initialLessonIndex ?? 0] ?? lessonExerciseIds[0];
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-4 px-1">
+        <p className="text-xs font-semibold text-slate-500">Chọn cách học</p>
+        <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1">
+          <button
+            type="button"
+            onClick={() => setActiveExperience("practice")}
+            aria-pressed={activeExperience === "practice"}
+            className={"rounded-lg px-3 py-2 text-xs font-bold transition " + (activeExperience === "practice" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900")}
+          >
+            Mô phỏng 3D & bài tập
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveExperience("lessons")}
+            aria-pressed={activeExperience === "lessons"}
+            className={"rounded-lg px-3 py-2 text-xs font-bold transition " + (activeExperience === "lessons" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900")}
+          >
+            Bài học chi tiết
+          </button>
+        </div>
+      </div>
+      {activeExperience === "practice"
+        ? <SpatialGeometryPractice key={initialExerciseId} initialExerciseId={initialExerciseId} />
+        : <SpatialGeometryLessonLab {...props} />}
     </div>
   );
 }

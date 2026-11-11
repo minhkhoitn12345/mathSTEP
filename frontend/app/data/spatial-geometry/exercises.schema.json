@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mathstep-vn.vercel.app/schemas/spatial-geometry-exercises.schema.json",
+  "title": "MathSTEP spatial geometry exercises",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["id", "level", "interactionType", "title", "question", "sceneConfig", "geometry", "feedback"],
+    "properties": {
+      "id": { "type": "string", "minLength": 1 },
+      "level": { "type": "integer", "enum": [1, 2, 3] },
+      "interactionType": { "type": "string", "enum": ["identify_point", "construct_section", "parameter_slider"] },
+      "title": { "type": "string", "minLength": 1 },
+      "question": { "type": "string", "minLength": 1 },
+      "sceneConfig": {
+        "type": "object",
+        "required": ["cameraPosition", "target"],
+        "properties": {
+          "cameraPosition": { "$ref": "#/$defs/vector3" },
+          "target": { "$ref": "#/$defs/vector3" }
+        },
+        "additionalProperties": false
+      },
+      "geometry": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["type", "baseRadius", "baseSides", "height", "apexName", "baseNames", "centerName"],
+            "properties": {
+              "type": { "const": "regular_pyramid" },
+              "baseRadius": { "type": "number", "exclusiveMinimum": 0 },
+              "baseSides": { "type": "integer", "minimum": 3, "maximum": 12 },
+              "height": { "type": "number", "exclusiveMinimum": 0 },
+              "apexName": { "type": "string" },
+              "baseNames": { "type": "array", "items": { "type": "string" } },
+              "centerName": { "type": "string" }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": ["type", "base", "apex", "labels"],
+            "properties": {
+              "type": { "const": "pyramid_quad" },
+              "base": { "type": "array", "minItems": 3, "items": { "$ref": "#/$defs/vector3" } },
+              "apex": { "$ref": "#/$defs/vector3" },
+              "labels": {
+                "type": "object",
+                "required": ["apex", "base"],
+                "properties": {
+                  "apex": { "type": "string" },
+                  "base": { "type": "array", "items": { "type": "string" } }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "interactiveNodes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["id", "label"],
+          "properties": {
+            "id": { "type": "string" },
+            "label": { "type": "string" },
+            "coord": { "$ref": "#/$defs/vector3" },
+            "edge": { "type": "array", "prefixItems": [{ "type": "string" }, { "type": "string" }], "minItems": 2, "maxItems": 2 },
+            "t": { "type": "number", "minimum": 0, "maximum": 1 }
+          },
+          "oneOf": [{ "required": ["coord"] }, { "required": ["edge", "t"] }],
+          "additionalProperties": false
+        }
+      },
+      "correctNodeId": { "type": "string" },
+      "slider": {
+        "type": "object",
+        "required": ["param", "min", "max", "step", "defaultValue", "label"],
+        "properties": {
+          "param": { "const": "k" },
+          "min": { "type": "number" },
+          "max": { "type": "number" },
+          "step": { "type": "number", "exclusiveMinimum": 0 },
+          "defaultValue": { "type": "number" },
+          "label": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "targetCondition": {
+        "type": "object",
+        "required": ["type", "targetValue", "tolerance"],
+        "properties": {
+          "type": { "const": "area_ratio" },
+          "targetValue": { "type": "number", "minimum": 0 },
+          "tolerance": { "type": "number", "minimum": 0 }
+        },
+        "additionalProperties": false
+      },
+      "explanationFormula": { "type": "string" },
+      "feedback": {
+        "type": "object",
+        "required": ["correct", "incorrect"],
+        "properties": {
+          "correct": { "type": "string" },
+          "incorrect": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "allOf": [
+      {
+        "if": { "properties": { "interactionType": { "const": "identify_point" } } },
+        "then": { "required": ["interactiveNodes", "correctNodeId"] }
+      },
+      {
+        "if": { "properties": { "interactionType": { "const": "construct_section" } } },
+        "then": { "required": ["interactiveNodes"] }
+      },
+      {
+        "if": { "properties": { "interactionType": { "const": "parameter_slider" } } },
+        "then": { "required": ["slider", "targetCondition", "explanationFormula"] }
+      },
+      {
+        "if": { "properties": { "level": { "const": 1 } } },
+        "then": { "properties": { "interactionType": { "const": "identify_point" } } }
+      },
+      {
+        "if": { "properties": { "level": { "const": 2 } } },
+        "then": { "properties": { "interactionType": { "const": "construct_section" } } }
+      },
+      {
+        "if": { "properties": { "level": { "const": 3 } } },
+        "then": { "properties": { "interactionType": { "const": "parameter_slider" } } }
+      }
+    ],
+    "additionalProperties": false
+  },
+  "$defs": {
+    "vector3": {
+      "type": "array",
+      "prefixItems": [{ "type": "number" }, { "type": "number" }, { "type": "number" }],
+      "minItems": 3,
+      "maxItems": 3
+    }
+  }
+}
