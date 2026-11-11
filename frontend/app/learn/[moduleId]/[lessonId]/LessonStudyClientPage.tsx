@@ -499,7 +499,7 @@ export default function LessonStudyClientPage({
             </header>
             <div className="min-h-0 flex-1 overflow-y-auto">
               {moduleId === "spatial_geometry" ? (
-                <SpatialGeometryLab embedded initialLessonIndex={Math.max(0, (lessonContent.order || 1) - 1)} onBackToHome={() => setSimulationOpen(false)} onOpenSocraticDrawer={(context) => { setSimulationOpen(false); setChatDrawerOpen(true); if (context) setChatInput(context); }} />
+                <SpatialGeometryLab embedded initialLessonIndex={Math.max(0, (lessonContent.order || 1) - 1)} customAiConfig={customAiConfig} onBackToHome={() => setSimulationOpen(false)} onOpenSocraticDrawer={(context) => { setSimulationOpen(false); setChatDrawerOpen(true); if (context) setChatInput(context); }} />
               ) : moduleId === "trigonometry" ? (
                 <TrigonometryLab embedded initialLessonIndex={Math.max(0, (lessonContent.order || 1) - 1)} onBackToHome={() => setSimulationOpen(false)} onOpenSocraticDrawer={(context) => { setSimulationOpen(false); setChatDrawerOpen(true); if (context) setChatInput(context); }} />
               ) : null}

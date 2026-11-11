@@ -4,31 +4,14 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html, Line, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import { Check, CircleHelp, RotateCcw, Rotate3D, ZoomIn, ZoomOut } from "lucide-react";
+import { Check, CircleHelp, LoaderCircle, RotateCcw, Rotate3D, Sparkles, ZoomIn, ZoomOut } from "lucide-react";
 import { MathFormattedText } from "@/app/components/KatexMath";
 import problemData from "@/app/data/spatial-geometry/exercises.json";
+import { parseSpatialGeometryProblem, type SpatialGeometryProblem } from "@/app/lib/spatialGeometryProblemParser";
+import type { CustomAiConfig } from "@/app/components/AccountSettingsModal";
 
 type Vec3 = [number, number, number];
-type ProblemGeometry = {
-  type: "pyramid" | "prism" | "cylinder" | "cone" | "sphere";
-  vertices: Array<{ id: string; label: string; coords: Vec3 }>;
-  solidEdges: string[][];
-  dashedEdges: string[][];
-  faces: string[][];
-  heightLine?: { start: string; end: string; hasRightAngleMark: boolean };
-  angleMarker?: { vertex: string; firstRay: string; secondRay: string; label: string };
-};
-type SpatialProblem = {
-  problemMetadata: { title: string; gradeLevel: string; topic: string; originalText: string };
-  sceneConfig: { cameraPosition: Vec3; target: Vec3 };
-  geometry: ProblemGeometry;
-  pedagogy: {
-    level1_Identify: { question: string; targetNodeId: string; successExplanation: string };
-    level2_Construction?: { question: string; cutPlaneEquation: string; expectedPolygonType: string; crossSectionVertices: string[]; requiredNodeIds?: string[] };
-    level3_ParametricSlider?: { parameter: string; min: number; max: number; step: number; formulaLatex: string; targetRatio: number };
-    socraticHints: string[];
-  };
-};
+type ProblemGeometry = SpatialGeometryProblem["geometry"];
 type InteractiveNode = { id: string; label: string; coord?: Vec3; edge?: [string, string]; t?: number };
 type SpatialExercise = {
   id: string;
@@ -64,15 +47,16 @@ type Solid = {
   angleMarker?: ProblemGeometry["angleMarker"];
 };
 
-const PROBLEM = problemData as SpatialProblem;
-const EXERCISES: SpatialExercise[] = [
+function createExercises(PROBLEM: SpatialGeometryProblem): SpatialExercise[] {
+  const targetPercent = Math.round((PROBLEM.pedagogy.level3_ParametricSlider?.targetRatio ?? 0.25) * 100);
+  return [
   {
     id: "hhkg_11_goc_sc_mat_phang_day", level: 1, interactionType: "identify_point",
     title: PROBLEM.problemMetadata.title, question: PROBLEM.pedagogy.level1_Identify.question,
     sceneConfig: PROBLEM.sceneConfig, geometry: PROBLEM.geometry,
     interactiveNodes: PROBLEM.geometry.vertices.map(({ id, label, coords }) => ({ id, label, coord: coords })),
     correctNodeId: PROBLEM.pedagogy.level1_Identify.targetNodeId,
-    feedback: { correct: PROBLEM.pedagogy.level1_Identify.successExplanation, incorrect: "Hãy xác định hình chiếu vuông góc của S lên mặt phẳng đáy trước. Vì SA vuông góc với đáy, hình chiếu ấy nằm trên cạnh đáy nào?" },
+    feedback: { correct: PROBLEM.pedagogy.level1_Identify.successExplanation, incorrect: "Hãy tìm hình chiếu vuông góc của đường thẳng lên mặt phẳng đáy từ giả thiết vuông góc, rồi xác định điểm cần chọn." },
   },
   ...(PROBLEM.pedagogy.level2_Construction ? [{
     id: "hhkg_11_thiet_dien_song_song_day", level: 2 as const, interactionType: "construct_section" as const,
@@ -86,19 +70,20 @@ const EXERCISES: SpatialExercise[] = [
     expectedNodeIds: PROBLEM.pedagogy.level2_Construction.crossSectionVertices,
     expectedPolygonType: PROBLEM.pedagogy.level2_Construction.expectedPolygonType,
     cutPlaneEquation: PROBLEM.pedagogy.level2_Construction.cutPlaneEquation,
-    feedback: { correct: `Đúng. Mặt phẳng cắt có phương trình ${PROBLEM.pedagogy.level2_Construction.cutPlaneEquation}; thiết diện là ${PROBLEM.pedagogy.level2_Construction.expectedPolygonType}.`, incorrect: "Hãy chọn ba điểm thuộc mặt phẳng cắt, trong đó phải có M là trung điểm SB. Kiểm tra xem các điểm có cùng tung độ hay không." },
+    feedback: { correct: `Đúng. Mặt phẳng cắt có phương trình ${PROBLEM.pedagogy.level2_Construction.cutPlaneEquation}; thiết diện là ${PROBLEM.pedagogy.level2_Construction.expectedPolygonType}.`, incorrect: "Kiểm tra các điểm đã chọn có thuộc cùng mặt phẳng và không thẳng hàng hay chưa. Hãy đọc lại điều kiện của mặt phẳng cắt." },
   }] : []),
   ...(PROBLEM.pedagogy.level3_ParametricSlider ? [{
     id: "hhkg_11_ti_so_thiet_dien", level: 3 as const, interactionType: "parameter_slider" as const,
     title: "Kiểm chứng tỉ số diện tích và thể tích",
-    question: "Điều chỉnh k = SM/SB để thiết diện song song với đáy có diện tích bằng 25% diện tích đáy.",
+    question: `Điều chỉnh ${PROBLEM.pedagogy.level3_ParametricSlider.parameter} để thiết diện song song với đáy có diện tích bằng ${targetPercent}% diện tích đáy.`,
     sceneConfig: PROBLEM.sceneConfig, geometry: PROBLEM.geometry,
     slider: { param: "k" as const, min: PROBLEM.pedagogy.level3_ParametricSlider.min, max: PROBLEM.pedagogy.level3_ParametricSlider.max, step: PROBLEM.pedagogy.level3_ParametricSlider.step, defaultValue: 0.8, label: "Tỉ số SM / SB" },
     targetCondition: { type: "area_ratio" as const, targetValue: PROBLEM.pedagogy.level3_ParametricSlider.targetRatio, tolerance: 0.01 },
     explanationFormula: PROBLEM.pedagogy.level3_ParametricSlider.formulaLatex,
-    feedback: { correct: "Chính xác. Thiết diện song song với đáy đồng dạng với đáy; tỉ số diện tích bằng bình phương tỉ số đồng dạng.", incorrect: "Diện tích biến đổi theo bình phương tỉ số đồng dạng. Hãy tìm k sao cho k² = 0,25." },
+    feedback: { correct: "Chính xác. Thiết diện song song với đáy đồng dạng với đáy; tỉ số diện tích bằng bình phương tỉ số đồng dạng.", incorrect: `Diện tích biến đổi theo bình phương tỉ số đồng dạng. Hãy tìm k sao cho k² = ${(PROBLEM.pedagogy.level3_ParametricSlider.targetRatio).toFixed(2)}.` },
   }] : []),
-];
+  ];
+}
 const AXIS_SIZE = 3.5;
 const EPSILON = 1e-5;
 
@@ -134,6 +119,16 @@ function getSolidEdges(solid: Solid): Array<[Vec3, Vec3]> {
     const start = solid.vertices.get(ids[0]); const end = solid.vertices.get(ids[1]);
     return start && end ? [[start, end] as [Vec3, Vec3]] : [];
   });
+}
+
+/** k is the ratio from S along each lateral edge; the cut height is h(1-k). */
+function buildParametricCrossSection(apex: Vec3, base: Vec3[], k: number): Vec3[] {
+  const ratio = THREE.MathUtils.clamp(k, 0, 1);
+  return base.map((basePoint) => [
+    apex[0] + (basePoint[0] - apex[0]) * ratio,
+    apex[1] + (basePoint[1] - apex[1]) * ratio,
+    apex[2] + (basePoint[2] - apex[2]) * ratio,
+  ] as Vec3);
 }
 
 function getSectionFromPlane(solid: Solid, planePoints: Vec3[]): Vec3[] {
@@ -214,7 +209,10 @@ function FaceMesh({ points, material, faceRefs }: {
     const mesh = meshRef.current;
     if (!mesh || !faceRefs) return;
     faceRefs.current.push(mesh);
-    return () => { faceRefs.current = faceRefs.current.filter((item) => item !== mesh); };
+    return () => {
+      faceRefs.current = faceRefs.current.filter((item) => item !== mesh);
+      geometry.dispose();
+    };
   }, [faceRefs, geometry]);
 
   return <mesh ref={meshRef} geometry={geometry} material={material} />;
@@ -229,10 +227,15 @@ function PyramidModel({ solid, section, nodes, selectedNodeIds, onSelectNode }: 
 }) {
   const faceRefs = useRef<THREE.Mesh[]>([]);
   const vertices = useMemo(() => getLabeledVertices(solid), [solid]);
-  const baseMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.2, side: THREE.DoubleSide, depthWrite: false }), []);
-  const sideMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: 0x60a5fa, transparent: true, opacity: 0.2, side: THREE.DoubleSide, depthWrite: false }), []);
+  const baseMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.18, side: THREE.DoubleSide, depthWrite: false }), []);
+  const sideMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.18, side: THREE.DoubleSide, depthWrite: false }), []);
   const sectionMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false }), []);
   const labelEntries = useMemo(() => Array.from(vertices.entries()), [vertices]);
+  useEffect(() => () => {
+    baseMaterial.dispose();
+    sideMaterial.dispose();
+    sectionMaterial.dispose();
+  }, [baseMaterial, sideMaterial, sectionMaterial]);
 
   return (
     <>
@@ -257,7 +260,7 @@ function PyramidModel({ solid, section, nodes, selectedNodeIds, onSelectNode }: 
       {section.length >= 3 && (
         <>
           <FaceMesh points={section} material={sectionMaterial} />
-          {section.map((point, index) => <SolidEdge key={`section-${index}`} start={point} end={section[(index + 1) % section.length]} color={0xf97316} />)}
+          <SectionOutline points={section} />
         </>
       )}
 
@@ -331,8 +334,8 @@ function SolidEdge({ start, end, color = 0x0284c7, faceRefs, initiallyHidden = f
   const points = useMemo(() => [new THREE.Vector3(...start), new THREE.Vector3(...end)], [start, end]);
   const geometry = useMemo(() => new THREE.BufferGeometry().setFromPoints(points), [points]);
   const dashGeometry = useMemo(() => new THREE.BufferGeometry().setFromPoints(points), [points]);
-  const solidMaterial = useMemo(() => new THREE.LineBasicMaterial({ color, depthTest: true }), [color]);
-  const dashedMaterial = useMemo(() => new THREE.LineDashedMaterial({ color: 0x64748b, dashSize: 0.15, gapSize: 0.1, depthTest: false }), []);
+  const solidMaterial = useMemo(() => new THREE.LineBasicMaterial({ color, linewidth: 2, depthTest: true }), [color]);
+  const dashedMaterial = useMemo(() => new THREE.LineDashedMaterial({ color: 0x94a3b8, dashSize: 0.15, gapSize: 0.1, depthTest: false }), []);
   const solidLine = useMemo(() => new THREE.Line(geometry, solidMaterial), [geometry, solidMaterial]);
   const dashedLine = useMemo(() => {
     const line = new THREE.Line(dashGeometry, dashedMaterial);
@@ -341,6 +344,13 @@ function SolidEdge({ start, end, color = 0x0284c7, faceRefs, initiallyHidden = f
   }, [dashGeometry, dashedMaterial]);
   const midpoint = useMemo(() => new THREE.Vector3().addVectors(points[0], points[1]).multiplyScalar(0.5), [points]);
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
+
+  useEffect(() => () => {
+    geometry.dispose();
+    dashGeometry.dispose();
+    solidMaterial.dispose();
+    dashedMaterial.dispose();
+  }, [geometry, dashGeometry, solidMaterial, dashedMaterial]);
 
   useFrame(({ camera }) => {
     if (!faceRefs || !solidRef.current || !dashedRef.current) return;
@@ -362,6 +372,14 @@ function SolidEdge({ start, end, color = 0x0284c7, faceRefs, initiallyHidden = f
   );
 }
 
+function SectionOutline({ points }: { points: Vec3[] }) {
+  const geometry = useMemo(() => new THREE.BufferGeometry().setFromPoints(points.map((point) => new THREE.Vector3(...point))), [points]);
+  const material = useMemo(() => new THREE.LineBasicMaterial({ color: 0xc2410c, linewidth: 2, depthTest: true }), []);
+  const loop = useMemo(() => new THREE.LineLoop(geometry, material), [geometry, material]);
+  useEffect(() => () => { geometry.dispose(); material.dispose(); }, [geometry, material]);
+  return <primitive object={loop} renderOrder={4} />;
+}
+
 const VisibleOrHiddenEdge = SolidEdge;
 
 function SceneAccessibility({ title }: { title: string }) {
@@ -369,37 +387,84 @@ function SceneAccessibility({ title }: { title: string }) {
   useEffect(() => {
     gl.domElement.setAttribute("role", "img");
     gl.domElement.setAttribute("aria-label", `Mô hình hình học không gian 3D: ${title}. Kéo để xoay, cuộn hoặc dùng nút để thu phóng.`);
+    gl.domElement.style.touchAction = "none";
   }, [gl, title]);
   return null;
 }
 
-type CameraView = "default" | "top" | "front" | "side";
+type CameraView = "isometric" | "top" | "front" | "reset";
+type CameraPose = { position: Vec3; target: Vec3 };
+type CameraTransition = { startedAt: number; fromPosition: THREE.Vector3; toPosition: THREE.Vector3; fromTarget: THREE.Vector3; toTarget: THREE.Vector3 };
 
-function getCameraPosition(exercise: SpatialExercise, view: CameraView): Vec3 {
-  const [x, y, z] = exercise.sceneConfig.target;
-  if (view === "top") return [x + 0.001, y + 9, z + 0.001];
-  if (view === "front") return [x, y + 2.5, z + 9];
-  if (view === "side") return [x + 9, y + 2.5, z];
-  return exercise.sceneConfig.cameraPosition;
+function getCameraPose(exercise: SpatialExercise, view: CameraView): CameraPose {
+  if (view === "isometric") return { position: [6, 5, 7], target: [0, 1.2, 0] };
+  if (view === "top") return { position: [0, 10, 0.001], target: [0, 0, 0] };
+  if (view === "front") return { position: [0, 1.5, 9], target: [0, 1.2, 0] };
+  return { position: exercise.sceneConfig.cameraPosition, target: exercise.sceneConfig.target };
+}
+
+function SmoothCameraControls({ position, target }: CameraPose) {
+  const controlsRef = useRef<React.ComponentRef<typeof OrbitControls>>(null);
+  const transitionRef = useRef<CameraTransition | null>(null);
+  const { camera } = useThree();
+
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    transitionRef.current = {
+      startedAt: performance.now(),
+      fromPosition: camera.position.clone(),
+      toPosition: new THREE.Vector3(...position),
+      fromTarget: controls.target.clone(),
+      toTarget: new THREE.Vector3(...target),
+    };
+    return () => { transitionRef.current = null; };
+  }, [camera, position[0], position[1], position[2], target[0], target[1], target[2]]);
+
+  useFrame(() => {
+    const transition = transitionRef.current;
+    const controls = controlsRef.current;
+    if (!transition || !controls) return;
+    const raw = THREE.MathUtils.clamp((performance.now() - transition.startedAt) / 800, 0, 1);
+    const eased = raw * raw * (3 - 2 * raw);
+    camera.position.lerpVectors(transition.fromPosition, transition.toPosition, eased);
+    controls.target.lerpVectors(transition.fromTarget, transition.toTarget, eased);
+    controls.update();
+    if (raw >= 1) transitionRef.current = null;
+  });
+
+  return <OrbitControls ref={controlsRef} makeDefault target={target} enableDamping dampingFactor={0.08} minDistance={3} maxDistance={18} maxPolarAngle={Math.PI / 2 + 0.1} />;
 }
 
 function getSceneSolid(exercise: SpatialExercise): Solid {
   return buildSolid(exercise.geometry);
 }
 
-export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }: { initialExerciseId?: string }) {
-  const firstExerciseId = EXERCISES.some((item) => item.id === initialExerciseId) ? initialExerciseId : EXERCISES[0].id;
+export function SpatialGeometryPractice({ initialExerciseId, problemPayload = problemData, customAiConfig }: { initialExerciseId?: string; problemPayload?: unknown; customAiConfig?: CustomAiConfig | null }) {
+  const [activeProblemPayload, setActiveProblemPayload] = useState<unknown>(problemPayload);
+  const [showProblemLoader, setShowProblemLoader] = useState(false);
+  const [problemPrompt, setProblemPrompt] = useState("");
+  const [problemLoading, setProblemLoading] = useState(false);
+  const [problemError, setProblemError] = useState<string | null>(null);
+  useEffect(() => { setActiveProblemPayload(problemPayload); }, [problemPayload]);
+  const PROBLEM = useMemo(() => parseSpatialGeometryProblem(activeProblemPayload), [activeProblemPayload]);
+  const EXERCISES = useMemo(() => createExercises(PROBLEM), [PROBLEM]);
+  const firstExerciseId = EXERCISES.some((item) => item.id === initialExerciseId) ? initialExerciseId! : EXERCISES[0].id;
   const [selectedExerciseId, setSelectedExerciseId] = useState(firstExerciseId);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [constructedSection, setConstructedSection] = useState<Vec3[]>([]);
   const [sliderValue, setSliderValue] = useState(EXERCISES.find((item) => item.interactionType === "parameter_slider")?.slider?.defaultValue ?? 0.5);
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null);
-  const [cameraView, setCameraView] = useState<CameraView>("default");
-  const [cameraRevision, setCameraRevision] = useState(0);
+  const [cameraView, setCameraView] = useState<CameraView>("isometric");
   const [zoom, setZoom] = useState(1);
   const [completed, setCompleted] = useState<string[]>([]);
   const [hintIndex, setHintIndex] = useState(-1);
+
+  useEffect(() => {
+    if (!EXERCISES.some((item) => item.id === selectedExerciseId)) setSelectedExerciseId(firstExerciseId);
+    setSliderValue(EXERCISES.find((item) => item.interactionType === "parameter_slider")?.slider?.defaultValue ?? 0.5);
+  }, [EXERCISES, firstExerciseId, selectedExerciseId]);
 
   useEffect(() => {
     try {
@@ -420,13 +485,7 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
   const nodeById = useMemo(() => new Map(availableNodes.map((node) => [node.id, node])), [availableNodes]);
   const parameterSection = useMemo(() => {
     if (exercise.interactionType !== "parameter_slider") return [];
-    const ratio = sliderValue;
-    const cuts = solid.base.map((basePoint) => [
-      solid.apex[0] + (basePoint[0] - solid.apex[0]) * ratio,
-      solid.apex[1] + (basePoint[1] - solid.apex[1]) * ratio,
-      solid.apex[2] + (basePoint[2] - solid.apex[2]) * ratio,
-    ] as Vec3);
-    return cuts;
+    return buildParametricCrossSection(solid.apex, solid.base, sliderValue);
   }, [exercise, sliderValue, solid]);
 
   const section = exercise.interactionType === "construct_section" ? constructedSection : parameterSection;
@@ -441,6 +500,36 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
     });
   };
 
+  const handleLoadGeminiProblem = async () => {
+    if (!problemPrompt.trim() || problemLoading) return;
+    setProblemLoading(true);
+    setProblemError(null);
+    try {
+      const response = await fetch("/api/spatial-geometry/parse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: problemPrompt.trim(), custom_ai: customAiConfig ?? undefined }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result?.problem) throw new Error(result?.detail?.message || "Chưa thể nạp đề từ Gemini.");
+      const parsedProblem = parseSpatialGeometryProblem(result.problem);
+      setActiveProblemPayload(parsedProblem);
+      setSelectedExerciseId("hhkg_11_goc_sc_mat_phang_day");
+      setSelectedNodeIds([]);
+      setActiveNodeId(null);
+      setConstructedSection([]);
+      setFeedback(null);
+      setHintIndex(-1);
+      setCameraView("reset");
+      setZoom(1);
+      setShowProblemLoader(false);
+    } catch (error) {
+      setProblemError(error instanceof Error ? error.message : "Chưa thể nạp đề từ Gemini.");
+    } finally {
+      setProblemLoading(false);
+    }
+  };
+
   const selectExercise = (id: string) => {
     const nextExercise = EXERCISES.find((item) => item.id === id);
     if (!nextExercise) return;
@@ -451,9 +540,8 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
     setFeedback(null);
     setHintIndex(-1);
     setSliderValue(nextExercise.slider?.defaultValue ?? 0.5);
-    setCameraView("default");
+    setCameraView("reset");
     setZoom(1);
-    setCameraRevision((value) => value + 1);
   };
 
   const handleSelectNode = (id: string) => {
@@ -497,16 +585,16 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
     if (correct) markCompleted(exercise.id);
   };
 
-  const resetView = (view: CameraView = "default") => {
+  const resetView = (view: CameraView = "reset") => {
     setCameraView(view);
     setZoom(1);
-    setCameraRevision((value) => value + 1);
   };
 
   const completedInLevel = (level: 1 | 2 | 3) => EXERCISES.filter((item) => item.level === level && completed.includes(item.id)).length;
   const exercisesByLevel = [1, 2, 3].map((level) => ({ level: level as 1 | 2 | 3, exercises: EXERCISES.filter((item) => item.level === level) }));
-  const baseCameraPosition = getCameraPosition(exercise, cameraView);
-  const cameraPosition = baseCameraPosition.map((value, axis) => exercise.sceneConfig.target[axis] + (value - exercise.sceneConfig.target[axis]) * zoom) as Vec3;
+  const baseCameraPose = getCameraPose(exercise, cameraView);
+  const cameraPosition = baseCameraPose.position.map((value, axis) => baseCameraPose.target[axis] + (value - baseCameraPose.target[axis]) * zoom) as Vec3;
+  const cameraPose = { position: cameraPosition, target: baseCameraPose.target };
   const angleSpec = solid.angleMarker;
   const angleVertex = angleSpec ? solid.vertices.get(angleSpec.vertex) : solid.base[0];
   const angleFirst = angleSpec ? solid.vertices.get(angleSpec.firstRay) : solid.apex;
@@ -536,16 +624,16 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
 
       <div className="grid min-h-[650px] grid-cols-1 gap-4 px-3 pb-4 sm:px-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(330px,0.9fr)]">
         <div className="relative min-h-[420px] overflow-hidden rounded-[1.5rem] bg-[#f8fafc] shadow-inner lg:min-h-[650px]">
-          <Canvas key={`${exercise.id}-${cameraRevision}`} camera={{ position: cameraPosition, fov: 42 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: false }}>
+          <Canvas camera={{ position: cameraPosition, fov: 42 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: false }}>
             <color attach="background" args={["#f8fafc"]} />
             <SceneAccessibility title={exercise.title} />
             <PyramidModel solid={solid} section={section} nodes={availableNodes} selectedNodeIds={selectedNodeIds} onSelectNode={handleSelectNode} />
-            <OrbitControls makeDefault target={exercise.sceneConfig.target} enableDamping dampingFactor={0.08} minDistance={3} maxDistance={15} />
+            <SmoothCameraControls {...cameraPose} />
           </Canvas>
           <div className="absolute left-3 top-3 flex flex-wrap gap-1.5" aria-label="Góc nhìn nhanh">
-            {(["default", "top", "front", "side"] as CameraView[]).map((view) => (
+            {(["isometric", "top", "front", "reset"] as CameraView[]).map((view) => (
               <button key={view} type="button" onClick={() => resetView(view)} className={`rounded-lg px-2.5 py-2 text-[11px] font-bold shadow-sm transition ${cameraView === view ? "bg-slate-900 text-white" : "bg-white/95 text-slate-700 hover:bg-white"}`}>
-                {view === "default" ? <span className="inline-flex items-center gap-1"><RotateCcw className="h-3 w-3" />Đặt lại</span> : view === "top" ? "Trên" : view === "front" ? "Trước" : "Bên"}
+                {view === "reset" ? <span className="inline-flex items-center gap-1"><RotateCcw className="h-3 w-3" />Đặt lại</span> : view === "isometric" ? "SGK" : view === "top" ? "Trên" : "Trước"}
               </button>
             ))}
           </div>
@@ -555,8 +643,8 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
             {section.length >= 3 && <><span className="ml-1 h-2 w-5 rounded-sm bg-orange-500" /> Thiết diện: {classifySection(section.length)}</>}
           </div>
           <div className="absolute right-3 top-3 flex flex-col gap-1.5">
-            <button type="button" onClick={() => { setZoom((value) => Math.max(0.55, Number((value - 0.12).toFixed(2)))); setCameraRevision((value) => value + 1); }} aria-label="Phóng to mô hình" className="rounded-lg bg-white/95 p-2 text-slate-700 shadow-sm hover:bg-white"><ZoomIn className="h-4 w-4" /></button>
-            <button type="button" onClick={() => { setZoom((value) => Math.min(1.8, Number((value + 0.12).toFixed(2)))); setCameraRevision((value) => value + 1); }} aria-label="Thu nhỏ mô hình" className="rounded-lg bg-white/95 p-2 text-slate-700 shadow-sm hover:bg-white"><ZoomOut className="h-4 w-4" /></button>
+            <button type="button" onClick={() => setZoom((value) => Math.max(0.55, Number((value - 0.12).toFixed(2))))} aria-label="Phóng to mô hình" className="rounded-lg bg-white/95 p-2 text-slate-700 shadow-sm hover:bg-white"><ZoomIn className="h-4 w-4" /></button>
+            <button type="button" onClick={() => setZoom((value) => Math.min(1.8, Number((value + 0.12).toFixed(2))))} aria-label="Thu nhỏ mô hình" className="rounded-lg bg-white/95 p-2 text-slate-700 shadow-sm hover:bg-white"><ZoomOut className="h-4 w-4" /></button>
           </div>
         </div>
 
@@ -566,10 +654,25 @@ export function SpatialGeometryPractice({ initialExerciseId = EXERCISES[0].id }:
               <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">Chọn nhiệm vụ</p>
               <h3 className="mt-1 text-lg font-extrabold text-slate-900">Bài tập tương tác</h3>
             </div>
-            <button type="button" onClick={() => setHintIndex((value) => (value + 1) % PROBLEM.pedagogy.socraticHints.length)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100" aria-label="Xem gợi ý tiếp theo">
-              <CircleHelp className="h-4 w-4" />
-            </button>
+            <div className="flex shrink-0 gap-1.5">
+              <button type="button" onClick={() => { setShowProblemLoader((value) => !value); setProblemPrompt((value) => value || PROBLEM.problemMetadata.originalText); }} className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-violet-50 px-2.5 text-[11px] font-bold text-violet-800 hover:bg-violet-100" aria-expanded={showProblemLoader}>
+                <Sparkles className="h-3.5 w-3.5" /> Đề Gemini
+              </button>
+              <button type="button" onClick={() => setHintIndex((value) => (value + 1) % PROBLEM.pedagogy.socraticHints.length)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100" aria-label="Xem gợi ý tiếp theo">
+                <CircleHelp className="h-4 w-4" />
+              </button>
+            </div>
           </div>
+
+          {showProblemLoader && <div className="mb-4 space-y-2 rounded-2xl border border-violet-200 bg-violet-50/70 p-3">
+            <label htmlFor="gemini-spatial-problem" className="text-xs font-bold text-violet-950">Tạo mô hình từ đề toán</label>
+            <textarea id="gemini-spatial-problem" value={problemPrompt} onChange={(event) => setProblemPrompt(event.target.value)} rows={3} maxLength={8000} placeholder="Dán đề hình học không gian cần phân tích…" className="w-full resize-y rounded-xl border border-violet-200 bg-white p-2.5 text-xs leading-5 text-slate-800 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-200" />
+            <p className="text-[10px] leading-4 text-violet-900">Gemini sẽ tạo tọa độ, cạnh, mặt và câu hỏi theo schema MathSTEP. Nếu chưa cấu hình khóa Gemini, hãy thêm khóa trong Cài đặt AI.</p>
+            {problemError && <p role="alert" className="rounded-lg bg-rose-50 px-2.5 py-2 text-[11px] font-semibold text-rose-800">{problemError}</p>}
+            <button type="button" onClick={handleLoadGeminiProblem} disabled={problemLoading || !problemPrompt.trim()} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-700 px-3 py-2.5 text-xs font-bold text-white transition hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50">
+              {problemLoading ? <><LoaderCircle className="h-3.5 w-3.5 animate-spin" /> Đang phân tích và kiểm tra dữ liệu…</> : <><Sparkles className="h-3.5 w-3.5" /> Tạo mô hình 3D</>}
+            </button>
+          </div>}
 
           <div className="mb-4 space-y-3">
             {exercisesByLevel.map(({ level, exercises }) => (

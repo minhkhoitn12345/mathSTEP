@@ -3,8 +3,9 @@
   "$id": "https://mathstep-vn.vercel.app/schemas/spatial-geometry-problem.schema.json",
   "title": "MathSTEP spatial geometry problem",
   "type": "object",
-  "required": ["problemMetadata", "sceneConfig", "geometry", "pedagogy"],
+  "required": ["problemId", "problemMetadata", "sceneConfig", "geometry", "pedagogy"],
   "properties": {
+    "problemId": { "type": "string", "minLength": 1 },
     "problemMetadata": {
       "type": "object",
       "required": ["title", "gradeLevel", "topic", "originalText"],

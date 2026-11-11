@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mathstep-vn.vercel.app/schemas/gemini-geometry-payload.schema.json",
+  "title": "MathSTEP Gemini geometry payload",
+  "type": "object",
+  "required": ["problemId", "geometry"],
+  "properties": {
+    "problemId": { "type": "string", "minLength": 1 },
+    "geometry": {
+      "type": "object",
+      "required": ["vertices", "solidEdges", "dashedEdges", "faces"],
+      "properties": {
+        "vertices": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["id", "coords"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "coords": { "$ref": "#/$defs/vector3" }
+            }
+          }
+        },
+        "solidEdges": { "$ref": "#/$defs/edges" },
+        "dashedEdges": { "$ref": "#/$defs/edges" },
+        "faces": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "array", "minItems": 3, "items": { "type": "string" } }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "vector3": { "type": "array", "prefixItems": [{ "type": "number" }, { "type": "number" }, { "type": "number" }], "minItems": 3, "maxItems": 3 },
+    "edges": { "type": "array", "items": { "type": "array", "prefixItems": [{ "type": "string" }, { "type": "string" }], "minItems": 2, "maxItems": 2 } }
+  }
+}

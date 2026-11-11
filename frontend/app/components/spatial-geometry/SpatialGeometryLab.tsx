@@ -19,6 +19,7 @@ import {
 import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
 import { MathFormattedText } from "@/app/components/KatexMath";
 import { SpatialGeometryPractice } from "./SpatialGeometryPractice";
+import type { CustomAiConfig } from "@/app/components/AccountSettingsModal";
 
 type DiscoveryPrompt = { prompt: string; choices: string[]; answer: number; explanation: string };
 
@@ -34,6 +35,8 @@ interface SpatialGeometryLabProps {
   onBackToHome?: () => void;
   onOpenSocraticDrawer?: (contextMessage?: string) => void;
   initialLessonIndex?: number;
+  problemPayload?: unknown;
+  customAiConfig?: CustomAiConfig | null;
   embedded?: boolean;
 }
 
@@ -1191,7 +1194,7 @@ export function SpatialGeometryLab(props: SpatialGeometryLabProps) {
         </div>
       </div>
       {activeExperience === "practice"
-        ? <SpatialGeometryPractice key={initialExerciseId} initialExerciseId={initialExerciseId} />
+        ? <SpatialGeometryPractice key={initialExerciseId} initialExerciseId={initialExerciseId} problemPayload={props.problemPayload} customAiConfig={props.customAiConfig} />
         : <SpatialGeometryLessonLab {...props} />}
     </div>
   );

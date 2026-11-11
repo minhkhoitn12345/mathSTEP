@@ -661,6 +661,7 @@ function MathStepMainContent() {
             )}
             <SpatialGeometryLab
               initialLessonIndex={sgLessonIndex}
+              customAiConfig={customAiConfig}
               onBackToHome={() => setCurrentView("home")}
               onOpenSocraticDrawer={(contextMsg) => {
                 setChatDrawerOpen(true);
