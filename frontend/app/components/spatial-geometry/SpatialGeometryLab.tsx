@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { CORE_3_MODULES, LessonUnit } from "@/app/types/curriculum";
 import {
   RotateCcw,
@@ -1172,8 +1173,10 @@ export function SpatialGeometryLab(props: SpatialGeometryLabProps) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between gap-4 px-1">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1">
         <p className="text-xs font-semibold text-slate-500">Chọn cách học</p>
+        <div className="flex flex-wrap items-center gap-2">
+        <Link href="/thu-vien-hinh-hoc" className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 transition hover:bg-emerald-100">Thư viện hình mẫu 3D</Link>
         <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1">
           <button
             type="button"
@@ -1191,6 +1194,7 @@ export function SpatialGeometryLab(props: SpatialGeometryLabProps) {
           >
             Bài học chi tiết
           </button>
+        </div>
         </div>
       </div>
       {activeExperience === "practice"

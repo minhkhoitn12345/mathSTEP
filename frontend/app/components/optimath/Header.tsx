@@ -18,6 +18,7 @@ import {
   BookOpen,
   Search,
   Trophy,
+  Shapes,
 } from "lucide-react";
 
 export interface SessionData {
@@ -294,6 +295,20 @@ export const Header: React.FC<HeaderProps> = ({
 
             {docsMenuOpen && (
               <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-[#0B132B] border border-white/10 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-xs text-slate-200 backdrop-blur-xl">
+                <Link
+                  href="/thu-vien-hinh-hoc"
+                  onClick={() => setDocsMenuOpen(false)}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer group"
+                >
+                  <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-300 group-hover:bg-emerald-600 group-hover:text-white transition-colors shrink-0">
+                    <Shapes className="w-4 h-4" />
+                  </span>
+                  <span>
+                    <span className="block font-bold text-slate-100 group-hover:text-emerald-300">Thư viện hình học không gian</span>
+                    <span className="block text-[10px] text-slate-400">Mô hình mẫu 3D · Chuyên đề 2</span>
+                  </span>
+                </Link>
+
                 {/* Cơ sở KHKT */}
                 <button
                   type="button"
@@ -612,6 +627,15 @@ export const Header: React.FC<HeaderProps> = ({
             <BookOpen className="w-4 h-4 text-slate-400" />
             <span>Tài liệu: Cơ sở KHKT & Sổ tay</span>
           </button>
+
+          <Link
+            href="/thu-vien-hinh-hoc"
+            onClick={() => setMobileMenuOpen(false)}
+            className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-slate-300 hover:bg-white/5"
+          >
+            <Shapes className="w-4 h-4 text-emerald-300" />
+            <span>Thư viện hình học không gian</span>
+          </Link>
 
           {/* Mục 4: Giáo viên (chỉ hiện khi có quyền) */}
           {canAccessTeacher && (
