@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 
-const PRODUCTION_APP_URL = "https://mathstep.click";
+const PRODUCTION_APP_URL = "https://mathstep-vn.vercel.app";
 
 export function getAppOrigin(request: NextRequest): string {
   const configuredUrl = process.env.APP_BASE_URL?.trim();

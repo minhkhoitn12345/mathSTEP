@@ -27,7 +27,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://mathstep.click"),
+  metadataBase: new URL("https://mathstep-vn.vercel.app"),
   title: {
     default: "MathSTEP · Học Toán THPT qua bài học và mô phỏng tương tác",
     template: "%s | MathSTEP",
@@ -43,14 +43,14 @@ export const metadata: Metadata = {
     "Socratic AI",
     "GDPT 2018",
   ],
-  authors: [{ name: "MathSTEP", url: "https://mathstep.click" }],
+  authors: [{ name: "MathSTEP", url: "https://mathstep-vn.vercel.app" }],
   creator: "MathSTEP",
   publisher: "MathSTEP",
   manifest: "/manifest.json",
   openGraph: {
     type: "website",
     locale: "vi_VN",
-    url: "https://mathstep.click",
+    url: "https://mathstep-vn.vercel.app",
     siteName: "MathSTEP",
     title: "MathSTEP · Học Toán THPT qua bài học và mô phỏng tương tác",
     description:
