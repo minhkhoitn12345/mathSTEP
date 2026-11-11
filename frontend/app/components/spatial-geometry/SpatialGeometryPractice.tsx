@@ -406,24 +406,24 @@ function getCameraPose(exercise: SpatialExercise, view: CameraView): CameraPose 
 function SmoothCameraControls({ position, target }: CameraPose) {
   const controlsRef = useRef<React.ComponentRef<typeof OrbitControls>>(null);
   const transitionRef = useRef<CameraTransition | null>(null);
+  const poseKeyRef = useRef("");
   const { camera } = useThree();
 
-  useEffect(() => {
+  useFrame(() => {
     const controls = controlsRef.current;
     if (!controls) return;
-    transitionRef.current = {
-      startedAt: performance.now(),
-      fromPosition: camera.position.clone(),
-      toPosition: new THREE.Vector3(...position),
-      fromTarget: controls.target.clone(),
-      toTarget: new THREE.Vector3(...target),
-    };
-    return () => { transitionRef.current = null; };
-  }, [camera, position[0], position[1], position[2], target[0], target[1], target[2]]);
-
-  useFrame(() => {
+    const poseKey = `${position.join(",")}|${target.join(",")}`;
+    if (poseKeyRef.current !== poseKey) {
+      poseKeyRef.current = poseKey;
+      transitionRef.current = {
+        startedAt: performance.now(),
+        fromPosition: camera.position.clone(),
+        toPosition: new THREE.Vector3(...position),
+        fromTarget: controls.target.clone(),
+        toTarget: new THREE.Vector3(...target),
+      };
+    }
     const transition = transitionRef.current;
-    const controls = controlsRef.current;
     if (!transition || !controls) return;
     const raw = THREE.MathUtils.clamp((performance.now() - transition.startedAt) / 800, 0, 1);
     const eased = raw * raw * (3 - 2 * raw);
