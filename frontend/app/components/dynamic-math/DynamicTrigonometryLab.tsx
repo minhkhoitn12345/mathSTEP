@@ -4,6 +4,7 @@ import React, { useState, useRef, useMemo } from "react";
 import { Activity, Compass, Pause, Play } from "lucide-react";
 import { formatVNFloat } from "../KatexMath";
 import { useDynamicMathStore } from "./useDynamicMathStore";
+import TrigonometryPracticeTools from "./TrigonometryPracticeTools";
 
 export default function DynamicTrigonometryLab() {
   const { params, setParamVal } = useDynamicMathStore();
@@ -128,7 +129,7 @@ export default function DynamicTrigonometryLab() {
             </span>
           </div>
 
-          <div className="mb-2 flex w-full flex-wrap gap-2"><button type="button" onClick={() => setIsPlaying((playing) => !playing)} className="inline-flex items-center gap-1 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white">{isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}{isPlaying ? "T?m d?ng" : "Cho ?i?m M chuy?n ??ng"}</button><button type="button" onClick={() => setAngleUnit((unit) => unit === "degree" ? "radian" : "degree")} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800">{angleUnit === "degree" ? "Hi?n theo radian" : "Hi?n theo ??"}</button></div>
+          <div className="mb-2 flex w-full flex-wrap gap-2"><button type="button" onClick={() => setIsPlaying((playing) => !playing)} className="inline-flex items-center gap-1 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white">{isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}{isPlaying ? "\u0054\u1ea1m d\u1eebng" : "Cho \u0111i\u1ec3m M chuy\u1ec3n \u0111\u1ed9ng"}</button><button type="button" onClick={() => setAngleUnit((unit) => unit === "degree" ? "radian" : "degree")} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800">{angleUnit === "degree" ? "Hi\u1ec7n theo radian" : "Hi\u1ec7n theo \u0111\u1ed9"}</button></div>
           <div className="relative w-full overflow-hidden rounded-xl border border-slate-200 bg-[#fbfdfc] flex justify-center p-2">
             <svg
               ref={circleSvgRef}
@@ -457,6 +458,7 @@ export default function DynamicTrigonometryLab() {
           )}
         </div>
       </div>
+      <TrigonometryPracticeTools />
     </div>
   );
 }
