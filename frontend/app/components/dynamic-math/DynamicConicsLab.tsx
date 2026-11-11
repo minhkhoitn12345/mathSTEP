@@ -8,9 +8,10 @@ import {
   Share2,
 } from "lucide-react";
 import KatexMath from "../KatexMath";
+import DandelinConic3D from "./DandelinConic3D";
 import { useDynamicMathStore } from "./useDynamicMathStore";
 
-type ConicSubTab = "coneCut" | "unfolding3d";
+type ConicSubTab = "coneCut" | "unfolding3d" | "dandelin";
 type ConicCode = "circle" | "ellipse" | "parabola" | "hyperbola";
 const CONIC_CHALLENGES: { code: ConicCode; label: string }[] = [
   { code: "parabola", label: "Parabol" },
@@ -158,11 +159,14 @@ export default function DynamicConicsLab() {
               <Box className="w-3.5 h-3.5" />
               <span>Sơ đồ khai triển</span>
             </button>
+            <button type="button" onClick={() => setActiveTab("dandelin")} className={`px-2.5 py-1 rounded flex items-center gap-1 ${activeTab === "dandelin" ? "bg-white text-emerald-800 shadow-xs" : "text-slate-600"}`}><Compass className="w-3.5 h-3.5" /><span>Dandelin 3D</span></button>
           </div>
         </div>
 
         {/* 1. KHUNG 3D MẶT NÓN CẮT CONIC */}
-        {activeTab === "coneCut" ? (
+        {activeTab === "dandelin" ? (
+          <DandelinConic3D />
+        ) : activeTab === "coneCut" ? (
           <div className="relative w-full overflow-hidden rounded-xl border border-slate-200 bg-[#fbfdfc] flex justify-center p-2">
             <svg viewBox="0 0 460 340" className="w-full max-w-[460px] h-auto select-none">
               {/* Trục đối xứng mặt nón */}

@@ -885,6 +885,7 @@ export default function Stereometry3DCanvas({
   const [showFloorGrid, setShowFloorGrid] = useState<boolean>(true);
   const [showSectionPlane, setShowSectionPlane] = useState<boolean>(false);
   const [showHiddenEdges, setShowHiddenEdges] = useState<boolean>(true);
+  const [showExamProjection, setShowExamProjection] = useState<boolean>(false);
   const [originAtVertexA, setOriginAtVertexA] = useState<boolean>(false);
   const [showHudCard, setShowHudCard] = useState<boolean>(false);
   const [showSliders, setShowSliders] = useState<boolean>(false);
@@ -1067,6 +1068,8 @@ export default function Stereometry3DCanvas({
           <span>{freezeNotice}</span>
         </div>
       )}
+
+      {showExamProjection && <div className="absolute inset-3 z-30 flex items-center justify-center rounded-2xl bg-slate-950/85 p-3 backdrop-blur-sm"><div className="w-full max-w-[520px] rounded-2xl bg-white p-4 text-slate-900 shadow-2xl"><div className="mb-2 flex items-center justify-between"><div><h3 className="font-bold">H?nh chi?u ph?ng S.ABCD</h3><p className="text-xs text-slate-600">N?t li?n bi?u di?n c?nh th?y; n?t ??t bi?u di?n c?nh khu?t.</p></div><button type="button" onClick={() => setShowExamProjection(false)} className="rounded-lg px-3 py-2 text-sm font-bold hover:bg-slate-100">??ng</button></div><svg viewBox="0 0 320 240" role="img" aria-label="H?nh ch?p c? c?nh th?y n?t li?n v? c?nh khu?t n?t ??t" className="mx-auto block w-full max-w-[380px] rounded-xl bg-slate-50"><g fill="none" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round"><path d="M70 145 L190 180 L190 215 M70 145 L130 42 L190 180 M130 42 L190 215"/><path d="M190 215 L70 180 L70 145 M130 42 L70 180" strokeDasharray="7 6"/></g><g fill="#0f172a" fontSize="14" fontWeight="700"><text x="59" y="142">A</text><text x="194" y="183">B</text><text x="194" y="230">C</text><text x="54" y="185">D</text><text x="127" y="32">S</text></g></svg><div className="mt-3 flex flex-wrap gap-4 text-xs font-semibold"><span>N?t li?n: c?nh nh?n th?y</span><span>N?t ??t: c?nh b? che</span></div><p className="mt-2 text-[11px] text-slate-600">S? ?? quy ??c ?? ??i chi?u khi v? b?i. N?t khu?t ph? thu?c h??ng nh?n c?a h?nh.</p></div></div>}
 
       {/* Top Docked Icon Toolbar: Tiêu chuẩn GeoGebra/Blender (Dùng Icon gọn gàng, tránh rối mắt) */}
       <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between gap-2 pointer-events-none">
@@ -1574,6 +1577,7 @@ export default function Stereometry3DCanvas({
           className={`min-h-9 shrink-0 rounded-lg border px-2 text-[11px] font-semibold ${highContrast ? "border-amber-400 bg-amber-300 text-slate-950" : "border-slate-700 text-slate-100 hover:bg-slate-800"}`}>
           Tương phản
         </button>
+        <button type="button" aria-pressed={showExamProjection} onClick={() => setShowExamProjection((value) => !value)} title="??i chi?u quy ??c n?t th?y v? n?t khu?t" className="min-h-9 shrink-0 rounded-lg border border-slate-700 px-2 text-[11px] font-semibold text-slate-100 hover:bg-slate-800">N?t li?n/??t</button>
         <select aria-label="Chọn góc nhìn chuẩn" defaultValue="" onChange={(event) => { setCameraView(event.target.value as "default" | "top" | "front" | "side"); event.currentTarget.value = ""; }}
           className="min-h-9 max-w-[96px] rounded-lg border border-slate-700 bg-slate-900 px-1 text-[11px] font-semibold text-slate-100">
           <option value="" disabled>Góc nhìn</option>
