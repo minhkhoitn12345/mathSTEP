@@ -23,10 +23,17 @@ export default function DandelinConic3D() {
       const radius = h / denominator;
       points.push([radius * Math.cos(theta), 4 - radius / Math.tan(b), radius * Math.sin(theta)]);
     }
-    const centers = [h / (Math.cos(a) - Math.sin(b)), h / (Math.cos(a) + Math.sin(b))].map((distance) => ({
-      position: [0, 4 - distance, 0] as [number, number, number],
-      radius: distance * Math.sin(b),
-    }));
+    const centers = [h / (Math.cos(a) - Math.sin(b)), h / (Math.cos(a) + Math.sin(b))].map((distance) => {
+      const center: [number, number, number] = [0, 4 - distance, 0];
+      const radius = distance * Math.sin(b);
+      const planeNormal = new THREE.Vector3(Math.sin(a), Math.cos(a), 0);
+      const planeDistance = 4 * Math.cos(a) - h;
+      const signedDistance = planeNormal.dot(new THREE.Vector3(...center)) - planeDistance;
+      const focus = new THREE.Vector3(...center).addScaledVector(planeNormal, -signedDistance).toArray() as [number, number, number];
+      const generatorDistance = distance * Math.cos(b);
+      const coneTouch = [generatorDistance * Math.sin(b), 4 - generatorDistance * Math.cos(b) ** 2, 0] as [number, number, number];
+      return { position: center, radius, focus, coneTouch };
+    });
     const planeNormal = new THREE.Vector3(Math.sin(a), Math.cos(a), 0);
     const planeDistance = 4 * Math.cos(a) - h;
     return {
@@ -55,24 +62,33 @@ export default function DandelinConic3D() {
           <meshStandardMaterial color="#f97316" transparent opacity={0.18} side={THREE.DoubleSide} depthWrite={false} />
         </mesh>
         {geometry && <Line points={geometry.points} color="#fbbf24" lineWidth={3} />}
-        {geometry && showSpheres && geometry.centers.map((sphere, index) => <group key={index} position={sphere.position}>
+        {geometry && showSpheres && geometry.centers.map((sphere, index) => <group key={index}>
+          <group position={sphere.position}>
           <mesh><sphereGeometry args={[sphere.radius, 32, 24]} /><meshStandardMaterial color={index === 0 ? "#f472b6" : "#a78bfa"} transparent opacity={0.63} roughness={0.3} /></mesh>
           <Html center distanceFactor={9} style={{ pointerEvents: "none" }}><span className="rounded bg-slate-950/90 px-2 py-1 text-xs font-bold text-white">{index === 0 ? "D₁" : "D₂"}</span></Html>
+          </group>
+          <mesh position={sphere.focus}><sphereGeometry args={[0.065, 16, 12]} /><meshBasicMaterial color="#facc15" /></mesh>
+          <Html position={sphere.focus} center distanceFactor={8} style={{ pointerEvents: "none" }}><span className="rounded bg-amber-300 px-1.5 py-0.5 text-[10px] font-black text-slate-950">F{index + 1}</span></Html>
+          <mesh position={sphere.coneTouch}><sphereGeometry args={[0.05, 12, 10]} /><meshBasicMaterial color="#22d3ee" /></mesh>
+          <Html position={sphere.coneTouch} center distanceFactor={8} style={{ pointerEvents: "none" }}><span className="rounded bg-cyan-200 px-1 py-0.5 text-[10px] font-black text-slate-950">T{index + 1}</span></Html>
         </group>)}
         <Html position={[0, 4.25, 0]} center distanceFactor={9} style={{ pointerEvents: "none" }}><span className="rounded bg-slate-950/90 px-2 py-1 text-xs font-bold text-white">S</span></Html>
         <OrbitControls makeDefault enableDamping />
       </Canvas>
       <div className="absolute left-3 top-3 rounded-lg bg-slate-950/85 px-3 py-2 text-xs font-semibold text-white">Nón trong suốt · mặt phẳng cam · giao tuyến vàng · hai mặt cầu Dandelin</div>
       <button type="button" aria-pressed={showSpheres} onClick={() => setShowSpheres((value) => !value)} className="absolute bottom-3 left-3 rounded-lg bg-white px-3 py-2 text-xs font-bold text-slate-900">{showSpheres ? "Ẩn hai mặt cầu" : "Hiện hai mặt cầu"}</button>
-      {!ellipse && <div className="absolute inset-x-3 bottom-14 rounded-lg bg-amber-100 px-3 py-2 text-xs font-semibold text-amber-950">Mô hình này minh họa elip: cần β &lt; α và α + β &lt; 88°.</div>}
+      {!ellipse && <div className="absolute inset-x-3 bottom-14 rounded-lg bg-amber-100 px-3 py-2 text-xs font-semibold text-amber-950">{alpha === beta ? "α = β: mặt phẳng song song với đường sinh, thiết diện là parabol." : alpha === 90 ? "α = 90°: mặt phẳng vuông góc trục nón, thiết diện là đường tròn." : "Dandelin minh họa elip khi β < α và α + β < 88°."}</div>}
     </div>
     <div className="grid gap-3 rounded-xl border border-slate-200 bg-white p-3 sm:grid-cols-2">
       <label className="text-xs font-semibold text-slate-700">Góc ở đỉnh nón β = {beta}°<input aria-label="Góc ở đỉnh nón beta" className="mt-2 w-full accent-sky-600" type="range" min="10" max="35" value={beta} onChange={(event) => setBeta(Number(event.target.value))} /></label>
-      <label className="text-xs font-semibold text-slate-700">Góc giữa mặt phẳng và trục nón α = {alpha}°<input aria-label="Góc mặt phẳng alpha" className="mt-2 w-full accent-orange-600" type="range" min="36" max="65" value={alpha} onChange={(event) => setAlpha(Number(event.target.value))} /></label>
+      <div className="text-xs font-semibold text-slate-700"><label>Góc giữa mặt phẳng và trục nón α = {alpha}°<input aria-label="Góc mặt phẳng alpha" className="mt-2 w-full accent-orange-600" type="range" min={beta} max="90" value={alpha} onChange={(event) => { const value = Number(event.target.value); setAlpha(Math.abs(value - beta) <= 1 ? beta : value >= 89 ? 90 : value); }} /></label><div className="mt-2 flex gap-1"><button type="button" onClick={() => setAlpha(beta)} className="rounded-md border px-2 py-1">Parabol α=β</button><button type="button" onClick={() => setAlpha(Math.min(90, beta + 12))} className="rounded-md border px-2 py-1">Elip</button><button type="button" onClick={() => setAlpha(90)} className="rounded-md border px-2 py-1">Đường tròn</button></div></div>
       <div className="sm:col-span-2 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
         <p className="font-semibold">Vì sao hai mặt cầu xác định hai tiêu điểm?</p>
-        <p className="mt-1">Mỗi mặt cầu tiếp xúc với mặt nón theo một đường tròn và tiếp xúc với mặt phẳng cắt tại một điểm. Từ tính chất hai tiếp tuyến kẻ từ một điểm đến mặt cầu, tổng hoặc hiệu khoảng cách đến hai tiếp điểm không đổi trên elip.</p>
-        <div className="mt-2"><KatexMath math="\beta < \alpha,\qquad \text{mặt phẳng cắt một nhánh nón tạo thành elip}" /></div>
+        <p className="mt-1">Với điểm M trên elip, hai đường sinh qua M tiếp xúc với hai mặt cầu tại T₁, T₂. Tính chất hai tiếp tuyến xuất phát từ cùng một điểm cho độ dài bằng nhau:</p>
+        <div className="mt-2"><KatexMath display math="MF_1=MT_1,\qquad MF_2=MT_2" /></div>
+        <p className="mt-1">Vì T₁, M, T₂ cùng nằm trên một đường sinh nên tổng khoảng cách đến hai tiêu điểm không đổi:</p>
+        <div className="mt-2"><KatexMath display math="MF_1+MF_2=MT_1+MT_2=T_1T_2=2a" /></div>
+        <div className="mt-2"><KatexMath math="\beta < \alpha < 90^\circ,\qquad \text{thiết diện là elip}" /></div>
       </div>
     </div>
   </div>;
