@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useMemo } from "react";
-import { Activity, Compass } from "lucide-react";
+import { Activity, Compass, Pause, Play } from "lucide-react";
 import { formatVNFloat } from "../KatexMath";
 import { useDynamicMathStore } from "./useDynamicMathStore";
 
@@ -10,8 +10,19 @@ export default function DynamicTrigonometryLab() {
 
   const [waveMode, setWaveMode] = useState<"sin" | "cos">("sin");
   const [isGeneralWave, setIsGeneralWave] = useState<boolean>(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [angleUnit, setAngleUnit] = useState<"degree" | "radian">("degree");
 
   // Angle theta in degrees from store (can be > 360 or < 0)
+  React.useEffect(() => {
+    if (!isPlaying) return;
+    const timer = window.setInterval(() => {
+      const current = useDynamicMathStore.getState().params.theta?.val ?? 60;
+      setParamVal("theta", current + 2);
+    }, 40);
+    return () => window.clearInterval(timer);
+  }, [isPlaying, setParamVal]);
+
   const thetaDeg = params.theta?.val ?? 60;
   const amp = params.amp?.val ?? 1.5;
   const omega = params.omega?.val ?? 1.0;
@@ -117,6 +128,7 @@ export default function DynamicTrigonometryLab() {
             </span>
           </div>
 
+          <div className="mb-2 flex w-full flex-wrap gap-2"><button type="button" onClick={() => setIsPlaying((playing) => !playing)} className="inline-flex items-center gap-1 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white">{isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}{isPlaying ? "T?m d?ng" : "Cho ?i?m M chuy?n ??ng"}</button><button type="button" onClick={() => setAngleUnit((unit) => unit === "degree" ? "radian" : "degree")} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800">{angleUnit === "degree" ? "Hi?n theo radian" : "Hi?n theo ??"}</button></div>
           <div className="relative w-full overflow-hidden rounded-xl border border-slate-200 bg-[#fbfdfc] flex justify-center p-2">
             <svg
               ref={circleSvgRef}
