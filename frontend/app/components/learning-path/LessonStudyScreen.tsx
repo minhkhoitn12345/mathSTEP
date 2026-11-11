@@ -76,6 +76,7 @@ export function LessonStudyScreen({
   // Checkpoint question state: checkpointId -> selectedOptionId
   const [checkpointAnswers, setCheckpointAnswers] = useState<Record<string, string>>({});
   const [showCheckpointHints, setShowCheckpointHints] = useState<Record<string, boolean>>({});
+  const [activeCheckpointIndex, setActiveCheckpointIndex] = useState(0);
 
   // Review Quiz state: questionId -> selectedOptionId
   const [sampledQuizItems, setSampledQuizItems] = useState(() => sampleLessonQuiz(content.lessonId, () => 0));
@@ -123,6 +124,9 @@ export function LessonStudyScreen({
 
   useEffect(() => {
     // Keep server and initial client markup deterministic, then draw a fresh set after hydration.
+    setCheckpointAnswers({});
+    setShowCheckpointHints({});
+    setActiveCheckpointIndex(0);
     setSampledQuizItems(sampleLessonQuiz(content.lessonId));
     setQuizAnswers({});
     setPassedQuizLevels({});
@@ -194,10 +198,19 @@ export function LessonStudyScreen({
   // Handle checkpoint option selection
   const handleSelectCheckpointOption = (qId: string, optId: string) => {
     const checkpoint = content.checkpoints.find((item) => item.id === qId);
-    const wasCorrect = checkpoint?.options.some((option) => option.id === checkpointAnswers[qId] && option.isCorrect);
     const isCorrect = checkpoint?.options.some((option) => option.id === optId && option.isCorrect);
-    if (isCorrect && !wasCorrect) playAchievementSound(soundEnabled);
     setCheckpointAnswers((prev) => ({ ...prev, [qId]: optId }));
+    if (isCorrect) {
+      playAchievementSound(soundEnabled);
+      setShowCheckpointHints((prev) => ({ ...prev, [qId]: false }));
+    } else {
+      // Give a prompt immediately, but keep the correct choice and full solution hidden.
+      setShowCheckpointHints((prev) => ({ ...prev, [qId]: true }));
+    }
+  };
+
+  const handleAdvanceCheckpoint = () => {
+    setActiveCheckpointIndex((index) => Math.min(index + 1, content.checkpoints.length));
   };
 
   // Handle review quiz option selection
@@ -663,13 +676,18 @@ export function LessonStudyScreen({
             </div>
 
             <div className="space-y-6">
-              {content.checkpoints.map((cp) => {
+              {activeCheckpointIndex >= content.checkpoints.length ? (
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-900">
+                  Em đã trả lời đúng toàn bộ {content.checkpoints.length} câu hỏi gợi mở. Bài kiểm tra cuối bài đã sẵn sàng.
+                </div>
+              ) : content.checkpoints.slice(activeCheckpointIndex, activeCheckpointIndex + 1).map((cp) => {
                 const selectedOpt = checkpointAnswers[cp.id];
                 const isSelectedCorrect = cp.options.find((o) => o.id === selectedOpt)?.isCorrect;
                 const showHint = showCheckpointHints[cp.id];
 
                 return (
                   <div key={cp.id} className="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50 space-y-3.5">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-indigo-700">Câu {activeCheckpointIndex + 1}/{content.checkpoints.length}</p>
                     <p className="text-xs sm:text-sm font-bold text-slate-900 leading-relaxed">
                       <MathFormattedText text={cp.question} />
                     </p>
@@ -689,8 +707,9 @@ export function LessonStudyScreen({
                           <button
                             key={opt.id}
                             type="button"
+                            disabled={Boolean(isSelectedCorrect)}
                             onClick={() => handleSelectCheckpointOption(cp.id, opt.id)}
-                            className={`w-full text-left p-3 rounded-xl border text-xs sm:text-sm transition-all flex items-center justify-between gap-3 cursor-pointer ${optStyle}`}
+                            className={`w-full text-left p-3 rounded-xl border text-xs sm:text-sm transition-all flex items-center justify-between gap-3 ${isSelectedCorrect ? "cursor-default" : "cursor-pointer"} ${optStyle}`}
                           >
                             <div className="flex items-center gap-2.5">
                               <span className="w-5 h-5 rounded-md bg-slate-100 text-slate-600 font-mono font-bold text-xs flex items-center justify-center shrink-0">
@@ -728,10 +747,10 @@ export function LessonStudyScreen({
                       </button>
                     </div>
 
-                    {/* Hint reveal */}
+                    {/* Khi sai chỉ hiện gợi ý, không hiện đáp án hay lời giải. */}
                     {showHint && (
                       <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs font-medium">
-                        <Lightbulb className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> <strong>Gợi ý:</strong> <MathFormattedText text={cp.socraticHint} />
+                        <Lightbulb className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> <strong>Gợi ý:</strong> <MathFormattedText text={cp.socraticHint} /> <span className="ml-1 font-semibold">Hãy thử chọn lại.</span>
                       </div>
                     )}
 
@@ -747,10 +766,13 @@ export function LessonStudyScreen({
                         {isSelectedCorrect ? (
                           <>
                             <strong>Chính xác!</strong> <MathFormattedText text={cp.explanationCorrect} />
+                            <button type="button" onClick={handleAdvanceCheckpoint} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-extrabold text-white transition hover:bg-emerald-700">
+                              {activeCheckpointIndex + 1 < content.checkpoints.length ? "Câu tiếp theo" : "Hoàn tất câu hỏi gợi mở"} <ArrowRight className="h-3.5 w-3.5" />
+                            </button>
                           </>
                         ) : (
                           <>
-                            <strong>Chưa chính xác:</strong> <MathFormattedText text={cp.explanationIncorrect} />
+                            <strong>Chưa đúng.</strong> Đọc gợi ý rồi thử một lựa chọn khác. Đáp án chưa được tiết lộ.
                           </>
                         )}
                       </div>
