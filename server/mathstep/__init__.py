@@ -1,1 +1,0 @@
-"""MathSTEP AI orchestration service."""
