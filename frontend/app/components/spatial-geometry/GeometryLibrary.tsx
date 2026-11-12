@@ -200,6 +200,52 @@ function toLocal(point: THREE.Vector3): Point3 { return [point.x, point.y + 0.7,
 function faceId(face: string[]) { return `(${face.join(" ")})`; }
 function escapeXml(value: string) { return value.replace(/[<>&"']/g, character => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "\"": "&quot;", "'": "&apos;" })[character] ?? character); }
 
+function pointRole(source: LibraryPoint["source"]) {
+  const roles: Record<LibraryPoint["source"], string> = {
+    free: "Điểm tự do",
+    edge: "Điểm trên cạnh",
+    midpoint: "Trung điểm",
+    face: "Điểm trên mặt",
+    foot: "Hình chiếu vuông góc",
+    vector_dependent: "Điểm phụ thuộc véc-tơ",
+    translation: "Ảnh tịnh tiến",
+  };
+  return roles[source];
+}
+
+function modelVertexRole(kind: ModelKind, id: string) {
+  if (kind !== "cuboid") return "Đỉnh của khối gốc";
+  if (id === "A") return "Điểm tự do";
+  if (id === "B" || id === "D" || id === "A′") return "Điểm giữ véc-tơ dời";
+  if (id === "C") return "Ảnh tịnh tiến theo véc-tơ AD";
+  if (id.endsWith("′")) return `Ảnh tịnh tiến theo véc-tơ AA′`;
+  return "Đỉnh của khối gốc";
+}
+
+function modelVertexDependencies(kind: ModelKind, id: string) {
+  if (kind !== "cuboid") return "Đỉnh thuộc mô hình mẫu";
+  const dependencies: Record<string, string> = {
+    A: "Tọa độ gốc độc lập",
+    B: "Điểm gốc A và véc-tơ AB",
+    D: "Điểm gốc A và véc-tơ AD",
+    C: "Điểm B và véc-tơ AD",
+    "A′": "Điểm gốc A và véc-tơ AA′",
+    "B′": "Điểm B và véc-tơ AA′",
+    "C′": "Điểm C và véc-tơ AA′",
+    "D′": "Điểm D và véc-tơ AA′",
+  };
+  return dependencies[id] ?? "Đỉnh thuộc mô hình mẫu";
+}
+
+function modelFaceRole(kind: ModelKind, index: number, face: string[]) {
+  if (kind === "cuboid" || kind === "cube") {
+    const names = ["Mặt đáy", "Mặt trên", "Mặt bên", "Mặt bên", "Mặt bên", "Mặt bên"];
+    return `(${["α", "β", "γ", "δ", "ε", "ζ"][index] ?? "η"}) · ${names[index] ?? "Mặt"} ${faceId(face)}`;
+  }
+  const role = index === 0 ? "Mặt đáy" : "Mặt bên";
+  return `(${["α", "β", "γ", "δ", "ε", "ζ"][index] ?? "η"}) · ${role} ${faceId(face)}`;
+}
+
 function FaceSurface({ face, byId, selected, visible, examMode, onPointerDown }: { face: string[]; byId: Map<string, Point3>; selected: boolean; visible: boolean; examMode: boolean; onPointerDown: (event: ThreeEvent<PointerEvent>) => void }) {
   const geometry = useMemo(() => polygonGeometry(face, byId), [byId, face]);
   useEffect(() => () => geometry.dispose(), [geometry]);
@@ -251,6 +297,7 @@ export function GeometryLibrary() {
   const [rotationSpeed, setRotationSpeed] = useState<"slow" | "medium" | "fast">("medium");
   const [guideOpen, setGuideOpen] = useState(false);
   const [webGlRenderer, setWebGlRenderer] = useState<THREE.WebGLRenderer | null>(null);
+  const [webGlScene, setWebGlScene] = useState<THREE.Scene | null>(null);
   const [cameraReset, setCameraReset] = useState(0);
   const [ratio, setRatio] = useState(0.5);
   const [hint, setHint] = useState("");
@@ -321,11 +368,11 @@ export function GeometryLibrary() {
     const [a, b] = edgeId.split("-"); return [model.vertices.find(vertex => vertex.id === a)?.point, model.vertices.find(vertex => vertex.id === b)?.point] as const;
   };
   const handleEdge = (edgeId: string, _hit: Point3) => {
-    if (drawing.tool === "edge-point") {
+    if (drawing.tool === "edge-point" || drawing.tool === "midpoint") {
       const [a, b] = edgeEndpoints(edgeId); if (!a || !b) return;
-      const t = THREE.MathUtils.clamp(ratio, 0.01, 0.99);
+      const t = drawing.tool === "midpoint" ? 0.5 : THREE.MathUtils.clamp(ratio, 0.01, 0.99);
       const point: Point3 = [0, 1, 2].map(axis => a[axis] + (b[axis] - a[axis]) * t) as Point3;
-      createPoint(point, "edge", undefined, edgeId, t);
+      createPoint(point, drawing.tool === "midpoint" ? "midpoint" : "edge", undefined, edgeId, t);
       return;
     }
     drawing.selectEdge(edgeId);
@@ -458,6 +505,32 @@ export function GeometryLibrary() {
       setExportNotice("Không thể mở AR. Hãy cấp quyền cảm biến chuyển động và thử lại trên thiết bị hỗ trợ WebXR.");
     }
   };
+  const exportUsdz = async () => {
+    if (!webGlScene || exportBusy) {
+      setExportNotice("Mô hình 3D chưa sẵn sàng để xuất. Hãy chờ hình tải xong rồi thử lại.");
+      return;
+    }
+    setExportBusy(true);
+    setExportNotice("");
+    try {
+      const { USDZExporter } = await import("three/addons/exporters/USDZExporter.js");
+      webGlScene.updateMatrixWorld(true);
+      const data = await new USDZExporter().parseAsync(webGlScene, { onlyVisible: true, quickLookCompatible: true });
+      const url = URL.createObjectURL(new Blob([data], { type: "model/vnd.usdz+zip" }));
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${selected.id}-mathstep.usdz`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+      setExportNotice("Đã xuất mô hình USDZ. Mở tệp trên iPhone hoặc iPad để dùng AR Quick Look.");
+    } catch (error) {
+      setExportNotice(error instanceof Error ? `Không xuất được USDZ: ${error.message}` : "Không xuất được mô hình USDZ.");
+    } finally {
+      setExportBusy(false);
+    }
+  };
   const toolButton = (tool: GeometryTool, icon: React.ReactNode, label: string) => <button key={tool} type="button" onClick={() => { drawing.setTool(tool); setPendingTranslationIds([]); }} aria-pressed={drawing.tool === tool} className={`inline-flex min-h-10 items-center gap-2 rounded-lg px-3 text-xs font-bold transition ${drawing.tool === tool ? "bg-teal-700 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"}`}>{icon}{label}</button>;
 
   return <main className={`min-h-screen text-slate-900 ${examMode ? "bg-white" : "bg-[#f5f8f7]"}`}>
@@ -470,7 +543,7 @@ export function GeometryLibrary() {
         <section className="order-1 min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:order-2">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-3 py-3 sm:px-4"><div><span className="text-[10px] font-bold uppercase tracking-[.14em] text-teal-700">{selected.category} · {selected.grade}</span><h2 className="text-lg font-bold">{selected.title}</h2></div><div className="flex flex-wrap items-center gap-1.5"><button type="button" onClick={() => setExamMode(true)} aria-pressed={examMode} className={`min-h-10 rounded-lg px-3 text-xs font-bold ${examMode ? "bg-black text-white" : "border border-slate-200 text-slate-700 hover:bg-slate-50"}`}>Đề kiểm tra · nét đen</button><button type="button" onClick={() => setExamMode(false)} aria-pressed={!examMode} className={`min-h-10 rounded-lg px-3 text-xs font-bold ${!examMode ? "bg-teal-700 text-white" : "border border-slate-200 text-slate-700 hover:bg-slate-50"}`}>Bài giảng · hai màu</button><button type="button" onClick={() => setShowLabels(value => !value)} aria-pressed={showLabels} className="min-h-10 rounded-lg border border-slate-200 px-3 text-xs font-semibold hover:bg-slate-50">{showLabels ? "Ẩn tên điểm" : "Hiện tên điểm"}</button><button type="button" onClick={() => setShowHidden(value => !value)} aria-pressed={showHidden} className="min-h-10 rounded-lg border border-slate-200 px-3 text-xs font-semibold hover:bg-slate-50">{showHidden ? "Ẩn cạnh khuất" : "Hiện cạnh khuất"}</button><button type="button" onClick={() => setAutoRotate(value => !value)} aria-pressed={autoRotate} className={`min-h-10 rounded-lg px-3 text-xs font-semibold ${autoRotate ? "bg-cyan-100 text-cyan-900" : "border border-slate-200 text-slate-700 hover:bg-slate-50"}`}>{autoRotate ? "Dừng xoay" : "Tự động xoay"}</button><button type="button" onClick={() => setCameraReset(value => value + 1)} className="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 hover:bg-slate-50" title="Đặt lại góc nhìn"><RotateCcw size={16}/></button></div></div>
           <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 bg-slate-50/80 px-3 py-2.5 sm:px-4">
-            {toolButton("select", <MousePointer2 size={15}/>, "Chọn")}{toolButton("free-point", <CircleDot size={15}/>, "Điểm tự do")}{toolButton("edge-point", <CircleDot size={15}/>, "Điểm trên cạnh")}{toolButton("face-point", <PenLine size={15}/>, "Điểm trên mặt")}{toolButton("segment", <ScanLine size={15}/>, "Nối hai điểm")}{toolButton("vector", <MoveRight size={15}/>, "Véc-tơ")}{toolButton("translation", <MoveRight size={15}/>, "Tịnh tiến")}{toolButton("perpendicular", <CornerDownRight size={15}/>, "Hạ vuông góc")}
+            {toolButton("select", <MousePointer2 size={15}/>, "Chọn")}{toolButton("free-point", <CircleDot size={15}/>, "Điểm tự do")}{toolButton("edge-point", <CircleDot size={15}/>, "Điểm trên cạnh")}{toolButton("midpoint", <CircleDot size={15}/>, "Trung điểm")}{toolButton("face-point", <PenLine size={15}/>, "Điểm trên mặt")}{toolButton("segment", <ScanLine size={15}/>, "Nối hai điểm")}{toolButton("vector", <MoveRight size={15}/>, "Véc-tơ")}{toolButton("translation", <MoveRight size={15}/>, "Tịnh tiến")}{toolButton("perpendicular", <CornerDownRight size={15}/>, "Hạ vuông góc")}
             {drawing.tool === "edge-point" && <label className="ml-auto flex min-w-[180px] items-center gap-2 text-xs font-semibold text-slate-600">Tỉ số <input aria-label="Tỉ số điểm trên cạnh" type="range" min="0.05" max="0.95" step="0.01" value={ratio} onChange={event => setRatio(Number(event.target.value))} className="w-24 accent-teal-700"/><span className="tabular-nums">{ratio.toFixed(2)}</span></label>}
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-slate-100 px-3 py-2.5 text-xs text-slate-600 sm:px-4">
@@ -481,9 +554,9 @@ export function GeometryLibrary() {
             <label className="flex items-center gap-2">Cỡ nhãn <input type="range" min="10" max="20" step="1" value={labelSize} onChange={event => setLabelSize(Number(event.target.value))} className="w-20 accent-teal-700"/><span className="w-6 tabular-nums">{labelSize}</span></label>
             {autoRotate && <label className="flex items-center gap-2">Tốc độ xoay tự động <select value={rotationSpeed} onChange={event => setRotationSpeed(event.target.value as typeof rotationSpeed)} className="h-8 rounded-lg border border-slate-200 bg-white px-2"><option value="slow">Chậm</option><option value="medium">Vừa</option><option value="fast">Nhanh</option></select></label>}
           </div>
-          <div className={`relative h-[min(62vh,640px)] min-h-[380px] touch-none ${examMode ? "bg-white" : "bg-[radial-gradient(ellipse_at_center,#ffffff_0%,#f2f8f7_72%,#edf4f3_100%)]"}`}><Canvas key={`${selected.id}-${cameraReset}`} camera={{ position: [5, 4.1, 6], fov: 42 }} dpr={exportDpr ?? [1, 1.7]} gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: "high-performance" }} onCreated={({ gl }) => { setCanvasElement(gl.domElement); setWebGlRenderer(gl); }}><ambientLight intensity={1.8}/><directionalLight position={[4, 8, 5]} intensity={1.6}/><ParametricSolid kind={selected.kind} showLabels={showLabels} showPoints={showPoints} showAuxiliary={showAuxiliary} freePointMode={drawing.tool === "free-point"} lineWidth={lineWidth} labelSize={labelSize} showHidden={showHidden} examMode={examMode} points={drawing.points} segments={drawing.segments} vectors={modelVectors} objectVisibility={drawing.objectVisibility} selectedVertexId={drawing.selectedVertexId} pendingVertexIds={drawing.pendingVertexIds} edgeStyles={drawing.edgeStyles} selectedEdgeId={drawing.selectedEdgeId} selectedFaceId={drawing.selectedFaceId} onFace={handleFace} onEdge={handleEdge} onVertex={handleVertex} onFreePoint={placeFreePoint}/><OrbitControls makeDefault autoRotate={autoRotate} autoRotateSpeed={rotationSpeed === "slow" ? 0.8 : rotationSpeed === "fast" ? 3.2 : 2} enableDamping dampingFactor={0.08} minDistance={3.4} maxDistance={14} maxPolarAngle={Math.PI / 2 + 0.2}/></Canvas><span className={`pointer-events-none absolute bottom-3 left-3 rounded-lg px-2.5 py-1.5 text-[11px] font-medium shadow-sm ${examMode ? "bg-white text-black ring-1 ring-black" : "bg-white/90 text-slate-500"}`}>{drawing.tool === "free-point" ? "Chạm mặt phẳng dựng hoặc hình để đặt điểm tự do" : drawing.tool === "edge-point" ? "Chọn cạnh để đặt điểm theo tỉ số" : drawing.tool === "face-point" ? "Chọn mặt để đặt điểm thuộc mặt" : drawing.tool === "segment" ? "Chọn lần lượt hai đỉnh hoặc điểm" : drawing.tool === "vector" ? "Chọn điểm đầu và điểm cuối để dựng véc-tơ" : drawing.tool === "translation" ? `Chọn điểm cần tịnh tiến rồi hai đầu mút véc-tơ (${pendingTranslationIds.length}/3)` : drawing.tool === "perpendicular" ? "Chọn đỉnh, sau đó chọn mặt phẳng" : "Kéo để xoay · cuộn hoặc chụm để thu phóng"}</span></div>
+          <div className={`relative h-[min(62vh,640px)] min-h-[380px] touch-none ${examMode ? "bg-white" : "bg-[radial-gradient(ellipse_at_center,#ffffff_0%,#f2f8f7_72%,#edf4f3_100%)]"}`}><Canvas key={`${selected.id}-${cameraReset}`} camera={{ position: [5, 4.1, 6], fov: 42 }} dpr={exportDpr ?? [1, 1.7]} gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: "high-performance" }} onCreated={({ gl, scene }) => { setCanvasElement(gl.domElement); setWebGlRenderer(gl); setWebGlScene(scene); }}><ambientLight intensity={1.8}/><directionalLight position={[4, 8, 5]} intensity={1.6}/><ParametricSolid kind={selected.kind} showLabels={showLabels} showPoints={showPoints} showAuxiliary={showAuxiliary} freePointMode={drawing.tool === "free-point"} lineWidth={lineWidth} labelSize={labelSize} showHidden={showHidden} examMode={examMode} points={drawing.points} segments={drawing.segments} vectors={modelVectors} objectVisibility={drawing.objectVisibility} selectedVertexId={drawing.selectedVertexId} pendingVertexIds={drawing.pendingVertexIds} edgeStyles={drawing.edgeStyles} selectedEdgeId={drawing.selectedEdgeId} selectedFaceId={drawing.selectedFaceId} onFace={handleFace} onEdge={handleEdge} onVertex={handleVertex} onFreePoint={placeFreePoint}/><OrbitControls makeDefault autoRotate={autoRotate} autoRotateSpeed={rotationSpeed === "slow" ? 0.8 : rotationSpeed === "fast" ? 3.2 : 2} enableDamping dampingFactor={0.08} minDistance={3.4} maxDistance={14} maxPolarAngle={Math.PI / 2 + 0.2}/></Canvas><span className={`pointer-events-none absolute bottom-3 left-3 rounded-lg px-2.5 py-1.5 text-[11px] font-medium shadow-sm ${examMode ? "bg-white text-black ring-1 ring-black" : "bg-white/90 text-slate-500"}`}>{drawing.tool === "free-point" ? "Chạm mặt phẳng dựng hoặc hình để đặt điểm tự do" : drawing.tool === "edge-point" ? "Chọn cạnh để đặt điểm theo tỉ số" : drawing.tool === "midpoint" ? "Chọn cạnh để dựng trung điểm chính xác" : drawing.tool === "face-point" ? "Chọn mặt để đặt điểm thuộc mặt" : drawing.tool === "segment" ? "Chọn lần lượt hai đỉnh hoặc điểm" : drawing.tool === "vector" ? "Chọn điểm đầu và điểm cuối để dựng véc-tơ" : drawing.tool === "translation" ? `Chọn điểm cần tịnh tiến rồi hai đầu mút véc-tơ (${pendingTranslationIds.length}/3)` : drawing.tool === "perpendicular" ? "Chọn đỉnh, sau đó chọn mặt phẳng" : "Kéo để xoay · cuộn hoặc chụm để thu phóng"}</span></div>
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-3 py-3 sm:px-4"><p className="max-w-2xl text-sm leading-6 text-slate-600">{selected.description}<span className="ml-2 text-xs font-semibold text-teal-800">{selected.concept}</span></p><button type="button" onClick={() => toggleFavorite(selected.id)} className={`min-h-10 rounded-lg px-3 text-xs font-bold ${favorites.includes(selected.id) ? "bg-amber-50 text-amber-800" : "bg-slate-100 text-slate-700"}`}>{favorites.includes(selected.id) ? "★ Đã lưu" : "☆ Lưu hình"}</button></div>
-          <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 bg-white px-3 py-2.5 sm:px-4"><button type="button" onClick={drawing.undo} disabled={!drawing.undoStack.length} className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 disabled:opacity-40" aria-label="Hoàn tác Ctrl+Z" title="Hoàn tác (Ctrl+Z)"><Undo2 size={16}/></button><button type="button" onClick={drawing.redo} disabled={!drawing.redoStack.length} className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 disabled:opacity-40" aria-label="Làm lại Ctrl+Y" title="Làm lại (Ctrl+Y)"><Redo2 size={16}/></button><button type="button" onClick={drawing.clear} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600"><Trash2 size={14}/> Xóa phép dựng</button><input ref={fileInputRef} type="file" accept="application/json,.json" className="hidden" onChange={event => { const file = event.target.files?.[0]; if (file) void openScene(file); event.currentTarget.value = ""; }}/><button type="button" onClick={saveScene} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold"><FileDown size={14}/> Lưu bản vẽ</button><button type="button" onClick={() => fileInputRef.current?.click()} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold"><FileUp size={14}/> Mở tệp</button><button type="button" onClick={exportAiSpec} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold"><FileJson size={14}/> Tệp cho AI</button><button type="button" onClick={() => void openArView()} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-3 text-xs font-bold text-cyan-900 hover:bg-cyan-100"><Box size={14}/> Xem AR</button><span className="ml-auto flex items-center gap-2"><select aria-label="Độ phân giải ảnh" value={exportWidth} onChange={event => setExportWidth(Number(event.target.value) as 1600 | 2400 | 3200 | 4000)} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs"><option value={1600}>1600 px</option><option value={2400}>2400 px</option><option value={3200}>3200 px</option><option value={4000}>4000 px</option></select><button type="button" onClick={() => void captureImage(false)} disabled={exportBusy} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold disabled:opacity-50"><Download size={14}/>{exportBusy ? "Đang xuất…" : "Xuất PNG"}</button><button type="button" onClick={exportSvg} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold"><FileJson size={14}/> SVG</button><button type="button" onClick={() => void captureImage(true)} disabled={exportBusy} className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-teal-700 px-3 text-xs font-bold text-white hover:bg-teal-800 disabled:opacity-50"><Copy size={14}/> Chép hình vào Word</button></span>{exportNotice && <p role="status" className="basis-full text-xs text-teal-800">{exportNotice}</p>}</div>
+          <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 bg-white px-3 py-2.5 sm:px-4"><button type="button" onClick={drawing.undo} disabled={!drawing.undoStack.length} className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 disabled:opacity-40" aria-label="Hoàn tác Ctrl+Z" title="Hoàn tác (Ctrl+Z)"><Undo2 size={16}/></button><button type="button" onClick={drawing.redo} disabled={!drawing.redoStack.length} className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 disabled:opacity-40" aria-label="Làm lại Ctrl+Y" title="Làm lại (Ctrl+Y)"><Redo2 size={16}/></button><button type="button" onClick={drawing.clear} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600"><Trash2 size={14}/> Xóa phép dựng</button><input ref={fileInputRef} type="file" accept="application/json,.json" className="hidden" onChange={event => { const file = event.target.files?.[0]; if (file) void openScene(file); event.currentTarget.value = ""; }}/><button type="button" onClick={saveScene} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold"><FileDown size={14}/> Lưu bản vẽ</button><button type="button" onClick={() => fileInputRef.current?.click()} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold"><FileUp size={14}/> Mở tệp</button><button type="button" onClick={exportAiSpec} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold"><FileJson size={14}/> Tệp cho AI</button><button type="button" onClick={() => void openArView()} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-3 text-xs font-bold text-cyan-900 hover:bg-cyan-100"><Box size={14}/> Xem AR</button><button type="button" onClick={() => void exportUsdz()} disabled={exportBusy} title="Export model for AR Quick Look" className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold disabled:opacity-50"><Download size={14}/> {exportBusy ? "\u0110ang xu\u1ea5t\u2026" : "T\u1ea3i USDZ"}</button><span className="ml-auto flex items-center gap-2"><select aria-label="Độ phân giải ảnh" value={exportWidth} onChange={event => setExportWidth(Number(event.target.value) as 1600 | 2400 | 3200 | 4000)} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs"><option value={1600}>1600 px</option><option value={2400}>2400 px</option><option value={3200}>3200 px</option><option value={4000}>4000 px</option></select><button type="button" onClick={() => void captureImage(false)} disabled={exportBusy} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold disabled:opacity-50"><Download size={14}/>{exportBusy ? "Đang xuất…" : "Xuất PNG"}</button><button type="button" onClick={exportSvg} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold"><FileJson size={14}/> SVG</button><button type="button" onClick={() => void captureImage(true)} disabled={exportBusy} className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-teal-700 px-3 text-xs font-bold text-white hover:bg-teal-800 disabled:opacity-50"><Copy size={14}/> Chép hình vào Word</button></span>{exportNotice && <p role="status" className="basis-full text-xs text-teal-800">{exportNotice}</p>}</div>
         </section>
 
         <aside className="order-3 space-y-3">
@@ -495,9 +568,9 @@ export function GeometryLibrary() {
               : <p className="text-sm leading-6 text-slate-500">Chọn một cạnh, mặt hoặc điểm trên mô hình để xem thuộc tính và thao tác tiếp.</p>}
           </section>
           <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="mb-3 flex items-center justify-between"><div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-teal-700">Scene graph</p><h3 className="font-bold">Đối tượng trong hình</h3></div><Box size={17} className="text-teal-700"/></div><div className="max-h-72 space-y-3 overflow-y-auto text-xs">
-            <ObjectGroup title="Đỉnh và điểm" items={model.vertices.map(vertex => ({ id: vertex.id, label: vertex.id, selected: drawing.selectedVertexId === vertex.id, select: () => drawing.selectVertex(vertex.id) })).concat(drawing.points.map(point => ({ id: point.id, label: `${point.label} · điểm phụ`, selected: drawing.selectedVertexId === point.id, select: () => drawing.selectVertex(point.id) })))} visibility={drawing.objectVisibility} toggle={drawing.toggleObjectVisibility}/>
+            <ObjectGroup title="Đỉnh và điểm" items={model.vertices.map(vertex => ({ id: vertex.id, label: `${vertex.id} \u00b7 ${modelVertexRole(selected.kind, vertex.id)} \u00b7 ${modelVertexDependencies(selected.kind, vertex.id)}`, selected: drawing.selectedVertexId === vertex.id, select: () => drawing.selectVertex(vertex.id) })).concat(drawing.points.map(point => ({ id: point.id, label: `${point.label} \u00b7 ${pointRole(point.source)}${point.dependsOn?.length ? ` \u00b7 theo ${point.dependsOn.join(", ")}` : point.edgeId ? ` \u00b7 tr\u00ean ${point.edgeId.replace("-", "")}` : point.faceId ? ` \u00b7 thu\u1ed9c ${point.faceId}` : ""}`, selected: drawing.selectedVertexId === point.id, select: () => drawing.selectVertex(point.id) })))} visibility={drawing.objectVisibility} toggle={drawing.toggleObjectVisibility}/>
             <ObjectGroup title="Khối gốc" items={[{ id: "$model", label: selected.title, selected: false, select: () => undefined }]} visibility={drawing.objectVisibility} toggle={drawing.toggleObjectVisibility}/>
-            <ObjectGroup title="Mặt phẳng" items={model.faces.map(face => ({ id: faceId(face), label: faceId(face), selected: drawing.selectedFaceId === faceId(face), select: () => drawing.selectFace(faceId(face)) }))} visibility={drawing.objectVisibility} toggle={drawing.toggleObjectVisibility}/>
+            <ObjectGroup title="Mặt phẳng" items={model.faces.map((face, index) => ({ id: faceId(face), label: modelFaceRole(selected.kind, index, face), selected: drawing.selectedFaceId === faceId(face), select: () => drawing.selectFace(faceId(face)) }))} visibility={drawing.objectVisibility} toggle={drawing.toggleObjectVisibility}/>
             <ObjectGroup title="Cạnh" items={[...new Set(model.faces.flatMap(face => face.map((id, i) => [id, face[(i + 1) % face.length]].sort().join("-"))))].map(id => ({ id, label: id.replace("-", "–"), selected: drawing.selectedEdgeId === id, select: () => drawing.selectEdge(id) }))} visibility={drawing.objectVisibility} toggle={drawing.toggleObjectVisibility}/>
             <ObjectGroup title="Đoạn dựng và véc-tơ" items={[...drawing.segments.map(segment => ({ id: segment.id, label: `Đoạn ${segment.from}–${segment.to}`, selected: false, select: () => drawing.selectVertex(segment.from) })), ...modelVectors.map(vector => ({ id: vector.id, label: `Véc-tơ ${vector.from}${vector.to}`, selected: false, select: () => drawing.selectVertex(vector.from) }))]} visibility={drawing.objectVisibility} toggle={drawing.toggleObjectVisibility}/>
             {selected.kind === "pyramidCut" && <ObjectGroup title="Thiết diện" items={[{ id: faceId(model.cutFace ?? []), label: "Mặt cắt song song đáy", selected: drawing.selectedFaceId === faceId(model.cutFace ?? []), select: () => drawing.selectFace(faceId(model.cutFace ?? [])) }]} visibility={drawing.objectVisibility} toggle={drawing.toggleObjectVisibility}/>}

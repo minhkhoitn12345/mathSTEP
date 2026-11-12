@@ -1,9 +1,9 @@
 import { create } from "zustand";
 
 export type Point3 = [number, number, number];
-export type GeometryTool = "select" | "free-point" | "edge-point" | "face-point" | "segment" | "vector" | "translation" | "perpendicular";
+export type GeometryTool = "select" | "free-point" | "edge-point" | "midpoint" | "face-point" | "segment" | "vector" | "translation" | "perpendicular";
 export type EdgeStyle = "auto" | "solid" | "dashed";
-export type LibraryPoint = { id: string; label: string; point: Point3; source: "free" | "edge" | "face" | "foot" | "vector_dependent" | "translation"; edgeId?: string; t?: number; faceId?: string; dependsOn?: string[] };
+export type LibraryPoint = { id: string; label: string; point: Point3; source: "free" | "edge" | "midpoint" | "face" | "foot" | "vector_dependent" | "translation"; edgeId?: string; t?: number; faceId?: string; dependsOn?: string[] };
 export type LibrarySegment = { id: string; from: string; to: string; dashed?: boolean; rightAngleAt?: Point3 };
 export type LibraryVector = { id: string; from: string; to: string; label: string; color: string };
 export type ConstructionLog = { id: string; at: number; text: string; kind: "point" | "segment" | "foot" | "edge" | "system" };
