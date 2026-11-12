@@ -37,7 +37,7 @@ export function SimulationLabHeader({ moduleLabel, title, subtitle, accent, onBa
               <span className="text-[10px] font-medium text-slate-500">{"To\u00e1n 11 \u00b7 GDPT 2018"}</span>
             </div>
             <h1 className="truncate text-sm font-extrabold leading-tight text-slate-900 sm:text-base">{title}</h1>
-            <p className="mt-0.5 hidden truncate text-[11px] text-slate-500 sm:block">{subtitle}</p>
+            <p className="hidden">{subtitle}</p>
           </div>
         </div>
         {action && <div className="shrink-0">{action}</div>}

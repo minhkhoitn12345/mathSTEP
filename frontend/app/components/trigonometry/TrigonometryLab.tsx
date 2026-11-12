@@ -266,8 +266,8 @@ export function TrigonometryLab({
     <div className={`w-full ${embedded ? "mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-4 space-y-4" : "min-h-screen bg-slate-50 px-3 pb-6 sm:px-4 md:px-6"}`}>
       {!embedded && <SimulationLabHeader
         moduleLabel={"CHUY\u00caN \u0110\u1ec0 3"}
-        title={"Kh\u1ea3o s\u00e1t c\u00e1c quan h\u1ec7 l\u01b0\u1ee3ng gi\u00e1c"}
-        subtitle={"Kh\u00e1m ph\u00e1 \u0111\u01b0\u1eddng tr\u00f2n l\u01b0\u1ee3ng gi\u00e1c, \u0111\u1ed3 th\u1ecb h\u00e0m s\u1ed1 v\u00e0 nghi\u1ec7m ph\u01b0\u01a1ng tr\u00ecnh l\u01b0\u1ee3ng gi\u00e1c"}
+        title={"L\u01b0\u1ee3ng gi\u00e1c"}
+        subtitle={"\u0110\u01b0\u1eddng tr\u00f2n, \u0111\u1ed3 th\u1ecb v\u00e0 ph\u01b0\u01a1ng tr\u00ecnh l\u01b0\u1ee3ng gi\u00e1c"}
         accent="purple"
         onBack={onBackToHome}
         action={onOpenSocraticDrawer && (
@@ -319,13 +319,6 @@ export function TrigonometryLab({
               </span>
             </div>
             <div className="font-bold text-xs truncate">{lesson.title.split(":")[0]}</div>
-            <div
-              className={`text-[10px] truncate ${
-                selectedLessonIndex === idx ? "text-purple-100" : "text-slate-500"
-              }`}
-            >
-              {lesson.subtitle}
-            </div>
           </button>
         ))}
       </div>}
@@ -333,7 +326,7 @@ export function TrigonometryLab({
       {embedded && (
         <div className="flex items-start gap-3 rounded-2xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm">
           <span className="mt-0.5 rounded-lg bg-purple-700 px-2 py-1 text-[10px] font-black text-white">QUAN SÁT</span>
-          <div className="min-w-0 flex-1"><p className="font-bold text-purple-950"><MathFormattedText text={currentLesson.title} /></p><p className="mt-0.5 text-xs leading-relaxed text-purple-900"><MathFormattedText text={`${currentLesson.steps[0]?.instruction || currentLesson.description} Thử thay đổi góc hoặc tham số bên dưới để xem đại lượng trên hình thay đổi như thế nào.`} /></p></div>
+          <div className="min-w-0 flex-1"><p className="truncate font-bold text-purple-950"><MathFormattedText text={currentLesson.title} /></p><p className="mt-0.5 text-xs text-purple-900">Thay đổi góc hoặc tham số để quan sát.</p></div>
         </div>
       )}
 

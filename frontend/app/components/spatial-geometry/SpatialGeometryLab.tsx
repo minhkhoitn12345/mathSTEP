@@ -349,8 +349,8 @@ function SpatialGeometryLessonLab({
     <div className={`w-full ${embedded ? "mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-4 space-y-4" : showHeader ? "min-h-screen bg-slate-50 px-3 pb-6 sm:px-4 md:px-6" : "w-full"}`}>
       {!embedded && showHeader && <SimulationLabHeader
         moduleLabel={"CHUY\u00caN \u0110\u1ec0 2"}
-        title={"D\u1ef1ng h\u00ecnh v\u00e0 kh\u1ea3o s\u00e1t quan h\u1ec7 kh\u00f4ng gian 3D"}
-        subtitle={"M\u00f4 h\u00ecnh h\u00f3a h\u00ecnh h\u1ecdc kh\u00f4ng gian, quan s\u00e1t n\u00e9t khu\u1ea5t v\u00e0 kh\u1ea3o s\u00e1t c\u00e1c quan h\u1ec7 trong h\u00ecnh ch\u00f3p"}
+        title={"H\u00ecnh h\u1ecdc kh\u00f4ng gian"}
+        subtitle={"D\u1ef1ng h\u00ecnh v\u00e0 kh\u1ea3o s\u00e1t quan h\u1ec7 trong kh\u00f4ng gian"}
         accent="emerald"
         onBack={onBackToHome}
         action={onOpenSocraticDrawer && (
@@ -404,13 +404,6 @@ function SpatialGeometryLessonLab({
               </span>
             </div>
             <div className="font-bold text-xs truncate">{lesson.title.split(":")[0]}</div>
-            <div
-              className={`text-[10px] truncate ${
-                selectedLessonIndex === idx ? "text-emerald-100" : "text-slate-500"
-              }`}
-            >
-              {lesson.subtitle}
-            </div>
           </button>
         ))}
       </div>}
@@ -418,7 +411,7 @@ function SpatialGeometryLessonLab({
       {embedded && (
         <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm">
           <span className="mt-0.5 rounded-lg bg-emerald-600 px-2 py-1 text-[10px] font-black text-white">QUAN SÁT</span>
-          <div><p className="font-bold text-emerald-950"><MathFormattedText text={currentLesson.title} /></p><p className="mt-0.5 text-xs leading-relaxed text-emerald-900"><MathFormattedText text={`${currentLesson.steps[0]?.instruction || currentLesson.description} Kéo hình để đổi góc nhìn và theo dõi cạnh nào đang bị mặt khác che.`} /></p></div>
+          <div className="min-w-0"><p className="truncate font-bold text-emerald-950"><MathFormattedText text={currentLesson.title} /></p><p className="mt-0.5 text-xs text-emerald-900">Kéo hình để đổi góc nhìn, quan sát cạnh khuất.</p></div>
         </div>
       )}
 
