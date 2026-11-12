@@ -21,6 +21,7 @@ import {
   BookOpen,
   Calculator,
   Eye,
+  EyeOff,
   SlidersHorizontal
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -79,6 +80,7 @@ export const OptimizationSevenStepWizard: React.FC<OptimizationSevenStepWizardPr
 
   // Mobile viewport view mode for screens < xl ('step' | 'graph' | 'table' | 'all')
   const [mobileStepView, setMobileStepView] = useState<'step' | 'graph' | 'table' | 'all'>('step');
+  const [showScenarioSupport, setShowScenarioSupport] = useState(true);
 
   const { objective, system, variables } = scenario;
   const { vertexEvaluations, optimalPoints, optimalValue, integerOptimalPoint, integerOptimalValue } = result;
@@ -1068,13 +1070,25 @@ ${result.practicalAnswer}`;
           </div>
         </div>
 
-        {/* CENTER COLUMN: Interactive Optimization Graph Canvas (xl: 4 cols) */}
+        {/* CENTER COLUMN: Interactive Optimization Graph Canvas */}
         <div
-          className={`xl:col-span-4 flex flex-col gap-3 order-2 ${
+          className={`flex flex-col gap-3 order-2 ${showScenarioSupport ? 'xl:col-span-4' : 'xl:col-span-7'} ${
             mobileStepView === 'graph' || mobileStepView === 'all' ? 'flex' : 'hidden xl:flex'
           }`}
         >
           <div className="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-xs">
+            <div className="flex justify-end pb-2">
+              <button
+                type="button"
+                onClick={() => setShowScenarioSupport(value => !value)}
+                aria-expanded={showScenarioSupport}
+                aria-controls="optimization-scenario-support"
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-purple-300 hover:bg-purple-50 hover:text-purple-800 sm:px-3"
+              >
+                {showScenarioSupport ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                <span>{showScenarioSupport ? 'Ẩn tình huống & trợ lý' : 'Hiện tình huống & trợ lý'}</span>
+              </button>
+            </div>
             <OptimizationGraphCanvas
               scenario={scenario}
               result={result}
@@ -1086,12 +1100,16 @@ ${result.practicalAnswer}`;
               revealOptimalAnswers={canRevealOptimal}
               highlightVertex={highlightVertex}
               onHighlightVertex={setHighlightVertex}
+              isPresentationMode={!showScenarioSupport}
             />
           </div>
         </div>
 
         {/* RIGHT COLUMN: Real-World Scenarios Bank & Mascot (xl: 3 cols) */}
-        <div className="hidden xl:flex xl:col-span-3 flex-col gap-3.5 order-3">
+        <div
+          id="optimization-scenario-support"
+          className={`${showScenarioSupport ? 'hidden xl:flex' : 'hidden'} xl:col-span-3 flex-col gap-3.5 order-3`}
+        >
           {/* Scenario Selector Bank */}
           <div className="bg-white rounded-2xl border border-slate-200 p-3.5 shadow-xs">
             <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5 mb-2">
