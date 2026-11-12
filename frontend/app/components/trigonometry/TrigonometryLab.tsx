@@ -7,6 +7,8 @@ import { CORE_3_MODULES, LessonUnit } from "@/app/types/curriculum";
 import {
   Compass,
   Activity,
+  Copy,
+  Magnet,
 } from "lucide-react";
 import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
 import { MathFormattedText } from "@/app/components/KatexMath";
@@ -17,6 +19,154 @@ interface TrigonometryLabProps {
   onOpenSocraticDrawer?: (contextMessage?: string) => void;
   initialLessonIndex?: number;
   embedded?: boolean;
+}
+
+type TrigonometryMode = "circle" | "addition" | "wave";
+type LinkedArc = "opposite" | "supplementary" | "complementary" | "oppositeHalfTurn";
+
+const LINKED_ARCS: { id: LinkedArc; title: string; formula: string; color: string }[] = [
+  { id: "opposite", title: "Cung đối", formula: "-\\alpha", color: "#db2777" },
+  { id: "supplementary", title: "Cung bù", formula: "\\pi-\\alpha", color: "#0891b2" },
+  { id: "complementary", title: "Cung phụ", formula: "\\frac{\\pi}{2}-\\alpha", color: "#ea580c" },
+  { id: "oppositeHalfTurn", title: "Hơn kém \\pi", formula: "\\pi+\\alpha", color: "#4f46e5" },
+];
+
+async function copySvgToClipboard(svg: SVGSVGElement | null): Promise<string> {
+  if (!svg || !navigator.clipboard?.write || typeof ClipboardItem === "undefined") {
+    throw new Error("Trình duyệt chưa hỗ trợ chép hình. Hãy dùng trình duyệt hiện đại và kết nối an toàn.");
+  }
+  const clone = svg.cloneNode(true) as SVGSVGElement;
+  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  clone.setAttribute("width", "1600");
+  clone.setAttribute("height", "900");
+  const source = new Blob([new XMLSerializer().serializeToString(clone)], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(source);
+  try {
+    const image = new Image();
+    image.src = url;
+    await new Promise<void>((resolve, reject) => { image.onload = () => resolve(); image.onerror = () => reject(new Error("Không thể dựng ảnh để sao chép.")); });
+    const canvas = document.createElement("canvas");
+    canvas.width = 1600;
+    canvas.height = 900;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Không thể tạo ảnh PNG.");
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error("Không thể tạo ảnh PNG.")), "image/png"));
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    return "Đã chép hình vào bộ nhớ tạm. Có thể dán vào Word.";
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function AdditionFormulaProof({ examMode }: { examMode: boolean }) {
+  const [alpha, setAlpha] = useState(30);
+  const [beta, setBeta] = useState(25);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [copyMessage, setCopyMessage] = useState("");
+  const a = alpha * Math.PI / 180;
+  const b = beta * Math.PI / 180;
+  const scale = 235;
+  const ox = 62;
+  const oy = 326;
+  const verticalA = Math.sin(a) * Math.cos(b) * scale;
+  const verticalB = Math.cos(a) * Math.sin(b) * scale;
+  const horizontalPositive = Math.cos(a) * Math.cos(b) * scale;
+  const horizontalNegative = Math.sin(a) * Math.sin(b) * scale;
+  const px = ox + horizontalPositive - horizontalNegative;
+  const py = oy - verticalA - verticalB;
+  return <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+    <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-5">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div><h2 className="font-bold text-slate-900">Công thức cộng qua hình học</h2><p className="text-xs text-slate-500">Hai góc vuông tạo góc tổng α + β trên đường tròn đơn vị.</p></div><button type="button" onClick={() => { void copySvgToClipboard(svgRef.current).then(setCopyMessage).catch(error => setCopyMessage(error instanceof Error ? error.message : "Không thể chép hình.")); }} className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-teal-700 px-3 text-xs font-bold text-white"><Copy size={14}/> Chép hình vào Word</button></div>
+      <svg ref={svgRef} viewBox="0 0 640 390" role="img" aria-label={`Chứng minh công thức cộng với góc ${alpha} và ${beta} độ`} className={`h-auto max-h-[62vh] w-full rounded-xl border border-slate-200 ${examMode ? "bg-white" : "bg-slate-50"}`}>
+        <defs><marker id="addition-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 Z" fill={examMode ? "#111827" : "#475569"}/></marker></defs>
+        <line x1="30" y1={oy} x2="610" y2={oy} stroke={examMode ? "#111827" : "#94a3b8"} strokeWidth="1.5" markerEnd="url(#addition-arrow)"/>
+        <line x1={ox} y1="26" x2={ox} y2="365" stroke={examMode ? "#111827" : "#94a3b8"} strokeWidth="1.5" markerEnd="url(#addition-arrow)"/>
+        <line x1={ox} y1={oy} x2={px} y2={oy} stroke="#64748b" strokeWidth="1" strokeDasharray="5 5"/>
+        <line x1={px} y1={oy} x2={px} y2={py} stroke="#64748b" strokeWidth="1" strokeDasharray="5 5"/>
+        <line x1={ox} y1={oy} x2={px} y2={py} stroke={examMode ? "#111827" : "#7c3aed"} strokeWidth="3"/>
+        <circle cx={ox} cy={oy} r="4" fill="#0f172a"/><circle cx={px} cy={py} r="5" fill="#0f172a"/>
+        <text x={ox-18} y={oy+22} fontSize="14" fontWeight="700" fill="#0f172a">O</text><text x={px+8} y={py-8} fontSize="14" fontWeight="700" fill="#0f172a">P</text>
+        <line x1={px} y1={oy} x2={px} y2={oy-verticalA} stroke={examMode ? "#111827" : "#0284c7"} strokeWidth="7"/><line x1={px} y1={oy-verticalA} x2={px} y2={py} stroke={examMode ? "#111827" : "#ea580c"} strokeWidth="7"/>
+        <line x1={ox} y1={oy+18} x2={ox+horizontalPositive} y2={oy+18} stroke={examMode ? "#111827" : "#0284c7"} strokeWidth="5"/><line x1={ox+horizontalPositive} y1={oy+18} x2={px} y2={oy+18} stroke={examMode ? "#111827" : "#ea580c"} strokeWidth="5" strokeDasharray="7 4"/>
+        <text x={px+12} y={oy-verticalA/2} fontSize="11" fill="#0369a1">sin α cos β</text><text x={px+12} y={oy-verticalA-verticalB/2} fontSize="11" fill="#c2410c">cos α sin β</text>
+        <text x={ox+horizontalPositive/2-22} y={oy+36} fontSize="11" fill="#0369a1">cos α cos β</text><text x={ox+horizontalPositive-horizontalNegative/2-22} y={oy+51} fontSize="11" fill="#c2410c">− sin α sin β</text>
+        <text x={ox+scale+8} y={py+20} fontSize="11" fill="#475569">cạnh huyền = 1</text>
+        <text x="500" y="48" textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f172a">α = {alpha}° · β = {beta}°</text>
+      </svg>
+      <div className="mt-3 flex flex-wrap gap-3 text-xs"><span className="inline-flex items-center gap-2"><i className="h-2.5 w-5 rounded bg-sky-600"/>Thành phần thứ nhất</span><span className="inline-flex items-center gap-2"><i className="h-2.5 w-5 rounded bg-orange-600"/>Thành phần thứ hai</span></div>
+      {copyMessage && <p role="status" className="mt-2 text-xs text-teal-700">{copyMessage}</p>}
+    </div>
+    <aside className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <h3 className="font-bold">Điều chỉnh góc</h3>
+      <AngleControl label="α" value={alpha} min={10} max={45} onChange={setAlpha}/><AngleControl label="β" value={beta} min={10} max={40} onChange={setBeta}/>
+      <div className="space-y-3 rounded-xl bg-slate-50 p-3 text-sm"><MathFormattedText text={`$\\sin(${alpha}^\\circ+${beta}^\\circ)=\\sin\\alpha\\cos\\beta+\\cos\\alpha\\sin\\beta=${(Math.sin(a+b)).toFixed(3)}$`}/><MathFormattedText text={`$\\cos(${alpha}^\\circ+${beta}^\\circ)=\\cos\\alpha\\cos\\beta-\\sin\\alpha\\sin\\beta=${(Math.cos(a+b)).toFixed(3)}$`}/><MathFormattedText text={`$\\sin\\alpha\\cos\\beta=${(Math.sin(a)*Math.cos(b)).toFixed(3)},\\quad \\cos\\alpha\\sin\\beta=${(Math.cos(a)*Math.sin(b)).toFixed(3)}$`}/><MathFormattedText text={`$\\cos\\alpha\\cos\\beta=${(Math.cos(a)*Math.cos(b)).toFixed(3)},\\quad \\sin\\alpha\\sin\\beta=${(Math.sin(a)*Math.sin(b)).toFixed(3)}$`}/></div>
+      <p className="text-xs leading-5 text-slate-600">Cạnh đứng được cộng theo hai đoạn màu. Cạnh ngang là cạnh kề của góc tổng, bằng hiệu hai hình chiếu màu.</p>
+    </aside>
+  </section>;
+}
+
+function AngleControl({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (value: number) => void }) {
+  return <label className="block rounded-xl border border-slate-200 p-3 text-xs"><span className="mb-1 flex justify-between"><strong>Góc {label}</strong><output className="font-bold text-purple-700">{value}°</output></span><input aria-label={`Góc ${label}`} className="w-full accent-purple-700" type="range" min={min} max={max} value={value} onChange={event => onChange(Number(event.target.value))}/></label>;
+}
+
+function WaveExplorer({ angleDeg, setAngleDeg, amplitude, setAmplitude, frequency, setFrequency, phase, setPhase, examMode }: {
+  angleDeg: number; setAngleDeg: (value: number) => void; amplitude: number; setAmplitude: (value: number) => void;
+  frequency: number; setFrequency: (value: number) => void; phase: number; setPhase: (value: number) => void; examMode: boolean;
+}) {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [copyMessage, setCopyMessage] = useState("");
+  const angle = angleDeg * Math.PI / 180;
+  const cx = 155, cy = 190, radius = 90, graphLeft = 340, graphRight = 880, graphScaleY = 65;
+  const xMin = angle - 2 * Math.PI, xMax = angle + 2 * Math.PI;
+  const graphX = (x: number) => graphLeft + (x - xMin) / (xMax - xMin) * (graphRight - graphLeft);
+  const graphY = (x: number) => cy - amplitude * Math.sin(frequency * x + phase) * graphScaleY;
+  const pointX = graphX(angle);
+  const pointY = graphY(angle);
+  const path = Array.from({ length: 481 }, (_, index) => {
+    const x = xMin + (index / 480) * (xMax - xMin);
+    return `${index === 0 ? "M" : "L"} ${graphX(x).toFixed(2)} ${graphY(x).toFixed(2)}`;
+  }).join(" ");
+  const ticks = Array.from({ length: 5 }, (_, index) => xMin + index * Math.PI);
+  const period = 2 * Math.PI / frequency;
+  return <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-5">
+    <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div><h2 className="font-bold text-slate-900">Đường tròn và đồ thị sóng</h2><p className="text-xs text-slate-500">Điểm trên đường tròn liên hệ với điểm trên đồ thị.</p></div><button type="button" onClick={() => { void copySvgToClipboard(svgRef.current).then(setCopyMessage).catch(error => setCopyMessage(error instanceof Error ? error.message : "Không thể chép hình.")); }} className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-teal-700 px-3 text-xs font-bold text-white"><Copy size={14}/> Chép hình vào Word</button></div>
+    <svg ref={svgRef} viewBox="0 0 900 380" role="img" aria-label="Đường tròn lượng giác và đồ thị y bằng A sin omega x cộng phi" className={`h-auto max-h-[62vh] w-full rounded-xl border border-slate-200 ${examMode ? "bg-white" : "bg-slate-950"}`}>
+      <defs><marker id="wave-axis-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 Z" fill={examMode ? "#111827" : "#94a3b8"}/></marker></defs>
+      <line x1={graphLeft-35} y1="20" x2={graphLeft-35} y2="350" stroke={examMode ? "#111827" : "#334155"} strokeWidth="1"/>
+      <text x={cx} y="32" textAnchor="middle" fontSize="13" fontWeight="700" fill={examMode ? "#111827" : "#e2e8f0"}>Đường tròn R = 1</text>
+      <text x={(graphLeft+graphRight)/2} y="32" textAnchor="middle" fontSize="13" fontWeight="700" fill={examMode ? "#111827" : "#e2e8f0"}>y = A sin(ωx + φ)</text>
+      <line x1={cx-radius-20} y1={cy} x2={cx+radius+24} y2={cy} stroke={examMode ? "#111827" : "#64748b"} strokeWidth="1.3" markerEnd="url(#wave-axis-arrow)"/>
+      <line x1={cx} y1={cy+radius+20} x2={cx} y2={cy-radius-25} stroke={examMode ? "#111827" : "#64748b"} strokeWidth="1.3" markerEnd="url(#wave-axis-arrow)"/>
+      <circle cx={cx} cy={cy} r={radius} fill="none" stroke={examMode ? "#111827" : "#a78bfa"} strokeWidth="2"/>
+      <line x1={cx} y1={cy} x2={cx+radius*Math.cos(angle)} y2={cy-radius*Math.sin(angle)} stroke={examMode ? "#111827" : "#c4b5fd"} strokeWidth="2.5"/>
+      <circle cx={cx+radius*Math.cos(angle)} cy={cy-radius*Math.sin(angle)} r="5" fill={examMode ? "#111827" : "#f59e0b"}/>
+      <text x={cx+radius*Math.cos(angle)+7} y={cy-radius*Math.sin(angle)-8} fontSize="12" fontWeight="700" fill={examMode ? "#111827" : "#fbbf24"}>M</text>
+      <line x1={graphLeft} y1={cy} x2={graphRight} y2={cy} stroke={examMode ? "#111827" : "#64748b"} strokeWidth="1.3" markerEnd="url(#wave-axis-arrow)"/>
+      {[-2,-1,1,2].map(value=><line key={`wg${value}`} x1={graphLeft} y1={cy-value*graphScaleY} x2={graphRight} y2={cy-value*graphScaleY} stroke={examMode ? "#cbd5e1" : "#334155"} strokeDasharray="3 5"/>)}
+      {ticks.map((tick,index)=><g key={`xt${index}`}><line x1={graphX(tick)} y1="50" x2={graphX(tick)} y2="340" stroke={examMode ? "#cbd5e1" : "#334155"} strokeDasharray="3 5"/><text x={graphX(tick)} y={cy+18} textAnchor="middle" fontSize="10" fill={examMode ? "#111827" : "#cbd5e1"}>{index===0?"α−2π":index===1?"α−π":index===2?"α":index===3?"α+π":"α+2π"}</text></g>)}
+      <path d={path} fill="none" stroke={examMode ? "#111827" : "#a78bfa"} strokeWidth="3"/>
+      <line x1={cx+radius*Math.cos(angle)} y1={cy-radius*Math.sin(angle)} x2={graphLeft} y2={cy-radius*Math.sin(angle)} stroke={examMode ? "#111827" : "#fbbf24"} strokeWidth="1.5" strokeDasharray="5 4"/>
+      <line x1={pointX} y1={cy-radius*Math.sin(angle)} x2={pointX} y2={pointY} stroke={examMode ? "#111827" : "#fbbf24"} strokeWidth="1.5" strokeDasharray="4 4"/>
+      <line x1={pointX} y1={50} x2={pointX} y2={340} stroke={examMode ? "#111827" : "#f59e0b"} strokeWidth="1" strokeDasharray="3 5" opacity=".6"/>
+      <circle cx={pointX} cy={pointY} r="5.5" fill={examMode ? "#111827" : "#f59e0b"} stroke={examMode ? "#fff" : "#fff"} strokeWidth="1.5"/>
+      <text x={pointX+8} y={pointY-9} fontSize="11" fontWeight="700" fill={examMode ? "#111827" : "#fbbf24"}>P(α)</text>
+    </svg>
+    <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+      <AngleControl label="α" value={angleDeg} min={-360} max={360} onChange={setAngleDeg}/>
+      <ParameterControl label="Biên độ A" value={amplitude} min={0.5} max={2.5} step={0.1} onChange={setAmplitude}/>
+      <ParameterControl label="Tần số góc ω" value={frequency} min={0.5} max={3} step={0.1} onChange={setFrequency}/>
+      <ParameterControl label="Pha ban đầu φ (rad)" value={phase} min={-Math.PI} max={Math.PI} step={0.1} onChange={setPhase}/>
+    </div>
+    <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 rounded-xl bg-slate-50 p-3 text-sm"><MathFormattedText text={`$y=${amplitude.toFixed(1)}\\sin(${frequency.toFixed(1)}x${phase<0?"":"+"}${phase.toFixed(1)})$`}/><MathFormattedText text={`$T=\\frac{2\\pi}{\\omega}=${period.toFixed(2)}$`}/><MathFormattedText text={`$-A\\leq y\\leq A,\\quad A=${amplitude.toFixed(1)}$`}/></div>
+    {copyMessage && <p role="status" className="mt-2 text-xs text-teal-700">{copyMessage}</p>}
+  </section>;
+}
+
+function ParameterControl({ label, value, min, max, step, onChange }: { label: string; value: number; min: number; max: number; step: number; onChange: (value: number) => void }) {
+  return <label className="block rounded-xl border border-slate-200 p-3 text-xs"><span className="mb-1 flex justify-between gap-2"><strong>{label}</strong><output className="font-bold tabular-nums text-purple-700">{value.toFixed(1)}</output></span><input aria-label={label} className="w-full accent-purple-700" type="range" min={min} max={max} step={step} value={value} onChange={event => onChange(Number(event.target.value))}/></label>;
 }
 
 export function TrigonometryLab({
@@ -36,6 +186,11 @@ export function TrigonometryLab({
 
   const currentLesson: LessonUnit = moduleConfig.lessons[selectedLessonIndex] || moduleConfig.lessons[0];
   const guidedLessonIndex = TRIG_GUIDED_INDICES[selectedLessonIndex] ?? 0;
+  const [mode, setMode] = useState<TrigonometryMode>("circle");
+  const [examMode, setExamMode] = useState(false);
+  const [magneticSnap, setMagneticSnap] = useState(true);
+  const [linkedArcs, setLinkedArcs] = useState<LinkedArc[]>(["supplementary"]);
+  const [copyNotice, setCopyNotice] = useState("");
 
   // Core angle in degrees (Defaults to -765° from Task LG-MH01)
   const [angleDeg, setAngleDeg] = useState<number>(-765);
@@ -84,6 +239,18 @@ export function TrigonometryLab({
   // Screen coords of M on Circle
   const mScreenX = cX + cR * cosVal;
   const mScreenY = cY - cR * sinVal;
+
+  const specialAngles = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330];
+  const snapAngle = (degrees: number) => {
+    if (!magneticSnap) return degrees;
+    const candidates = specialAngles.flatMap(angle => [-3, -2, -1, 0, 1, 2, 3].map(turn => angle + turn * 360));
+    const nearest = candidates.reduce((best, value) => Math.abs(value - degrees) < Math.abs(best - degrees) ? value : best, candidates[0]);
+    return Math.abs(nearest - degrees) <= 4 ? nearest : degrees;
+  };
+  const linkedPoint = (arc: LinkedArc) => {
+    const rad = arc === "opposite" ? -angleRad : arc === "supplementary" ? Math.PI - angleRad : arc === "complementary" ? Math.PI / 2 - angleRad : Math.PI + angleRad;
+    return { x: cX + cR * Math.cos(rad), y: cY - cR * Math.sin(rad), sin: Math.sin(rad), cos: Math.cos(rad) };
+  };
 
   // Supplementary point M' (pi - a): cos' = -cos, sin' = sin
   const suppCos = -cosVal;
@@ -164,7 +331,7 @@ export function TrigonometryLab({
     const dy = cY - local.y;
     let deg = (Math.atan2(dy, dx) * 180) / Math.PI;
     if (deg < 0) deg += 360;
-    setAngleDeg(Math.round(deg));
+    setAngleDeg(snapAngle(deg));
   };
 
   const handleCirclePointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -263,7 +430,8 @@ export function TrigonometryLab({
   const currentGuidedQuestion = currentGuidedSteps[guidedStep];
 
   return (
-    <div className={`w-full ${embedded ? "mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-4 space-y-4" : "min-h-screen bg-slate-50 px-3 pb-6 sm:px-4 md:px-6"}`}>
+    <div className={`trig-workspace w-full ${examMode ? "trig-exam-mode bg-white" : ""} ${embedded ? "mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-4 space-y-4" : `min-h-screen ${examMode ? "bg-white" : "bg-slate-50"} px-3 pb-6 sm:px-4 md:px-6`}`}>
+      {examMode && <style>{`.trig-exam-mode svg{background:#fff!important}.trig-exam-mode svg [stroke]:not([stroke="none"]){stroke:#111827!important}.trig-exam-mode svg [fill]:not([fill="none"]):not([fill="#fff"]):not([fill="#FFF"]):not([fill="#ffffff"]):not([fill="#FFFFFF"]){fill:#111827!important}.trig-exam-mode svg text{fill:#111827!important}`}</style>}
       {!embedded && <SimulationLabHeader
         moduleLabel={"CHUY\u00caN \u0110\u1ec0 3"}
         title={"L\u01b0\u1ee3ng gi\u00e1c"}
@@ -278,7 +446,12 @@ export function TrigonometryLab({
         )}
       />}
 
-      <div className="mx-auto w-full max-w-7xl space-y-4 pt-3 sm:pt-4">
+      <div className="mx-auto w-full max-w-7xl space-y-4 pt-2 sm:pt-3">
+      <nav className="sticky top-[104px] z-20 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white/90 p-1.5 shadow-sm backdrop-blur" aria-label="Chế độ mô phỏng lượng giác">
+        <div className="flex flex-wrap gap-1">{([ ["circle", "Đường tròn"], ["addition", "Công thức cộng"], ["wave", "Đồ thị sóng"] ] as const).map(([id, label]) => <button key={id} type="button" onClick={() => setMode(id)} aria-pressed={mode === id} className={`min-h-9 rounded-lg px-3 text-xs font-bold ${mode === id ? "bg-purple-700 text-white" : "text-slate-600 hover:bg-slate-100"}`}>{label}</button>)}</div>
+        <button type="button" onClick={() => setExamMode(value => !value)} aria-pressed={examMode} className={`min-h-9 rounded-lg px-3 text-xs font-bold ${examMode ? "bg-black text-white" : "border border-slate-200 text-slate-700 hover:bg-slate-50"}`}>{examMode ? "Đề thi · nét đen" : "Bài giảng · màu"}</button>
+      </nav>
+      {mode === "addition" ? <AdditionFormulaProof examMode={examMode}/> : mode === "wave" ? <WaveExplorer angleDeg={angleDeg} setAngleDeg={setAngleDeg} amplitude={ampA} setAmplitude={setAmpA} frequency={freqB} setFrequency={setFreqB} phase={phaseC} setPhase={setPhaseC} examMode={examMode}/> : <>
       {/* 2. PROGRESSIVE LESSON SELECTOR TABS */}
       {!embedded && <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
         {moduleConfig.lessons.map((lesson, idx) => (
@@ -362,7 +535,7 @@ export function TrigonometryLab({
                 </div>
                 {guidedResultShown && guidedChoice !== currentGuidedQuestion.answer && (
                   <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" role="status">
-                    <strong>Chưa đúng.</strong> <MathFormattedText text={currentGuidedQuestion.hint} />
+                    <strong>Chưa đúng.</strong> Trên hình, α nằm ở {activeQuadrant}. Hãy xét dấu sin α theo tung độ và cos α theo hoành độ của M trước khi chọn lại. <MathFormattedText text={currentGuidedQuestion.hint} />
                     <button type="button" onClick={() => { setGuidedChoice(null); setGuidedResultShown(false); }} className="ml-2 font-bold underline">Thử lại</button>
                   </div>
                 )}
@@ -415,6 +588,7 @@ export function TrigonometryLab({
               </button>
               <button type="button" onClick={() => setAngleDeg(90)} className="px-2 py-1 rounded-lg bg-orange-50 text-orange-800 hover:bg-orange-100 font-semibold text-[11px] transition-colors" title="Kiểm tra tan không xác định tại 90 độ">90°</button>
               <button type="button" onClick={() => setAngleDeg(0)} className="px-2 py-1 rounded-lg bg-violet-50 text-violet-800 hover:bg-violet-100 font-semibold text-[11px] transition-colors" title="Kiểm tra cot không xác định tại 0 độ">0°</button>
+              <button type="button" onClick={() => { void copySvgToClipboard(circleSvgRef.current).then(setCopyNotice).catch(error => setCopyNotice(error instanceof Error ? error.message : "Không thể chép hình.")); }} className="inline-flex min-h-8 items-center gap-1 rounded-lg bg-teal-700 px-2 text-[11px] font-bold text-white" title="Chép hình vào Word"><Copy size={13}/> Word</button>
             </div>
           </div>
 
@@ -429,6 +603,8 @@ export function TrigonometryLab({
               onPointerUp={handleCirclePointerUp}
               onPointerCancel={handleCirclePointerUp}
             >
+              {/* Coordinate grid */}
+              {[-0.5, 0.5].map(value => <g key={`grid-${value}`} opacity=".55"><line x1={cX + value*cR} y1={cY-cR} x2={cX + value*cR} y2={cY+cR} stroke="#CBD5E1" strokeWidth=".8" strokeDasharray="2 4"/><line x1={cX-cR} y1={cY-value*cR} x2={cX+cR} y2={cY-value*cR} stroke="#CBD5E1" strokeWidth=".8" strokeDasharray="2 4"/></g>)}
               {/* Axes Ox and Oy */}
               <line x1="20" y1={cY} x2={cSvgW - 20} y2={cY} stroke="#CBD5E1" strokeWidth="1.5" />
               <line x1={cX} y1="20" x2={cX} y2={cSvgH - 20} stroke="#CBD5E1" strokeWidth="1.5" />
@@ -488,7 +664,7 @@ export function TrigonometryLab({
               <line x1={cX} y1={cY} x2={cX} y2={mScreenY} stroke="#10B981" strokeWidth="3" />
 
               {/* LESSON 2: Tangent Axis x = 1 and Cotangent Axis y = 1 */}
-              {(guidedLessonIndex === 1 || waveMode === "tan" || waveMode === "cot") && (
+              {(mode === "circle" || guidedLessonIndex === 1 || waveMode === "tan" || waveMode === "cot") && (
                 <>
                   {/* Axis Tan x = 1 */}
                   <line
@@ -571,6 +747,12 @@ export function TrigonometryLab({
                 </>
               )}
 
+              {linkedArcs.map(arc => {
+                const linked = linkedPoint(arc);
+                const color = LINKED_ARCS.find(item => item.id === arc)?.color ?? "#334155";
+                return <g key={`linked-${arc}`}><line x1={mScreenX} y1={mScreenY} x2={linked.x} y2={linked.y} stroke={color} strokeWidth="1.3" strokeDasharray="4 3"/><line x1={linked.x} y1={linked.y} x2={linked.x} y2={cY} stroke={color} strokeWidth="1.1" strokeDasharray="3 3"/><line x1={linked.x} y1={linked.y} x2={cX} y2={linked.y} stroke={color} strokeWidth="1.1" strokeDasharray="3 3"/><circle cx={linked.x} cy={linked.y} r="5" fill={color} stroke="white" strokeWidth="1.5"/><text x={linked.x+7} y={linked.y-7} fill={color} fontSize="10" fontWeight="700">M′</text></g>;
+              })}
+
               {/* LESSON 5: Cutting line y = eqM on Unit Circle */}
               {guidedLessonIndex === 4 && (
                 <>
@@ -642,6 +824,13 @@ export function TrigonometryLab({
             </div>
           </div>
 
+          <div className="w-full space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2"><strong className="text-xs text-slate-800">Cung liên kết</strong><label className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600"><input type="checkbox" checked={magneticSnap} onChange={event => setMagneticSnap(event.target.checked)} className="accent-purple-700"/><Magnet size={14}/> Hút góc đặc biệt</label></div>
+            <div className="flex flex-wrap gap-1.5">{LINKED_ARCS.map(arc => <button key={arc.id} type="button" onClick={() => setLinkedArcs(current => current.includes(arc.id) ? current.filter(value => value !== arc.id) : [...current, arc.id])} aria-pressed={linkedArcs.includes(arc.id)} className={`inline-flex min-h-8 items-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-bold ${linkedArcs.includes(arc.id) ? "border-purple-300 bg-white text-purple-900" : "border-slate-200 bg-white text-slate-600"}`}><i className="h-2 w-2 rounded-full" style={{backgroundColor:arc.color}}/>{arc.title}<MathFormattedText text={`$${arc.formula}$`}/></button>)}</div>
+            {linkedArcs.length > 0 && <div className="grid gap-1 border-t border-slate-200 pt-2 sm:grid-cols-2">{linkedArcs.map(arcId => { const arc = LINKED_ARCS.find(item => item.id === arcId)!; const linked = linkedPoint(arcId); return <p key={`value-${arcId}`} className="text-[11px] text-slate-700"><MathFormattedText text={`$\\sin(${arc.formula})=${linked.sin.toFixed(3)},\\quad \\cos(${arc.formula})=${linked.cos.toFixed(3)}$`}/></p>; })}</div>}
+          </div>
+          {copyNotice && <p role="status" className="w-full text-xs text-teal-700">{copyNotice}</p>}
+
           {/* Quick Angle Slider */}
           <div className="w-full pt-3">
             <div className="flex justify-between text-xs text-slate-600 mb-1">
@@ -654,7 +843,7 @@ export function TrigonometryLab({
               max="1080"
               step="5"
               value={angleDeg}
-              onChange={(e) => setAngleDeg(parseInt(e.target.value, 10))}
+              onChange={(e) => setAngleDeg(snapAngle(parseInt(e.target.value, 10)))}
               className="w-full accent-purple-600 cursor-pointer"
             />
           </div>
@@ -933,6 +1122,7 @@ export function TrigonometryLab({
 
         </div>
       </div>
+      </>}
       </div>
     </div>
   );
