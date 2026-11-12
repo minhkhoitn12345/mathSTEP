@@ -732,6 +732,10 @@ export function GeometryLibrary() {
   };
   const openArView = async () => {
     if (!webGlRenderer) { setExportNotice("Mô hình chưa sẵn sàng. Hãy chờ tải xong rồi thử lại."); return; }
+    if (webGlCamera) {
+      webGlCamera.updateMatrixWorld(true);
+      cameraSnapshotRef.current = { position: webGlCamera.position.clone(), quaternion: webGlCamera.quaternion.clone() };
+    }
     const controller = getARController();
     setExportNotice(""); setArNotice("");
     const userAgent = navigator.userAgent;
