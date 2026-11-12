@@ -20,6 +20,7 @@ import {
   Award,
   Calculator,
   Eye,
+  EyeOff,
   SlidersHorizontal
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -73,6 +74,7 @@ export const OptimizationSevenStepWizard: React.FC<OptimizationSevenStepWizardPr
   const [optiHintTier, setOptiHintTier] = useState<1 | 2 | 3>(1);
   const [speechEnabled, setSpeechEnabled] = useState(false);
   const [copyToast, setCopyToast] = useState<string | null>(null);
+  const [showGuidance, setShowGuidance] = useState(true);
 
   // Mobile viewport view mode for screens < xl ('step' | 'graph' | 'table' | 'all')
   const [mobileStepView, setMobileStepView] = useState<'step' | 'graph' | 'table' | 'all'>('step');
@@ -384,8 +386,12 @@ ${result.practicalAnswer}`;
       </div>
 
       {/* 2. OPTI SOCRATES GUIDANCE BANNER */}
-      <div className="bg-gradient-to-r from-purple-50/90 to-indigo-50/90 rounded-2xl border border-purple-200 p-3 shadow-xs flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-3">
+      {showGuidance ? (
+        <div
+          id="optimization-step-guidance"
+          className="bg-gradient-to-r from-purple-50/90 to-indigo-50/90 rounded-2xl border border-purple-200 p-3 shadow-xs flex flex-col gap-2"
+        >
+          <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
             <OptiMascot expression="thinking" actionState="nod" size={36} />
             <div className="min-w-0">
@@ -406,6 +412,17 @@ ${result.practicalAnswer}`;
               title="Đọc kết luận thực tiễn"
             >
               {speechEnabled ? <VolumeX className="w-3.5 h-3.5 text-purple-600 animate-pulse" /> : <Volume2 className="w-3.5 h-3.5" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowGuidance(false)}
+              aria-expanded={showGuidance}
+              aria-controls="optimization-step-guidance"
+              className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-purple-600 cursor-pointer shadow-xs min-h-[36px] min-w-[36px] flex items-center justify-center"
+              title="Ẩn hướng dẫn và gợi ý"
+              aria-label="Ẩn hướng dẫn và gợi ý"
+            >
+              <EyeOff className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -455,6 +472,18 @@ ${result.practicalAnswer}`;
           </div>
         </div>
       </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowGuidance(true)}
+          aria-expanded={showGuidance}
+          className="self-start inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-800 transition hover:bg-purple-100"
+          aria-label={`Hiện hướng dẫn và gợi ý bước ${currentStep}`}
+        >
+          <Eye className="h-3.5 w-3.5" />
+          Hiện hướng dẫn và gợi ý bước {currentStep}
+        </button>
+      )}
 
       {/* MOBILE VIEWPORT SWITCHER BAR (Visible only on < xl) */}
       <div className="xl:hidden flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs overflow-x-auto no-scrollbar">
