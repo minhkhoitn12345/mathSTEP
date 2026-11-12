@@ -12,6 +12,7 @@ export type GeometryLibrarySnapshot = { points: LibraryPoint[]; segments: Librar
 interface GeometryLibraryState extends GeometryLibrarySnapshot {
   tool: GeometryTool;
   selectedVertexId: string | null;
+  selectedVectorId: string | null;
   selectedFaceId: string | null;
   selectedEdgeId: string | null;
   pendingVertexIds: string[];
@@ -21,9 +22,11 @@ interface GeometryLibraryState extends GeometryLibrarySnapshot {
   redoStack: GeometryLibrarySnapshot[];
   setTool: (tool: GeometryTool) => void;
   selectVertex: (id: string | null) => void;
+  selectVector: (id: string | null) => void;
   selectFace: (id: string | null) => void;
   selectEdge: (id: string | null) => void;
   addPoint: (point: LibraryPoint, logText: string) => void;
+  updatePoint: (id: string, point: Point3) => void;
   addSegment: (from: string, to: string, logText: string, extras?: Partial<LibrarySegment>) => void;
   addPerpendicular: (point: LibraryPoint, from: string, logText: string) => void;
   setEdgeStyle: (id: string, style: EdgeStyle) => void;
@@ -51,33 +54,44 @@ function addLog(state: GeometryLibraryState, kind: ConstructionLog["kind"], text
 
 export const useGeometryLibraryStore = create<GeometryLibraryState>((set) => ({
   points: [], segments: [], vectors: [], edgeStyles: {}, objectVisibility: {}, tool: "select",
-  selectedVertexId: null, selectedFaceId: null, selectedEdgeId: null,
+  selectedVertexId: null, selectedVectorId: null, selectedFaceId: null, selectedEdgeId: null,
   pendingVertexIds: [], pendingVectorIds: [], logs: [], undoStack: [], redoStack: [],
   setTool: (tool) => set({ tool, pendingVertexIds: [], pendingVectorIds: [] }),
-  selectVertex: (id) => set({ selectedVertexId: id }),
-  selectFace: (id) => set({ selectedFaceId: id, selectedEdgeId: null }),
-  selectEdge: (id) => set({ selectedEdgeId: id, selectedFaceId: null }),
+  selectVertex: (id) => set({ selectedVertexId: id, selectedVectorId: null }),
+  selectVector: (id) => set({ selectedVectorId: id, selectedVertexId: null, selectedFaceId: null, selectedEdgeId: null }),
+  selectFace: (id) => set({ selectedFaceId: id, selectedEdgeId: null, selectedVectorId: null }),
+  selectEdge: (id) => set({ selectedEdgeId: id, selectedFaceId: null, selectedVectorId: null }),
   addPoint: (point, logText) => set((state) => ({
     ...commit(state, { points: [...state.points, point], objectVisibility: { ...state.objectVisibility, [point.id]: true } }),
-    selectedVertexId: point.id,
+    selectedVertexId: point.id, selectedVectorId: null,
     logs: addLog(state, point.source === "foot" ? "foot" : "point", logText),
   })),
+  updatePoint: (id, point) => set((state) => {
+    const target = state.points.find(value => value.id === id);
+    if (!target || target.source !== "free") return state;
+    return {
+      ...commit(state, { points: state.points.map(value => value.id === id ? { ...value, point } : value) }),
+      logs: addLog(state, "point", `Đã cập nhật tọa độ độc lập của điểm ${target.label}; các đối tượng phụ thuộc được tính lại.`),
+    };
+  }),
   addSegment: (from, to, logText, extras) => set((state) => {
     const id = `segment-${Date.now()}`;
     return {
       ...commit(state, { segments: [...state.segments, { id, from, to, ...extras }], objectVisibility: { ...state.objectVisibility, [id]: true } }),
+      selectedVectorId: null,
       logs: addLog(state, extras?.rightAngleAt ? "foot" : "segment", logText),
     };
   }),
   addPerpendicular: (point, from, logText) => set((state) => {
     const segmentId = `segment-${Date.now()}`;
+    const dependentPoint = { ...point, dependsOn: [from] };
     return {
       ...commit(state, {
-        points: [...state.points, point],
-        segments: [...state.segments, { id: segmentId, from, to: point.id, dashed: true, rightAngleAt: point.point }],
-        objectVisibility: { ...state.objectVisibility, [point.id]: true, [segmentId]: true },
+        points: [...state.points, dependentPoint],
+        segments: [...state.segments, { id: segmentId, from, to: dependentPoint.id, dashed: true, rightAngleAt: dependentPoint.point }],
+        objectVisibility: { ...state.objectVisibility, [dependentPoint.id]: true, [segmentId]: true },
       }),
-      selectedVertexId: point.id,
+      selectedVertexId: dependentPoint.id, selectedVectorId: null,
       logs: addLog(state, "foot", logText),
     };
   }),
@@ -89,31 +103,31 @@ export const useGeometryLibraryStore = create<GeometryLibraryState>((set) => ({
   addLog: (kind, text) => set((state) => ({ logs: addLog(state, kind, text) })),
   toggleObjectVisibility: (id) => set((state) => ({ objectVisibility: { ...state.objectVisibility, [id]: state.objectVisibility[id] === false } })),
   replaceScene: (scene) => set((state) => ({
-    ...commit(state, scene), selectedVertexId: null, selectedFaceId: null, selectedEdgeId: null,
+    ...commit(state, scene), selectedVertexId: null, selectedVectorId: null, selectedFaceId: null, selectedEdgeId: null,
     pendingVertexIds: [], pendingVectorIds: [], logs: addLog(state, "system", "Đã nạp bản vẽ JSON và liên kết lại các đối tượng."),
   })),
   toggleSegmentVertex: (id) => set((state) => {
     const ids = [...state.pendingVertexIds];
     if (ids.includes(id)) return { pendingVertexIds: ids.filter(value => value !== id) };
-    if (ids.length === 0) return { pendingVertexIds: [id], selectedVertexId: id };
+    if (ids.length === 0) return { pendingVertexIds: [id], selectedVertexId: id, selectedVectorId: null };
     const from = ids[0]; if (from === id) return { pendingVertexIds: [] };
     const label = (pointId: string) => state.points.find(point => point.id === pointId)?.label ?? pointId;
     const segmentId = `segment-${Date.now()}`;
     return {
       ...commit(state, { segments: [...state.segments, { id: segmentId, from, to: id }], objectVisibility: { ...state.objectVisibility, [segmentId]: true } }),
-      pendingVertexIds: [], selectedVertexId: id,
+      pendingVertexIds: [], selectedVertexId: id, selectedVectorId: null,
       logs: addLog(state, "segment", `Vừa dựng đoạn ${label(from)}${label(id)}. Hãy kiểm tra giả thiết để xác định quan hệ giữa đoạn này với các đối tượng khác.`),
     };
   }),
   toggleVectorVertex: (id) => set((state) => {
     const ids = [...state.pendingVectorIds];
     if (ids.includes(id)) return { pendingVectorIds: ids.filter(value => value !== id) };
-    if (ids.length === 0) return { pendingVectorIds: [id], selectedVertexId: id };
+    if (ids.length === 0) return { pendingVectorIds: [id], selectedVertexId: id, selectedVectorId: null };
     const from = ids[0]; if (from === id) return { pendingVectorIds: [] };
     const vectorId = `vector-${Date.now()}`;
     return {
       ...commit(state, { vectors: [...state.vectors, { id: vectorId, from, to: id, label: `\\overrightarrow{${from}${id}}`, color: "#7c3aed" }], objectVisibility: { ...state.objectVisibility, [vectorId]: true } }),
-      pendingVectorIds: [], selectedVertexId: id,
+      pendingVectorIds: [], selectedVectorId: vectorId,
       logs: addLog(state, "segment", `Đã dựng véc-tơ ${from}${id}. Hãy phân biệt hướng và độ dài của véc-tơ với đoạn thẳng nối hai điểm.`),
     };
   }),
@@ -127,7 +141,7 @@ export const useGeometryLibraryStore = create<GeometryLibraryState>((set) => ({
   }),
   clear: () => set((state) => ({
     ...commit(state, { points: [], segments: [], vectors: [], edgeStyles: {}, objectVisibility: {} }),
-    selectedVertexId: null, selectedFaceId: null, selectedEdgeId: null, pendingVertexIds: [], pendingVectorIds: [],
+    selectedVertexId: null, selectedVectorId: null, selectedFaceId: null, selectedEdgeId: null, pendingVertexIds: [], pendingVectorIds: [],
     logs: addLog(state, "system", "Đã xóa các phép dựng phụ."),
   })),
 }));
