@@ -381,13 +381,6 @@ function MathStepMainContent() {
     return idx >= 0 ? idx : 0;
   }, [activeLessonId]);
 
-  const currentLpLesson = useMemo(() => {
-    return (
-      CORE_3_MODULES[0]?.lessons.find((l) => l.id === activeLessonId) ||
-      CORE_3_MODULES[0]?.lessons[0]
-    );
-  }, [activeLessonId]);
-
   const handleOpenTeacherGuide = () => {
     if (!canAccessTeacherDashboard) return;
     setIsTeacherModalOpen(true);
@@ -737,49 +730,6 @@ function MathStepMainContent() {
                 </Link>
               </div>
             )}
-            {/* Thanh điều hướng bài học tinh gọn & nút quay lại trang chủ */}
-            <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setCurrentView("home")}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
-                  title="Quay lại danh sách bài học trang chủ"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Trang chủ</span>
-                </button>
-                <div className="h-4 w-[1px] bg-slate-200 hidden sm:block" />
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-black bg-blue-100 text-blue-800">
-                    CĐ1 · {currentLpLesson.code}
-                  </span>
-                  <span className="text-xs font-bold text-slate-900 hidden sm:inline">
-                    {currentLpLesson.title}
-                  </span>
-                </div>
-              </div>
-
-              {/* Lựa chọn 5 bài học của Chuyên đề 1: Chuyển thẳng sang mô phỏng bài đó */}
-              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-[11px] font-bold">
-                {CORE_3_MODULES[0].lessons.map((les) => (
-                  <button
-                    key={les.id}
-                    type="button"
-                    onClick={() => handleOpenLesson("linear_programming", les.id)}
-                    className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                      activeLessonId === les.id
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
-                    }`}
-                    title={les.title}
-                  >
-                    {les.code}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Sub-Tab Contents: Mở đúng một mô phỏng tương ứng */}
             {lpSubTab === "single" ? (
               <SingleInequalityLab

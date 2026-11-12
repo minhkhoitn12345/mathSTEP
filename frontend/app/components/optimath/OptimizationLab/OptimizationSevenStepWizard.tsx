@@ -1082,11 +1082,11 @@ ${result.practicalAnswer}`;
                 type="button"
                 onClick={() => setShowScenarioSupport(value => !value)}
                 aria-expanded={showScenarioSupport}
-                aria-controls="optimization-scenario-support"
+                aria-controls="optimization-scenario-bank"
                 className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-purple-300 hover:bg-purple-50 hover:text-purple-800 sm:px-3"
               >
                 {showScenarioSupport ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                <span>{showScenarioSupport ? 'Ẩn tình huống & trợ lý' : 'Hiện tình huống & trợ lý'}</span>
+                <span>{showScenarioSupport ? 'Ẩn ngân hàng tình huống' : 'Hiện ngân hàng tình huống'}</span>
               </button>
             </div>
             <OptimizationGraphCanvas
@@ -1105,9 +1105,9 @@ ${result.practicalAnswer}`;
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Real-World Scenarios Bank & Mascot (xl: 3 cols) */}
+        {/* RIGHT COLUMN: Real-World Scenarios Bank (xl: 3 cols) */}
         <div
-          id="optimization-scenario-support"
+          id="optimization-scenario-bank"
           className={`${showScenarioSupport ? 'hidden xl:flex' : 'hidden'} xl:col-span-3 flex-col gap-3.5 order-3`}
         >
           {/* Scenario Selector Bank */}
@@ -1141,14 +1141,6 @@ ${result.practicalAnswer}`;
             </div>
           </div>
 
-          {/* Quick Mascot Advice */}
-          <div className="bg-gradient-to-b from-purple-50/80 to-white rounded-2xl border border-purple-200 p-4 shadow-xs flex flex-col items-center text-center">
-            <OptiMascot expression="happy" actionState="nod" size={60} />
-            <div className="mt-2 font-bold text-sm text-purple-900">Trợ lý tối ưu MathSTEP</div>
-            <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-              Hãy tự tính giá trị tại 4 đỉnh O, A, B, C ở bảng dưới hoặc kéo đường mức k để tìm đúng điểm tiếp xúc cuối cùng!
-            </p>
-          </div>
         </div>
       </div>
 
