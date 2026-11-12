@@ -697,6 +697,6 @@ function flattenFace(points: Point3[]) {
 
 function FreePointCoordinateEditor({ point, onCommit }: { point: LibraryPoint; onCommit: (point: Point3) => void }) {
   const [values, setValues] = useState(point.point.map(value => String(Number(value.toFixed(3)))));
-  useEffect(() => { setValues(point.point.map(value => String(Number(value.toFixed(3))))); }, [point.id, point.point[0], point.point[1], point.point[2]]);
+  useEffect(() => { setValues(point.point.map(value => String(Number(value.toFixed(3))))); }, [point]);
   return <div className="mt-3 grid grid-cols-3 gap-2">{(["x", "y", "z"] as const).map((axis, index) => <label key={axis} className="text-[10px] font-bold uppercase text-slate-500">{axis}<input aria-label={`T\u1ecda độ ${axis.toUpperCase()} của ${point.label}`} type="number" step="0.1" value={values[index]} onChange={event => setValues(current => current.map((value, i) => i === index ? event.target.value : value))} onBlur={() => { const parsed = values.map(Number); if (parsed.every(Number.isFinite)) onCommit(parsed as Point3); else setValues(point.point.map(String)); }} className="mt-1 h-9 w-full rounded-lg border border-slate-200 px-2 text-xs font-semibold text-slate-800" /></label>)}</div>;
 }
