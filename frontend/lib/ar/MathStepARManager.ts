@@ -9,13 +9,13 @@ type XRNavigator = Navigator & {
 
 type HitTestSourceLike = { cancel: () => void };
 
-/** Owns device AR capabilities and all long-lived browser resources for one AR visit. */
-export class ARController {
+/** Owns browser resources used during one MathSTEP AR visit. */
+export class MathStepARManager {
   session: XRSession | null = null;
   hitTestSource: HitTestSourceLike | null = null;
   cameraStream: MediaStream | null = null;
   private renderer: THREE.WebGLRenderer | null = null;
-  private urls = new Set<string>();
+  private readonly objectUrls = new Set<string>();
 
   async supportsWebXR(): Promise<boolean> {
     const xr = (navigator as XRNavigator).xr;
@@ -35,7 +35,12 @@ export class ARController {
     });
     this.session = session;
     try { await renderer.xr.setSession(session); }
-    catch (error) { this.session = null; renderer.xr.enabled = false; throw error; }
+    catch (error) {
+      this.session = null;
+      renderer.xr.enabled = false;
+      try { await session.end(); } catch { /* Ignore a session that already ended. */ }
+      throw error;
+    }
     return session;
   }
 
@@ -45,13 +50,30 @@ export class ARController {
     this.cameraStream = stream;
     video.srcObject = stream;
     try { await video.play(); }
-    catch { this.stopCamera(video); throw new Error("Chưa thể mở hình Camera. Hãy cấp quyền Camera rồi thử lại."); }
+    catch {
+      this.stopCamera(video);
+      throw new Error("Chưa thể mở hình Camera. Hãy cấp quyền Camera rồi thử lại.");
+    }
     return stream;
   }
 
-  trackHitTestSource(source: HitTestSourceLike) { this.hitTestSource = source; }
-  trackObjectUrl(url: string) { this.urls.add(url); }
-  revokeObjectUrl(url: string) { if (this.urls.delete(url)) URL.revokeObjectURL(url); }
+  trackHitTestSource(source: HitTestSourceLike) {
+    this.hitTestSource?.cancel();
+    this.hitTestSource = source;
+  }
+
+  clearHitTestSource(source?: HitTestSourceLike) {
+    if (!source || this.hitTestSource === source) {
+      this.hitTestSource?.cancel();
+      this.hitTestSource = null;
+    }
+  }
+
+  trackObjectUrl(url: string) { this.objectUrls.add(url); }
+
+  revokeObjectUrl(url: string) {
+    if (this.objectUrls.delete(url)) URL.revokeObjectURL(url);
+  }
 
   stopCamera(video?: HTMLVideoElement | null) {
     this.cameraStream?.getTracks().forEach(track => track.stop());
@@ -62,8 +84,7 @@ export class ARController {
   async endSession() {
     const session = this.session;
     this.session = null;
-    this.hitTestSource?.cancel();
-    this.hitTestSource = null;
+    this.clearHitTestSource();
     if (session) {
       try { await session.end(); } catch { /* The browser may already have ended the session. */ }
     }
@@ -74,7 +95,7 @@ export class ARController {
   async dispose(video?: HTMLVideoElement | null) {
     await this.endSession();
     this.stopCamera(video);
-    for (const url of this.urls) URL.revokeObjectURL(url);
-    this.urls.clear();
+    for (const url of this.objectUrls) URL.revokeObjectURL(url);
+    this.objectUrls.clear();
   }
 }

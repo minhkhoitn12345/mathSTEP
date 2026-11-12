@@ -7,7 +7,9 @@ import * as THREE from "three";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BookOpen, Box, Eye, EyeOff, Search, RotateCcw, Shapes, MousePointer2, PenLine, CircleDot, CornerDownRight, Undo2, Redo2, Download, Copy, Ruler, X, Activity, Sparkles, Trash2, ScanLine, MoveRight, FileJson, FileUp, FileDown } from "lucide-react";
 import { MathFormattedText } from "@/app/components/KatexMath";
-import { ARController } from "./ARController";
+import { AROverlay, type ARDisplayMode } from "@/app/components/ar/AROverlay";
+import { createVertexSprite } from "@/app/components/ar/createVertexSprite";
+import { MathStepARManager } from "@/lib/ar/MathStepARManager";
 import { useGeometryLibraryStore, type EdgeStyle, type GeometryLibrarySnapshot, type GeometryTool, type LibraryPoint, type Point3 } from "./geometryLibraryStore";
 
 type PolyModel = {
@@ -17,7 +19,6 @@ type PolyModel = {
   cutFace?: string[];
 };
 type ModelKind = "cube" | "cuboid" | "pyramid3" | "pyramid4" | "prism3" | "cylinder" | "cone" | "sphere" | "pyramidCut";
-type ARDisplayMode = "transparent" | "solid" | "wireframe";
 type GeometryItem = { id: string; title: string; category: string; grade: string; kind: ModelKind; description: string; concept: string };
 
 const ITEMS: GeometryItem[] = [
@@ -70,24 +71,8 @@ function makeModel(kind: ModelKind, cutRatio = 0.52): PolyModel {
   return { vertices: [], faces: [], hidden: [] };
 }
 
-function createTextSprite(text: string, color: string) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 256; canvas.height = 128;
-  const context = canvas.getContext("2d");
-  if (context) {
-    context.font = "bold 76px Arial, sans-serif";
-    context.textAlign = "center"; context.textBaseline = "middle";
-    context.lineWidth = 12; context.strokeStyle = "rgba(255,255,255,.96)";
-    context.strokeText(text, 128, 64); context.fillStyle = color; context.fillText(text, 128, 64);
-  }
-  const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
-  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false, depthWrite: false, sizeAttenuation: true }));
-  sprite.scale.set(0.38, 0.19, 1); sprite.renderOrder = 20;
-  return sprite;
-}
-
 function ARTextLabel({ text, position, color }: { text: string; position: Point3; color: string }) {
-  const sprite = useMemo(() => createTextSprite(text, color), [color, text]);
+  const sprite = useMemo(() => createVertexSprite(text, color), [color, text]);
   useEffect(() => () => { sprite.material.map?.dispose(); sprite.material.dispose(); }, [sprite]);
   return <primitive object={sprite} position={position}/>;
 }
@@ -96,7 +81,7 @@ type HitTestResultLike = { getPose: (space: XRReferenceSpace) => { transform: { 
 type HitTestFrameLike = XRFrame & { getHitTestResults: (source: unknown) => HitTestResultLike[] };
 type HitTestSessionLike = XRSession & { requestHitTestSource?: (options: { space: XRReferenceSpace }) => Promise<{ cancel: () => void }> };
 
-function XRPlacementLayer({ enabled, placementRef, placeAheadRef }: { enabled: boolean; placementRef: React.RefObject<THREE.Group | null>; placeAheadRef: React.MutableRefObject<() => void> }) {
+function XRPlacementLayer({ enabled, placementRef, placeAheadRef, managerRef }: { enabled: boolean; placementRef: React.RefObject<THREE.Group | null>; placeAheadRef: React.MutableRefObject<() => void>; managerRef: React.MutableRefObject<MathStepARManager | null> }) {
   const { gl } = useThree();
   const reticleRef = useRef<THREE.Group>(null);
   const sourceRef = useRef<{ cancel: () => void } | null>(null);
@@ -116,6 +101,7 @@ function XRPlacementLayer({ enabled, placementRef, placeAheadRef }: { enabled: b
   useEffect(() => {
     const session = gl.xr.getSession() as HitTestSessionLike | null;
     if (!enabled || !session) return;
+    const arManager = managerRef.current;
     let cancelled = false;
     const reticleNode = reticleRef.current;
     const setup = async () => {
@@ -125,7 +111,7 @@ function XRPlacementLayer({ enabled, placementRef, placeAheadRef }: { enabled: b
         const [viewerSpace, localSpace] = await Promise.all([session.requestReferenceSpace("viewer"), session.requestReferenceSpace("local")]);
         const source = await requestHitTestSource.call(session, { space: viewerSpace });
         if (cancelled) { source.cancel(); return; }
-        sourceRef.current = source; localSpaceRef.current = localSpace;
+        sourceRef.current = source; localSpaceRef.current = localSpace; arManager?.trackHitTestSource(source);
       } catch { /* A session may still be used with the place-ahead control. */ }
     };
     const handleSelect = () => {
@@ -141,12 +127,13 @@ function XRPlacementLayer({ enabled, placementRef, placeAheadRef }: { enabled: b
     session.addEventListener("select", handleSelect);
     return () => {
       cancelled = true; session.removeEventListener("select", handleSelect);
-      sourceRef.current?.cancel(); sourceRef.current = null; localSpaceRef.current = null;
+      if (sourceRef.current) arManager?.clearHitTestSource(sourceRef.current);
+      sourceRef.current = null; localSpaceRef.current = null;
       if (reticleNode) reticleNode.visible = false;
       placedRef.current = false;
       placeAheadRef.current = () => undefined;
     };
-  }, [enabled, gl, placementRef, placeAheadRef]);
+  }, [enabled, gl, placementRef, placeAheadRef, managerRef]);
   useFrame((_state, _delta, frame) => {
     if (!enabled || !frame || !sourceRef.current || !localSpaceRef.current || placedRef.current) return;
     const hitFrame = frame as HitTestFrameLike;
@@ -157,7 +144,7 @@ function XRPlacementLayer({ enabled, placementRef, placeAheadRef }: { enabled: b
     if (!pose) { reticle.visible = false; return; }
     reticle.matrix.fromArray(Array.from(pose.transform.matrix)); reticle.matrixWorldNeedsUpdate = true; reticle.visible = true;
   });
-  return <group ref={reticleRef} visible={false} matrixAutoUpdate={false}><mesh rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[0.075, 0.095, 40]}/><meshBasicMaterial color="#22d3ee" side={THREE.DoubleSide} depthTest={false} transparent opacity={0.95}/></mesh><mesh><sphereGeometry args={[0.012, 12, 8]}/><meshBasicMaterial color="#22d3ee" depthTest={false}/></mesh></group>;
+  return <group ref={reticleRef} visible={false} matrixAutoUpdate={false}><mesh rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[0.075, 0.08, 40]}/><meshBasicMaterial color="#22d3ee" side={THREE.DoubleSide} depthTest={false} transparent opacity={0.95}/></mesh><mesh><sphereGeometry args={[0.012, 12, 8]}/><meshBasicMaterial color="#22d3ee" depthTest={false}/></mesh></group>;
 }
 
 function ParametricSolid({
@@ -232,7 +219,7 @@ function ParametricSolid({
   const faceColor = examMode ? "#ffffff" : "#b8e5df";
   const edgeBaseColor = examMode ? "#000000" : "#0f766e";
   const modelVisible = objectVisibility["$model"] !== false;
-  const surfaceOpacity = arActive ? arDisplayMode === "solid" ? 1 : arDisplayMode === "wireframe" ? 0 : 0.17 : examMode ? 1 : 0.2;
+  const surfaceOpacity = arActive ? arDisplayMode === "solid" ? 0.95 : arDisplayMode === "wireframe" ? 0 : 0.2 : examMode ? 1 : 0.2;
   const faceMeshes = model.faces.map((face, index) => <FaceSurface
     key={`${face.join("-")}-${index}`} face={face} byId={byId} selected={selectedFaceId === faceId(face)}
     visible={modelVisible && objectVisibility[faceId(face)] !== false && !(arActive && arDisplayMode === "wireframe")} examMode={examMode} opacity={surfaceOpacity} onPointerDown={(event) => { event.stopPropagation(); onFace(faceId(face), toLocal(event.point)); }}
@@ -273,12 +260,12 @@ function ParametricSolid({
         <meshBasicMaterial color={examMode ? "#000000" : pendingVertexIds.includes(v.id) ? "#f97316" : "#0f766e"} transparent opacity={showPoints ? 1 : 0} depthWrite={showPoints} />
       </mesh>
       {showLabels && !arActive && <Html position={v.point} center distanceFactor={10} style={{ pointerEvents: "none", fontSize: `${labelSize}px` }}><span className={`rounded px-1.5 py-0.5 text-[11px] font-bold shadow-sm ${examMode ? "bg-white text-black" : "bg-white/95 text-slate-700 ring-1 ring-slate-200"}`}>{v.id}</span></Html>}
-      {showLabels && arActive && <ARTextLabel text={v.id} position={v.point} color={examMode ? "#111111" : "#0f172a"}/>}
+      {showLabels && arActive && <ARTextLabel text={v.id} position={v.point} color="#ffffff"/>}
     </group>)}
     {points.map(point => objectVisibility[point.id] === false ? null : <group key={point.id}>
       <mesh position={point.point} onPointerDown={(event) => { event.stopPropagation(); onVertex(point.id); }}><sphereGeometry args={[0.065, 14, 10]} /><meshBasicMaterial color={examMode ? "#000000" : "#f97316"} transparent opacity={showPoints ? 1 : 0} depthWrite={showPoints} /></mesh>
       {showLabels && !arActive && <Html position={point.point} center distanceFactor={10} style={{ pointerEvents: "none", fontSize: `${labelSize}px` }}><span className={`rounded px-1.5 py-0.5 font-bold shadow-sm ${examMode ? "bg-white text-black" : "bg-amber-50 text-amber-900 ring-1 ring-amber-300"}`}>{point.label}</span></Html>}
-      {showLabels && arActive && <ARTextLabel text={point.label} position={point.point} color="#9a3412"/>}
+      {showLabels && arActive && <ARTextLabel text={point.label} position={point.point} color="#ffffff"/>}
     </group>)}
     {showAuxiliary && segments.map(segment => {
       if (objectVisibility[segment.id] === false) return null;
@@ -461,13 +448,12 @@ export function GeometryLibrary() {
   const [exportNotice, setExportNotice] = useState("");
   const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const arControllerRef = useRef<ARController | null>(null);
+  const arControllerRef = useRef<MathStepARManager | null>(null);
   const arOverlayRef = useRef<HTMLDivElement>(null);
   const cameraVideoRef = useRef<HTMLVideoElement>(null);
   const placementRef = useRef<THREE.Group>(null);
   const xrPlaceAheadRef = useRef<() => void>(() => undefined);
   const cameraSnapshotRef = useRef<{ position: THREE.Vector3; quaternion: THREE.Quaternion } | null>(null);
-  const pinchStateRef = useRef<{ distance: number; scale: number; x: number } | null>(null);
   const autoRotateSnapshotRef = useRef(false);
   const skipSceneResetRef = useRef(false);
   const drawing = useGeometryLibraryStore();
@@ -665,23 +651,34 @@ export function GeometryLibrary() {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="${examMode ? "#111111" : "#7c3aed"}"/></marker></defs><rect width="100%" height="100%" fill="white"/><g fill="none" stroke-linecap="round">${edgesSvg}${constructionSvg}${vectorLines}</g><g font-family="Arial,sans-serif" font-size="${labelSize + 4}" stroke="none">${labels}</g></svg>`;
     downloadText(`${selected.id}.svg`, svg, "image/svg+xml");
   };
-  const getARController = () => arControllerRef.current ?? (arControllerRef.current = new ARController());
+  const getARController = () => arControllerRef.current ?? (arControllerRef.current = new MathStepARManager());
   const createUsdzUrl = async () => {
-    if (!webGlScene) throw new Error("Mô hình 3D chưa sẵn sàng. Hãy chờ hình tải xong rồi thử lại.");
+    const modelGroup = placementRef.current;
+    if (!modelGroup) throw new Error("Mô hình 3D chưa sẵn sàng. Hãy chờ hình tải xong rồi thử lại.");
     const { USDZExporter } = await import("three/addons/exporters/USDZExporter.js");
-    const temporarySprites: THREE.Sprite[] = [];
+    const exportGroup = modelGroup.clone(true);
+    exportGroup.position.set(0, 0, 0); exportGroup.rotation.set(0, 0, 0); exportGroup.scale.setScalar(0.08);
+    const exportRoot = exportGroup.children[0];
+    if (exportRoot) exportRoot.position.set(0, 0, 0);
+    const temporaryMeshes: THREE.Mesh[] = [];
     if (showLabels) {
       const labelPoints = [...model.vertices.map(vertex => ({ text: vertex.id, point: vertex.point })), ...resolvedPoints.map(point => ({ text: point.label, point: point.point }))];
       for (const item of labelPoints) {
-        const sprite = createTextSprite(item.text, "#0f172a");
-        sprite.position.set(item.point[0], item.point[1] - 0.7, item.point[2]);
-        webGlScene.add(sprite); temporarySprites.push(sprite);
+        const sprite = createVertexSprite(item.text);
+        const texture = sprite.material.map;
+        if (!texture) { sprite.material.dispose(); continue; }
+        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.34), new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide, depthWrite: false }));
+        mesh.position.set(item.point[0], item.point[1], item.point[2]);
+        exportGroup.add(mesh); temporaryMeshes.push(mesh);
+        sprite.material.map = null; sprite.material.dispose();
       }
     }
-    webGlScene.updateMatrixWorld(true);
+    const exportScene = new THREE.Scene(); exportScene.add(exportGroup); exportScene.updateMatrixWorld(true);
     let data: Uint8Array<ArrayBuffer> | undefined;
-    try { const exported = await new USDZExporter().parseAsync(webGlScene, { onlyVisible: true, quickLookCompatible: true }); data = new Uint8Array(exported); }
-    finally { for (const sprite of temporarySprites) { webGlScene.remove(sprite); sprite.material.map?.dispose(); sprite.material.dispose(); } }
+    try { const exported = await new USDZExporter().parseAsync(exportScene, { onlyVisible: true, quickLookCompatible: true }); data = new Uint8Array(exported); }
+    finally {
+      for (const mesh of temporaryMeshes) { exportGroup.remove(mesh); mesh.geometry.dispose(); const material = mesh.material as THREE.MeshBasicMaterial; material.map?.dispose(); material.dispose(); }
+    }
     if (!data) throw new Error("Không tạo được dữ liệu USDZ.");
     const url = URL.createObjectURL(new Blob([data], { type: "model/vnd.usdz+zip" }));
     getARController().trackObjectUrl(url);
@@ -819,7 +816,7 @@ export function GeometryLibrary() {
             <label className="flex items-center gap-2">Cỡ nhãn <input type="range" min="10" max="20" step="1" value={labelSize} onChange={event => setLabelSize(Number(event.target.value))} className="w-20 accent-teal-700"/><span className="w-6 tabular-nums">{labelSize}</span></label>
             {autoRotate && <label className="flex items-center gap-2">Tốc độ xoay tự động <select value={rotationSpeed} onChange={event => setRotationSpeed(event.target.value as typeof rotationSpeed)} className="h-8 rounded-lg border border-slate-200 bg-white px-2"><option value="slow">Chậm</option><option value="medium">Vừa</option><option value="fast">Nhanh</option></select></label>}
           </div>
-          <div className={arActive ? "fixed inset-0 z-[80] h-[100dvh] w-screen touch-none bg-transparent" : `relative h-[min(74vh,760px)] min-h-[480px] touch-none ${examMode ? "bg-white" : "bg-[radial-gradient(ellipse_at_center,#ffffff_0%,#f2f8f7_72%,#edf4f3_100%)]"}`}><video ref={cameraVideoRef} className={fallbackCameraActive ? "fixed inset-0 z-[70] h-[100dvh] w-screen bg-black object-cover" : "hidden"} autoPlay playsInline muted aria-label="Hình ảnh Camera phía sau mô hình"/><Canvas className={arActive ? "!absolute inset-0 !z-[71] !h-full !w-full" : ""} key={`${selected.id}-${cameraView}-${cameraReset}`} camera={{ position: cameraView === "base" ? [0, 8, 0.001] : cameraView === "front" ? [0, 2.8, 9] : [5, 4.1, 6], up: cameraView === "base" ? [0, 0, -1] : [0, 1, 0], fov: 42 }} dpr={exportDpr ?? [1, 1.7]} gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: "high-performance" }} onCreated={({ gl, scene, camera }) => { setCanvasElement(gl.domElement); setWebGlRenderer(gl); setWebGlScene(scene); setWebGlCamera(camera); cameraSnapshotRef.current = { position: camera.position.clone(), quaternion: camera.quaternion.clone() }; }}><ambientLight intensity={1.8}/><directionalLight position={[4, 8, 5]} intensity={1.6}/><group ref={placementRef}><ParametricSolid kind={selected.kind} showLabels={showLabels} showPoints={showPoints} showAuxiliary={showAuxiliary} freePointMode={drawing.tool === "free-point"} lineWidth={lineWidth} labelSize={labelSize} showHidden={showHidden} examMode={examMode} points={resolvedPoints} segments={drawing.segments} vectors={modelVectors} objectVisibility={drawing.objectVisibility} selectedVertexId={drawing.selectedVertexId} selectedVectorId={drawing.selectedVectorId} pendingVertexIds={drawing.pendingVertexIds} edgeStyles={drawing.edgeStyles} selectedEdgeId={drawing.selectedEdgeId} selectedFaceId={drawing.selectedFaceId} onFace={handleFace} onEdge={handleEdge} onVertex={handleVertex} onFreePoint={placeFreePoint} arActive={arActive} arDisplayMode={arDisplayMode}/></group><XRPlacementLayer enabled={arActive && !fallbackCameraActive} placementRef={placementRef} placeAheadRef={xrPlaceAheadRef}/><OrbitControls makeDefault enabled={!arActive} autoRotate={autoRotate && !arActive} autoRotateSpeed={rotationSpeed === "slow" ? 0.8 : rotationSpeed === "fast" ? 3.2 : 2} enableDamping dampingFactor={0.08} minDistance={3.4} maxDistance={14} maxPolarAngle={Math.PI / 2 + 0.2}/></Canvas><div className="absolute right-3 top-3 flex flex-wrap justify-end gap-1 rounded-xl border border-white/70 bg-white/85 p-1.5 shadow-lg backdrop-blur-md"><button type="button" onClick={() => setCameraView("3d")} aria-pressed={cameraView === "3d"} className={`rounded-lg px-2.5 py-2 text-xs font-bold ${cameraView === "3d" ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"}`}>3D</button><button type="button" onClick={() => setCameraView("base")} aria-pressed={cameraView === "base"} className={`rounded-lg px-2.5 py-2 text-xs font-bold ${cameraView === "base" ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"}`}>Mặt đáy</button><button type="button" onClick={() => setCameraView("front")} aria-pressed={cameraView === "front"} className={`rounded-lg px-2.5 py-2 text-xs font-bold ${cameraView === "front" ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"}`}>Chính diện</button><button type="button" onClick={() => { setCameraView("3d"); setCameraReset(value => value + 1); }} className="grid h-9 w-9 place-items-center rounded-lg text-slate-700 hover:bg-slate-100" aria-label="Đặt lại góc nhìn" title="Đặt lại góc nhìn"><RotateCcw size={15}/></button></div>{selected.kind === "pyramidCut" && <label className="absolute right-3 top-16 flex w-56 items-center gap-2 rounded-xl border border-white/70 bg-white/85 px-3 py-2 text-xs font-semibold text-slate-700 shadow-lg backdrop-blur-md">Tỉ số <input aria-label="Tỉ số thiết diện" type="range" min="0.2" max="0.8" step="0.01" value={sectionRatio} onChange={event => setSectionRatio(Number(event.target.value))} className="min-w-0 flex-1 accent-teal-700"/><span className="w-9 text-right tabular-nums">{sectionRatio.toFixed(2)}</span></label>}<span className={`pointer-events-none absolute bottom-3 left-3 rounded-lg px-2.5 py-1.5 text-[11px] font-medium shadow-sm ${examMode ? "bg-white text-black ring-1 ring-black" : "bg-white/90 text-slate-500"}`}>{drawing.tool === "free-point" ? "Chạm mặt phẳng dựng hoặc hình để đặt điểm tự do" : drawing.tool === "edge-point" ? "Chọn cạnh để đặt điểm theo tỉ số" : drawing.tool === "midpoint" ? "Chọn cạnh để dựng trung điểm chính xác" : drawing.tool === "face-point" ? "Chọn mặt để đặt điểm thuộc mặt" : drawing.tool === "segment" ? "Chọn lần lượt hai đỉnh hoặc điểm" : drawing.tool === "vector" ? "Chọn điểm đầu và điểm cuối để dựng véc-tơ" : drawing.tool === "translation" ? `Chọn điểm cần tịnh tiến rồi hai đầu mút véc-tơ (${pendingTranslationIds.length}/3)` : drawing.tool === "perpendicular" ? "Chọn đỉnh, sau đó chọn mặt phẳng" : "Kéo để xoay · cuộn hoặc chụm để thu phóng"}</span></div>
+          <div className={arActive ? "fixed inset-0 z-[80] h-[100dvh] w-screen touch-none bg-transparent" : `relative h-[min(74vh,760px)] min-h-[480px] touch-none ${examMode ? "bg-white" : "bg-[radial-gradient(ellipse_at_center,#ffffff_0%,#f2f8f7_72%,#edf4f3_100%)]"}`}><video ref={cameraVideoRef} className={fallbackCameraActive ? "fixed inset-0 z-[70] h-[100dvh] w-screen bg-black object-cover" : "hidden"} autoPlay playsInline muted aria-label="Hình ảnh Camera phía sau mô hình"/><Canvas className={arActive ? "!absolute inset-0 !z-[71] !h-full !w-full" : ""} key={`${selected.id}-${cameraView}-${cameraReset}`} camera={{ position: cameraView === "base" ? [0, 8, 0.001] : cameraView === "front" ? [0, 2.8, 9] : [5, 4.1, 6], up: cameraView === "base" ? [0, 0, -1] : [0, 1, 0], fov: 42 }} dpr={exportDpr ?? [1, 1.7]} gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: "high-performance" }} onCreated={({ gl, scene, camera }) => { setCanvasElement(gl.domElement); setWebGlRenderer(gl); setWebGlScene(scene); setWebGlCamera(camera); cameraSnapshotRef.current = { position: camera.position.clone(), quaternion: camera.quaternion.clone() }; }}><ambientLight intensity={1.8}/><directionalLight position={[4, 8, 5]} intensity={1.6}/><group ref={placementRef}><ParametricSolid kind={selected.kind} showLabels={showLabels} showPoints={showPoints} showAuxiliary={showAuxiliary} freePointMode={drawing.tool === "free-point"} lineWidth={lineWidth} labelSize={labelSize} showHidden={showHidden} examMode={examMode} points={resolvedPoints} segments={drawing.segments} vectors={modelVectors} objectVisibility={drawing.objectVisibility} selectedVertexId={drawing.selectedVertexId} selectedVectorId={drawing.selectedVectorId} pendingVertexIds={drawing.pendingVertexIds} edgeStyles={drawing.edgeStyles} selectedEdgeId={drawing.selectedEdgeId} selectedFaceId={drawing.selectedFaceId} onFace={handleFace} onEdge={handleEdge} onVertex={handleVertex} onFreePoint={placeFreePoint} arActive={arActive} arDisplayMode={arDisplayMode}/></group><XRPlacementLayer enabled={arActive && !fallbackCameraActive} placementRef={placementRef} placeAheadRef={xrPlaceAheadRef} managerRef={arControllerRef}/><OrbitControls makeDefault enabled={!arActive} autoRotate={autoRotate && !arActive} autoRotateSpeed={rotationSpeed === "slow" ? 0.8 : rotationSpeed === "fast" ? 3.2 : 2} enableDamping dampingFactor={0.08} minDistance={3.4} maxDistance={14} maxPolarAngle={Math.PI / 2 + 0.2}/></Canvas><div className="absolute right-3 top-3 flex flex-wrap justify-end gap-1 rounded-xl border border-white/70 bg-white/85 p-1.5 shadow-lg backdrop-blur-md"><button type="button" onClick={() => setCameraView("3d")} aria-pressed={cameraView === "3d"} className={`rounded-lg px-2.5 py-2 text-xs font-bold ${cameraView === "3d" ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"}`}>3D</button><button type="button" onClick={() => setCameraView("base")} aria-pressed={cameraView === "base"} className={`rounded-lg px-2.5 py-2 text-xs font-bold ${cameraView === "base" ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"}`}>Mặt đáy</button><button type="button" onClick={() => setCameraView("front")} aria-pressed={cameraView === "front"} className={`rounded-lg px-2.5 py-2 text-xs font-bold ${cameraView === "front" ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"}`}>Chính diện</button><button type="button" onClick={() => { setCameraView("3d"); setCameraReset(value => value + 1); }} className="grid h-9 w-9 place-items-center rounded-lg text-slate-700 hover:bg-slate-100" aria-label="Đặt lại góc nhìn" title="Đặt lại góc nhìn"><RotateCcw size={15}/></button></div>{selected.kind === "pyramidCut" && <label className="absolute right-3 top-16 flex w-56 items-center gap-2 rounded-xl border border-white/70 bg-white/85 px-3 py-2 text-xs font-semibold text-slate-700 shadow-lg backdrop-blur-md">Tỉ số <input aria-label="Tỉ số thiết diện" type="range" min="0.05" max="0.95" step="0.01" value={sectionRatio} onChange={event => setSectionRatio(Number(event.target.value))} className="min-w-0 flex-1 accent-teal-700"/><span className="w-9 text-right tabular-nums">{sectionRatio.toFixed(2)}</span></label>}<span className={`pointer-events-none absolute bottom-3 left-3 rounded-lg px-2.5 py-1.5 text-[11px] font-medium shadow-sm ${examMode ? "bg-white text-black ring-1 ring-black" : "bg-white/90 text-slate-500"}`}>{drawing.tool === "free-point" ? "Chạm mặt phẳng dựng hoặc hình để đặt điểm tự do" : drawing.tool === "edge-point" ? "Chọn cạnh để đặt điểm theo tỉ số" : drawing.tool === "midpoint" ? "Chọn cạnh để dựng trung điểm chính xác" : drawing.tool === "face-point" ? "Chọn mặt để đặt điểm thuộc mặt" : drawing.tool === "segment" ? "Chọn lần lượt hai đỉnh hoặc điểm" : drawing.tool === "vector" ? "Chọn điểm đầu và điểm cuối để dựng véc-tơ" : drawing.tool === "translation" ? `Chọn điểm cần tịnh tiến rồi hai đầu mút véc-tơ (${pendingTranslationIds.length}/3)` : drawing.tool === "perpendicular" ? "Chọn đỉnh, sau đó chọn mặt phẳng" : "Kéo để xoay · cuộn hoặc chụm để thu phóng"}</span></div>
           <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-3 py-2 sm:px-4"><p className="truncate text-xs font-medium text-slate-500">{selected.category} · {selected.grade} · {model.vertices.length} đỉnh · {model.faces.length + (model.cutFace ? 1 : 0)} mặt</p><button type="button" onClick={() => toggleFavorite(selected.id)} className={`min-h-9 shrink-0 rounded-lg px-3 text-xs font-bold ${favorites.includes(selected.id) ? "bg-amber-50 text-amber-800" : "bg-slate-100 text-slate-700"}`}>{favorites.includes(selected.id) ? "★ Đã lưu" : "☆ Lưu hình"}</button></div>
           <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 bg-white px-3 py-2.5 sm:px-4"><button type="button" onClick={drawing.undo} disabled={!drawing.undoStack.length} className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 disabled:opacity-40" aria-label="Hoàn tác Ctrl+Z" title="Hoàn tác (Ctrl+Z)"><Undo2 size={16}/></button><button type="button" onClick={drawing.redo} disabled={!drawing.redoStack.length} className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 disabled:opacity-40" aria-label="Làm lại Ctrl+Y" title="Làm lại (Ctrl+Y)"><Redo2 size={16}/></button><button type="button" onClick={drawing.clear} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-600"><Trash2 size={14}/> Xóa phép dựng</button><input ref={fileInputRef} type="file" accept="application/json,.json" className="hidden" onChange={event => { const file = event.target.files?.[0]; if (file) void openScene(file); event.currentTarget.value = ""; }}/><button type="button" onClick={saveScene} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold"><FileDown size={14}/> Lưu bản vẽ</button><button type="button" onClick={() => fileInputRef.current?.click()} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold"><FileUp size={14}/> Mở tệp</button><button type="button" onClick={exportAiSpec} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold"><FileJson size={14}/> Tệp cho AI</button><button type="button" onClick={() => void openArView()} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-3 text-xs font-bold text-cyan-900 hover:bg-cyan-100"><Box size={14}/> Xem AR</button><button type="button" onClick={() => void exportUsdz()} disabled={exportBusy} title="Export model for AR Quick Look" className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold disabled:opacity-50"><Download size={14}/> {exportBusy ? "\u0110ang xu\u1ea5t\u2026" : "T\u1ea3i USDZ"}</button><span className="ml-auto flex items-center gap-2"><select aria-label="Độ phân giải ảnh" value={exportWidth} onChange={event => setExportWidth(Number(event.target.value) as 1600 | 2400 | 3200 | 4000)} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs"><option value={1600}>1600 px</option><option value={2400}>2400 px</option><option value={3200}>3200 px</option><option value={4000}>4000 px</option></select><button type="button" onClick={() => void captureImage(false)} disabled={exportBusy} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold disabled:opacity-50"><Download size={14}/>{exportBusy ? "Đang xuất…" : "Xuất PNG"}</button><button type="button" onClick={exportSvg} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-xs font-bold"><FileJson size={14}/> SVG</button><button type="button" onClick={() => void captureImage(true)} disabled={exportBusy} className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-teal-700 px-3 text-xs font-bold text-white hover:bg-teal-800 disabled:opacity-50"><Copy size={14}/> Chép hình vào Word</button></span>{exportNotice && <p role="status" className="basis-full text-xs text-teal-800">{exportNotice}</p>}</div>
         </section>
@@ -847,17 +844,7 @@ export function GeometryLibrary() {
         </aside>
       </div>
     </div>
-    <div ref={arOverlayRef} className={`fixed inset-0 z-[90] ${arActive ? "pointer-events-auto" : "pointer-events-none"}`} aria-label="Bảng điều khiển AR" onTouchStart={event => { const touches = event.touches; const placement = placementRef.current; if (!placement || !touches.length) return; const distance = touches.length > 1 ? Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY) : 0; pinchStateRef.current = { distance, scale: placement.scale.x, x: touches[0].clientX }; }} onTouchMove={event => { if (!arActive || !placementRef.current || !pinchStateRef.current) return; event.preventDefault(); const placement = placementRef.current, touches = event.touches; if (touches.length > 1) { const distance = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY); const start = pinchStateRef.current; if (start.distance > 0) placement.scale.setScalar(THREE.MathUtils.clamp(start.scale * distance / start.distance, 0.035, 0.2)); } else { const start = pinchStateRef.current; placement.rotation.y += (touches[0].clientX - start.x) * 0.009; pinchStateRef.current = { ...start, x: touches[0].clientX }; } }} onTouchEnd={() => { pinchStateRef.current = null; }}>
-      {arActive && <>
-        <div className="pointer-events-auto absolute left-3 top-3 max-w-[calc(100vw-5rem)] rounded-2xl border border-white/25 bg-slate-950/65 p-2 text-white shadow-xl backdrop-blur-md sm:left-5 sm:top-5">
-          <div className="flex flex-wrap gap-1.5">{([ ["transparent", "Trong suốt"], ["solid", "Khối kín"], ["wireframe", "Chỉ khung nét"] ] as const).map(([id, label]) => <button key={id} type="button" onClick={() => setArDisplayMode(id)} aria-pressed={arDisplayMode === id} className={`min-h-9 rounded-lg px-2.5 text-xs font-bold ${arDisplayMode === id ? "bg-white text-slate-950" : "bg-white/15 text-white hover:bg-white/25"}`}>{label}</button>)}</div>
-          {selected.kind === "pyramidCut" && <label className="mt-2 flex items-center gap-2 text-xs font-semibold">Thiết diện k<input aria-label="Tỉ số thiết diện k trong AR" type="range" min="0.2" max="0.8" step="0.01" value={sectionRatio} onChange={event => setSectionRatio(Number(event.target.value))} className="min-w-0 flex-1 accent-cyan-400"/><span className="w-9 tabular-nums">{sectionRatio.toFixed(2)}</span></label>}
-        </div>
-        <button type="button" onClick={() => void exitArView()} className="pointer-events-auto absolute right-3 top-3 min-h-10 rounded-xl bg-red-600 px-4 text-sm font-extrabold text-white shadow-xl hover:bg-red-700 sm:right-5 sm:top-5">Thoát AR</button>
-        <button type="button" onClick={placeModelInFront} className="pointer-events-auto absolute bottom-5 right-3 min-h-11 rounded-xl bg-white/90 px-4 text-xs font-extrabold text-slate-900 shadow-xl backdrop-blur sm:bottom-7 sm:right-5">Đặt trước mặt 80 cm</button>
-        <p role="status" className="pointer-events-none absolute bottom-5 left-3 max-w-[min(60vw,520px)] rounded-xl bg-slate-950/65 px-3 py-2 text-xs font-semibold leading-5 text-white shadow-lg backdrop-blur sm:bottom-7 sm:left-5">{arNotice || (fallbackCameraActive ? "Kéo để xoay · chụm hai ngón tay để đổi kích thước" : "Hướng camera vào mặt bàn để tìm vị trí đặt khối.")}</p>
-      </>}
-    </div>
+    <AROverlay active={arActive} overlayRef={arOverlayRef} placementRef={placementRef} displayMode={arDisplayMode} onDisplayModeChange={setArDisplayMode} sectionRatio={sectionRatio} onSectionRatioChange={setSectionRatio} showSectionControl={selected.kind === "pyramidCut"} notice={arNotice} onPlaceAhead={placeModelInFront} onExit={() => void exitArView()}/>
     {arNotice && !arActive && <p role="status" className="fixed bottom-4 left-1/2 z-[95] -translate-x-1/2 rounded-xl bg-slate-900 px-4 py-3 text-center text-xs font-semibold text-white shadow-xl">{arNotice}</p>}
     {guideOpen && <div role="presentation" className="fixed inset-0 z-[90] grid place-items-center bg-slate-950/55 p-3" onMouseDown={event => { if (event.target === event.currentTarget) setGuideOpen(false); }}><section role="dialog" aria-modal="true" aria-labelledby="geometry-guide-title" className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl sm:p-6"><div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[.15em] text-teal-700">Thư viện hình học</p><h2 id="geometry-guide-title" className="mt-1 text-lg font-extrabold text-slate-900">Hướng dẫn thao tác</h2></div><button type="button" onClick={() => setGuideOpen(false)} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-slate-200 hover:bg-slate-50" aria-label="Đóng hướng dẫn"><X size={18}/></button></div><ol className="mt-4 space-y-3 text-sm leading-6 text-slate-700"><li><strong>1. Chọn hình mẫu</strong> từ danh sách hoặc mở mục Không gian riêng để xem hình đã lưu.</li><li><strong>2. Xoay và quan sát</strong> bằng cách kéo hình; cuộn hoặc chụm để thu phóng. Có thể bật tự động xoay và chọn tốc độ.</li><li><strong>3. Chọn đối tượng</strong> trên hình hoặc trong danh sách bên phải để xem tọa độ, độ dài, diện tích và cách biểu diễn.</li><li><strong>4. Dựng hình</strong> bằng các công cụ điểm, đoạn, véc-tơ, tịnh tiến hoặc hạ vuông góc. Nút mắt dùng để ẩn/hiện từng đối tượng.</li><li><strong>5. Lưu hoặc xuất</strong> bản vẽ JSON, tệp cho AI, SVG, PNG hoặc sao chép ảnh trực tiếp vào Word.</li></ol><p className="mt-4 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-950">Hình minh họa 3D giúp quan sát; chỉ kết luận quan hệ hình học khi quan hệ đó có trong giả thiết hoặc đã được chứng minh.</p></section></div>}
     {face2dOpen && selectedFaceData && <FaceInspectorDialog face={selectedFaceData} dynamicPoints={resolvedPoints} segments={drawing.segments} onClose={() => setFace2dOpen(false)} onAddPoint={(point, tool, previousId) => { const label = nextLabel(); const id = `aux-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`; drawing.addPoint({ id, label, point, source: "face", faceId: selectedFaceData.id }, `Thêm điểm ${label} trên bản 2D của mặt ${selectedFaceData.id}; tọa độ đã ánh xạ về mô hình 3D.`); if (tool === "segment" && previousId) drawing.addSegment(previousId, id, `Dựng đoạn trong mặt ${selectedFaceData.id}; đoạn đã ánh xạ ngược về mô hình 3D.`); return id; }} />}
