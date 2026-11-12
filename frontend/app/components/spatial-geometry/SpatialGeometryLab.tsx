@@ -25,7 +25,7 @@ import type { CustomAiConfig } from "@/app/components/AccountSettingsModal";
 type DiscoveryPrompt = { prompt: string; choices: string[]; answer: number; explanation: string };
 
 const DISCOVERY_PROMPTS: DiscoveryPrompt[] = [
-  { prompt: "Trong hình bình hành ABCD, hai đường chéo AC và BD cắt nhau tại O. Điều nào luôn đúng?", choices: ["O là trung điểm của cả AC và BD", "AC vuông góc với BD", "O là trung điểm của một cạnh đáy"], answer: 0, explanation: "Hai đường chéo của hình bình hành cắt nhau tại trung điểm mỗi đường. Hình vẽ minh họa quan hệ đó; không suy ra hai đường chéo vuông góc." },
+  { prompt: "Với hình chóp S.ABCD có đáy ABCD là hình bình hành, nếu đề bài chưa cho thêm giả thiết thì có thể kết luận điều nào?", choices: ["SA vuông góc với mặt phẳng đáy", "Hai đường chéo AC và BD cắt nhau tại trung điểm mỗi đường", "Các cạnh bên SA, SB, SC, SD bằng nhau"], answer: 1, explanation: "Tính chất hai đường chéo cắt nhau tại trung điểm là tính chất của hình bình hành ABCD. Không được tự thêm giả thiết SA vuông góc với đáy hoặc hình chóp đều nếu đề bài chưa nêu." },
   { prompt: "M là trung điểm SA. N nằm trên SB và hiện có SN:NB = 2:1. Đoạn MN có song song với AB không?", choices: ["Có, vì M và N cùng là trung điểm", "Không, vì SM:SA = 1:2 còn SN:SB = 2:3", "Không thể xác định dù đã biết các tỉ số"], answer: 1, explanation: "Trong tam giác SAB, MN song song AB khi SM/SA = SN/SB. Ở đây hai tỉ số lần lượt là 1/2 và 2/3 nên MN không song song AB. Hãy kéo tỉ số N về 1:1 để kiểm chứng trường hợp song song." },
   { prompt: "Trong hình chóp S.ABCD, AB thuộc mặt phẳng đáy còn SD đi qua S và D. Hai đường thẳng AB và SD có quan hệ gì?", choices: ["Cắt nhau tại một điểm trên hình chiếu", "Song song", "Chéo nhau"], answer: 2, explanation: "AB nằm trong mặt phẳng đáy; SD cắt mặt phẳng đáy tại D, mà D không thuộc AB. Hai đường thẳng không đồng phẳng nên chéo nhau. Hình chiếu 2D có thể làm chúng trông như cắt nhau." },
   { prompt: "Mặt phẳng cắt song song đáy tại tỉ lệ k tính từ S. Tỉ số diện tích thiết diện so với đáy được tính thế nào?", choices: ["k", "k²", "2k"], answer: 1, explanation: "Thiết diện song song với đáy đồng dạng với đáy theo tỉ số độ dài k. Tỉ số diện tích là $\\frac{S_{MPQR}}{S_{ABCD}}=k^2$." },
@@ -49,6 +49,7 @@ function SpatialGeometryLessonLab({
 }: SpatialGeometryLabProps) {
   const moduleConfig = CORE_3_MODULES[1]; // Module 2
   const [selectedLessonIndex, setSelectedLessonIndex] = useState(initialLessonIndex);
+  const [activeLessonStep, setActiveLessonStep] = useState(0);
 
   React.useEffect(() => {
     if (typeof initialLessonIndex === "number" && initialLessonIndex >= 0) {
@@ -56,7 +57,12 @@ function SpatialGeometryLessonLab({
     }
   }, [initialLessonIndex]);
 
+  React.useEffect(() => {
+    setActiveLessonStep(0);
+  }, [selectedLessonIndex]);
+
   const currentLesson: LessonUnit = moduleConfig.lessons[selectedLessonIndex] || moduleConfig.lessons[0];
+  const currentLessonStep = currentLesson.steps[activeLessonStep];
 
   // 3D Apex Parameters (S.ABCD)
   const [apexX, setApexX] = useState<number>(0);
@@ -1032,9 +1038,15 @@ function SpatialGeometryLessonLab({
             <p className="text-xs text-slate-600 leading-relaxed"><MathFormattedText text={currentLesson.description} /></p>
 
             <section className="rounded-2xl border border-cyan-200 bg-cyan-50/70 p-4 space-y-3" aria-labelledby="geometry-discovery-title">
-              <div className="flex items-center gap-2 text-cyan-950">
-                <HelpCircle className="h-4 w-4 text-cyan-700" aria-hidden="true" />
-                <h3 id="geometry-discovery-title" className="text-sm font-extrabold">Quan sát hình rồi trả lời</h3>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-cyan-950">
+                <div className="flex items-center gap-2">
+                  <HelpCircle className="h-4 w-4 text-cyan-700" aria-hidden="true" />
+                  <h3 id="geometry-discovery-title" className="text-sm font-extrabold">Câu hỏi khám phá</h3>
+                </div>
+                <span className="rounded-full bg-cyan-100 px-3 py-1 text-xs font-extrabold text-cyan-900">Câu 1 / 1</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-white" role="progressbar" aria-label="Tiến độ câu hỏi khám phá" aria-valuemin={0} aria-valuemax={1} aria-valuenow={discoveryChecked ? 1 : 0}>
+                <div className="h-full rounded-full bg-cyan-700 transition-all" style={{ width: discoveryChecked ? "100%" : "0%" }} />
               </div>
               <p className="text-sm font-semibold leading-relaxed text-slate-800"><MathFormattedText text={discoveryPrompt.prompt} /></p>
               {selectedLessonIndex === 1 && <p className="text-xs text-cyan-900">Đoạn MN được tô màu xanh trên hình. Thử kéo thanh tỉ số của N đến 1:1 để xem đoạn MN đổi hướng thế nào.</p>}
@@ -1056,37 +1068,47 @@ function SpatialGeometryLessonLab({
               )}
             </section>
 
-            {/* Steps in this lesson */}
-            <div className="space-y-2.5 pt-2 border-t border-slate-100">
-              {currentLesson.steps.map((st) => (
-                <div key={st.stepNumber} className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-emerald-600 text-white font-bold text-[10px] flex items-center justify-center shrink-0">
-                      {st.stepNumber}
-                    </span>
-                    <h3 className="font-bold text-xs text-slate-800">{st.title}</h3>
+            {/* Guided lesson steps: show one step at a time, with visible progress. */}
+            {currentLessonStep && (
+              <section className="space-y-3 border-t border-slate-100 pt-4" aria-label="Quy trình học theo từng bước">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-emerald-800">Quy trình theo bài học</p>
+                    <h3 className="mt-1 text-sm font-extrabold text-slate-900">{currentLessonStep.title}</h3>
                   </div>
-                  <p className="text-[11px] text-slate-600 pl-7"><MathFormattedText text={st.instruction} /></p>
-
-                  {/* Socratic Questions */}
-                  {st.socraticQuestions && st.socraticQuestions.length > 0 && (
-                    <div className="mt-2 pl-7 pt-1.5 border-t border-slate-200/60">
-                      <div className="text-[10px] font-bold text-emerald-800 flex items-center gap-1 mb-1">
-                        <HelpCircle className="w-3 h-3 text-emerald-600" />
-                        <span>Câu hỏi Socratic gợi mở:</span>
-                      </div>
-                      <ul className="list-disc list-inside text-[11px] text-slate-700 space-y-1">
-                        {st.socraticQuestions.map((q, qIdx) => (
-                          <li key={qIdx} className="leading-snug">
-                            <MathFormattedText text={q} />
-                          </li>
-                        ))}
+                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-extrabold text-emerald-900">Bước {activeLessonStep + 1} / {currentLesson.steps.length}</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label="Tiến độ quy trình bài học" aria-valuemin={0} aria-valuemax={currentLesson.steps.length} aria-valuenow={activeLessonStep + 1}>
+                  <div className="h-full rounded-full bg-emerald-600 transition-all" style={{ width: `${((activeLessonStep + 1) / currentLesson.steps.length) * 100}%` }} />
+                </div>
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4 space-y-3">
+                  <p className="text-xs leading-relaxed text-slate-700"><MathFormattedText text={currentLessonStep.instruction} /></p>
+                  {currentLessonStep.coreConcepts.length > 0 && (
+                    <div className="flex flex-wrap gap-2" aria-label="Kiến thức trọng tâm">
+                      {currentLessonStep.coreConcepts.map((concept) => (
+                        <span key={concept} className="rounded-full border border-emerald-200 bg-white px-2.5 py-1 text-[10px] font-semibold text-emerald-900"><MathFormattedText text={concept} /></span>
+                      ))}
+                    </div>
+                  )}
+                  {currentLessonStep.socraticQuestions.length > 0 && (
+                    <div className="rounded-xl border border-emerald-200 bg-white p-3">
+                      <p className="mb-1 flex items-center gap-1.5 text-[10px] font-extrabold text-emerald-800"><HelpCircle className="h-3.5 w-3.5" aria-hidden="true" />Câu hỏi gợi mở</p>
+                      <ul className="list-disc space-y-1 pl-4 text-xs leading-relaxed text-slate-700">
+                        {currentLessonStep.socraticQuestions.map((question, index) => <li key={`${activeLessonStep}-${index}`}><MathFormattedText text={question} /></li>)}
                       </ul>
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
+                <div className="flex items-center justify-between gap-2">
+                  <button type="button" onClick={() => setActiveLessonStep((step) => Math.max(0, step - 1))} disabled={activeLessonStep === 0} className="min-h-11 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">Bước trước</button>
+                  {activeLessonStep < currentLesson.steps.length - 1 ? (
+                    <button type="button" onClick={() => setActiveLessonStep((step) => Math.min(currentLesson.steps.length - 1, step + 1))} className="min-h-11 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-extrabold text-white transition hover:bg-emerald-800">Sang bước tiếp theo</button>
+                  ) : (
+                    <button type="button" onClick={() => setActiveLessonStep(0)} className="min-h-11 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-extrabold text-white transition hover:bg-emerald-800">Làm lại quy trình</button>
+                  )}
+                </div>
+              </section>
+            )}
           </div>
 
           {/* Diagnostic Box: Lesson-Specific Misconception Checks */}

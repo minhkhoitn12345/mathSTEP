@@ -411,7 +411,7 @@ export function TrigonometryLab({
                   {!guidedResultShown ? (
                     <button type="button" disabled={guidedChoice === null} onClick={() => setGuidedResultShown(true)} className="min-h-11 rounded-xl bg-purple-700 px-5 py-2.5 text-xs font-extrabold text-white transition hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-40">Kiểm tra câu trả lời</button>
                   ) : guidedChoice === currentGuidedQuestion.answer ? (
-                    <button type="button" onClick={() => { setGuidedStep((step) => step + 1); setGuidedChoice(null); setGuidedResultShown(false); }} className="min-h-11 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-extrabold text-white transition hover:bg-emerald-800">{guidedStep === currentGuidedSteps.length - 1 ? "Hoàn thành 7 bước" : "Sang bước tiếp theo"}</button>
+                    <button type="button" onClick={() => { setGuidedStep((step) => step + 1); setGuidedChoice(null); setGuidedResultShown(false); }} className="min-h-11 rounded-xl bg-emerald-700 px-5 py-2.5 text-xs font-extrabold text-white transition hover:bg-emerald-800">{guidedStep === currentGuidedSteps.length - 1 ? `Hoàn thành ${currentGuidedSteps.length} câu` : "Sang câu tiếp theo"}</button>
                   ) : null}
                 </div>
               </>
