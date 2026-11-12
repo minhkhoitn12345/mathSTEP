@@ -41,6 +41,81 @@ const OPTI_STEP_TITLES = [
   { num: 7, title: 'Kết luận bằng ngôn ngữ thực tế', desc: 'Trả lời câu hỏi thực tiễn và bài học tối ưu', short: '7. Kết luận' }
 ];
 
+interface LinearExpressionValue {
+  x: number;
+  y: number;
+  constant: number;
+}
+
+const parseLinearExpression = (raw: string): LinearExpressionValue | null => {
+  const normalized = raw.toLowerCase().replace(/−/g, '-').replace(/,/g, '.').replace(/\s|\*/g, '');
+  if (!normalized) return null;
+
+  const terms = normalized.match(/[+-]?[^+-]+/g);
+  if (!terms) return null;
+
+  const value: LinearExpressionValue = { x: 0, y: 0, constant: 0 };
+  for (const term of terms) {
+    const variableTerm = term.match(/^([+-]?(?:\d+(?:\.\d*)?|\.\d+)?)([xy])$/);
+    if (variableTerm) {
+      const coefficientText = variableTerm[1];
+      const coefficient = coefficientText === '' || coefficientText === '+'
+        ? 1
+        : coefficientText === '-'
+        ? -1
+        : Number(coefficientText);
+      if (!Number.isFinite(coefficient)) return null;
+      value[variableTerm[2] as 'x' | 'y'] += coefficient;
+      continue;
+    }
+
+    const constant = Number(term);
+    if (!Number.isFinite(constant)) return null;
+    value.constant += constant;
+  }
+
+  return value;
+};
+
+const flipComparison = (comparison: string) => ({ '<=': '>=', '>=': '<=', '<': '>', '>': '<' }[comparison] || comparison);
+
+const matchesConstraint = (raw: string, expected: { a: number; b: number; c: number; op: string }) => {
+  const normalized = raw.replace(/≤/g, '<=').replace(/≥/g, '>=').replace(/−/g, '-');
+  const relation = normalized.match(/<=|>=|<|>/);
+  if (!relation || (normalized.match(/<=|>=|<|>/g) || []).length !== 1) return false;
+
+  const [leftText, rightText] = normalized.split(relation[0]);
+  const left = parseLinearExpression(leftText);
+  const right = parseLinearExpression(rightText);
+  if (!left || !right) return false;
+
+  const expectedCoefficients = [expected.a, expected.b, expected.c];
+  const directCoefficients = [left.x - right.x, left.y - right.y, right.constant - left.constant];
+  const reverseCoefficients = [right.x - left.x, right.y - left.y, left.constant - right.constant];
+  const approxScaled = (actual: number[], comparison: string) => {
+    if (comparison !== expected.op) return false;
+    const anchor = expectedCoefficients.findIndex(value => Math.abs(value) > 1e-9);
+    if (anchor < 0) return false;
+    const scale = actual[anchor] / expectedCoefficients[anchor];
+    return scale > 0 && actual.every((value, index) => Math.abs(value - expectedCoefficients[index] * scale) < 1e-6);
+  };
+
+  return approxScaled(directCoefficients, relation[0]) ||
+    approxScaled(reverseCoefficients, flipComparison(relation[0]));
+};
+
+const matchesObjective = (raw: string, expectedX: number, expectedY: number) => {
+  const withoutGoal = raw.split(/→|->/)[0];
+  const expression = withoutGoal.replace(/^\s*[a-z](?:\([^)]*\))?\s*=/i, '');
+  const parsed = parseLinearExpression(expression);
+  return Boolean(
+    parsed &&
+    Math.abs(parsed.x - expectedX) < 1e-6 &&
+    Math.abs(parsed.y - expectedY) < 1e-6 &&
+    Math.abs(parsed.constant) < 1e-6
+  );
+};
+
 export const OptimizationSevenStepWizard: React.FC<OptimizationSevenStepWizardProps> = ({
   scenario,
   result,
@@ -62,13 +137,26 @@ export const OptimizationSevenStepWizard: React.FC<OptimizationSevenStepWizardPr
   const [step2IntegerChoice, setStep2IntegerChoice] = useState<boolean | null>(null);
   const [step2Feedback, setStep2Feedback] = useState<{ isCorrect: boolean; message: string } | null>(null);
 
+  // Step 3: Student writes the constraints and objective before seeing the model.
+  const [step3ConstraintInputs, setStep3ConstraintInputs] = useState<Record<string, string>>({});
+  const [step3ObjectiveInput, setStep3ObjectiveInput] = useState('');
+  const [step3Feedback, setStep3Feedback] = useState<{ isCorrect: boolean; message: string } | null>(null);
+  const [step3Complete, setStep3Complete] = useState(false);
+
+  // Steps 4–5 require an answer before the next step is unlocked.
+  const [step4RegionChoice, setStep4RegionChoice] = useState<'bounded' | 'unbounded' | 'empty' | null>(null);
+  const [step4Feedback, setStep4Feedback] = useState<{ isCorrect: boolean; message: string } | null>(null);
+  const [step4Complete, setStep4Complete] = useState(false);
+  const [step5VertexCountInput, setStep5VertexCountInput] = useState('');
+  const [step5Feedback, setStep5Feedback] = useState<{ isCorrect: boolean; message: string } | null>(null);
+  const [step5Complete, setStep5Complete] = useState(false);
+
   // Step 5: Selected vertex candidate
   const [highlightVertex, setHighlightVertex] = useState<Point2D | null>(null);
 
   // Step 6: Student predicted optimal vertex
   const [predictedOptVertex, setPredictedOptVertex] = useState<string | null>(null);
   const [step6Feedback, setStep6Feedback] = useState<{ isCorrect: boolean; message: string } | null>(null);
-  const [tableAllVerified, setTableAllVerified] = useState<boolean>(false);
 
   // Assistant voice and hints
   const [optiHintTier, setOptiHintTier] = useState<1 | 2 | 3>(1);
@@ -90,12 +178,53 @@ export const OptimizationSevenStepWizard: React.FC<OptimizationSevenStepWizardPr
     setStep1Feedback(null);
     setStep2IntegerChoice(null);
     setStep2Feedback(null);
+    setStep3ConstraintInputs({});
+    setStep3ObjectiveInput('');
+    setStep3Feedback(null);
+    setStep3Complete(false);
+    setStep4RegionChoice(null);
+    setStep4Feedback(null);
+    setStep4Complete(false);
+    setStep5VertexCountInput('');
+    setStep5Feedback(null);
+    setStep5Complete(false);
     setHighlightVertex(null);
     setPredictedOptVertex(null);
     setStep6Feedback(null);
-    setTableAllVerified(false);
     setKValue(result.optimalValue !== null ? Math.round(result.optimalValue * 0.65) : 50);
   }, [scenario.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const invalidateProgressFrom = (firstStep: StepNumber) => {
+    setCompletedSteps(previous => {
+      const next = new Set(previous);
+      for (let step = firstStep; step <= 6; step += 1) next.delete(step as StepNumber);
+      return next;
+    });
+    if (firstStep < 2) {
+      setStep2IntegerChoice(null);
+      setStep2Feedback(null);
+    }
+    if (firstStep < 3) {
+      setStep3ConstraintInputs({});
+      setStep3ObjectiveInput('');
+      setStep3Feedback(null);
+      setStep3Complete(false);
+    }
+    if (firstStep < 4) {
+      setStep4RegionChoice(null);
+      setStep4Feedback(null);
+      setStep4Complete(false);
+    }
+    if (firstStep < 5) {
+      setStep5VertexCountInput('');
+      setStep5Feedback(null);
+      setStep5Complete(false);
+    }
+    if (firstStep < 6) {
+      setPredictedOptVertex(null);
+      setStep6Feedback(null);
+    }
+  };
 
   // Navigation handlers
   const handleNextStep = () => {
@@ -120,14 +249,15 @@ export const OptimizationSevenStepWizard: React.FC<OptimizationSevenStepWizardPr
     if (isCorrect) {
       setStep1Feedback({
         isCorrect: true,
-        message: `Chính xác! Bài toán yêu cầu ${objective.goal === 'max' ? 'tối đa hóa (MAX)' : 'tối thiểu hóa (MIN)'} ${objective.name.toLowerCase()} ${objective.label}.`
+        message: 'Chính xác! Em đã xác định đúng mục tiêu cần hướng tới. Hãy tiếp tục phân tích các đại lượng của bài toán.'
       });
       setCompletedSteps(prev => new Set(prev).add(1));
       confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } });
     } else {
+      invalidateProgressFrom(1);
       setStep1Feedback({
         isCorrect: false,
-        message: `Chưa đúng! Bài toán yêu cầu ${objective.name} phải đạt ${objective.goal === 'max' ? 'lớn nhất (MAX)' : 'nhỏ nhất (MIN)'}. Hãy thử lại!`
+        message: 'Chưa đúng. Đọc lại câu hỏi cuối của đề và chú ý các từ chỉ mức cao nhất hoặc thấp nhất. Mở Gợi ý Socrates nếu cần.'
       });
     }
   };
@@ -149,32 +279,98 @@ export const OptimizationSevenStepWizard: React.FC<OptimizationSevenStepWizardPr
       setCompletedSteps(prev => new Set(prev).add(2));
       confetti({ particleCount: 35, spread: 55, origin: { y: 0.7 } });
     } else {
+      invalidateProgressFrom(2);
       setStep2Feedback({
         isCorrect: false,
         message: scenario.integerRequired
-          ? 'Chưa chính xác! Sản phẩm hay phương tiện giao thông không thể sản xuất hay thuê lẻ chiếc, nên x, y phải là số nguyên!'
-          : 'Chưa chính xác! Thời gian học hoặc khối lượng thức ăn có thể lẻ (ví dụ 3.6 kg hoặc 1.5 giờ), nên không bắt buộc phải là số nguyên.'
+          ? 'Chưa chính xác. Hãy nghĩ xem có thể sản xuất hoặc thuê một phần của sản phẩm/chiếc xe hay không.'
+          : 'Chưa chính xác. Hãy nghĩ xem thời gian hoặc khối lượng có thể được chia nhỏ hay không.'
       });
     }
   };
 
-  // STEP 3: Verify constraints
+  // STEP 3: Verify the model the student entered, without exposing the expected values on errors.
   const handleVerifyStep3 = () => {
+    const constraintsCorrect = system.every(ineq =>
+      matchesConstraint(step3ConstraintInputs[ineq.id] || '', ineq)
+    );
+    const objectiveCorrect = matchesObjective(step3ObjectiveInput, objective.cx, objective.cy);
+
+    if (!constraintsCorrect || !objectiveCorrect) {
+      setStep3Complete(false);
+      invalidateProgressFrom(3);
+      setStep3Feedback({
+        isCorrect: false,
+        message: 'Mô hình chưa khớp với dữ kiện hoặc còn thiếu. Hãy đọc lại từng giới hạn nguồn lực và mức thu/chi cho mỗi đơn vị; nếu cần, mở Gợi ý Socrates để nhận gợi mở từng cấp.'
+      });
+      return false;
+    }
+
+    setStep3Complete(true);
     setCompletedSteps(prev => new Set(prev).add(3));
+    setStep3Feedback({
+      isCorrect: true,
+      message: 'Em đã lập đúng hệ ràng buộc và hàm mục tiêu. Hãy đối chiếu đường biên rồi sang bước tiếp theo.'
+    });
     confetti({ particleCount: 40, spread: 60, origin: { y: 0.7 } });
+    return true;
   };
 
-  // STEP 4: Verify Feasible Region
+  const handleStep3InputChange = (update: () => void) => {
+    update();
+    setStep3Complete(false);
+    setStep3Feedback(null);
+    invalidateProgressFrom(3);
+  };
+
+  // STEP 4: Check the type of feasible region selected by the student.
   const handleVerifyStep4 = () => {
-    setCompletedSteps(prev => new Set(prev).add(4));
-    setCurrentStep(5);
+    if (!step4RegionChoice) {
+      setStep4Feedback({ isCorrect: false, message: 'Hãy chọn nhận định của em về miền phương án khả thi trước.' });
+      return;
+    }
+
+    const actualRegion = result.regionType === 'bounded_polygon' || result.regionType === 'degenerate_segment' || result.regionType === 'degenerate_point'
+      ? 'bounded'
+      : result.regionType === 'unbounded' || result.regionType === 'degenerate_line'
+      ? 'unbounded'
+      : 'empty';
+    if (step4RegionChoice !== actualRegion) {
+      setStep4Complete(false);
+      invalidateProgressFrom(4);
+      setStep4Feedback({
+        isCorrect: false,
+        message: 'Chưa đúng. Quan sát vùng được tô trên đồ thị: vùng đó có phần chung không, và có kéo dài vô hạn không? Dùng gợi ý Socrates nếu cần.'
+      });
+      return;
+    }
+
+    setStep4Complete(true);
+    setStep4Feedback({ isCorrect: true, message: 'Đúng rồi. Em đã phân loại được miền phương án khả thi.' });
+    setCompletedSteps(previous => new Set(previous).add(4));
     confetti({ particleCount: 40, spread: 60, origin: { y: 0.7 } });
   };
 
-  // STEP 5: Verify Candidates
+  // STEP 5: Check the vertex count before revealing their coordinates.
   const handleVerifyStep5 = () => {
-    setCompletedSteps(prev => new Set(prev).add(5));
-    setCurrentStep(6);
+    const enteredCount = Number(step5VertexCountInput);
+    if (!step5VertexCountInput || !Number.isInteger(enteredCount)) {
+      setStep5Feedback({ isCorrect: false, message: 'Nhập số đỉnh em đếm được trên biên miền khả thi.' });
+      return;
+    }
+    if (enteredCount !== vertexEvaluations.length) {
+      setStep5Complete(false);
+      invalidateProgressFrom(5);
+      setStep5Feedback({
+        isCorrect: false,
+        message: 'Chưa khớp. Hãy đếm các giao điểm trên biên của miền tím; một đỉnh là nơi hai đường biên gặp nhau.'
+      });
+      return;
+    }
+
+    setStep5Complete(true);
+    setStep5Feedback({ isCorrect: true, message: 'Đếm đúng. Các tọa độ đỉnh đã được mở để em đối chiếu với đồ thị.' });
+    setCompletedSteps(previous => new Set(previous).add(5));
     confetti({ particleCount: 45, spread: 65, origin: { y: 0.7 } });
   };
 
@@ -190,16 +386,9 @@ export const OptimizationSevenStepWizard: React.FC<OptimizationSevenStepWizardPr
     const selectedVe = vertexEvaluations.find(ve => ve.label === predictedOptVertex);
 
     if (isCorrect && selectedVe) {
-      const valFormatted = optimalValue !== null ? formatValueWithApprox(optimalValue) : '';
       setStep6Feedback({
         isCorrect: true,
-        message: `Dự đoán chính xác tuyệt đối! Đỉnh ${selectedVe.label}${formatPointCoord(
-          selectedVe.vertex
-        )} là nơi đường mức tiếp xúc cuối cùng và đạt giá trị tối ưu liên tục = ${valFormatted} ${objective.unit}.${
-          scenario.integerRequired && integerOptimalPoint && integerOptimalValue !== null
-            ? ` Lưu ý: Với điều kiện nguyên (x, y ∈ ℕ), phương án nguyên tối ưu là (${integerOptimalPoint.x}; ${integerOptimalPoint.y}) với giá trị = ${formatValueWithApprox(integerOptimalValue)} ${objective.unit}.`
-            : ''
-        }`
+        message: `Dự đoán đúng: đỉnh ${selectedVe.label} là điểm tối ưu liên tục. Hãy sang Bước 7 để xem kết luận và đối chiếu với phương án nguyên.`
       });
       if (optimalValue !== null) {
         setKValue(optimalValue);
@@ -251,14 +440,10 @@ ${result.practicalAnswer}`;
     window.speechSynthesis.speak(utterance);
   };
 
-  const canRevealOptimal = currentStep >= 7 || completedSteps.has(6) || tableAllVerified;
+  const canRevealOptimal = currentStep >= 7 || completedSteps.has(6);
 
   // Socratic guidance for each step
   const optiGuidance = useMemo(() => {
-    const verticesText = vertexEvaluations
-      .map(ve => `${ve.label}${formatPointCoord(ve.vertex)}`)
-      .join(', ');
-
     switch (currentStep) {
       case 1:
         return {
@@ -266,7 +451,7 @@ ${result.practicalAnswer}`;
           hints: {
             tier1: 'Đọc kỹ câu hỏi cuối cùng của bài toán thực tế.',
             tier2: 'Tìm các cụm từ: "lớn nhất", "cao nhất" (MAX) hoặc "nhỏ nhất", "thấp nhất" (MIN).',
-            tier3: `Trong bài toán này, mục tiêu là ${objective.name} với hàm mục tiêu ${objective.label} → ${objective.goal.toUpperCase()}.`
+            tier3: 'Hãy tự diễn đạt mục tiêu bằng một câu ngắn: đại lượng nào cần đạt mức cao nhất hoặc thấp nhất? Chỉ chọn sau khi đối chiếu với câu hỏi cuối của đề.'
           }
         };
       case 2:
@@ -280,11 +465,11 @@ ${result.practicalAnswer}`;
         };
       case 3:
         return {
-          text: 'Mỗi nguồn lực giới hạn (giờ máy, giờ công, diện tích...) sẽ tạo thành một bất phương trình bậc nhất hai ẩn. Hãy cùng đối chiếu số liệu nhé!',
+          text: 'Hãy tự chuyển từng dòng dữ kiện thành một ràng buộc. Đề bài và bảng số liệu vẫn được giữ ở trên để em đối chiếu trong lúc làm.',
           hints: {
-            tier1: 'Mỗi hàng trong bảng số liệu tương ứng với một bất phương trình.',
-            tier2: 'Cụm từ "tối đa không quá C" nghĩa là ≤ C; cụm từ "ít nhất phải đạt C" nghĩa là ≥ C.',
-            tier3: 'Đừng quên hai điều kiện tự nhiên x ≥ 0 và y ≥ 0 để biến số có ý nghĩa thực tế!'
+            tier1: 'Bắt đầu từ mỗi nguồn lực: xác định lượng dùng cho một đơn vị x và một đơn vị y, rồi tìm tổng khả năng sử dụng.',
+            tier2: 'Nhân mức tiêu hao mỗi đơn vị với số lượng tương ứng, cộng lại; “không quá” cho dấu ≤, còn “ít nhất” cho dấu ≥.',
+            tier3: 'Bổ sung điều kiện không âm cho x và y. Với đường biên, giữ nguyên hai vế rồi thay dấu bất phương trình bằng dấu bằng.'
           }
         };
       case 4:
@@ -301,8 +486,8 @@ ${result.practicalAnswer}`;
           text: 'Vì miền phương án là đa giác lồi bị chặn, giá trị lớn nhất hoặc nhỏ nhất của hàm mục tiêu đạt tại ít nhất một đỉnh. Hãy kiểm tra tất cả các đỉnh thỏa mãn hệ.',
           hints: {
             tier1: 'Các đỉnh là giao điểm của các cặp đường thẳng biên bờ thỏa mãn toàn bộ hệ.',
-          tier2: 'Giao điểm của hai đường thẳng bờ có thể có tọa độ phân số, chẳng hạn (8/3; 8/3). Hãy giữ nguyên tọa độ chính xác khi tính.',
-            tier3: `Các đỉnh của miền khả thi là: ${verticesText}.`
+            tier2: 'Giao điểm của hai đường thẳng biên có thể có tọa độ phân số. Hãy giữ dạng chính xác khi giải hệ, rồi kiểm tra giao điểm đó có thỏa mọi ràng buộc không.',
+            tier3: 'Lần lượt xét giao điểm của các cặp đường biên; loại giao điểm không thỏa một trong các bất phương trình. Đừng bỏ sót các giao điểm nằm trên trục tọa độ.'
           }
         };
       case 6:
@@ -310,7 +495,7 @@ ${result.practicalAnswer}`;
           text: 'Hãy kéo thanh trượt đường mức k hoặc tự tính giá trị tại từng đỉnh ở bảng dưới để dự đoán chính xác đỉnh tối ưu!',
           hints: {
             tier1: 'Đường mức P = ax + by = k là tập hợp các điểm có cùng giá trị hàm mục tiêu k.',
-            tier2: 'Khi tịnh tiến đường mức theo hướng tăng dần k, điểm cuối cùng mà đường mức còn chạm miền khả thi chính là điểm MAX!',
+            tier2: `Tịnh tiến đường mức theo chiều làm giá trị hàm mục tiêu ${objective.goal === 'max' ? 'tăng' : 'giảm'}; điểm cuối cùng còn chạm miền khả thi là ứng viên tối ưu.`,
             tier3: 'Thay tọa độ từng đỉnh vào hàm mục tiêu ở bảng tính bên dưới để kiểm chứng giá trị chính xác.'
           }
         };
@@ -329,7 +514,7 @@ ${result.practicalAnswer}`;
           hints: { tier1: '', tier2: '', tier3: '' }
         };
     }
-  }, [currentStep, objective, variables, vertexEvaluations]);
+  }, [currentStep, objective, variables]);
 
   return (
     <div className="flex flex-col gap-3.5 w-full">
@@ -364,17 +549,26 @@ ${result.practicalAnswer}`;
           {OPTI_STEP_TITLES.map(st => {
             const isCurr = currentStep === st.num;
             const isComp = completedSteps.has(st.num as StepNumber);
+            const isLocked = st.num > currentStep && !Array.from(
+              { length: st.num - 1 },
+              (_, index) => (index + 1) as StepNumber
+            ).every(step => completedSteps.has(step));
             return (
               <button
                 key={st.num}
                 type="button"
                 onClick={() => setCurrentStep(st.num as StepNumber)}
-                className={`flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-xl border text-center transition cursor-pointer ${
-                  isCurr
+                disabled={isLocked}
+                aria-disabled={isLocked}
+                title={isLocked ? 'Hoàn thành bước trước để mở bước này.' : st.title}
+                className={`flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-xl border text-center transition ${
+                  isLocked
+                    ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed'
+                    : isCurr
                     ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
                     : isComp
                     ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer'
                 }`}
               >
                 <span className="text-[11px] font-extrabold">{isComp && !isCurr ? '✓' : st.num}</span>
@@ -512,8 +706,11 @@ ${result.practicalAnswer}`;
         </button>
         <button
           type="button"
-          onClick={() => setMobileStepView('table')}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition cursor-pointer min-h-[38px] shrink-0 ${
+          onClick={() => currentStep >= 6 && setMobileStepView('table')}
+          disabled={currentStep < 6}
+          aria-disabled={currentStep < 6}
+          title={currentStep < 6 ? 'Hoàn thành đến Bước 6 để mở bảng tính' : 'Mở bảng tính các đỉnh'}
+          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition min-h-[38px] shrink-0 ${currentStep < 6 ? 'cursor-not-allowed opacity-45' : 'cursor-pointer'} ${
             mobileStepView === 'table'
               ? 'bg-purple-600 text-white shadow-xs'
               : 'text-slate-600 hover:text-slate-900'
@@ -556,40 +753,36 @@ ${result.practicalAnswer}`;
               </span>
             </div>
 
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-xs text-slate-700 space-y-2">
+              <div className="font-bold text-sm text-slate-900">Đề bài · {scenario.title}</div>
+              <p className="leading-relaxed">{scenario.storyText}</p>
+              {scenario.tableData && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left border-collapse border border-slate-200 rounded-lg bg-white">
+                    <thead>
+                      <tr className="bg-purple-50/70 text-purple-900 text-[11px] font-bold border-b border-slate-200">
+                        {scenario.tableData.headers.map((header, index) => (
+                          <th key={index} className="p-2 border-r border-slate-200 last:border-r-0">{header}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 text-[11px]">
+                      {scenario.tableData.rows.map((row, rowIndex) => (
+                        <tr key={rowIndex} className="hover:bg-slate-50">
+                          {row.map((cell, cellIndex) => (
+                            <td key={cellIndex} className="p-2 border-r border-slate-200 last:border-r-0 font-medium">{cell}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
             {/* STEP 1: ĐỌC VÀ HIỂU TÌNH HUỐNG THỰC TẾ */}
             {currentStep === 1 && (
               <div className="space-y-3.5">
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-2">
-                  <div className="font-bold text-slate-900 text-sm">{scenario.title}</div>
-                  <p className="leading-relaxed">{scenario.storyText}</p>
-                </div>
-
-                {/* Table Data if available */}
-                {scenario.tableData && (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs text-left border-collapse border border-slate-200 rounded-lg">
-                      <thead>
-                        <tr className="bg-purple-50/70 text-purple-900 text-[11px] font-bold border-b border-slate-200">
-                          {scenario.tableData.headers.map((h, i) => (
-                            <th key={i} className="p-2 border-r border-slate-200 last:border-r-0">{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200 text-[11px]">
-                        {scenario.tableData.rows.map((row, rIdx) => (
-                          <tr key={rIdx} className="hover:bg-slate-50">
-                            {row.map((cell, cIdx) => (
-                              <td key={cIdx} className="p-2 border-r border-slate-200 last:border-r-0 font-medium">
-                                {cell}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
                 {/* Question: What is the optimization goal? */}
                 <div className="space-y-2 pt-1">
                   <label className="text-xs font-bold text-slate-800 block">
@@ -598,7 +791,11 @@ ${result.practicalAnswer}`;
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      onClick={() => setStep1GoalChoice('max')}
+                      onClick={() => {
+                        invalidateProgressFrom(1);
+                        setStep1GoalChoice('max');
+                        setStep1Feedback(null);
+                      }}
                       className={`p-2.5 rounded-xl border text-xs font-bold transition cursor-pointer text-center ${
                         step1GoalChoice === 'max'
                           ? 'border-purple-600 bg-purple-50 text-purple-900 ring-2 ring-purple-300'
@@ -609,7 +806,11 @@ ${result.practicalAnswer}`;
                     </button>
                     <button
                       type="button"
-                      onClick={() => setStep1GoalChoice('min')}
+                      onClick={() => {
+                        invalidateProgressFrom(1);
+                        setStep1GoalChoice('min');
+                        setStep1Feedback(null);
+                      }}
                       className={`p-2.5 rounded-xl border text-xs font-bold transition cursor-pointer text-center ${
                         step1GoalChoice === 'min'
                           ? 'border-purple-600 bg-purple-50 text-purple-900 ring-2 ring-purple-300'
@@ -690,7 +891,11 @@ ${result.practicalAnswer}`;
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      onClick={() => setStep2IntegerChoice(true)}
+                      onClick={() => {
+                        invalidateProgressFrom(2);
+                        setStep2IntegerChoice(true);
+                        setStep2Feedback(null);
+                      }}
                       className={`p-2.5 rounded-xl border text-xs font-bold transition cursor-pointer text-center ${
                         step2IntegerChoice === true
                           ? 'border-purple-600 bg-purple-50 text-purple-900 ring-2 ring-purple-300'
@@ -701,7 +906,11 @@ ${result.practicalAnswer}`;
                     </button>
                     <button
                       type="button"
-                      onClick={() => setStep2IntegerChoice(false)}
+                      onClick={() => {
+                        invalidateProgressFrom(2);
+                        setStep2IntegerChoice(false);
+                        setStep2Feedback(null);
+                      }}
                       className={`p-2.5 rounded-xl border text-xs font-bold transition cursor-pointer text-center ${
                         step2IntegerChoice === false
                           ? 'border-purple-600 bg-purple-50 text-purple-900 ring-2 ring-purple-300'
@@ -757,36 +966,72 @@ ${result.practicalAnswer}`;
             {currentStep === 3 && (
               <div className="space-y-3.5">
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Chuyển hóa các nguồn lực thành <strong>hệ bất phương trình ràng buộc</strong> và phân biệt với <strong>phương trình đường biên</strong>:
+                  Dựa vào đề bài và bảng số liệu phía trên, tự lập các bất phương trình ràng buộc và viết hàm mục tiêu. Chưa chắc thì mở Gợi ý Socrates theo từng cấp.
                 </p>
 
                 <div className="flex flex-col gap-2">
                   {system.map((ineq, idx) => (
                     <div
                       key={ineq.id}
-                      className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs flex-wrap gap-2"
+                      className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-2"
                     >
-                      <div className="flex items-center gap-2">
+                      <label htmlFor={`constraint-${ineq.id}`} className="font-bold text-slate-800 flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: ineq.color }} />
-                        <span className="font-mono font-bold text-slate-800">Ràng buộc ({idx + 1}):</span>
-                        <span className="font-mono font-extrabold text-purple-900">{formatInequality(ineq)}</span>
-                      </div>
-                      <span className="text-[10px] font-mono text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">
-                        Đường biên {ineq.label ? ineq.label.split(':')[0].trim() : `(d${idx + 1})`}: {formatBoundaryLine(ineq.a, ineq.b, ineq.c)}
-                      </span>
+                        Ràng buộc ({idx + 1})
+                      </label>
+                      <input
+                        id={`constraint-${ineq.id}`}
+                        type="text"
+                        value={step3ConstraintInputs[ineq.id] || ''}
+                        onChange={event => handleStep3InputChange(() =>
+                          setStep3ConstraintInputs(previous => ({ ...previous, [ineq.id]: event.target.value }))
+                        )}
+                        placeholder="Tự nhập bất phương trình"
+                        aria-label={`Bất phương trình ràng buộc ${idx + 1}`}
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono text-sm text-slate-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                      />
+                      {step3Complete && (
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-emerald-800">
+                          <span>Đường biên: <strong className="font-mono">{formatBoundaryLine(ineq.a, ineq.b, ineq.c)}</strong></span>
+                          <span className="font-mono">{formatInequality(ineq)}</span>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
 
-                <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-200 text-xs">
-                  <span className="font-bold text-purple-900 block mb-1">Hàm mục tiêu cần tối ưu:</span>
-                  <div className="font-mono font-extrabold text-sm text-purple-950">
-                    {objective.label} → {objective.goal.toUpperCase()}
-                  </div>
-                  <div className="text-[11px] text-slate-600 mt-0.5">
-                    ({objective.name}, đơn vị: {objective.unit})
-                  </div>
+                <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-200 text-xs space-y-2">
+                  <label htmlFor="objective-function-input" className="font-bold text-purple-900 block">
+                    Hàm mục tiêu · nhập biểu thức theo x và y
+                  </label>
+                  <input
+                    id="objective-function-input"
+                    type="text"
+                    value={step3ObjectiveInput}
+                    onChange={event => handleStep3InputChange(() => setStep3ObjectiveInput(event.target.value))}
+                    placeholder="Ví dụ dạng: ax + by"
+                    aria-label="Biểu thức hàm mục tiêu"
+                    className="w-full rounded-lg border border-purple-200 bg-white px-3 py-2 font-mono text-sm text-slate-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                  />
+                  <p className="text-[11px] text-slate-600">
+                    Dùng {objective.name.toLowerCase()} của mỗi đơn vị trong bảng làm hệ số; mục tiêu {objective.goal === 'max' ? 'tối đa hóa' : 'tối thiểu hóa'} đã xác định ở Bước 1.
+                  </p>
+                  {step3Complete && (
+                    <p className="font-mono font-extrabold text-emerald-800">
+                      {objective.label} → {objective.goal.toUpperCase()} ({objective.unit})
+                    </p>
+                  )}
                 </div>
+
+                {step3Feedback && (
+                  <div className={`p-3 rounded-xl border text-xs ${
+                    step3Feedback.isCorrect
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                      : 'bg-amber-50 border-amber-200 text-amber-950'
+                  }`} role="status">
+                    {step3Feedback.message}
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between pt-2">
                   <button type="button" onClick={handlePrevStep} className="flex items-center gap-1 text-xs font-semibold text-slate-600 min-h-[44px] cursor-pointer">
@@ -794,17 +1039,25 @@ ${result.practicalAnswer}`;
                     <span>Quay lại</span>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleVerifyStep3();
-                      handleNextStep();
-                    }}
-                    className="flex items-center gap-1.5 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-xs transition min-h-[44px] cursor-pointer"
-                  >
-                    <span>Kiểm tra & Sang Bước 4</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleVerifyStep3}
+                      className="px-3.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition min-h-[44px] cursor-pointer"
+                    >
+                      Kiểm chứng mô hình
+                    </button>
+                    {step3Complete && (
+                      <button
+                        type="button"
+                        onClick={handleNextStep}
+                        className="flex items-center gap-1.5 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-xs transition min-h-[44px] cursor-pointer"
+                      >
+                        <span>Sang Bước 4</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -813,30 +1066,61 @@ ${result.practicalAnswer}`;
             {currentStep === 4 && (
               <div className="space-y-3.5">
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Miền phương án khả thi là phần giao chung của tất cả các nửa mặt phẳng, được tô màu tím trên hệ trục Oxy:
+                  Quan sát phần tô màu trên đồ thị. Miền phương án khả thi có phần chung nào, và miền đó có bị chặn không?
                 </p>
 
-                <div className="p-3.5 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-950 space-y-1.5">
-                  <div className="font-bold text-purple-900 flex items-center gap-1.5">
-                    <Layers className="w-4 h-4 text-purple-600" />
-                    <span>Đặc điểm hình học của miền phương án:</span>
-                  </div>
-                  <p className="leading-relaxed">
-                    {result.regionType === 'bounded_polygon'
-                      ? `Miền khả thi là một miền đa giác lồi bị chặn (${
-                          vertexEvaluations.length === 3
-                            ? 'tam giác'
-                            : vertexEvaluations.length === 4
-                            ? 'tứ giác'
-                            : `${vertexEvaluations.length} đỉnh`
-                        } ${vertexEvaluations.map(ve => ve.label).join('')}), giới hạn bởi ${
-                          vertexEvaluations.length
-                        } đỉnh của miền.`
-                      : result.regionType === 'unbounded'
-                      ? `Miền phương án không bị chặn, kéo dài vô hạn; tìm được ${vertexEvaluations.length} đỉnh hữu hạn để xét.`
-                      : 'Miền khả thi rỗng hoặc suy biến.'}
-                  </p>
+                <div className="space-y-2" role="group" aria-label="Phân loại miền phương án khả thi">
+                  {[
+                    { id: 'bounded', label: 'Có miền nghiệm và bị chặn' },
+                    { id: 'unbounded', label: 'Có miền nghiệm nhưng kéo dài vô hạn' },
+                    { id: 'empty', label: 'Không có điểm nào thỏa mãn đồng thời các ràng buộc' }
+                  ].map(choice => (
+                    <button
+                      key={choice.id}
+                      type="button"
+                      onClick={() => {
+                        invalidateProgressFrom(4);
+                        setStep4RegionChoice(choice.id as 'bounded' | 'unbounded' | 'empty');
+                        setStep4Feedback(null);
+                        setStep4Complete(false);
+                      }}
+                      aria-pressed={step4RegionChoice === choice.id}
+                      className={`w-full rounded-xl border px-3 py-2.5 text-left text-xs font-semibold transition ${
+                        step4RegionChoice === choice.id
+                          ? 'border-purple-500 bg-purple-50 text-purple-900 ring-2 ring-purple-200'
+                          : 'border-slate-200 bg-white text-slate-700 hover:border-purple-300 hover:bg-purple-50/40'
+                      }`}
+                    >
+                      {choice.label}
+                    </button>
+                  ))}
                 </div>
+
+                {step4Feedback && (
+                  <div className={`rounded-xl border p-3 text-xs ${
+                    step4Feedback.isCorrect
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
+                      : 'border-amber-200 bg-amber-50 text-amber-950'
+                  }`} role="status">
+                    {step4Feedback.message}
+                  </div>
+                )}
+
+                {step4Complete && (
+                  <div className="rounded-xl border border-purple-200 bg-purple-50 p-3.5 text-xs text-purple-950 space-y-1.5">
+                    <div className="flex items-center gap-1.5 font-bold text-purple-900">
+                      <Layers className="h-4 w-4 text-purple-600" />
+                      Đặc điểm miền phương án
+                    </div>
+                    <p className="leading-relaxed">
+                      {result.regionType === 'bounded_polygon'
+                        ? `Miền khả thi là đa giác lồi bị chặn, có ${vertexEvaluations.length} đỉnh.`
+                        : result.regionType === 'unbounded' || result.regionType === 'degenerate_line'
+                        ? `Miền phương án kéo dài vô hạn; có ${vertexEvaluations.length} đỉnh hữu hạn cần xét.`
+                        : `Miền phương án khả thi rỗng hoặc suy biến; số đỉnh hữu hạn là ${vertexEvaluations.length}.`}
+                    </p>
+                  </div>
+                )}
 
                 <div className="xl:hidden">
                   <button
@@ -855,14 +1139,25 @@ ${result.practicalAnswer}`;
                     <span>Quay lại</span>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={handleVerifyStep4}
-                    className="flex items-center gap-1.5 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-xs transition min-h-[44px] cursor-pointer"
-                  >
-                    <span>Sang Bước 5 (Xác định các đỉnh)</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleVerifyStep4}
+                      className="rounded-xl bg-slate-900 px-3.5 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800"
+                    >
+                      Kiểm chứng
+                    </button>
+                    {step4Complete && (
+                      <button
+                        type="button"
+                        onClick={handleNextStep}
+                        className="flex min-h-[44px] items-center gap-1.5 rounded-xl bg-purple-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-purple-700"
+                      >
+                        Sang Bước 5
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -871,38 +1166,61 @@ ${result.practicalAnswer}`;
             {currentStep === 5 && (
               <div className="space-y-3.5">
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Tọa độ các <strong>{vertexEvaluations.length} đỉnh của miền phương án khả thi</strong> (tìm bằng giao điểm các cặp đường thẳng biên và giữ những điểm thỏa mãn toàn bộ hệ):
+                  Đếm số đỉnh của miền trên đồ thị rồi nhập kết quả. Đỉnh là giao điểm trên biên thỏa mãn đồng thời các ràng buộc.
                 </p>
 
-                <div className="grid grid-cols-2 gap-2">
-                  {vertexEvaluations.map(ve => (
-                    <button
-                      key={ve.label}
-                      type="button"
-                      onMouseEnter={() => setHighlightVertex(ve.vertex)}
-                      onMouseLeave={() => setHighlightVertex(null)}
-                      onClick={() => {
-                        setHighlightVertex(ve.vertex);
-                        setKValue(ve.value);
-                      }}
-                      className="p-2.5 rounded-xl bg-slate-50 border border-slate-300 hover:border-purple-500 hover:bg-purple-50 font-mono font-bold text-xs text-purple-950 transition cursor-pointer shadow-2xs text-left flex items-center justify-between"
-                    >
-                      <span>
-                        Đỉnh {ve.label}
-                        {formatPointCoord(ve.vertex)}
-                      </span>
-                      <span className="text-[10px] font-sans font-semibold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded">
-                        Soi đỉnh
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                <label className="block space-y-1.5 text-xs font-bold text-slate-800">
+                  Số đỉnh em đếm được
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={step5VertexCountInput}
+                    onChange={event => {
+                      invalidateProgressFrom(5);
+                      setStep5VertexCountInput(event.target.value);
+                      setStep5Feedback(null);
+                      setStep5Complete(false);
+                    }}
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono text-sm font-normal text-slate-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                  />
+                </label>
 
-                {scenario.integerRequired && (
-                  <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 text-xs leading-relaxed">
-                    <strong>Mô hình nguyên (x, y ∈ ℕ):</strong> Ngoài các đỉnh liên tục (có thể mang tọa độ phân số như{' '}
-                    <code className="font-mono font-bold">(8/3; 8/3)</code>), trên đồ thị còn hiển thị{' '}
-                    <strong>{result.integerPoints.length} điểm nguyên khả thi</strong> nằm trong miền đa giác.
+                {step5Feedback && (
+                  <div className={`rounded-xl border p-3 text-xs ${
+                    step5Feedback.isCorrect
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
+                      : 'border-amber-200 bg-amber-50 text-amber-950'
+                  }`} role="status">
+                    {step5Feedback.message}
+                  </div>
+                )}
+
+                {step5Complete && (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      {vertexEvaluations.map(ve => (
+                        <button
+                          key={ve.label}
+                          type="button"
+                          onMouseEnter={() => setHighlightVertex(ve.vertex)}
+                          onMouseLeave={() => setHighlightVertex(null)}
+                          onClick={() => {
+                            setHighlightVertex(ve.vertex);
+                            setKValue(ve.value);
+                          }}
+                          className="flex items-center justify-between rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-left font-mono text-xs font-bold text-purple-950 shadow-2xs transition hover:border-purple-500 hover:bg-purple-50"
+                        >
+                          <span>Đỉnh {ve.label}{formatPointCoord(ve.vertex)}</span>
+                          <span className="rounded bg-purple-100 px-1.5 py-0.5 font-sans text-[10px] font-semibold text-purple-700">Soi đỉnh</span>
+                        </button>
+                      ))}
+                    </div>
+                    {scenario.integerRequired && (
+                      <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950">
+                        Với mô hình nguyên, trên đồ thị còn có các điểm nguyên không âm nằm trong miền khả thi.
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -912,14 +1230,25 @@ ${result.practicalAnswer}`;
                     <span>Quay lại</span>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={handleVerifyStep5}
-                    className="flex items-center gap-1.5 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-xs transition min-h-[44px] cursor-pointer"
-                  >
-                    <span>Sang Bước 6 (Tối ưu hóa)</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleVerifyStep5}
+                      className="rounded-xl bg-slate-900 px-3.5 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800"
+                    >
+                      Kiểm chứng
+                    </button>
+                    {step5Complete && (
+                      <button
+                        type="button"
+                        onClick={handleNextStep}
+                        className="flex min-h-[44px] items-center gap-1.5 rounded-xl bg-purple-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-purple-700"
+                      >
+                        Sang Bước 6
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -1119,20 +1448,22 @@ ${result.practicalAnswer}`;
       </div>
 
       {/* 4. BOTTOM SECTION: VERTEX OBJECTIVE CALCULATION TABLE */}
-      <div
-        className={`mt-1 w-full ${
-          mobileStepView === 'table' || mobileStepView === 'all' ? 'block' : 'hidden xl:block'
-        }`}
-      >
-        <VertexObjectiveTable
-          scenario={scenario}
-          result={result}
-          onHighlightVertex={setHighlightVertex}
-          onSelectKValue={setKValue}
-          defaultRevealed={currentStep >= 7}
-          onAllVerifiedChange={setTableAllVerified}
-        />
-      </div>
+      {currentStep >= 6 && (
+        <div
+          className={`mt-1 w-full ${
+            mobileStepView === 'table' || mobileStepView === 'all' ? 'block' : 'hidden xl:block'
+          }`}
+        >
+          <VertexObjectiveTable
+            scenario={scenario}
+            result={result}
+            onHighlightVertex={setHighlightVertex}
+            onSelectKValue={setKValue}
+            defaultRevealed={currentStep >= 7}
+            finalResultsUnlocked={currentStep >= 7}
+          />
+        </div>
+      )}
     </div>
   );
 };

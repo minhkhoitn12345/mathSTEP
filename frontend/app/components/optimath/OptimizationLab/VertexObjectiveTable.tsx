@@ -25,7 +25,7 @@ interface VertexObjectiveTableProps {
   onHighlightVertex?: (pt: Point2D | null) => void;
   onSelectKValue?: (k: number) => void;
   defaultRevealed?: boolean;
-  onAllVerifiedChange?: (allVerified: boolean) => void;
+  finalResultsUnlocked?: boolean;
 }
 
 export const VertexObjectiveTable: React.FC<VertexObjectiveTableProps> = ({
@@ -34,7 +34,7 @@ export const VertexObjectiveTable: React.FC<VertexObjectiveTableProps> = ({
   onHighlightVertex,
   onSelectKValue,
   defaultRevealed = false,
-  onAllVerifiedChange
+  finalResultsUnlocked = false
 }) => {
   const { objective, system } = scenario;
   const {
@@ -71,10 +71,6 @@ export const VertexObjectiveTable: React.FC<VertexObjectiveTableProps> = ({
     showSolution ||
     (vertexEvaluations.length > 0 &&
       vertexEvaluations.every(ve => verifiedVertices[ve.label]?.isCorrect));
-
-  useEffect(() => {
-    onAllVerifiedChange?.(allVerticesVerified);
-  }, [allVerticesVerified, onAllVerifiedChange]);
 
   const verifySingleVertex = (ve: VertexEvaluation, rawInput: string) => {
     const parsed = parseCoordinateInput(rawInput);
@@ -390,6 +386,24 @@ export const VertexObjectiveTable: React.FC<VertexObjectiveTableProps> = ({
       {/* INTEGER MODEL TAB (x, y ∈ ℕ) */}
       {activeModelTab === 'integer' && (
         <div className="space-y-3.5">
+          {!defaultRevealed ? (
+            <div className="rounded-xl border border-dashed border-purple-300 bg-purple-50/70 p-4 text-xs text-purple-950 space-y-2">
+              <h4 className="font-extrabold text-sm">Nhiệm vụ: tự tìm phương án nguyên</h4>
+              <p className="leading-relaxed">
+                Trong thực tế, số lượng sản phẩm phải là số nguyên không âm. Hãy dựa vào các bất phương trình để chọn
+                những điểm nguyên thuộc miền khả thi, tính giá trị hàm mục tiêu tại từng điểm rồi so sánh.
+              </p>
+              <ol className="list-decimal pl-5 space-y-1 text-slate-700">
+                <li>Chọn một điểm có tọa độ nguyên không âm.</li>
+                <li>Đối chiếu điểm đó với từng ràng buộc để xác định tính khả thi.</li>
+                <li>Thay các điểm khả thi vào hàm mục tiêu và tự dự đoán phương án tốt nhất.</li>
+              </ol>
+              <p className="font-semibold text-purple-800">
+                Phương án và bảng so sánh sẽ mở ở Bước 7, sau khi em hoàn thành phần dự đoán ở Bước 6.
+              </p>
+            </div>
+          ) : (
+          <>
           <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 text-xs space-y-1.5">
             <div className="flex items-center gap-2 font-bold text-amber-900">
               <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
@@ -491,11 +505,13 @@ export const VertexObjectiveTable: React.FC<VertexObjectiveTableProps> = ({
               </p>
             </div>
           )}
+          </>
+          )}
         </div>
       )}
 
-      {/* Summary Box (Revealed after all vertices verified or in Integer tab) */}
-      {(allVerticesVerified || activeModelTab === 'integer') ? (
+      {/* Keep the final conclusion hidden until the student reaches the last guided step. */}
+      {finalResultsUnlocked ? (
         <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
           <span className="font-bold text-slate-800 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-purple-600" />

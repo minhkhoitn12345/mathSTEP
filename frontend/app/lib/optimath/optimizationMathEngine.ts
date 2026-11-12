@@ -33,7 +33,7 @@ export const REAL_WORLD_SCENARIOS: RealWorldScenario[] = [
       rows: [
         ['Thời gian máy (giờ)', '2 giờ', '1 giờ', '≤ 8 giờ'],
         ['Thời gian lao động (giờ)', '1 giờ', '2 giờ', '≤ 8 giờ'],
-        ['Lợi nhuận (nghìn đồng)', '30 nghìn', '40 nghìn', 'Tối đa hóa (MAX)']
+        ['Lợi nhuận (nghìn đồng)', '30 nghìn', '40 nghìn', 'Lợi nhuận cần cao nhất']
       ]
     },
     variables: {
@@ -83,11 +83,11 @@ export const REAL_WORLD_SCENARIOS: RealWorldScenario[] = [
     tableData: {
       headers: ['Yêu cầu / Ràng buộc', 'Thời gian Toán (x)', 'Thời gian Tiếng Anh (y)', 'Ràng buộc thực tế'],
       rows: [
-        ['Tổng thời gian tối đa', '1 giờ', '1 giờ', 'x + y ≤ 20 giờ'],
-        ['Thời gian tối thiểu Toán', '1 giờ', '0 giờ', 'x ≥ 6 giờ'],
-        ['Thời gian tối thiểu Anh', '0 giờ', '1 giờ', 'y ≥ 4 giờ'],
-        ['Tính cân đối môn học', '1 giờ', '-2 giờ', 'x ≤ 2y (x - 2y ≤ 0)'],
-        ['Điểm số quy đổi', '5 điểm/giờ', '6 điểm/giờ', 'Tối đa hóa S(x; y)']
+        ['Tổng thời gian tối đa', '1 giờ', '1 giờ', 'Không quá 20 giờ'],
+        ['Thời gian tối thiểu Toán', '1 giờ', '0 giờ', 'Ít nhất 6 giờ'],
+        ['Thời gian tối thiểu Anh', '0 giờ', '1 giờ', 'Ít nhất 4 giờ'],
+        ['Tính cân đối môn học', '1 giờ', '-2 giờ', 'Thời gian Toán không vượt quá 2 lần thời gian Tiếng Anh'],
+        ['Điểm số quy đổi', '5 điểm/giờ', '6 điểm/giờ', 'Tổng điểm tiến bộ cần đạt cao nhất']
       ]
     },
     variables: {
@@ -127,7 +127,7 @@ export const REAL_WORLD_SCENARIOS: RealWorldScenario[] = [
   },
   {
     id: 'scenario-3',
-    title: 'Bài Toán 3: Phối Trộn Khẩu Phần Dinh Dưỡng (Tối Thiểu Hóa MIN)',
+    title: 'Bài Toán 3: Phối Trộn Khẩu Phần Dinh Dưỡng',
     subtitle: 'Đảm bảo protein và vitamin cho đàn vật nuôi với chi phí thấp nhất',
     category: 'Nông nghiệp & Chăn nuôi',
     description:
@@ -139,7 +139,7 @@ export const REAL_WORLD_SCENARIOS: RealWorldScenario[] = [
       rows: [
         ['Protein (đơn vị/kg)', '2 đơn vị', '1 đơn vị', '≥ 10 đơn vị'],
         ['Vitamin (đơn vị/kg)', '1 đơn vị', '3 đơn vị', '≥ 12 đơn vị'],
-        ['Giá thành (nghìn đồng/kg)', '12 nghìn', '15 nghìn', 'Tối thiểu hóa (MIN)']
+        ['Giá thành (nghìn đồng/kg)', '12 nghìn', '15 nghìn', 'Chi phí cần thấp nhất']
       ]
     },
     variables: {
@@ -179,7 +179,7 @@ export const REAL_WORLD_SCENARIOS: RealWorldScenario[] = [
   },
   {
     id: 'scenario-4',
-    title: 'Bài Toán 4: Tối Ưu Chi Phí Thuê Xe Vận Tải Hàng Hóa',
+    title: 'Bài Toán 4: Thuê Xe Vận Tải Hàng Hóa',
     subtitle: 'Vận chuyển hàng và hành khách với số xe nguyên chiếc',
     category: 'Vận tải & Logistics',
     description:
@@ -189,10 +189,10 @@ export const REAL_WORLD_SCENARIOS: RealWorldScenario[] = [
     tableData: {
       headers: ['Nhu cầu vận chuyển', 'Xe loại A (x chiếc)', 'Xe loại B (y chiếc)', 'Tổng nhu cầu'],
       rows: [
-        ['Khối lượng hàng hóa', '20 tấn', '10 tấn', '≥ 100 tấn'],
-        ['Số lượng người', '15 người', '20 người', '≥ 120 người'],
-        ['Số xe sẵn có', 'x ≤ 6 chiếc', 'y ≤ 8 chiếc', 'Số xe nguyên không âm'],
-        ['Giá thuê mỗi xe', '4 triệu', '3 triệu', 'Tối thiểu hóa chi phí (MIN)']
+        ['Khối lượng hàng hóa', '20 tấn', '10 tấn', 'Ít nhất 100 tấn'],
+        ['Số lượng người', '15 người', '20 người', 'Ít nhất 120 người'],
+        ['Số xe sẵn có', 'Tối đa 6 chiếc', 'Tối đa 8 chiếc', 'Số xe là số nguyên không âm'],
+        ['Giá thuê mỗi xe', '4 triệu', '3 triệu', 'Chi phí thuê cần thấp nhất']
       ]
     },
     variables: {
@@ -216,7 +216,8 @@ export const REAL_WORLD_SCENARIOS: RealWorldScenario[] = [
       { id: 'sc4-2', a: 3, b: 4, op: '>=', c: 24, color: '#7C3AED', label: '(d2)', showLine: true, showFill: true },
       { id: 'sc4-3', a: 1, b: 0, op: '<=', c: 6, color: '#059669', label: '(d3)', showLine: true, showFill: true },
       { id: 'sc4-4', a: 0, b: 1, op: '<=', c: 8, color: '#D97706', label: '(d4)', showLine: true, showFill: true },
-      { id: 'sc4-5', a: 1, b: 0, op: '>=', c: 0, color: '#64748B', label: '(d5)', showLine: true, showFill: true }
+      { id: 'sc4-5', a: 1, b: 0, op: '>=', c: 0, color: '#64748B', label: '(d5)', showLine: true, showFill: true },
+      { id: 'sc4-6', a: 0, b: 1, op: '>=', c: 0, color: '#94A3B8', label: '(d6)', showLine: true, showFill: true }
     ],
     objective: {
       cx: 4,
@@ -233,19 +234,19 @@ export const REAL_WORLD_SCENARIOS: RealWorldScenario[] = [
   },
   {
     id: 'scenario-5',
-    title: 'Bài Toán 5: Trồng Cây Nông Trại (Vô Số Phương Án Tối Ưu)',
-    subtitle: 'Trường hợp đường mức song song với cạnh của miền phương án',
+    title: 'Bài Toán 5: Trồng Cây Nông Trại',
+    subtitle: 'Phân bổ diện tích đất và công lao động',
     category: 'Nông nghiệp & Quy hoạch',
     description:
-      'Phân bổ diện tích đất trồng đậu và ngô khi hàm lợi nhuận trùng tỉ lệ với ràng buộc ngày công lao động.',
+      'Bài toán phân bổ diện tích trồng hai loại cây dưới giới hạn đất và công lao động.',
     storyText:
       'Một gia đình có 10 héc-ta đất để trồng đậu và ngô. Trồng 1 ha đậu cần 20 công lao động, đem lại lợi nhuận 20 triệu đồng. Trồng 1 ha ngô cần 30 công lao động, đem lại lợi nhuận 30 triệu đồng. Gia đình chỉ có thể thu xếp tối đa 240 công lao động trong vụ mùa. Hãy tìm diện tích trồng mỗi loại cây để thu lợi nhuận cao nhất.',
     tableData: {
       headers: ['Nguồn lực / Tiêu chí', 'Trồng Đậu (x ha)', 'Trồng Ngô (y ha)', 'Khả năng đáp ứng'],
       rows: [
-        ['Diện tích đất', '1 ha', '1 ha', '≤ 10 ha'],
-        ['Công lao động', '20 công', '30 công', '≤ 240 công (2x + 3y ≤ 24)'],
-        ['Lợi nhuận', '20 triệu', '30 triệu', 'L = 20x + 30y → MAX']
+        ['Diện tích đất', '1 ha', '1 ha', 'Không quá 10 ha'],
+        ['Công lao động', '20 công', '30 công', 'Không quá 240 công'],
+        ['Lợi nhuận', '20 triệu', '30 triệu', 'Lợi nhuận cần cao nhất']
       ]
     },
     variables: {
