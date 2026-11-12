@@ -57,9 +57,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAuthModal,
   onLogout,
 }) => {
-  // Dropdown states for Desktop
-  const [simMenuOpen, setSimMenuOpen] = useState(false);
-  const [docsMenuOpen, setDocsMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   // Mobile drawer states
@@ -67,27 +64,17 @@ export const Header: React.FC<HeaderProps> = ({
   const [mobileSimExpanded, setMobileSimExpanded] = useState(true);
 
   // Dropdown refs for click-outside detection
-  const simMenuRef = useRef<HTMLDivElement>(null);
-  const docsMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
-      if (simMenuRef.current && !simMenuRef.current.contains(target)) {
-        setSimMenuOpen(false);
-      }
-      if (docsMenuRef.current && !docsMenuRef.current.contains(target)) {
-        setDocsMenuOpen(false);
-      }
       if (userMenuRef.current && !userMenuRef.current.contains(target)) {
         setUserMenuOpen(false);
       }
     }
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        setSimMenuOpen(false);
-        setDocsMenuOpen(false);
         setUserMenuOpen(false);
         setMobileMenuOpen(false);
       }
@@ -99,17 +86,6 @@ export const Header: React.FC<HeaderProps> = ({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-
-  // Check if current view is a simulation lab
-  const isSimActive = [
-    "linear_programming",
-    "spatial_geometry",
-    "trigonometry",
-    "lab",
-    "system",
-    "optimization",
-    "quiz",
-  ].includes(currentModule);
 
   // Check if user has teacher role
   const canAccessTeacher = session?.role === "teacher" || session?.role === "admin";
@@ -142,224 +118,10 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </button>
 
-        {/* 2. DESKTOP NAVIGATION: Bài học | Mô phỏng ▾ | Tài liệu ▾ */}
-        <nav className="hidden lg:flex items-center gap-2 text-xs font-medium text-slate-300">
-          {/* Menu 1: Bài học (Về mục lục tìm kiếm ở trang chủ) */}
-          <button
-            type="button"
-            onClick={() => onSelectModule("home")}
-            className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
-              currentModule === "home" || currentModule === "learning_path" || currentModule === "lesson_study"
-                ? "bg-white/10 text-white font-semibold shadow-inner"
-                : "text-slate-300 hover:text-white hover:bg-white/5"
-            }`}
-            title="Mục lục bài học & Tìm kiếm"
-          >
-            <BookOpen className="w-3.5 h-3.5 text-blue-400" />
-            <span>Bài học</span>
-          </button>
-
-          {/* Menu 2: Mô phỏng ▾ (Gom 3 chuyên đề hiện có thành menu con) */}
-          <div className="relative" ref={simMenuRef}>
-            <button
-              type="button"
-              onClick={() => {
-                setSimMenuOpen((prev) => !prev);
-                setDocsMenuOpen(false);
-                setUserMenuOpen(false);
-              }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
-                isSimActive
-                  ? "bg-blue-600/90 text-white font-semibold shadow-xs"
-                  : "text-slate-300 hover:text-white hover:bg-white/5"
-              }`}
-              aria-expanded={simMenuOpen}
-            >
-              <Compass className="w-3.5 h-3.5 text-blue-400" />
-              <span>Mô phỏng</span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
-                  simMenuOpen ? "rotate-180 text-blue-400" : ""
-                }`}
-              />
-            </button>
-
-            {simMenuOpen && (
-              <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-[#0B132B] border border-white/10 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-xs text-slate-200 backdrop-blur-xl">
-                <div className="px-3.5 py-1.5 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                  Phòng thí nghiệm thực hành
-                </div>
-
-                {/* CĐ1 */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSimMenuOpen(false);
-                    onSelectModule("linear_programming");
-                  }}
-                  className="w-full px-3.5 py-2.5 text-left hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer group"
-                >
-                  <span className="p-2 rounded-xl bg-blue-500/10 text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors shrink-0">
-                    <Compass className="w-4 h-4" />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-slate-100 group-hover:text-blue-300 truncate">
-                      CĐ1: BPT & Tối Ưu Tuyến Tính
-                    </div>
-                    <div className="text-[10px] text-slate-400 truncate">
-                      Quét đường mức, xưởng mộc & đa giác nghiệm
-                    </div>
-                  </div>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-bold shrink-0">
-                    Toán 10
-                  </span>
-                </button>
-
-                {/* CĐ2 */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSimMenuOpen(false);
-                    onSelectModule("spatial_geometry");
-                  }}
-                  className="w-full px-3.5 py-2.5 text-left hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer group"
-                >
-                  <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-colors shrink-0">
-                    <Box className="w-4 h-4" />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-slate-100 group-hover:text-emerald-300 truncate">
-                      CĐ2: Hình Học Không Gian 3D
-                    </div>
-                    <div className="text-[10px] text-slate-400 truncate">
-                      Chóp S.ABCD, nét khuất, thiết diện & trải phẳng
-                    </div>
-                  </div>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold shrink-0">
-                    Toán 11
-                  </span>
-                </button>
-
-                {/* CĐ3 */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSimMenuOpen(false);
-                    onSelectModule("trigonometry");
-                  }}
-                  className="w-full px-3.5 py-2.5 text-left hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer group"
-                >
-                  <span className="p-2 rounded-xl bg-purple-500/10 text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-colors shrink-0">
-                    <Activity className="w-4 h-4" />
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-slate-100 group-hover:text-purple-300 truncate">
-                      CĐ3: Lượng Giác Tương Tác
-                    </div>
-                    <div className="text-[10px] text-slate-400 truncate">
-                      Vòng tròn đơn vị, cung liên kết & sóng sin/cos
-                    </div>
-                  </div>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold shrink-0">
-                    Toán 11
-                  </span>
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Menu 3: Tài liệu ▾ (Cơ sở KHKT và Hướng dẫn giáo viên) */}
-          <div className="relative" ref={docsMenuRef}>
-            <button
-              type="button"
-              onClick={() => {
-                setDocsMenuOpen((prev) => !prev);
-                setSimMenuOpen(false);
-                setUserMenuOpen(false);
-              }}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
-                currentModule === "knowledge"
-                  ? "bg-white/10 text-white font-semibold shadow-inner"
-                  : "text-slate-300 hover:text-white hover:bg-white/5"
-              }`}
-              aria-expanded={docsMenuOpen}
-            >
-              <BookOpen className="w-3.5 h-3.5 text-slate-400" />
-              <span>Tài liệu</span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
-                  docsMenuOpen ? "rotate-180 text-blue-400" : ""
-                }`}
-              />
-            </button>
-
-            {docsMenuOpen && (
-              <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-[#0B132B] border border-white/10 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 text-xs text-slate-200 backdrop-blur-xl">
-                <Link
-                  href="/thu-vien-hinh-hoc"
-                  onClick={() => setDocsMenuOpen(false)}
-                  className="w-full px-3.5 py-2.5 text-left hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer group"
-                >
-                  <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-300 group-hover:bg-emerald-600 group-hover:text-white transition-colors shrink-0">
-                    <Shapes className="w-4 h-4" />
-                  </span>
-                  <span>
-                    <span className="block font-bold text-slate-100 group-hover:text-emerald-300">Thư viện hình học không gian</span>
-                    <span className="block text-[10px] text-slate-400">Mô hình mẫu 3D · Chuyên đề 2</span>
-                  </span>
-                </Link>
-
-                {/* Cơ sở KHKT */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDocsMenuOpen(false);
-                    onSelectModule("knowledge");
-                  }}
-                  className="w-full px-3.5 py-2.5 text-left hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer group"
-                >
-                  <span className="p-2 rounded-xl bg-slate-500/10 text-slate-300 group-hover:bg-blue-600 group-hover:text-white transition-colors shrink-0">
-                    <BookOpen className="w-4 h-4" />
-                  </span>
-                  <div>
-                    <div className="font-bold text-slate-100 group-hover:text-blue-300">
-                      Cơ sở KHKT & Sổ tay lý thuyết
-                    </div>
-                    <div className="text-[10px] text-slate-400">
-                      Phương pháp luận & Nghiên cứu sư phạm
-                    </div>
-                  </div>
-                </button>
-
-                {/* Hướng dẫn giáo viên (chỉ hiện khi phù hợp) */}
-                {canAccessTeacher && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDocsMenuOpen(false);
-                      onOpenTeacherGuide();
-                    }}
-                    className="w-full px-3.5 py-2.5 text-left hover:bg-amber-500/10 flex items-center gap-3 transition-colors cursor-pointer group text-amber-300 border-t border-white/5"
-                  >
-                    <span className="p-2 rounded-xl bg-amber-500/20 text-amber-400 group-hover:bg-amber-500 group-hover:text-white transition-colors shrink-0">
-                      <Presentation className="w-4 h-4" />
-                    </span>
-                    <div>
-                      <div className="font-bold text-amber-300 group-hover:text-amber-200 flex items-center gap-1.5">
-                        <span>Hướng dẫn giáo viên</span>
-                        <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/30 text-amber-200 font-extrabold uppercase">
-                          Sư phạm
-                        </span>
-                      </div>
-                      <div className="text-[10px] text-amber-400/80">
-                        Kế hoạch bài dạy & Chuẩn GDPT 2018
-                      </div>
-                    </div>
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+        <nav className="flex items-center gap-1.5 sm:gap-3 text-xs font-semibold text-slate-300">
+          <button type="button" onClick={() => onSelectModule("home")} className="rounded-lg px-3 py-2 text-slate-200 transition hover:bg-white/10 hover:text-white">Tr&#x1EA1;m h&#x1ECD;c</button>
+          {session?.authenticated && session.role === "teacher" && <Link href="/giao-vien" className="rounded-lg px-3 py-2 text-amber-300 transition hover:bg-amber-500/10">Gi&#xE1;o vi&#xEA;n</Link>}
+          <button type="button" onClick={() => onSelectModule("knowledge")} className="rounded-lg px-3 py-2 text-slate-300 transition hover:bg-white/10 hover:text-white">C&#x01A1; s&#x1EDF; KHKT</button>
         </nav>
 
         {/* 3. RIGHT SECTION: Trợ lý MathSTEP & tài khoản */}
@@ -367,7 +129,7 @@ export const Header: React.FC<HeaderProps> = ({
           <Link
             href="/leaderboard"
             title="Bảng xếp hạng học tập"
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-amber-400/20 bg-amber-400/10 px-2.5 text-amber-200 transition hover:border-amber-300/40 hover:bg-amber-400/15 sm:px-3"
+            className="hidden inline-flex h-9 items-center gap-1.5 rounded-xl border border-amber-400/20 bg-amber-400/10 px-2.5 text-amber-200 transition hover:border-amber-300/40 hover:bg-amber-400/15 sm:px-3"
           >
             <Trophy className="h-4 w-4 text-amber-300" />
             <span className="hidden text-xs font-bold md:inline">Xếp hạng</span>
@@ -377,7 +139,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onToggleChatDrawer}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-xs cursor-pointer border ${
+              className={`hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-xs cursor-pointer border ${
                 chatDrawerOpen
                   ? "bg-blue-600 text-white border-blue-400 shadow-blue-500/30"
                   : "bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 hover:text-white border-blue-500/30 hover:border-blue-400"
@@ -509,7 +271,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer"
+            className="hidden"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5 text-white" /> : <Menu className="w-5 h-5" />}
