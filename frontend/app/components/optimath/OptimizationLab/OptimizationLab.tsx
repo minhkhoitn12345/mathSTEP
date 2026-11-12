@@ -161,7 +161,6 @@ export const OptimizationLab: React.FC<OptimizationLabProps> = ({
           <OptimizationSevenStepWizard
             scenario={scenario}
             result={result}
-            onSelectScenario={handleSelectScenario}
             onSwitchToSandbox={() => setLearningMode('practice')}
           />
         )}

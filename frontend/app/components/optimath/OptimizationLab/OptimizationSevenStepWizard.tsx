@@ -18,10 +18,8 @@ import {
   Volume2,
   VolumeX,
   Award,
-  BookOpen,
   Calculator,
   Eye,
-  EyeOff,
   SlidersHorizontal
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -29,7 +27,6 @@ import confetti from 'canvas-confetti';
 interface OptimizationSevenStepWizardProps {
   scenario: RealWorldScenario;
   result: OptimizationResult;
-  onSelectScenario: (scenarioId: string) => void;
   onSwitchToSandbox: () => void;
 }
 
@@ -46,7 +43,6 @@ const OPTI_STEP_TITLES = [
 export const OptimizationSevenStepWizard: React.FC<OptimizationSevenStepWizardProps> = ({
   scenario,
   result,
-  onSelectScenario,
   onSwitchToSandbox
 }) => {
   const [currentStep, setCurrentStep] = useState<StepNumber>(1);
@@ -80,7 +76,6 @@ export const OptimizationSevenStepWizard: React.FC<OptimizationSevenStepWizardPr
 
   // Mobile viewport view mode for screens < xl ('step' | 'graph' | 'table' | 'all')
   const [mobileStepView, setMobileStepView] = useState<'step' | 'graph' | 'table' | 'all'>('step');
-  const [showScenarioSupport, setShowScenarioSupport] = useState(true);
 
   const { objective, system, variables } = scenario;
   const { vertexEvaluations, optimalPoints, optimalValue, integerOptimalPoint, integerOptimalValue } = result;
@@ -1072,23 +1067,11 @@ ${result.practicalAnswer}`;
 
         {/* CENTER COLUMN: Interactive Optimization Graph Canvas */}
         <div
-          className={`flex flex-col gap-3 order-2 ${showScenarioSupport ? 'xl:col-span-4' : 'xl:col-span-7'} ${
+          className={`flex flex-col gap-3 order-2 xl:col-span-7 ${
             mobileStepView === 'graph' || mobileStepView === 'all' ? 'flex' : 'hidden xl:flex'
           }`}
         >
           <div className="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-xs">
-            <div className="flex justify-end pb-2">
-              <button
-                type="button"
-                onClick={() => setShowScenarioSupport(value => !value)}
-                aria-expanded={showScenarioSupport}
-                aria-controls="optimization-scenario-bank"
-                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-purple-300 hover:bg-purple-50 hover:text-purple-800 sm:px-3"
-              >
-                {showScenarioSupport ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                <span>{showScenarioSupport ? 'Ẩn ngân hàng tình huống' : 'Hiện ngân hàng tình huống'}</span>
-              </button>
-            </div>
             <OptimizationGraphCanvas
               scenario={scenario}
               result={result}
@@ -1100,47 +1083,9 @@ ${result.practicalAnswer}`;
               revealOptimalAnswers={canRevealOptimal}
               highlightVertex={highlightVertex}
               onHighlightVertex={setHighlightVertex}
-              isPresentationMode={!showScenarioSupport}
+              isPresentationMode
             />
           </div>
-        </div>
-
-        {/* RIGHT COLUMN: Real-World Scenarios Bank (xl: 3 cols) */}
-        <div
-          id="optimization-scenario-bank"
-          className={`${showScenarioSupport ? 'hidden xl:flex' : 'hidden'} xl:col-span-3 flex-col gap-3.5 order-3`}
-        >
-          {/* Scenario Selector Bank */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-3.5 shadow-xs">
-            <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5 mb-2">
-              <BookOpen className="w-3.5 h-3.5 text-purple-600" />
-              Ngân hàng 5 tình huống thực tế:
-            </span>
-            <div className="flex flex-col gap-1.5">
-              {[
-                { id: 'scenario-1', name: 'Bài 1: Sản xuất A & B', tag: 'SGK chuẩn' },
-                { id: 'scenario-2', name: 'Bài 2: Ôn thi Toán - Anh', tag: 'Phân bổ giờ' },
-                { id: 'scenario-3', name: 'Bài 3: Phối trộn thức ăn', tag: 'Chi phí MIN' },
-                { id: 'scenario-4', name: 'Bài 4: Thuê xe vận tải', tag: 'Vận chuyển' },
-                { id: 'scenario-5', name: 'Bài 5: Nông trại trồng cây', tag: 'Vô số nghiệm' }
-              ].map(s => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => onSelectScenario(s.id)}
-                  className={`p-2 rounded-xl border text-left transition text-xs font-bold cursor-pointer flex items-center justify-between ${
-                    scenario.id === s.id
-                      ? 'border-purple-500 bg-purple-50 text-purple-900 ring-1 ring-purple-300'
-                      : 'border-slate-200 hover:border-purple-300 hover:bg-purple-50/30 text-slate-800'
-                  }`}
-                >
-                  <span>{s.name}</span>
-                  <span className="text-[10px] font-normal text-slate-500 font-mono">{s.tag}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
         </div>
       </div>
 
