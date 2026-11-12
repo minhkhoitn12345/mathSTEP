@@ -1177,7 +1177,7 @@ export function SpatialGeometryLab(props: SpatialGeometryLabProps) {
         accent="emerald"
         onBack={props.onBackToHome}
         action={props.onOpenSocraticDrawer && (
-          <button type="button" onClick={() => props.onOpenSocraticDrawer(`Em \u0111ang th\u1ef1c h\u00e0nh Chuy\u00ean \u0111\u1ec1 2 H\u00ecnh h\u1ecdc kh\u00f4ng gian. Tr\u1ee3 l\u00fd MathSTEP h\u01b0\u1edbng d\u1eabn em v\u1edbi \u1ea1!`)} className="flex min-h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:from-emerald-700 hover:to-teal-700">
+          <button type="button" onClick={() => props.onOpenSocraticDrawer?.(`Em \u0111ang th\u1ef1c h\u00e0nh Chuy\u00ean \u0111\u1ec1 2 H\u00ecnh h\u1ecdc kh\u00f4ng gian. Tr\u1ee3 l\u00fd MathSTEP h\u01b0\u1edbng d\u1eabn em v\u1edbi \u1ea1!`)} className="flex min-h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:from-emerald-700 hover:to-teal-700">
             <OptiMascot expression="thinking" size={20} animate={false} />
             <span>{"H\u1ecfi MathSTEP"}</span>
           </button>
