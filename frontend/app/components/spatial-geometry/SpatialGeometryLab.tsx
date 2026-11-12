@@ -5,7 +5,6 @@ import Link from "next/link";
 import { CORE_3_MODULES, LessonUnit } from "@/app/types/curriculum";
 import {
   RotateCcw,
-  ArrowLeft,
   AlertCircle,
   HelpCircle,
   Box,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
 import { MathFormattedText } from "@/app/components/KatexMath";
+import { SimulationLabHeader } from "@/app/components/SimulationLabHeader";
 import { SpatialGeometryPractice } from "./SpatialGeometryPractice";
 import type { CustomAiConfig } from "@/app/components/AccountSettingsModal";
 
@@ -39,6 +39,7 @@ interface SpatialGeometryLabProps {
   problemPayload?: unknown;
   customAiConfig?: CustomAiConfig | null;
   embedded?: boolean;
+  showHeader?: boolean;
 }
 
 function SpatialGeometryLessonLab({
@@ -46,6 +47,7 @@ function SpatialGeometryLessonLab({
   onOpenSocraticDrawer,
   initialLessonIndex = 0,
   embedded = false,
+  showHeader = true,
 }: SpatialGeometryLabProps) {
   const moduleConfig = CORE_3_MODULES[1]; // Module 2
   const [selectedLessonIndex, setSelectedLessonIndex] = useState(initialLessonIndex);
@@ -344,50 +346,22 @@ function SpatialGeometryLessonLab({
   };
 
   return (
-    <div className={`max-w-7xl mx-auto px-3 sm:px-6 ${embedded ? "py-3 sm:py-4 space-y-4" : "py-4 sm:py-6 space-y-6"}`}>
-      {/* 1. TOP HEADER & BREADCRUMB */}
-      {!embedded && <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
-        <div className="flex items-center gap-2.5">
-          {onBackToHome && (
-            <button
-              type="button"
-              onClick={onBackToHome}
-              className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 hover:text-emerald-600 transition-colors cursor-pointer shadow-xs"
-              title="Quay lại trang chủ"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-          )}
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 text-emerald-800 uppercase tracking-wider">
-                CHUYÊN ĐỀ 2
-              </span>
-              <span className="text-xs text-slate-500 font-medium">Toán 11 · GDPT 2018</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              Dựng Hình & Khảo Sát Quan Hệ Không Gian 3D (S.ABCD)
-            </h1>
-          </div>
-        </div>
-
-        {/* Action: Hỏi Socratic AI */}
-        {onOpenSocraticDrawer && (
-          <button
-            type="button"
-            onClick={() =>
-              onOpenSocraticDrawer(
-                `Em đang thực hành ${currentLesson.code}: ${currentLesson.title} thuộc Chuyên đề 2 Hình học không gian. Trợ lý MathSTEP hướng dẫn em với ạ!`
-              )
-            }
-            className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs shadow-md shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
+    <div className={`w-full ${embedded ? "mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-4 space-y-4" : showHeader ? "min-h-screen bg-slate-50 px-3 pb-6 sm:px-4 md:px-6" : "w-full"}`}>
+      {!embedded && showHeader && <SimulationLabHeader
+        moduleLabel={"CHUY\u00caN \u0110\u1ec0 2"}
+        title={"D\u1ef1ng h\u00ecnh v\u00e0 kh\u1ea3o s\u00e1t quan h\u1ec7 kh\u00f4ng gian 3D"}
+        subtitle={"M\u00f4 h\u00ecnh h\u00f3a h\u00ecnh h\u1ecdc kh\u00f4ng gian, quan s\u00e1t n\u00e9t khu\u1ea5t v\u00e0 kh\u1ea3o s\u00e1t c\u00e1c quan h\u1ec7 trong h\u00ecnh ch\u00f3p"}
+        accent="emerald"
+        onBack={onBackToHome}
+        action={onOpenSocraticDrawer && (
+          <button type="button" onClick={() => onOpenSocraticDrawer(`Em \u0111ang th\u1ef1c h\u00e0nh ${currentLesson.code}: ${currentLesson.title} thu\u1ed9c Chuy\u00ean \u0111\u1ec1 2 H\u00ecnh h\u1ecdc kh\u00f4ng gian. Tr\u1ee3 l\u00fd MathSTEP h\u01b0\u1edbng d\u1eabn em v\u1edbi \u1ea1!`)} className="flex min-h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:from-emerald-700 hover:to-teal-700">
             <OptiMascot expression="thinking" size={20} animate={false} />
-            <span>Hỏi MathSTEP về hình này</span>
+            <span>{"H\u1ecfi MathSTEP"}</span>
           </button>
         )}
-      </div>}
+      />}
 
+      <div className="mx-auto w-full max-w-7xl space-y-4 pt-3 sm:pt-4">
       {/* 2. PROGRESSIVE LESSON SELECTOR TABS */}
       {!embedded && <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
         {moduleConfig.lessons.map((lesson, idx) => (
@@ -1178,6 +1152,7 @@ function SpatialGeometryLessonLab({
           </div>
         </div>
       </div>
+      </div>
     </div>
   );
 }
@@ -1194,7 +1169,21 @@ export function SpatialGeometryLab(props: SpatialGeometryLabProps) {
   const initialExerciseId = lessonExerciseIds[props.initialLessonIndex ?? 0] ?? lessonExerciseIds[0];
 
   return (
-    <div className="space-y-3">
+    <div className="min-h-screen bg-slate-50 px-3 pb-6 sm:px-4 md:px-6">
+      <SimulationLabHeader
+        moduleLabel={"CHUY\u00caN \u0110\u1ec0 2"}
+        title={"D\u1ef1ng h\u00ecnh v\u00e0 kh\u1ea3o s\u00e1t quan h\u1ec7 kh\u00f4ng gian 3D"}
+        subtitle={"M\u00f4 h\u00ecnh h\u00f3a h\u00ecnh h\u1ecdc kh\u00f4ng gian, quan s\u00e1t n\u00e9t khu\u1ea5t v\u00e0 kh\u1ea3o s\u00e1t c\u00e1c quan h\u1ec7 trong h\u00ecnh ch\u00f3p"}
+        accent="emerald"
+        onBack={props.onBackToHome}
+        action={props.onOpenSocraticDrawer && (
+          <button type="button" onClick={() => props.onOpenSocraticDrawer(`Em \u0111ang th\u1ef1c h\u00e0nh Chuy\u00ean \u0111\u1ec1 2 H\u00ecnh h\u1ecdc kh\u00f4ng gian. Tr\u1ee3 l\u00fd MathSTEP h\u01b0\u1edbng d\u1eabn em v\u1edbi \u1ea1!`)} className="flex min-h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:from-emerald-700 hover:to-teal-700">
+            <OptiMascot expression="thinking" size={20} animate={false} />
+            <span>{"H\u1ecfi MathSTEP"}</span>
+          </button>
+        )}
+      />
+      <div className="mx-auto max-w-7xl space-y-4 pt-3 sm:pt-4">
       <div className="flex flex-wrap items-center justify-between gap-3 px-1">
         <p className="text-xs font-semibold text-slate-500">Chọn cách học</p>
         <div className="flex flex-wrap items-center gap-2">
@@ -1221,7 +1210,8 @@ export function SpatialGeometryLab(props: SpatialGeometryLabProps) {
       </div>
       {activeExperience === "practice"
         ? <SpatialGeometryPractice key={initialExerciseId} initialExerciseId={initialExerciseId} problemPayload={props.problemPayload} customAiConfig={props.customAiConfig} />
-        : <SpatialGeometryLessonLab {...props} />}
+        : <SpatialGeometryLessonLab {...props} showHeader={false} />}
+      </div>
     </div>
   );
 }

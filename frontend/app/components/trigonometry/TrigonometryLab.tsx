@@ -6,11 +6,11 @@ import React, { useState, useMemo, useRef, useCallback } from "react";
 import { CORE_3_MODULES, LessonUnit } from "@/app/types/curriculum";
 import {
   Compass,
-  ArrowLeft,
   Activity,
 } from "lucide-react";
 import { OptiMascot } from "@/app/components/optimath/mascot/OptiMascot";
 import { MathFormattedText } from "@/app/components/KatexMath";
+import { SimulationLabHeader } from "@/app/components/SimulationLabHeader";
 
 interface TrigonometryLabProps {
   onBackToHome?: () => void;
@@ -263,51 +263,22 @@ export function TrigonometryLab({
   const currentGuidedQuestion = currentGuidedSteps[guidedStep];
 
   return (
-    <div className={`w-full mx-auto px-3 sm:px-6 ${embedded ? "py-3 sm:py-4 space-y-4" : "py-4 sm:py-6 space-y-6"}`}>
-      {/* 1. TOP HEADER & BREADCRUMB */}
-      {!embedded && <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
-        <div className="flex items-center gap-2.5">
-          {onBackToHome && (
-            <button
-              type="button"
-              onClick={onBackToHome}
-              className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 hover:text-purple-600 transition-colors cursor-pointer shadow-xs"
-              title="Quay lại trang chủ"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-          )}
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-purple-100 text-purple-800 uppercase tracking-wider">
-                CHUYÊN ĐỀ 3
-              </span>
-              <span className="text-xs text-slate-500 font-medium">Toán 11 · GDPT 2018</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              Khảo Sát Các Quan Hệ Lượng Giác Tương Tác
-            </h1>
-          </div>
-        </div>
+    <div className={`w-full ${embedded ? "mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-4 space-y-4" : "min-h-screen bg-slate-50 px-3 pb-6 sm:px-4 md:px-6"}`}>
+      {!embedded && <SimulationLabHeader
+        moduleLabel={"CHUY\u00caN \u0110\u1ec0 3"}
+        title={"Kh\u1ea3o s\u00e1t c\u00e1c quan h\u1ec7 l\u01b0\u1ee3ng gi\u00e1c"}
+        subtitle={"Kh\u00e1m ph\u00e1 \u0111\u01b0\u1eddng tr\u00f2n l\u01b0\u1ee3ng gi\u00e1c, \u0111\u1ed3 th\u1ecb h\u00e0m s\u1ed1 v\u00e0 nghi\u1ec7m ph\u01b0\u01a1ng tr\u00ecnh l\u01b0\u1ee3ng gi\u00e1c"}
+        accent="purple"
+        onBack={onBackToHome}
+        action={onOpenSocraticDrawer && (
+          <button type="button" onClick={() => onOpenSocraticDrawer(`Em \u0111ang t\u00ecm hi\u1ec3u ${currentLesson.code}: ${currentLesson.title} thu\u1ed9c Chuy\u00ean \u0111\u1ec1 3 L\u01b0\u1ee3ng gi\u00e1c. Tr\u1ee3 l\u00fd MathSTEP h\u01b0\u1edbng d\u1eabn em v\u1edbi \u1ea1!`)} className="flex min-h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:from-purple-700 hover:to-indigo-700">
+            <OptiMascot expression="happy" size={20} animate={false} />
+            <span>{"H\u1ecfi MathSTEP"}</span>
+          </button>
+        )}
+      />}
 
-        <div className="flex flex-wrap items-center gap-2">
-          {onOpenSocraticDrawer && (
-            <button
-              type="button"
-              onClick={() =>
-                onOpenSocraticDrawer(
-                  `Em đang tìm hiểu ${currentLesson.code}: ${currentLesson.title} thuộc Chuyên đề 3 Lượng giác. Trợ lý MathSTEP hướng dẫn em với ạ!`
-                )
-              }
-              className="flex min-h-10 items-center gap-2 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-purple-500/20 transition hover:from-purple-700 hover:to-indigo-700"
-            >
-              <OptiMascot expression="happy" size={20} animate={false} />
-              <span>Hỏi MathSTEP</span>
-            </button>
-          )}
-        </div>
-      </div>}
-
+      <div className="mx-auto w-full max-w-7xl space-y-4 pt-3 sm:pt-4">
       {/* 2. PROGRESSIVE LESSON SELECTOR TABS */}
       {!embedded && <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
         {moduleConfig.lessons.map((lesson, idx) => (
@@ -968,6 +939,7 @@ export function TrigonometryLab({
           </div>
 
         </div>
+      </div>
       </div>
     </div>
   );
