@@ -70,8 +70,8 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         question: "Biểu thức nào sau đây KHÔNG PHẢI là bất phương trình bậc nhất hai ẩn?",
         options: [
           { id: "A", text: "$3x - 5y > 10$", isCorrect: false },
-          { id: "B", text: "$2x + y^2 \le 4$", isCorrect: true },
-          { id: "C", text: "$x - 4y \ge 0$", isCorrect: false },
+          { id: "B", text: "$2x + y^2 \\le 4$", isCorrect: true },
+          { id: "C", text: "$x - 4y \\ge 0$", isCorrect: false },
           { id: "D", text: "$-x + 2y < -3$", isCorrect: false },
         ],
         explanationCorrect: "Chính xác! Biểu thức $2x + y^2 \\le 4$ chứa ẩn $y$ với số mũ bằng 2 (bậc hai), nên không phải bậc nhất hai ẩn.",
@@ -415,7 +415,7 @@ export const DETAILED_LESSONS_CONTENT: Record<string, DetailedLessonContent> = {
         id: "rq-lp4-2",
         question: "Trong bài toán xưởng mộc, vì sao điểm $(0; 16)$, giao điểm của đường thẳng $x + 2y = 32$ với trục $Oy$, không thuộc miền nghiệm?",
         options: [
-          { id: "A", text: "Vì $(0; 16)$ không thỏa mãn điều kiện $y \le 3{,}5x$; tại điểm đó, $16 > 3{,}5 \cdot 0$.", isCorrect: true },
+          { id: "A", text: "Vì $(0; 16)$ không thỏa mãn điều kiện $y \\le 3{,}5x$; tại điểm đó, $16 > 3{,}5 \\cdot 0$.", isCorrect: true },
           { id: "B", text: "Vì tiền lãi tại (0; 16) bằng 0", isCorrect: false },
           { id: "C", text: "Vì điểm (0; 16) có tọa độ không nguyên", isCorrect: false },
         ],

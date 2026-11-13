@@ -12,11 +12,15 @@ import { Sparkles, GraduationCap, Compass, Presentation } from 'lucide-react';
 interface SingleInequalityLabProps {
   initialLearningMode?: LearningMode;
   onBackToHome: () => void;
+  backLabel?: string;
+  embedded?: boolean;
 }
 
 export const SingleInequalityLab: React.FC<SingleInequalityLabProps> = ({
   initialLearningMode = 'guided',
-  onBackToHome
+  onBackToHome,
+  backLabel = 'Trang chủ'
+  , embedded = false
 }) => {
   // Inequality state: Default is 2x + y <= 6 as mandated by prompt
   const [inequality, setInequality] = useState<Inequality>({
@@ -200,16 +204,16 @@ export const SingleInequalityLab: React.FC<SingleInequalityLabProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className={embedded ? "h-full min-h-0 bg-slate-50 flex flex-col overflow-auto" : "min-h-screen bg-slate-50 flex flex-col"}>
       {/* Top Breadcrumb & Mode Selector Header */}
-      <div className="bg-white border-b border-slate-200 px-3 sm:px-4 py-2 sm:py-2.5 shadow-xs">
+      {!embedded && <div className="bg-white border-b border-slate-200 px-3 sm:px-4 py-2 sm:py-2.5 shadow-xs">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center gap-2.5">
             <button
               onClick={onBackToHome}
               className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-1 min-h-[36px]"
             >
-              ← Trang chủ
+              ← {backLabel}
             </button>
             <div className="h-4 w-px bg-slate-200 hidden sm:block" />
             <div>
@@ -267,7 +271,7 @@ export const SingleInequalityLab: React.FC<SingleInequalityLabProps> = ({
             </button>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Main Workspace: 7-Step Interactive Wizard OR Sandbox Mode */}
       <div className="max-w-7xl mx-auto p-2.5 sm:p-4 md:p-6 w-full flex-1 flex flex-col gap-3 sm:gap-5">

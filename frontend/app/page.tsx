@@ -9,6 +9,8 @@ import { LessonCatalogHome } from "./components/optimath/LessonCatalogHome";
 import { Footer } from "./components/optimath/Footer";
 import { OptiMascot } from "./components/optimath/mascot/OptiMascot";
 import SocraticChatDrawer, { ChatMessage } from "./components/SocraticChatDrawer";
+import MathStepLoadingProgress from "./components/MathStepLoadingProgress";
+import { getMathContext } from "./lib/mathModelContext";
 import AccountSettingsModal, { CustomAiConfig } from "./components/AccountSettingsModal";
 import ChatHistoryModal from "./components/ChatHistoryModal";
 import { generateSmartSocraticResponse } from "./lib/smartSocratic";
@@ -456,8 +458,8 @@ function MathStepMainContent() {
   };
 
   // Socratic AI Chat message sender
-  const handleSendMessage = async (customMessage?: string) => {
-    const textToSend = (customMessage || chatInput).trim();
+  const handleSendMessage = async (customMessage?: string, imageDataUrl?: string) => {
+    const textToSend = (customMessage?.trim() || chatInput.trim() || (imageDataUrl ? "Hãy đọc đề trong ảnh và gợi ý bước đầu." : ""));
     if (!textToSend || chatBusy) return;
 
     setChatError("");
@@ -485,6 +487,7 @@ function MathStepMainContent() {
         module: "trigonometry",
         topic: "Chuyên đề 3: Khảo sát quan hệ lượng giác tương tác (Toán 11, LG-MH01-MH05, α = −765°, E01-E16)",
       },
+      conics_and_solids: { module: "conics_and_solids", topic: "Ba đường conic, thiết diện nón và mặt cầu Dandelin" },
     };
 
     const curContext = moduleContextMap[currentView] || moduleContextMap.linear_programming;
@@ -496,12 +499,14 @@ function MathStepMainContent() {
         body: JSON.stringify({
           conversation_id: conversationId,
           message: textToSend,
+          image_data_url: imageDataUrl,
           mode: "guided_learning",
           learning_context: {
             module: curContext.module,
             topic: curContext.topic,
             currentView,
             learning_stage: "explore",
+            model_context: getMathContext(curContext.module),
           },
           hint_level: 1,
           custom_ai: customAiConfig || undefined,
@@ -521,6 +526,11 @@ function MathStepMainContent() {
         };
         setChatMessages((prev) => [...prev, botReply]);
       } else {
+        if (imageDataUrl) {
+          const detail = await res.json().catch(() => null);
+          setChatError(detail?.detail?.message || "Chưa đọc được ảnh. Hãy thử lại hoặc kiểm tra cấu hình Gemini.");
+          return;
+        }
         // Offline / Socratic Fallback Engine
         const fallback = generateSmartSocraticResponse(textToSend, curContext.module, "explore", 1);
         setChatMessages((prev) => [
@@ -536,6 +546,7 @@ function MathStepMainContent() {
         ]);
       }
     } catch {
+      if (imageDataUrl) { setChatError("Không gửi được ảnh. Hãy kiểm tra kết nối và thử lại."); return; }
       const fallback = generateSmartSocraticResponse(textToSend, curContext.module, "explore", 1);
       setChatMessages((prev) => [
         ...prev,
@@ -1075,14 +1086,7 @@ function MathStepMainContent() {
 export default function Home() {
   return (
     <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs font-semibold text-slate-600">Đang khởi tạo MATHSTEP 3 Chuyên đề...</p>
-          </div>
-        </div>
-      }
+      fallback={<MathStepLoadingProgress />}
     >
       <MathStepMainContent />
     </Suspense>

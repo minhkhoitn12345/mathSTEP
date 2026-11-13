@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Canvas, ThreeEvent, useThree } from "@react-three/fiber";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Grid, Html, Line, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
+import { FirstThreeFrame, ThreeSceneLoadingOverlay } from "./ThreeSceneLoading";
 
 type Point = { name: string; x: number; y: number; z: number };
 type Segment = [string, string];
@@ -42,15 +43,19 @@ function parsePlaneEquation(input: string): [number, number, number, number] | n
 
 function CameraControls({ view }: { view: "perspective" | "top" | "front" | "side" }) {
   const { camera, controls } = useThree();
+  const transitionRef = useRef<{ from: THREE.Vector3; to: THREE.Vector3; started: number } | null>(null);
   useEffect(() => {
     const positions = { perspective: [6, 5, 6], top: [0, 9, 0.001], front: [0, 2, 9], side: [9, 2, 0] };
-    camera.position.set(...(positions[view] as [number, number, number]));
-    camera.lookAt(0, 0, 0);
-    if (controls && "target" in controls) {
-      (controls.target as THREE.Vector3).set(0, 0, 0);
-      (controls as unknown as { update: () => void }).update();
-    }
-  }, [camera, controls, view]);
+    transitionRef.current = { from: camera.position.clone(), to: new THREE.Vector3(...(positions[view] as [number, number, number])), started: performance.now() };
+  }, [camera, view]);
+  useFrame(() => {
+    const transition = transitionRef.current;
+    if (!transition) return;
+    const t = Math.min(1, (performance.now() - transition.started) / 500);
+    camera.position.copy(transition.from).lerp(transition.to, t * t * (3 - 2 * t));
+    if (controls && "target" in controls) { (controls.target as THREE.Vector3).set(0, 0, 0); (controls as unknown as { update: () => void }).update(); }
+    if (t >= 1) transitionRef.current = null;
+  });
   return <OrbitControls makeDefault enableDamping />;
 }
 
@@ -117,6 +122,8 @@ function SandboxScene({ points, segments, plane, addPoint, view }: {
 }
 
 export default function FreeGeometrySandbox() {
+  const [webglReady, setWebglReady] = useState(false);
+  const [frameReady, setFrameReady] = useState(false);
   const [points, setPoints] = useState<Point[]>(INITIAL_POINTS);
   const [segments, setSegments] = useState<Segment[]>([]);
   const [plane, setPlane] = useState<PlaneSpec | null>(null);
@@ -177,12 +184,14 @@ export default function FreeGeometrySandbox() {
   const buttonClass = "min-h-9 rounded-lg bg-emerald-700 px-3 text-sm font-semibold text-white hover:bg-emerald-800";
 
   return <section aria-label="Tự do dựng hình không gian" className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_290px]">
-    <div className="relative h-[420px] min-h-[55dvh] overflow-hidden rounded-2xl border border-slate-300 bg-slate-50 touch-none">
-      <Canvas camera={{ position: [6, 5, 6], fov: 48 }} dpr={[1, 1.5]}>
+    <div className="relative h-[420px] min-h-[55dvh] overflow-hidden rounded-2xl border border-slate-300 bg-slate-50 touch-none max-md:sticky max-md:top-0 max-md:z-20 max-md:h-[45dvh] max-md:min-h-0">
+      <Canvas camera={{ position: [6, 5, 6], fov: 48 }} dpr={[1, 1.5]} onCreated={() => setWebglReady(true)}>
+        <FirstThreeFrame onReady={() => setFrameReady(true)} />
         <SandboxScene points={points} segments={segments} plane={plane} addPoint={addPoint} view={view} />
       </Canvas>
+      <ThreeSceneLoadingOverlay webglReady={webglReady} frameReady={frameReady} />
       <div className="absolute left-3 top-3 rounded-lg bg-white/95 p-2 text-xs font-semibold text-slate-800 shadow-sm">Chạm mặt lưới để thêm điểm · X đỏ · Y xanh lục · Z xanh lam</div>
-      <div className="absolute bottom-3 left-3 flex flex-wrap gap-1 rounded-xl bg-white/95 p-1 shadow-sm">
+      <div className="absolute bottom-3 right-3 flex flex-wrap gap-1 rounded-xl bg-white/95 p-1 shadow-sm">
         {([ ["perspective", "3D"], ["top", "Trên"], ["front", "Trước"], ["side", "Bên"] ] as const).map(([value, label]) =>
           <button key={value} type="button" onClick={() => setView(value)} aria-pressed={view === value} className={`rounded-lg px-2.5 py-1.5 text-xs font-bold ${view === value ? "bg-emerald-700 text-white" : "text-slate-800 hover:bg-slate-100"}`}>{label}</button>)}
       </div>

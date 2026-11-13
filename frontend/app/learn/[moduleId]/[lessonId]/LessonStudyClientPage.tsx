@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Header, SessionData } from "@/app/components/optimath/Header";
 import { Footer } from "@/app/components/optimath/Footer";
@@ -12,38 +13,47 @@ import { KnowledgeBaseModal } from "@/app/components/optimath/KnowledgeBaseModal
 import AccountSettingsModal, { CustomAiConfig } from "@/app/components/AccountSettingsModal";
 import ChatHistoryModal from "@/app/components/ChatHistoryModal";
 import SocraticChatDrawer, { ChatMessage } from "@/app/components/SocraticChatDrawer";
+import { getMathContext } from "@/app/lib/mathModelContext";
 import { generateSmartSocraticResponse } from "@/app/lib/smartSocratic";
 import { CORE_3_MODULES } from "@/app/types/curriculum";
 import { getLessonDetailedContent } from "@/app/data/learningPathData";
-import { SpatialGeometryLab } from "@/app/components/spatial-geometry/SpatialGeometryLab";
+import { MathFormattedText } from "@/app/components/KatexMath";
+import GuidedLessonWorkspace from "@/app/components/learning-path/GuidedLessonWorkspace";
+import LessonSpatialViewport from "@/app/components/learning-path/LessonSpatialViewport";
 import { TrigonometryLab } from "@/app/components/trigonometry/TrigonometryLab";
+import CurriculumLessonWorkspace from "@/app/components/learning-path/CurriculumLessonWorkspace";
+import { getCurriculumLesson } from "@/app/data/lessons-registry";
 import {
   hasCompletedLessonTheory,
   loadUserLearningProgress,
   markLessonTheoryCompleted,
   markLessonCompleted,
   setLastActiveLesson,
+  getLessonFlowStage,
+  setLessonFlowStage,
+  type LessonFlowStage,
 } from "@/app/lib/learningProgressStorage";
 import { recordLessonCompletion } from "@/app/lib/leaderboardClient";
 import { useCloudLearningProgress } from "@/app/lib/useCloudLearningProgress";
 import { UserLearningProgress } from "@/app/types/learningPath";
 import {
   ArrowLeft,
-  Play,
   AlertTriangle,
-  Sparkles,
 } from "lucide-react";
+
+const SingleInequalityLab = dynamic(() => import("@/app/components/optimath/SingleInequalityLab").then((mod) => mod.SingleInequalityLab));
+const SystemInequalityLab = dynamic(() => import("@/app/components/optimath/SystemInequalityLab/SystemInequalityLab").then((mod) => mod.SystemInequalityLab));
+const OptimizationLab = dynamic(() => import("@/app/components/optimath/OptimizationLab/OptimizationLab").then((mod) => mod.OptimizationLab));
+const PracticeLab = dynamic(() => import("@/app/components/optimath/PracticeLab/PracticeLab").then((mod) => mod.PracticeLab));
 
 interface LessonStudyClientPageProps {
   moduleId: string;
   lessonId: string;
-  stage?: "theory" | "practice";
 }
 
 export default function LessonStudyClientPage({
   moduleId,
   lessonId,
-  stage = "theory",
 }: LessonStudyClientPageProps) {
   const router = useRouter();
 
@@ -51,45 +61,37 @@ export default function LessonStudyClientPage({
   const lessonContent = useMemo(() => {
     return getLessonDetailedContent(lessonId);
   }, [lessonId]);
+  const curriculumLesson = useMemo(() => getCurriculumLesson(lessonId), [lessonId]);
 
   const parentModule = useMemo(() => {
     return CORE_3_MODULES.find((m) => m.id === moduleId);
   }, [moduleId]);
 
   // Check if valid match
-  const isValidLesson = Boolean(
-    lessonContent && parentModule && lessonContent.moduleId === moduleId
-  );
+  const curriculumModuleMatches = curriculumLesson?.moduleId === "CD02"
+    ? moduleId === "spatial_geometry"
+    : curriculumLesson?.moduleId === "CD03" && moduleId === "trigonometry";
+  const isValidLesson = Boolean(parentModule && (
+    (lessonContent && lessonContent.moduleId === moduleId) || (curriculumLesson && curriculumModuleMatches)
+  ));
 
   // 2. User Learning Progress
   const [userProgress, setUserProgress] = useState<UserLearningProgress>(() =>
     loadUserLearningProgress()
   );
   const [practiceAccessLessonId, setPracticeAccessLessonId] = useState<string | null>(null);
-  const [simulationOpen, setSimulationOpen] = useState(false);
+  const [activeStage, setActiveStage] = useState<"theory" | "practice">("theory");
+  const [lessonFlowStage, setLessonFlowStageState] = useState<LessonFlowStage>("simulation");
+  const [ratioN, setRatioN] = useState(2 / 3);
 
   useEffect(() => {
-    if (!simulationOpen) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSimulationOpen(false);
-    };
-    window.addEventListener("keydown", handleEscape);
-    return () => {
-      window.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [simulationOpen]);
-
-  useEffect(() => {
-    if (stage !== "practice" || !isValidLesson) return;
-    if (!hasCompletedLessonTheory(lessonId)) {
-      router.replace(`/learn/${moduleId}/${lessonId}`);
-      return;
-    }
-    setPracticeAccessLessonId(lessonId);
-  }, [isValidLesson, lessonId, moduleId, router, stage]);
+    if (!isValidLesson) return;
+    const theoryCompleted = hasCompletedLessonTheory(lessonId);
+    setPracticeAccessLessonId(theoryCompleted ? lessonId : null);
+    setActiveStage(theoryCompleted ? "practice" : "theory");
+    setLessonFlowStageState(getLessonFlowStage(lessonId));
+    setRatioN(2 / 3);
+  }, [isValidLesson, lessonId]);
 
   // Sync active lesson on mount
   useEffect(() => {
@@ -200,17 +202,21 @@ export default function LessonStudyClientPage({
 
   // Open simulation lab handler
   const handleOpenSimulation = (modId: string, lId: string) => {
-    if (modId === moduleId && lId === lessonId && (modId === "spatial_geometry" || modId === "trigonometry")) {
-      setSimulationOpen(true);
+    if (modId === moduleId && lId === lessonId) {
+      handleLessonFlowStageChange("simulation");
       return;
     }
-    const lessonUrl = stage === "practice" ? `/learn/${modId}/${lId}/practice` : `/learn/${modId}/${lId}`;
-    router.push(`/?view=${modId}&lesson=${lId}&returnTo=${encodeURIComponent(lessonUrl)}`);
+    router.push(`/learn/${modId}/${lId}`);
+  };
+
+  const handleLessonFlowStageChange = (stage: LessonFlowStage) => {
+    setLessonFlowStage(lessonId, stage);
+    setLessonFlowStageState(stage);
   };
 
   // Chat message send handler
-  const handleSendMessage = async (customMessage?: string) => {
-    const text = (customMessage || chatInput).trim();
+  const handleSendMessage = async (customMessage?: string, imageDataUrl?: string) => {
+    const text = (customMessage?.trim() || chatInput.trim() || (imageDataUrl ? "Hãy đọc đề trong ảnh và gợi ý bước đầu." : ""));
     if (!text || chatBusy) return;
 
     const userMsg: ChatMessage = {
@@ -231,9 +237,13 @@ export default function LessonStudyClientPage({
         body: JSON.stringify({
           conversation_id: conversationId || `opti-${lessonId}`,
           message: text,
+          image_data_url: imageDataUrl,
           learning_context: {
             module: moduleId,
             lesson_id: lessonId,
+            model_context: moduleId === "spatial_geometry" && lessonId === "sg-lesson-2"
+              ? { moduleName: moduleId, modelTitle: "Hình chóp S.ABCD · trung điểm M và điểm chia N", parameters: { ratioN, ratioSNB: ratioN / (1 - ratioN) }, keyProperties: ["M là trung điểm SA", "N thuộc SB và SN:NB được điều chỉnh bằng thanh trượt"] }
+              : getMathContext(moduleId),
           },
           custom_ai: customAiConfig || undefined,
           history: chatMessages.slice(-6).map((m) => ({
@@ -247,6 +257,7 @@ export default function LessonStudyClientPage({
         const data = await res.json();
         const fallbackAnswer = generateSmartSocraticResponse(text, moduleId, lessonId).answer;
         const reply =
+          data.answer ||
           data.reply ||
           data.content ||
           data.message ||
@@ -258,6 +269,7 @@ export default function LessonStudyClientPage({
         };
         setChatMessages((prev) => [...prev, botMsg]);
       } else {
+        if (imageDataUrl) { const detail = await res.json().catch(() => null); setChatError(detail?.detail?.message || "Chưa đọc được ảnh. Hãy thử lại."); return; }
         const fallback = generateSmartSocraticResponse(text, moduleId, lessonId).answer;
         setChatMessages((prev) => [
           ...prev,
@@ -269,6 +281,7 @@ export default function LessonStudyClientPage({
         ]);
       }
     } catch {
+      if (imageDataUrl) { setChatError("Không gửi được ảnh. Hãy kiểm tra kết nối và thử lại."); return; }
       const fallback = generateSmartSocraticResponse(text, moduleId, lessonId).answer;
       setChatMessages((prev) => [
         ...prev,
@@ -284,7 +297,7 @@ export default function LessonStudyClientPage({
   };
 
   // If lesson is invalid (404 state)
-  if (!isValidLesson || !lessonContent) {
+  if (!isValidLesson || (!lessonContent && !curriculumLesson)) {
     return (
       <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800">
         <Header
@@ -353,13 +366,55 @@ export default function LessonStudyClientPage({
     );
   }
 
+  if (curriculumLesson && curriculumModuleMatches) {
+    return <CurriculumLessonWorkspace
+      lesson={curriculumLesson}
+      messages={chatMessages}
+      input={chatInput}
+      onInputChange={setChatInput}
+      onSendMessage={(message) => { void handleSendMessage(message); }}
+      busy={chatBusy}
+      error={chatError}
+      onComplete={() => handleCompleteAndNext(lessonId, 100, curriculumLesson.xp)}
+    />;
+  }
+
+  if (!lessonContent) return null;
+
   // Normal Study Screen Render
   const isCompleted = userProgress.completedLessonIds.includes(lessonId);
+  const closeSimulation = () => undefined;
+  const simulationPanel = lessonContent ? (
+    lessonContent.simulationRef.simulationType === "spatial_geometry" ? <LessonSpatialViewport ratio={ratioN} /> : <div id="lesson-simulation" className="h-full min-h-0 bg-slate-50">
+      <div className="h-full min-h-0 overflow-hidden overscroll-contain">
+        {lessonContent.simulationRef.simulationType === "single_inequality" ? <SingleInequalityLab embedded backLabel="Bài học" onBackToHome={closeSimulation} />
+          : lessonContent.simulationRef.simulationType === "system_inequality" ? <SystemInequalityLab embedded backLabel="Bài học" onBackToHome={closeSimulation} />
+          : lessonContent.simulationRef.simulationType === "optimization" ? <OptimizationLab embedded backLabel="Bài học" onBackToHome={closeSimulation} />
+          : lessonContent.simulationRef.simulationType === "practice" ? <PracticeLab backLabel="bài học" canAccessTeacherDashboard={canAccessTeacherDashboard} onBackToHome={closeSimulation} />
+          : <TrigonometryLab embedded initialLessonIndex={Math.max(0, lessonContent.order - 1)} onBackToHome={closeSimulation} onOpenSocraticDrawer={(context) => { closeSimulation(); setChatDrawerOpen(true); if (context) setChatInput(context); }} />}
+      </div>
+    </div>
+  ) : null;
+
+  const guidedWorkspace = <GuidedLessonWorkspace
+    content={lessonContent}
+    panel={simulationPanel}
+    stage={lessonFlowStage}
+    onAdvance={() => handleLessonFlowStageChange("questions")}
+    messages={chatMessages}
+    input={chatInput}
+    onInputChange={setChatInput}
+    onSendMessage={(message) => { void handleSendMessage(message); }}
+    busy={chatBusy}
+    error={chatError}
+    ratio={ratioN}
+    onRatioChange={setRatioN}
+  />;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 font-sans text-slate-800">
+    <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-slate-800">
       {/* 1. Header with Full Auth & Tools */}
-      <Header
+      {activeStage !== "practice" && <Header
         currentModule={moduleId}
         onSelectModule={(mod) => {
           if (mod === "home") router.push("/");
@@ -370,8 +425,8 @@ export default function LessonStudyClientPage({
         onOpenTeacherGuide={() => {
           if (canAccessTeacherDashboard) setIsTeacherModalOpen(true);
         }}
-        onToggleChatDrawer={() => setChatDrawerOpen((prev) => !prev)}
-        chatDrawerOpen={chatDrawerOpen}
+        onToggleChatDrawer={activeStage === "theory" ? () => setChatDrawerOpen((prev) => !prev) : undefined}
+        chatDrawerOpen={activeStage === "theory" && chatDrawerOpen}
         session={session}
         sessionLoading={sessionLoading}
         onOpenAccountModal={(tab) => {
@@ -388,15 +443,15 @@ export default function LessonStudyClientPage({
             // ignore
           }
         }}
-      />
+      />}
 
       {/* 2. Top Breadcrumb & Quick Actions Bar */}
-      <div className="bg-white border-b border-slate-200 sticky top-14 z-20 px-3 sm:px-6 py-2.5 shadow-2xs">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className={`${activeStage === "practice" ? "hidden " : ""}bg-white border-b border-slate-200 sticky top-14 z-20 px-3 sm:px-6 py-2.5 shadow-2xs`}>
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-0 text-xs">
           {/* Breadcrumb path */}
           <div className="flex items-center gap-2 min-w-0">
             <Link
-              href="/"
+              href="/learn"
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-colors cursor-pointer shrink-0"
               title="Quay lại mục lục bài học"
             >
@@ -420,48 +475,32 @@ export default function LessonStudyClientPage({
 
             <span className="text-slate-300 hidden sm:inline">/</span>
 
-            <span className="font-extrabold text-slate-900 truncate hidden sm:inline">
-              {lessonContent.code}: {lessonContent.title}
+            <span className="hidden min-w-0 truncate font-extrabold text-slate-900 sm:inline">
+              <MathFormattedText text={`${lessonContent.code}: ${lessonContent.title}`} />
             </span>
           </div>
 
-          {/* Quick Simulation Link & Socratic AI Button */}
-          <div className="flex items-center gap-2 shrink-0">
-            {stage === "practice" && (
-            <button
-              type="button"
-              onClick={() => handleOpenSimulation(moduleId, lessonId)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 font-bold transition-all border border-slate-200/80 cursor-pointer shadow-2xs"
-              title="Mở phòng thí nghiệm mô phỏng cho bài học này"
-            >
-              <Play className="w-3 h-3 fill-current text-blue-600" />
-              <span className="hidden xs:inline">Mở</span>
-              <span>Mô phỏng</span>
-            </button>
-            )}
-
-            <button
-              type="button"
-              onClick={() => setChatDrawerOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold transition-all shadow-xs cursor-pointer"
-              title="Hỏi trợ lý Toán MathSTEP"
-            >
-              <Sparkles className="w-3 h-3" />
-              <span>Hỏi MathSTEP</span>
-            </button>
-          </div>
+          {activeStage === "practice" && <nav aria-label="Tiến trình bài học" className="flex shrink-0 gap-1 rounded-xl bg-slate-100 p-1">
+            {[
+              { key: "simulation" as const, label: "1. Mô phỏng", available: true, active: lessonFlowStage === "simulation" || lessonFlowStage === "simulation_opened", done: lessonFlowStage === "questions" || lessonFlowStage === "test" },
+              { key: "questions" as const, label: "2. Câu hỏi gợi mở", available: lessonFlowStage === "questions" || lessonFlowStage === "test", active: lessonFlowStage === "questions", done: lessonFlowStage === "test" },
+              { key: "test" as const, label: "3. Bài kiểm tra", available: lessonFlowStage === "test", active: lessonFlowStage === "test", done: false },
+            ].map((step) => <button key={step.key} type="button" disabled={!step.available} onClick={() => handleLessonFlowStageChange(step.key)} aria-current={step.active ? "step" : undefined} className={`min-h-9 rounded-lg px-2.5 text-[10px] font-bold transition sm:px-3 sm:text-xs ${step.active ? "bg-white text-teal-800 shadow-sm" : step.done ? "text-emerald-700" : "text-slate-500"} disabled:cursor-not-allowed disabled:opacity-45`}>{step.label}{step.done ? " ✓" : ""}</button>)}
+          </nav>}
         </div>
       </div>
 
       {/* Stage 1 is theory only; stage 2 is guided procedure and practice. */}
-      <main className="flex-1 py-4 sm:py-6">
-        {stage === "theory" ? (
+      <main className={activeStage === "practice" ? "h-dvh min-h-0 flex-1 overflow-hidden" : "flex-1 py-4 sm:py-6"}>
+        {activeStage === "theory" ? (
           <LessonTheoryScreen
             key={`theory-${lessonId}`}
             content={lessonContent}
             onStartGuidedPractice={() => {
               markLessonTheoryCompleted(lessonId);
-              router.push(`/learn/${moduleId}/${lessonId}/practice`);
+              setPracticeAccessLessonId(lessonId);
+              setActiveStage("practice");
+              window.scrollTo({ top: 0, behavior: "smooth" });
             }}
           />
         ) : practiceAccessLessonId !== lessonId ? (
@@ -472,44 +511,28 @@ export default function LessonStudyClientPage({
           <LessonStudyScreen
             key={`practice-${lessonId}`}
             content={lessonContent}
-            onBackToTheory={() => router.push(`/learn/${moduleId}/${lessonId}`)}
+            onBackToTheory={() => { setActiveStage("theory"); closeSimulation(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
             onRewardLesson={handleRewardLesson}
             onCompleteAndNext={handleCompleteAndNext}
             onOpenSimulation={handleOpenSimulation}
+            simulationPanel={guidedWorkspace}
+            onSimulationComplete={closeSimulation}
+            embeddedInLesson
             isCompleted={isCompleted}
+            lessonFlowStage={lessonFlowStage}
+            onLessonFlowStageChange={handleLessonFlowStageChange}
+            workspaceMessages={chatMessages}
+            workspaceInput={chatInput}
+            onWorkspaceInputChange={setChatInput}
+            onWorkspaceSend={(message) => { void handleSendMessage(message); }}
+            workspaceBusy={chatBusy}
+            workspaceError={chatError}
           />
         )}
       </main>
 
-      {simulationOpen && lessonContent && (
-        <div className="fixed inset-0 z-[70] bg-slate-950/75" role="dialog" aria-modal="true" aria-label={`Mô phỏng bài ${lessonContent.title}`}>
-          <section className="flex h-full w-full flex-col overflow-hidden bg-slate-50">
-            <header className="z-10 flex shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
-              <button type="button" onClick={() => setSimulationOpen(false)} className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-100" aria-label="Quay lại bài học">
-                <ArrowLeft className="h-4 w-4" /> <span className="hidden sm:inline">Quay lại bài học</span><span className="sm:hidden">Quay lại</span>
-              </button>
-              <div className="min-w-0">
-                <p className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700">Mô phỏng gắn với bài học · {lessonContent.code}</p>
-                <h2 className="truncate text-sm font-black text-slate-900 sm:text-base">{lessonContent.title}</h2>
-                <p className="hidden truncate text-xs text-slate-500 sm:block">Hãy thao tác trên hình để kiểm chứng ý tưởng, rồi quay lại tiếp tục bước giải đang học.</p>
-              </div>
-              <button type="button" onClick={() => { setSimulationOpen(false); setChatDrawerOpen(true); }} className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-purple-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-purple-700">
-                <Sparkles className="h-3.5 w-3.5" /><span className="hidden sm:inline">Hỏi MathSTEP</span>
-              </button>
-            </header>
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              {moduleId === "spatial_geometry" ? (
-                <SpatialGeometryLab embedded initialLessonIndex={Math.max(0, (lessonContent.order || 1) - 1)} customAiConfig={customAiConfig} onBackToHome={() => setSimulationOpen(false)} onOpenSocraticDrawer={(context) => { setSimulationOpen(false); setChatDrawerOpen(true); if (context) setChatInput(context); }} />
-              ) : moduleId === "trigonometry" ? (
-                <TrigonometryLab embedded initialLessonIndex={Math.max(0, (lessonContent.order || 1) - 1)} onBackToHome={() => setSimulationOpen(false)} onOpenSocraticDrawer={(context) => { setSimulationOpen(false); setChatDrawerOpen(true); if (context) setChatInput(context); }} />
-              ) : null}
-            </div>
-          </section>
-        </div>
-      )}
-
       {/* 4. Socratic Chat Drawer */}
-      <SocraticChatDrawer
+      {activeStage === "theory" && <SocraticChatDrawer
         isOpen={chatDrawerOpen}
         onClose={() => setChatDrawerOpen(false)}
         messages={chatMessages}
@@ -520,7 +543,7 @@ export default function LessonStudyClientPage({
         error={chatError}
         moduleTitle={`${parentModule?.shortTitle || ""}: ${lessonContent.code}`}
         stationId={lessonId}
-      />
+      />}
 
       {/* 5. Modals */}
       <TeacherGuideModal
@@ -563,7 +586,7 @@ export default function LessonStudyClientPage({
       />
 
       {/* 6. Footer */}
-      <Footer />
+      {activeStage === "theory" && <Footer />}
     </div>
   );
 }

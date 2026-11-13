@@ -10,6 +10,8 @@ import {
 import KatexMath from "../KatexMath";
 import DandelinConic3D from "./DandelinConic3D";
 import { useDynamicMathStore } from "./useDynamicMathStore";
+import { useMathContext } from "../../lib/mathModelContext";
+import { formatRadianToPi, snapToMilestone } from "../../lib/mathDisplay";
 
 type ConicSubTab = "coneCut" | "unfolding3d" | "dandelin";
 type ConicCode = "circle" | "ellipse" | "parabola" | "hyperbola";
@@ -25,11 +27,21 @@ const formatPlain = (value: number) => value.toFixed(2).replace(".", ",");
 export default function DynamicConicsLab() {
   const { params, setParamVal } = useDynamicMathStore();
 
-  const [activeTab, setActiveTab] = useState<ConicSubTab>("coneCut");
+  const [activeTab, setActiveTab] = useState<ConicSubTab>("dandelin");
   const [challenge, setChallenge] = useState<ConicCode>("parabola");
   const [completedChallenges, setCompletedChallenges] = useState<ConicCode[]>([]);
   const [challengeFeedback, setChallengeFeedback] = useState<"correct" | "retry" | null>(null);
+  const [formulaAnswer, setFormulaAnswer] = useState<"correct" | "retry" | null>(null);
   const [shareUrl, setShareUrl] = useState("");
+  const [tracePlaying, setTracePlaying] = useState(false);
+  useEffect(() => {
+    if (!tracePlaying) return;
+    const timer = window.setInterval(() => {
+      const current = useDynamicMathStore.getState().params.ellipseTheta?.val ?? 0;
+      setParamVal("ellipseTheta", (current + 3) % 360);
+    }, 45);
+    return () => window.clearInterval(timer);
+  }, [tracePlaying, setParamVal]);
 
   useEffect(() => {
     try {
@@ -66,6 +78,10 @@ export default function DynamicConicsLab() {
     if (coneBeta === coneAlpha) return { name: "Đường Parabol (Parabola)", ecc: 1.0, code: "parabola" };
     return { name: "Đường Hypebol 2 nhánh (Hyperbola)", ecc: 1.45, code: "hyperbola" };
   }, [coneBeta, coneAlpha]);
+  useEffect(() => {
+    useMathContext.getState().setCurrent({ moduleName: "conics_and_solids", modelTitle: "Thiết diện nón và mặt cầu Dandelin", parameters: { coneBeta, coneAlpha, ellipseTheta, conicType: conicType.code }, keyProperties: ["β là góc giữa mặt phẳng cắt và trục nón", "α là góc nửa đỉnh nón", "β = α cho parabol; β > α cho elip nếu β < 90°"] });
+  }, [coneBeta, coneAlpha, ellipseTheta, conicType.code]);
+  useEffect(() => () => useMathContext.getState().clear("conics_and_solids"), []);
   useEffect(() => setChallengeFeedback(null), [coneBeta, coneAlpha]);
   const showClassification = challengeFeedback === "correct" && conicType.code === challenge;
 
@@ -111,8 +127,19 @@ export default function DynamicConicsLab() {
   // Point M on 2D Ellipse
   const radTheta = (ellipseTheta * Math.PI) / 180;
   const a = 4.0;
-  const b = 2.67;
-  const c = Math.sqrt(Math.max(0, a * a - b * b)); // ~2.98
+  const eccentricity = coneBeta === 90 ? 0 : Math.cos(coneBeta * Math.PI / 180) / Math.cos(coneAlpha * Math.PI / 180);
+  const b = a * Math.sqrt(Math.max(0, 1 - eccentricity * eccentricity));
+  const c = a * eccentricity;
+  const hyperbolaB = a * Math.sqrt(Math.max(0, eccentricity * eccentricity - 1));
+  const parabolaP = 1.5 + coneAlpha / 90;
+  const hyperbolaPath = (sign: number) => Array.from({ length: 81 }, (_, index) => {
+    const t = -1.3 + index * 2.6 / 80;
+    return `${index ? "L" : "M"}${130 + sign * 13 * a * Math.cosh(t)},${80 - 13 * hyperbolaB * Math.sinh(t)}`;
+  }).join(" ");
+  const parabolaPath = Array.from({ length: 81 }, (_, index) => {
+    const x = -3.5 + index * 7 / 80;
+    return `${index ? "L" : "M"}${130 + 19 * x},${80 - 19 * x * x / (4 * parabolaP)}`;
+  }).join(" ");
   const mX = a * Math.cos(radTheta);
   const mY = b * Math.sin(radTheta);
   const d1 = Math.hypot(mX - (-c), mY - 0);
@@ -129,7 +156,7 @@ export default function DynamicConicsLab() {
         <div className="w-full flex items-center justify-between pb-2 mb-2 border-b border-slate-100 text-xs">
           <div className="flex items-center gap-2">
             <span className="font-bold text-slate-800">
-              {activeTab === "coneCut"
+              {activeTab !== "unfolding3d"
                 ? `Mặt phẳng cắt mặt nón tròn xoay (β = ${coneBeta}°, α = ${coneAlpha}°)`
                 : `Sơ đồ khai triển hình chóp (Độ gập: ${foldPercent}%)`}
             </span>
@@ -165,7 +192,7 @@ export default function DynamicConicsLab() {
 
         {/* 1. KHUNG 3D MẶT NÓN CẮT CONIC */}
         {activeTab === "dandelin" ? (
-          <DandelinConic3D />
+          <DandelinConic3D beta={coneAlpha} alpha={coneBeta} onBetaChange={(value) => setParamVal("coneAlpha", value)} onAlphaChange={(value) => setParamVal("coneBeta", value)} />
         ) : activeTab === "coneCut" ? (
           <div className="relative w-full overflow-hidden rounded-xl border border-slate-200 bg-[#fbfdfc] flex justify-center p-2">
             <svg viewBox="0 0 460 340" className="w-full max-w-[460px] h-auto select-none">
@@ -302,7 +329,7 @@ export default function DynamicConicsLab() {
 
         {/* Thanh trượt tham số góc beta hoặc độ gập foldPercent */}
         <div className="w-full mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
-          {activeTab === "coneCut" ? (
+          {activeTab !== "unfolding3d" ? (
             <>
               <div className="flex justify-between items-center text-xs">
                 <span className="font-bold text-slate-700 flex items-center gap-1.5">
@@ -310,7 +337,7 @@ export default function DynamicConicsLab() {
                   <span>Góc nghiêng mặt phẳng cắt (β):</span>
                 </span>
                 <span className="font-mono text-xs font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded border border-rose-300">
-                  β = {coneBeta}°
+                  β = {coneBeta}° · <KatexMath math={formatRadianToPi(coneBeta * Math.PI / 180)} />
                 </span>
               </div>
               <input
@@ -320,7 +347,7 @@ export default function DynamicConicsLab() {
                 max={90}
                 step={1}
                 value={coneBeta}
-                onChange={(e) => setParamVal("coneBeta", parseInt(e.target.value))}
+                onChange={(e) => setParamVal("coneBeta", snapToMilestone(parseInt(e.target.value), [0, 30, 45, 60, 90, coneAlpha], 2))}
                 className="w-full accent-rose-600 cursor-pointer h-2 bg-slate-200 rounded-lg appearance-none"
               />
               <div className="flex justify-between text-[10px] text-slate-400 font-mono">
@@ -368,7 +395,11 @@ export default function DynamicConicsLab() {
             </>
           )}
         </div>
-        {activeTab === "coneCut" && <div className="w-full mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs space-y-2">
+        {activeTab !== "unfolding3d" && <div aria-live="polite" className="mt-2 rounded-xl border border-teal-200 bg-teal-50 px-3 py-2.5 text-xs text-teal-950">
+          <strong>Quan sát hình học · {conicType.name}</strong>
+          <p className="mt-1">{coneBeta === coneAlpha ? "β = α nên mặt phẳng song song với đường sinh; thiết diện là parabol." : coneBeta === 90 ? "β = 90° nên mặt phẳng vuông góc với trục nón; thiết diện là đường tròn." : coneBeta > coneAlpha ? "β > α nên mặt phẳng cắt một phía của nón; thiết diện là elip." : "β < α nên mặt phẳng cắt cả hai nhánh của nón; thiết diện là hypebol."}</p>
+        </div>}
+        {activeTab !== "unfolding3d" && <div className="w-full mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs space-y-2">
           <div className="flex items-center justify-between gap-2">
             <strong className="text-emerald-950">Nhiệm vụ: tạo thiết diện bằng cách chỉnh β</strong>
             <span className="text-emerald-800 font-semibold">{completedChallenges.length}/4 hoàn thành</span>
@@ -388,6 +419,7 @@ export default function DynamicConicsLab() {
             </span>
           </div>
           {shareUrl && <input aria-label="Liên kết chia sẻ góc cắt" readOnly value={shareUrl} onFocus={(event) => event.currentTarget.select()} className="w-full rounded-lg border border-emerald-300 bg-white px-2 py-1.5 text-[10px] text-emerald-950" />}
+          <div className="border-t border-emerald-200 pt-2"><strong>Thử thách nhanh · Câu 2:</strong> Khi β = α, thiết diện nào xuất hiện?<div className="mt-1 flex flex-wrap gap-1">{[{ label: "Parabol", correct: true }, { label: "Elip", correct: false }, { label: "Hypebol", correct: false }].map((answer) => <button key={answer.label} type="button" onClick={() => { setFormulaAnswer(answer.correct ? "correct" : "retry"); if (!answer.correct) setParamVal("coneBeta", coneAlpha); }} className="rounded-lg border border-emerald-300 bg-white px-3 py-2">{answer.label}</button>)}</div>{formulaAnswer && <p role="status" className="mt-1">{formulaAnswer === "correct" ? "Chính xác! Khi hai góc bằng nhau, mặt phẳng song song với đường sinh." : "Chưa đúng. Mô hình đã đặt β = α để em quan sát mặt phẳng song song với đường sinh."} <KatexMath math="\\beta=\\alpha\\Rightarrow e=1" /></p>}</div>
         </div>}
       </div>
 
@@ -396,7 +428,7 @@ export default function DynamicConicsLab() {
         {/* Khung 2D đồng bộ đường Conic */}
         <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
           <span className="text-xs font-bold text-slate-800 block">
-            Hình chiếu của thiết diện {showClassification ? `— ${conicType.name}` : "— em hãy dự đoán tên đường"}
+            Hình chiếu của thiết diện — {conicType.name}
           </span>
 
           <div className="relative w-full h-44 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden flex items-center justify-center p-2">
@@ -411,32 +443,36 @@ export default function DynamicConicsLab() {
                 <text x="137" y="76" fontSize="10" fill="#1d4ed8" fontWeight="bold">O</text>
               </>}
               {conicType.code === "parabola" && <>
-                <line x1="20" y1="45" x2="240" y2="45" stroke="#7c3aed" strokeWidth="1.5" strokeDasharray="4 4" />
-                <text x="21" y="40" fontSize="9" fill="#7c3aed" fontWeight="bold">Đường chuẩn</text>
-                <path d="M55 154 Q130 -34 205 154" fill="none" stroke="#0f766e" strokeWidth="2.5" />
-                <circle cx="130" cy="75" r="3.5" fill="#2563eb" />
-                <text x="137" y="77" fontSize="10" fill="#2563eb" fontWeight="bold">F</text>
+                <line x1="20" y1={80 + 19 * parabolaP} x2="240" y2={80 + 19 * parabolaP} stroke="#7c3aed" strokeWidth="1.5" strokeDasharray="4 4" />
+                <text x="21" y={75 + 19 * parabolaP} fontSize="9" fill="#7c3aed" fontWeight="bold">Đường chuẩn</text>
+                <path d={parabolaPath} fill="none" stroke="#0f766e" strokeWidth="2.5" />
+                <circle cx="130" cy={80 - 19 * parabolaP} r="3.5" fill="#2563eb" />
+                <text x="137" y={80 - 19 * parabolaP} fontSize="10" fill="#2563eb" fontWeight="bold">F</text>
+                <circle cx="130" cy="80" r="3" fill="#0f766e" /><text x="137" y="92" fontSize="9" fill="#0f766e">V</text>
               </>}
               {conicType.code === "hyperbola" && <>
-                <path d="M28 14 C96 42 96 118 28 146 M232 14 C164 42 164 118 232 146" fill="none" stroke="#0f766e" strokeWidth="2.5" />
-                <circle cx="52" cy="80" r="3.5" fill="#2563eb" />
-                <text x="39" y="95" fontSize="9" fill="#2563eb" fontWeight="bold">F₁</text>
-                <circle cx="208" cy="80" r="3.5" fill="#2563eb" />
-                <text x="203" y="95" fontSize="9" fill="#2563eb" fontWeight="bold">F₂</text>
+                <path d={`${hyperbolaPath(-1)} ${hyperbolaPath(1)}`} fill="none" stroke="#0f766e" strokeWidth="2.5" />
+                <circle cx={130 - 13 * c} cy="80" r="3.5" fill="#2563eb" />
+                <text x={124 - 13 * c} y="95" fontSize="9" fill="#2563eb" fontWeight="bold">F₁</text>
+                <circle cx={130 + 13 * c} cy="80" r="3.5" fill="#2563eb" />
+                <text x={126 + 13 * c} y="95" fontSize="9" fill="#2563eb" fontWeight="bold">F₂</text>
+                <circle cx={130 - 13 * a} cy="80" r="3" fill="#0f766e" /><circle cx={130 + 13 * a} cy="80" r="3" fill="#0f766e" />
               </>}
               {conicType.code === "ellipse" && <>
-                <ellipse cx="130" cy="80" rx="90" ry="60" fill="#ccfbf1" fillOpacity="0.4" stroke="#0f766e" strokeWidth="2" />
-                <circle cx={130 - 67} cy="80" r="3.5" fill="#2563eb" />
-                <text x={130 - 73} y="95" fontSize="9" fill="#2563eb" fontWeight="bold">F₁</text>
-                <circle cx={130 + 67} cy="80" r="3.5" fill="#2563eb" />
-                <text x={130 + 63} y="95" fontSize="9" fill="#2563eb" fontWeight="bold">F₂</text>
+                <ellipse cx="130" cy="80" rx="90" ry={90 * b / a} fill="#ccfbf1" fillOpacity="0.4" stroke="#0f766e" strokeWidth="2" />
+                <circle cx="40" cy="80" r="3" fill="#0f766e" /><text x="28" y="72" fontSize="9" fill="#0f766e">A₁</text><circle cx="220" cy="80" r="3" fill="#0f766e" /><text x="222" y="72" fontSize="9" fill="#0f766e">A₂</text>
+                <circle cx={130 - 90 * c / a} cy="80" r="3.5" fill="#2563eb" />
+                <text x={124 - 90 * c / a} y="95" fontSize="9" fill="#2563eb" fontWeight="bold">F₁</text>
+                <circle cx={130 + 90 * c / a} cy="80" r="3.5" fill="#2563eb" />
+                <text x={126 + 90 * c / a} y="95" fontSize="9" fill="#2563eb" fontWeight="bold">F₂</text>
                 {(() => {
                 const mx = 130 + 90 * Math.cos(radTheta);
-                const my = 80 - 60 * Math.sin(radTheta);
+                const my = 80 - 90 * b / a * Math.sin(radTheta);
                 return (
                   <g>
-                    <line x1={130 - 67} y1="80" x2={mx} y2={my} stroke="#dc2626" strokeWidth="1.2" strokeDasharray="2 2" />
-                    <line x1={130 + 67} y1="80" x2={mx} y2={my} stroke="#dc2626" strokeWidth="1.2" strokeDasharray="2 2" />
+                    <line x1={130 - 90 * c / a} y1="80" x2={mx} y2={my} stroke="#dc2626" strokeWidth="1.2" strokeDasharray="2 2" />
+                    <line x1={130 + 90 * c / a} y1="80" x2={mx} y2={my} stroke="#dc2626" strokeWidth="1.2" strokeDasharray="2 2" />
+                    <path d={Array.from({ length: Math.floor(ellipseTheta / 3) + 1 }, (_, index) => { const t = index * 3 * Math.PI / 180; return `${index ? "L" : "M"}${130 + 90 * Math.cos(t)},${80 - 90 * b / a * Math.sin(t)}`; }).join(" ")} fill="none" stroke="#f97316" strokeWidth="2" opacity="0.75" />
                     <circle cx={mx} cy={my} r="4.5" fill="#dc2626" />
                     <text x={mx + 6} y={my - 4} fontSize="9" fill="#dc2626" fontWeight="bold">
                       M
@@ -447,6 +483,7 @@ export default function DynamicConicsLab() {
               </>}
             </svg>
           </div>
+          <div className="text-[11px] text-slate-700"><KatexMath math={conicType.code === "ellipse" || conicType.code === "hyperbola" ? `F_1(-${formatPlain(c)};0),\\quad F_2(${formatPlain(c)};0),\\quad A_1(-4;0),\\ A_2(4;0)` : conicType.code === "parabola" ? `V(0;0),\\quad F(0;${formatPlain(parabolaP)})` : `O(0;0),\\quad R=4`} /></div>
 
           {/* Đẳng thức định nghĩa MF1 + MF2 = 2a */}
           {conicType.code === "ellipse" && <div className="p-2.5 bg-rose-50/70 border border-rose-200 rounded-xl text-xs text-rose-900 space-y-1">
@@ -455,6 +492,7 @@ export default function DynamicConicsLab() {
               MF₁ + MF₂ = {formatPlain(d1)} + {formatPlain(d2)} ≈ <strong>{formatPlain(2 * a)}</strong> (Không đổi = 2a)
             </p>
           </div>}
+          {conicType.code === "ellipse" && <div className="flex items-center gap-2 text-xs"><button type="button" onClick={() => setTracePlaying((playing) => !playing)} className="rounded-lg bg-emerald-700 px-3 py-2 font-semibold text-white">{tracePlaying ? "Tạm dừng M" : "Cho M chạy trên elip"}</button><input type="range" aria-label="Vị trí điểm M" min={0} max={359} value={ellipseTheta} onChange={(event) => setParamVal("ellipseTheta", snapToMilestone(Number(event.target.value), [0, 30, 45, 60, 90, 120, 180, 270], 3))} className="min-w-0 flex-1 accent-emerald-700" /></div>}
         </div>
 
         {/* Phân loại Conic theo góc nghiêng beta */}
@@ -467,16 +505,16 @@ export default function DynamicConicsLab() {
         </details>
         <div className="rounded-2xl border border-slate-200 bg-white p-3.5 text-xs text-slate-700 shadow-sm">
           <strong className="text-slate-900">Công thức liên hệ với hình chiếu</strong>
-          {showClassification ? <>
+          <>
             <KatexMath display math={{
-              circle: "x^2+y^2=R^2",
-              ellipse: "\\frac{x^2}{16}+\\frac{y^2}{7{,}1289}=1",
-              parabola: "x^2=4py,\\quad p>0",
-              hyperbola: "\\frac{x^2}{a^2}-\\frac{y^2}{b^2}=1",
+              circle: `x^2+y^2=${formatPlain(a * a)}`,
+              ellipse: `\\frac{x^2}{${formatPlain(a * a)}}+\\frac{y^2}{${formatPlain(b * b)}}=1`,
+              parabola: `x^2=${formatPlain(4 * parabolaP)}y`,
+              hyperbola: `\\frac{x^2}{${formatPlain(a * a)}}-\\frac{y^2}{${formatPlain(hyperbolaB * hyperbolaB)}}=1`,
             }[conicType.code as ConicCode]} />
             {conicType.code === "ellipse" && <p>Điểm M đang ở khoảng ({formatPlain(mX)}; {formatPlain(mY)}). Tổng MF₁ + MF₂ = {formatPlain(d1 + d2)}.</p>}
-            <p className="text-slate-500">Hình là sơ đồ minh họa; chỉ số của elip thuộc ví dụ 2D, không suy ra trực tiếp từ β.</p>
-          </> : <p className="mt-1 text-slate-500">Tự tạo đúng thiết diện và bấm kiểm tra để mở công thức tương ứng.</p>}
+            <p className="text-slate-500">Độ lệch tâm e = cos β / cos α; hệ trục 2D chọn a = 4 để dễ so sánh.</p>
+          </>
         </div>
       </div>
     </div>

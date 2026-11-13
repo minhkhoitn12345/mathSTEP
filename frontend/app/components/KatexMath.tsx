@@ -11,18 +11,14 @@ export function normalizeMathDelimiters(content: string): string {
   text = text.replace(/\\\[([\s\S]+?)\\\]/g, (_match, expr: string) => `\n$$\n${expr.trim()}\n$$\n`);
   // Chuẩn hóa \( ... \) thành $ ... $
   text = text.replace(/\\\(([\s\S]+?)\\\)/g, (_match, expr: string) => `$${expr.trim()}$`);
-  // Chuẩn hóa \begin{...} \end{...}
-  text = text.replace(
-    /(?<!\$)\s*(\\begin\{(cases|aligned|matrix|pmatrix|bmatrix)\}[\s\S]+?\\end\{\2\})\s*(?!\$)/g,
-    (_match, block: string) => `\n$$\n${block.trim()}\n$$\n`
-  );
+  const mathParts = /(\$\$[\s\S]+?\$\$|\$(?!\$)[\s\S]+?\$(?!\$))/g;
+  // Chỉ bọc môi trường LaTeX chưa có dấu phân cách; giữ nguyên môi trường đã nằm trong $...$.
+  text = text.split(mathParts).map((part, index) => index % 2 === 0
+    ? part.replace(/\\begin\{(cases|aligned|matrix|pmatrix|bmatrix)\}[\s\S]+?\\end\{\1\}/g,
+      (block) => `\n$$\n${block.trim()}\n$$\n`)
+    : part
+  ).join("");
   text = text.replace(/(?<!\$)\$\s+([^\$\n]+?)\s+\$(?!\$)/g, "$$$1$$");
-
-  // ĐẢM BẢO KHOẢNG TRẮNG XUNG QUANH CÔNG THỨC LATEX KHÔNG BỊ DÍNH VÀO TỪ TIẾNG VIỆT (UNICODE FULL COVERAGE)
-  // Thêm khoảng trắng trước $ nếu có ký tự chữ cái/chữ số tiếng Việt đứng trước
-  text = text.replace(/([\p{L}\p{N}])\$(?!\$)/gu, "$1 $");
-  // Thêm khoảng trắng sau $ nếu có ký tự chữ cái/chữ số tiếng Việt đứng sau
-  text = text.replace(/(\$[^\$\n]+?\$)([\p{L}\p{N}])/gu, "$1 $2");
 
   // Xử lý an toàn các ký hiệu toán bên trong khối $...$ và $$...$$
   text = text.replace(/(\$\$[\s\S]+?\$\$|\$[^\$\n]+?\$)/g, (mathBlock) => {
@@ -34,7 +30,15 @@ export function normalizeMathDelimiters(content: string): string {
     return m;
   });
 
-  return text;
+  const segments = text.split(mathParts);
+  return segments.map((part, index) => {
+    if (index % 2 === 0) return part;
+    const before = segments[index - 1] ?? "";
+    const after = segments[index + 1] ?? "";
+    const leadingSpace = /[\p{L}\p{N}]$/u.test(before) ? " " : "";
+    const trailingSpace = /^[\p{L}\p{N}]/u.test(after) ? " " : "";
+    return `${leadingSpace}${part}${trailingSpace}`;
+  }).join("");
 }
 
 export function sanitizeLatex(raw: string): string {

@@ -26,6 +26,7 @@ import DynamicCalculusLab from "./dynamic-math/DynamicCalculusLab";
 import DynamicProbabilityLab from "./dynamic-math/DynamicProbabilityLab";
 import DynamicConicsLab from "./dynamic-math/DynamicConicsLab";
 import DynamicParameterDock from "./dynamic-math/DynamicParameterDock";
+import ModelMiniChallenge from "./dynamic-math/ModelMiniChallenge";
 import { useDynamicMathStore } from "./dynamic-math/useDynamicMathStore";
 import KatexMath, { formatVNFloat, MathFormattedText } from "./KatexMath";
 import {
@@ -104,6 +105,7 @@ interface MathStepWorkbenchProps {
   onStepChange?: (stepNumber: number, stepTitle: string) => void;
   onSelectStation?: (station: StationItem) => void;
   onBackToCatalog?: () => void;
+  hideAppHeader?: boolean;
 }
 
 // 7 Bước sư phạm chuẩn theo nghiên cứu giáo dục toán học & file index (2).html
@@ -767,6 +769,7 @@ export default function MathStepWorkbench({
   onStepChange,
   onSelectStation,
   onBackToCatalog,
+  hideAppHeader = false,
 }: MathStepWorkbenchProps) {
   const currentStation = useMemo(() => (stationId ? getStationById(stationId) : undefined), [stationId]);
   const meta = useMemo(() => {
@@ -2198,7 +2201,7 @@ export default function MathStepWorkbench({
       )}
 
       {/* 1. THANH TIÊU ĐỀ TRẠM HỌC & CĂN CỨ SGK (DESKTOP APP SHELL HEADER 48px) */}
-      <div className="h-12 bg-slate-950 border-b border-slate-800 px-3 md:px-4 flex items-center justify-between gap-2.5 text-xs text-slate-200 shrink-0">
+      {!hideAppHeader && <div className="h-12 bg-slate-950 border-b border-slate-800 px-3 md:px-4 flex items-center justify-between gap-2.5 text-xs text-slate-200 shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
           {onBackToCatalog && (
             <button
@@ -2422,7 +2425,7 @@ export default function MathStepWorkbench({
             )}
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* 2. THANH LỘ TRÌNH 8 BƯỚC SƯ PHẠM (STEPBAR) */}
       <div className="h-9 bg-slate-950/80 border-b border-slate-800 px-3 flex items-center gap-1 overflow-x-auto shrink-0">
@@ -2466,7 +2469,7 @@ export default function MathStepWorkbench({
       <div className="lg:hidden bg-slate-950 border-b border-slate-800 px-3 py-1.5 flex items-center justify-between gap-1 shrink-0 text-xs">
         <button
           type="button"
-          onClick={() => setActiveMobileTab("scene")}
+          onClick={() => { setActiveMobileTab("scene"); document.getElementById("mathstep-mobile-panels")?.scrollTo({ top: 0, behavior: "smooth" }); }}
           className={`flex-1 py-1 px-2 rounded font-medium text-center border transition-colors ${
             activeMobileTab === "scene"
               ? "bg-blue-600 text-white border-blue-500 shadow-sm"
@@ -2477,7 +2480,7 @@ export default function MathStepWorkbench({
         </button>
         <button
           type="button"
-          onClick={() => setActiveMobileTab("task")}
+          onClick={() => { setActiveMobileTab("task"); document.getElementById("mathstep-mobile-task")?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
           className={`flex-1 py-1 px-2 rounded font-medium text-center border transition-colors ${
             activeMobileTab === "task"
               ? "bg-blue-600 text-white border-blue-500 shadow-sm"
@@ -2488,7 +2491,7 @@ export default function MathStepWorkbench({
         </button>
         <button
           type="button"
-          onClick={() => setActiveMobileTab("controls")}
+          onClick={() => { setActiveMobileTab("controls"); document.getElementById("mathstep-mobile-controls")?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
           className={`flex-1 py-1 px-2 rounded font-medium text-center border transition-colors ${
             activeMobileTab === "controls"
               ? "bg-blue-600 text-white border-blue-500 shadow-sm"
@@ -2501,6 +2504,7 @@ export default function MathStepWorkbench({
 
       {/* 3. KHÔNG GIAN 3 CỘT: NHIỆM VỤ (TRÁI) | MÔ PHỎNG & CANVAS (GIỮA) | ĐIỀU KHIỂN DỰNG HÌNH (PHẢI) */}
       <div
+        id="mathstep-mobile-panels"
         className={`flex-1 grid grid-cols-1 gap-2 p-2 overflow-y-auto transition-all duration-200 ${
           showLeftPanel && showRightPanel
             ? "lg:grid-cols-[260px_minmax(320px,1fr)_280px]"
@@ -2513,8 +2517,8 @@ export default function MathStepWorkbench({
       >
         {/* CỘT 1: NHIỆM VỤ SƯ PHẠM (TASK-SIDE) */}
         {showLeftPanel && (
-          <aside className={`bg-slate-900 border border-slate-800 rounded-lg p-3 flex flex-col gap-2.5 max-h-[calc(100vh-140px)] overflow-y-auto text-xs text-slate-200 ${
-            activeMobileTab === "task" ? "flex" : "hidden lg:flex"
+          <aside id="mathstep-mobile-task" className={`bg-slate-900 border border-slate-800 rounded-lg p-3 flex flex-col gap-2.5 max-h-[calc(100vh-140px)] overflow-y-auto text-xs text-slate-200 max-md:order-2 max-md:scroll-mt-[45dvh] ${
+            "flex"
           }`}>
             {/* Header thanh Nhiệm vụ với nút đóng/thu gọn */}
             <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
@@ -3155,7 +3159,7 @@ export default function MathStepWorkbench({
 
         {/* CỘT 2: KHUNG MÔ PHỎNG & CANVAS (SCENE-SIDE) - CHIẾM 75%-80% DIỆN TÍCH */}
         <section className={`bg-[#0B0F17] border border-slate-800 rounded-lg overflow-hidden flex flex-col relative ${
-          isFullscreenScene ? "fixed inset-0 z-50 flex shadow-2xl" : activeMobileTab === "scene" ? "flex" : "hidden lg:flex"
+          isFullscreenScene ? "fixed inset-0 z-50 flex shadow-2xl" : "flex max-md:order-first max-md:sticky max-md:top-0 max-md:z-30 max-md:h-[45dvh] max-md:self-start"
         }`}>
           {/* Header trên của Canvas: Luôn hiển thị Nút Đề bài chi tiết nổi bật và công cụ */}
           <div className="h-9 px-3 bg-slate-950/95 border-b border-slate-800 flex items-center justify-between gap-2.5 text-xs shrink-0 z-20">
@@ -3408,8 +3412,8 @@ export default function MathStepWorkbench({
 
         {/* CỘT 3: KẾT QUẢ & ĐIỀU KHIỂN (CONTROLS & RESULTS) */}
         {showRightPanel && (
-          <aside className={`bg-slate-900 border border-slate-800 rounded-lg p-3 flex flex-col gap-2.5 max-h-[calc(100vh-140px)] overflow-y-auto text-xs text-slate-200 ${
-            activeMobileTab === "controls" ? "flex" : "hidden lg:flex"
+          <aside id="mathstep-mobile-controls" className={`bg-slate-900 border border-slate-800 rounded-lg p-3 flex flex-col gap-2.5 max-h-[calc(100vh-140px)] overflow-y-auto text-xs text-slate-200 max-md:order-1 max-md:scroll-mt-[45dvh] ${
+            "flex"
           }`}>
             {/* Header thanh Điều khiển với nút đóng/thu gọn */}
             <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
@@ -3628,11 +3632,11 @@ export default function MathStepWorkbench({
                         </div>
                         <div className="p-1.5 bg-slate-900 rounded border border-slate-800">
                           <div className="text-[10px] text-slate-400">Cạnh bên:</div>
-                          <KatexMath math={`SA \approx ${formatVNFloat(edgeLength)}\\text{ m}`} className="font-bold text-slate-100 font-mono" />
+                          <KatexMath math={`SA \\approx ${formatVNFloat(edgeLength)}\\text{ m}`} className="font-bold text-slate-100 font-mono" />
                         </div>
                         <div className="p-1.5 bg-slate-900 rounded border border-slate-800">
                           <div className="text-[10px] text-slate-400">Góc cạnh bên:</div>
-                          <KatexMath math={`\\varphi \approx ${formatVNFloat(slantAngle)}^\\circ`} className="font-bold text-blue-300 font-mono" />
+                          <KatexMath math={`\\varphi \\approx ${formatVNFloat(slantAngle)}^\\circ`} className="font-bold text-blue-300 font-mono" />
                         </div>
                       </div>
                     </div>
@@ -4103,6 +4107,7 @@ export default function MathStepWorkbench({
               </div>
             )}
           </div>
+          {meta.is3D && moduleId === "spatial_geometry" && !aiCreativeMode && labMode !== "dynamic" && <ModelMiniChallenge title="Hình chóp S.ABCD" instruction="Chỉnh chiều cao SH đến 3 m bằng thanh trượt trong hình." value={params.h || 2.6} target={3} epsilon={0.11} sliderExplanation="SH=3\\,\\mathrm m" question="Để kết luận SH vuông góc mặt đáy, cần điều kiện nào?" answers={[{ label: "SH vuông góc hai đường cắt nhau trong đáy", correct: true }, { label: "SH trông thẳng đứng trên hình", correct: false }, { label: "S nằm gần tâm đáy", correct: false }]} answerExplanation="SH\\perp AB,\\ SH\\perp AD\\Rightarrow SH\\perp(ABCD)" />}
         </aside>
         )}
       </div>

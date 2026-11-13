@@ -26,6 +26,9 @@ import {
   Download,
 } from "lucide-react";
 import KatexMath, { formatVNFloat } from "./KatexMath";
+import { FirstThreeFrame, ThreeSceneLoadingOverlay } from "./ThreeSceneLoading";
+import { useMathContext } from "../lib/mathModelContext";
+import { formatExactLength, snapToMilestone } from "../lib/mathDisplay";
 
 export interface Stereometry3DCanvasProps {
   foldPercent?: number; // 0: unfolded flat, 100: fully folded 3D pyramid
@@ -423,6 +426,10 @@ function DynamicPyramidMeshAndEdges({
       }),
     [isTeacherMode]
   );
+  useEffect(() => () => {
+    [solidMaterial, dashedMaterial, diagonalDashedMat, rightAngleMat, altitudeMat].forEach((material) => material.dispose());
+  }, [solidMaterial, dashedMaterial, diagonalDashedMat, rightAngleMat, altitudeMat]);
+  useEffect(() => () => mnMat.dispose(), [mnMat]);
 
   // Tạo BufferGeometries cho các mặt để phủ chất liệu Kính Mờ Frosted Glass
   const faceGeometries = useMemo(() => {
@@ -540,6 +547,12 @@ function DynamicPyramidMeshAndEdges({
     const nSDA = computeNormal(baseD, baseA, currentFaces.sDA);
     const cSDA = new THREE.Vector3().add(baseD).add(baseA).add(currentFaces.sDA).multiplyScalar(1 / 3);
 
+    // Winding may change when vertices are dragged. Orient each face away from the solid centre.
+    const solidCentre = new THREE.Vector3().add(baseA).add(baseB).add(baseC).add(baseD).add(apex).multiplyScalar(1 / 5);
+    for (const [normal, centre] of [[nSAB, cSAB], [nSBC, cSBC], [nSCD, cSCD], [nSDA, cSDA]] as const) {
+      if (normal.dot(new THREE.Vector3().subVectors(centre, solidCentre)) < 0) normal.negate();
+    }
+
     const isFrontFacing = (n: THREE.Vector3, c: THREE.Vector3) => {
       const viewDir = new THREE.Vector3().subVectors(camPos, c);
       return n.dot(viewDir) > 0;
@@ -644,6 +657,7 @@ function DynamicPyramidMeshAndEdges({
           color="#67e8f9"
           side={THREE.DoubleSide}
           depthWrite={false}
+          polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1}
         />
       </mesh>
       <mesh geometry={faceGeometries.sabGeo}>
@@ -655,6 +669,7 @@ function DynamicPyramidMeshAndEdges({
           color="#6ee7b7"
           side={THREE.DoubleSide}
           depthWrite={false}
+          polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1}
         />
       </mesh>
       <mesh geometry={faceGeometries.sbcGeo}>
@@ -666,6 +681,7 @@ function DynamicPyramidMeshAndEdges({
           color="#7dd3fc"
           side={THREE.DoubleSide}
           depthWrite={false}
+          polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1}
         />
       </mesh>
       <mesh geometry={faceGeometries.scdGeo}>
@@ -677,6 +693,7 @@ function DynamicPyramidMeshAndEdges({
           color="#c4b5fd"
           side={THREE.DoubleSide}
           depthWrite={false}
+          polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1}
         />
       </mesh>
       <mesh geometry={faceGeometries.sdaGeo}>
@@ -688,6 +705,7 @@ function DynamicPyramidMeshAndEdges({
           color="#fde68a"
           side={THREE.DoubleSide}
           depthWrite={false}
+          polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1}
         />
       </mesh>
 
@@ -879,6 +897,12 @@ export default function Stereometry3DCanvas({
   className = "",
 }: Stereometry3DCanvasProps) {
   const [mounted, setMounted] = useState(false);
+  const [webglReady, setWebglReady] = useState(false);
+  const [frameReady, setFrameReady] = useState(false);
+  useEffect(() => {
+    useMathContext.getState().setCurrent({ moduleName: "spatial_geometry", modelTitle: "Hình chóp S.ABCD", parameters: { apexHeight, baseWidth, baseDepth, foldPercent }, keyProperties: ["SH vuông góc với mặt phẳng đáy khi H là hình chiếu của S", "Nét đứt biểu diễn cạnh khuất theo góc camera"] });
+  }, [apexHeight, baseWidth, baseDepth, foldPercent]);
+  useEffect(() => () => useMathContext.getState().clear("spatial_geometry"), []);
   const [showCoordinates, setShowCoordinates] = useState<boolean>(false);
   const [showNormalVector, setShowNormalVector] = useState<boolean>(false);
   const [showAxes, setShowAxes] = useState<boolean>(true);
@@ -912,6 +936,10 @@ export default function Stereometry3DCanvas({
   }, [mounted]);
 
   const controlsRef = useRef<React.ComponentRef<typeof OrbitControls>>(null);
+  const cameraAnimationRef = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (cameraAnimationRef.current !== null) cancelAnimationFrame(cameraAnimationRef.current);
+  }, []);
   const cameraStorageKey = "mathstep:stereometry-camera:v1";
 
   useEffect(() => {
@@ -933,9 +961,21 @@ export default function Stereometry3DCanvas({
     if (!controls) return;
     const positions = { default: [4.5, 3.5, 5], top: [0, 9, 0.01], front: [0, 2, 9], side: [9, 2, 0] };
     const position = positions[view];
-    controls.object.position.set(position[0], position[1], position[2]);
-    controls.target.set(0, 1, 0);
-    controls.update();
+    if (cameraAnimationRef.current !== null) cancelAnimationFrame(cameraAnimationRef.current);
+    const startPosition = controls.object.position.clone();
+    const startTarget = controls.target.clone();
+    const endPosition = new THREE.Vector3(position[0], position[1], position[2]);
+    const endTarget = new THREE.Vector3(0, 1, 0);
+    const started = performance.now();
+    const animate = (now: number) => {
+      const t = Math.min(1, (now - started) / 500);
+      const eased = t * t * (3 - 2 * t);
+      controls.object.position.copy(startPosition).lerp(endPosition, eased);
+      controls.target.copy(startTarget).lerp(endTarget, eased);
+      controls.update();
+      cameraAnimationRef.current = t < 1 ? requestAnimationFrame(animate) : null;
+    };
+    cameraAnimationRef.current = requestAnimationFrame(animate);
     setIsFrozenView(false);
     controls.enabled = true;
     try { localStorage.setItem(cameraStorageKey, JSON.stringify({ position, target: [0, 1, 0] })); } catch {}
@@ -1325,9 +1365,11 @@ export default function Stereometry3DCanvas({
         frameloop={lowGraphics ? "demand" : "always"}
         dpr={lowGraphics ? 1 : [1, 1.5]}
         gl={{ antialias: !lowGraphics, alpha: true, preserveDrawingBuffer: true, powerPreference: lowGraphics ? "low-power" : "high-performance" }}
+        onCreated={() => setWebglReady(true)}
         className="w-full h-full cursor-grab active:cursor-grabbing"
         style={{ touchAction: "none", filter: highContrast ? "contrast(1.45) brightness(1.25) saturate(1.2)" : undefined }}
       >
+        <FirstThreeFrame onReady={() => setFrameReady(true)} />
         {/* Studio Three-Point Lighting */}
         <ambientLight intensity={0.45} />
         <directionalLight position={[7, 10, 6]} intensity={1.3} castShadow />
@@ -1482,6 +1524,7 @@ export default function Stereometry3DCanvas({
           }}
         />
       </Canvas>
+      <ThreeSceneLoadingOverlay webglReady={webglReady} frameReady={frameReady} />
 
       {/* Floating Control Sliders (Bottom Left): Khai triển phẳng & Chiều cao H (Mặc định thu gọn để màn hình thoáng) */}
       <div className="absolute bottom-3 left-3 z-10">
@@ -1526,7 +1569,7 @@ export default function Stereometry3DCanvas({
                   min={0}
                   max={100}
                   value={foldPercent}
-                  onChange={(e) => onFoldPercentChange(Number(e.target.value))}
+                  onChange={(e) => onFoldPercentChange(snapToMilestone(Number(e.target.value), [0, 25, 50, 75, 100], 2))}
                   className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
                 />
               </div>
@@ -1540,6 +1583,7 @@ export default function Stereometry3DCanvas({
                     <span>Chiều cao h (SH):</span>
                   </span>
                   <span className="font-mono text-emerald-400 font-bold">{formatVNFloat(currentHeight)} m</span>
+                  <span className="text-emerald-300"><KatexMath math={`h=${formatExactLength(currentHeight)}\\,\\mathrm m`} /></span>
                 </div>
                 <input
                   type="range"
@@ -1548,7 +1592,7 @@ export default function Stereometry3DCanvas({
                   step={0.1}
                   value={currentHeight}
                   onChange={(e) => {
-                    const val = Number(e.target.value);
+                    const val = snapToMilestone(Number(e.target.value), [1.5, 2, 3, 4], 0.11);
                     setApexPos((prev) => new THREE.Vector3(prev.x, val, prev.z));
                     onApexHeightChange(val);
                   }}
@@ -1585,6 +1629,7 @@ export default function Stereometry3DCanvas({
           <option value="front">Chính diện</option>
           <option value="side">Bên cạnh</option>
         </select>
+        <button type="button" onClick={() => setCameraView("top")} title="Góc nhìn thẳng đáy" aria-label="Góc nhìn thẳng đáy" className="min-h-9 shrink-0 rounded-lg border border-slate-700 px-2 text-[11px] font-semibold text-slate-100 hover:bg-slate-800">Từ trên</button>
         <button
           type="button"
           onClick={handleRotate45}
@@ -1614,6 +1659,7 @@ export default function Stereometry3DCanvas({
           type="button"
           onClick={handleResetCamera}
           title="Đặt lại góc nhìn mặc định (Chuẩn tâm)"
+          aria-label="Đặt lại góc nhìn"
           className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-200 transition-colors"
         >
           <RotateCcw className="w-4 h-4" />

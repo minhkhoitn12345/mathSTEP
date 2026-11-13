@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   RotateCcw,
   SlidersHorizontal,
@@ -9,8 +9,11 @@ import {
   Layers,
   Compass,
 } from "lucide-react";
-import { formatVNFloat } from "../KatexMath";
+import KatexMath, { formatVNFloat } from "../KatexMath";
 import { useDynamicMathStore } from "./useDynamicMathStore";
+import ModelMiniChallenge from "./ModelMiniChallenge";
+import { formatExactLength, snapToMilestone } from "../../lib/mathDisplay";
+import { useMathContext } from "../../lib/mathModelContext";
 
 type SolidType = "pyramid_quad" | "pyramid_tri" | "prism_tri";
 type ToolMode = "view" | "add_point" | "add_segment" | "add_midpoint" | "add_plane";
@@ -35,6 +38,10 @@ export default function DynamicSpatialGeometryLab() {
   const tiltY = params.tiltY?.val ?? 0;
   const planeZ = params.planeZ?.val ?? 1.8;
   const baseW = params.baseWidth?.val ?? 4;
+  useEffect(() => {
+    useMathContext.getState().setCurrent({ moduleName: "spatial_geometry", modelTitle: "Hình chóp và thiết diện song song đáy", parameters: { h, tiltX, tiltY, planeZ, baseWidth: baseW }, keyProperties: ["Mặt phẳng cắt song song đáy tạo đa giác đồng dạng với đáy", "Tỷ số đồng dạng k = (h-z_p)/h"] });
+  }, [h, tiltX, tiltY, planeZ, baseW]);
+  useEffect(() => () => useMathContext.getState().clear("spatial_geometry"), []);
 
   // Custom added geometric objects
   const [customPoints, setCustomPoints] = useState<{ name: string; x: number; y: number; z: number }[]>([]);
@@ -483,7 +490,7 @@ export default function DynamicSpatialGeometryLab() {
             max={h - 0.2}
             step={0.1}
             value={planeZ}
-            onChange={(e) => setParamVal("planeZ", parseFloat(e.target.value))}
+            onChange={(e) => setParamVal("planeZ", snapToMilestone(parseFloat(e.target.value), [0.5, 1, 1.5, 2, 3, 4], 0.11))}
             className="w-full accent-rose-600 cursor-pointer h-2 bg-slate-200 rounded-lg appearance-none"
           />
           <div className="flex justify-between text-[10px] text-slate-400 font-mono">
@@ -548,6 +555,7 @@ export default function DynamicSpatialGeometryLab() {
             <div className="flex justify-between text-xs">
               <span className="text-slate-600">Chiều cao SH (h):</span>
               <span className="font-mono font-bold text-teal-800">{formatVNFloat(h)} m</span>
+              <span className="text-[10px] text-teal-800"><KatexMath math={`h=${formatExactLength(h)}\\,\\mathrm m`} /></span>
             </div>
             <input
               type="range"
@@ -555,7 +563,7 @@ export default function DynamicSpatialGeometryLab() {
               max={6.0}
               step={0.1}
               value={h}
-              onChange={(e) => setParamVal("h", parseFloat(e.target.value))}
+              onChange={(e) => setParamVal("h", snapToMilestone(parseFloat(e.target.value), [1.5, 2, 3, 4, 5, 6], 0.11))}
               className="w-full accent-teal-600 cursor-pointer h-1.5 bg-slate-200 rounded"
             />
           </div>
@@ -572,7 +580,7 @@ export default function DynamicSpatialGeometryLab() {
               max={2}
               step={0.1}
               value={tiltX}
-              onChange={(e) => setParamVal("tiltX", parseFloat(e.target.value))}
+              onChange={(e) => setParamVal("tiltX", snapToMilestone(parseFloat(e.target.value), [-2, -1.5, -1, 0, 1, 1.5, 2], 0.11))}
               className="w-full accent-slate-600 cursor-pointer h-1.5 bg-slate-200 rounded"
             />
           </div>
@@ -582,6 +590,7 @@ export default function DynamicSpatialGeometryLab() {
             <div className="flex justify-between text-xs">
               <span className="text-slate-600">Cạnh đáy a:</span>
               <span className="font-mono font-bold text-slate-800">{formatVNFloat(baseW)} m</span>
+              <span className="text-[10px] text-slate-800"><KatexMath math={`a=${formatExactLength(baseW)}\\,\\mathrm m`} /></span>
             </div>
             <input
               type="range"
@@ -589,7 +598,7 @@ export default function DynamicSpatialGeometryLab() {
               max={6}
               step={0.2}
               value={baseW}
-              onChange={(e) => setParamVal("baseWidth", parseFloat(e.target.value))}
+              onChange={(e) => setParamVal("baseWidth", snapToMilestone(parseFloat(e.target.value), [2, 3, 4, 5, 6], 0.11))}
               className="w-full accent-slate-600 cursor-pointer h-1.5 bg-slate-200 rounded"
             />
           </div>
@@ -602,6 +611,7 @@ export default function DynamicSpatialGeometryLab() {
           <p>• <strong>Cạnh bị che khuất:</strong> Vẽ bằng nét đứt đoạn (- - -).</p>
           <p>• <strong>Thiết diện cắt:</strong> Mặt phẳng (P) // (Đáy) thì thiết diện là đa giác đồng dạng với đáy với tỉ số k = (h - z_p)/h.</p>
         </div>
+        <ModelMiniChallenge title="Thiết diện hình chóp" instruction="Đặt chiều cao h = 4 m." value={h} target={4} epsilon={0.11} sliderExplanation="h=4\\,\\mathrm m" question="Nếu mặt phẳng cắt song song với đáy, thiết diện có tính chất nào?" answers={[{ label: "Đồng dạng với đáy", correct: true }, { label: "Luôn bằng đáy", correct: false }, { label: "Luôn là đường tròn", correct: false }]} answerExplanation="k=\\frac{h-z_p}{h}" onIncorrectAnswer={() => { setParamVal("h", 4); setParamVal("planeZ", 2); }} />
       </div>
     </div>
   );

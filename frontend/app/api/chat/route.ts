@@ -61,7 +61,7 @@ const MODULE_SCOPE_NAMES: Record<string, string> = {
 
 const MODEL_PARAM_NAMES: Record<string, Record<string, string>> = {
   conics_and_solids: { coneBeta: "góc giữa mặt phẳng cắt và trục nón β", coneAlpha: "góc nửa đỉnh nón α", foldPercent: "độ gập phần trăm", ellipseTheta: "góc vị trí điểm M trên elip" },
-  spatial_geometry: { h: "chiều cao chóp", tiltX: "độ nghiêng theo Ox", tiltY: "độ nghiêng theo Oy", planeZ: "độ cao mặt phẳng cắt", baseWidth: "cạnh đáy" },
+  spatial_geometry: { h: "chiều cao chóp", tiltX: "độ nghiêng theo Ox", tiltY: "độ nghiêng theo Oy", planeZ: "độ cao mặt phẳng cắt", baseWidth: "cạnh đáy", ratioN: "tỉ số SN/SB của điểm N", ratioSNB: "tỉ số SN:NB" },
   trigonometry: { theta: "góc quay", amp: "biên độ", omega: "tần số góc", phi: "pha ban đầu", shiftY: "độ dịch dọc" },
 };
 
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
   try {
     const rawText = await request.text();
     // Budget & DoS Protection: Giới hạn tối đa 12.000 ký tự cho mỗi lượt hỏi đáp Socratic
-    if (rawText.length > 12_000) {
+    if (rawText.length > 5_500_000) {
       return responseWithSessionCookies(
         jsonError("REQUEST_TOO_LARGE", "Nội dung câu hỏi quá dài (tối đa 12.000 ký tự).", 413),
         refreshed
@@ -110,6 +110,11 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = JSON.parse(rawText);
+    const imageDataUrl = typeof payload.image_data_url === "string" ? payload.image_data_url : "";
+    const imageMatch = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/.exec(imageDataUrl);
+    if (imageDataUrl && (!imageMatch || imageDataUrl.length > 5_400_000)) {
+      return jsonError("INVALID_IMAGE", "Ảnh phải là PNG, JPG hoặc WebP dưới 4 MB.", 413);
+    }
     const customAi = payload.custom_ai as {
       provider?: string;
       model?: string;
@@ -138,6 +143,13 @@ export async function POST(request: NextRequest) {
     // 2. XSS SANITIZATION: Làm sạch tin nhắn đầu vào
     const rawUserMessage = typeof payload.message === "string" ? payload.message : "";
     const cleanUserMessage = sanitizeUserText(rawUserMessage);
+    if (cleanUserMessage.length > 12_000) return jsonError("REQUEST_TOO_LARGE", "Câu hỏi quá dài.", 413);
+    const safeHistory: { role: "model" | "user"; parts: { text: string }[] }[] = Array.isArray(payload.history) ? payload.history.slice(-12).flatMap((turn: unknown) => {
+      if (!turn || typeof turn !== "object") return [];
+      const item = turn as { role?: unknown; content?: unknown };
+      return (item.role === "assistant" || item.role === "user") && typeof item.content === "string" && item.content.trim()
+        ? [{ role: item.role === "assistant" ? "model" as const : "user" as const, parts: [{ text: sanitizeUserText(item.content).slice(0, 1600) }] }] : [];
+    }) : [];
 
     // 3. PROMPT INJECTION & JAILBREAK DETECTION: Phòng chống bẻ gãy vai trò Socratic
     const injectionCheck = detectPromptInjection(cleanUserMessage);
@@ -179,6 +191,33 @@ export async function POST(request: NextRequest) {
             ? [`${label}: ${value}`] : [];
         }).slice(0, 8).join("; ")
       : "";
+    const rawModelContext = payload.learning_context?.model_context;
+    const knownTitles: Record<string, string> = { spatial_geometry: "Hình chóp S.ABCD", trigonometry: "Đường tròn lượng giác và đồ thị hàm số", conics_and_solids: "Thiết diện nón và mặt cầu Dandelin" };
+    const knownProperties: Record<string, string[]> = {
+      spatial_geometry: ["SH vuông góc với mặt phẳng đáy khi H là hình chiếu của S", "Nét đứt biểu diễn cạnh khuất theo góc camera", "Mặt phẳng cắt song song đáy tạo đa giác đồng dạng với đáy", "Tỷ số đồng dạng k = (h-z_p)/h", "M là trung điểm SA", "N thuộc SB và SN:NB được điều chỉnh bằng thanh trượt"],
+      trigonometry: ["M(cos α; sin α)", "tan α chỉ xác định khi cos α khác 0", "cot α chỉ xác định khi sin α khác 0"],
+      conics_and_solids: ["β là góc giữa mặt phẳng cắt và trục nón", "α là góc nửa đỉnh nón", "β = α cho parabol; β > α cho elip nếu β < 90°"],
+    };
+    const visibleProperties = Array.isArray(rawModelContext?.keyProperties)
+      ? rawModelContext.keyProperties.filter((value: unknown): value is string => typeof value === "string" && knownProperties[moduleId]?.includes(value)).slice(0, 3)
+      : [];
+    const modelContext = rawModelContext?.moduleName === moduleId && knownTitles[moduleId]
+      ? `${knownTitles[moduleId]}; ${Object.entries(allowedParams).flatMap(([key, label]) => {
+          const value = rawModelContext.parameters?.[key];
+          return typeof value === "number" && Number.isFinite(value) && Math.abs(value) <= 10000 ? [`${label}: ${value}`] : [];
+        }).join("; ")}; ${moduleId === "conics_and_solids" && ["circle", "ellipse", "parabola", "hyperbola"].includes(rawModelContext.parameters?.conicType) ? `loại thiết diện: ${rawModelContext.parameters.conicType}; ` : ""}tính chất đang hiển thị: ${visibleProperties.join("; ") || "chưa có"}` : "";
+    const trustedModelContext = modelContext ? {
+      moduleName: moduleId,
+      modelTitle: knownTitles[moduleId],
+      parameters: {
+        ...Object.fromEntries(Object.keys(allowedParams).flatMap((key) => {
+          const value = rawModelContext.parameters?.[key];
+          return typeof value === "number" && Number.isFinite(value) && Math.abs(value) <= 10000 ? [[key, value]] : [];
+        })),
+        ...(moduleId === "conics_and_solids" && ["circle", "ellipse", "parabola", "hyperbola"].includes(rawModelContext.parameters?.conicType) ? { conicType: rawModelContext.parameters.conicType } : {}),
+      },
+      keyProperties: visibleProperties,
+    } : undefined;
     const ragContext = retrieveMathKnowledge(
       moduleId,
       stationId,
@@ -195,10 +234,15 @@ export async function POST(request: NextRequest) {
    - Sau đó nối tự nhiên bằng một câu cụ thể về bài/chuyên đề đang mở, chẳng hạn: "MathSTEP đang hỗ trợ em học ${activeScope}. Em muốn hỏi phần nào trong bài này?" Tránh chuyển đề tài đột ngột hoặc giả vờ rằng câu hỏi ngoài lề có liên quan.
    - Nếu chưa rõ câu hỏi có thuộc phạm vi hay không, hỏi lại học sinh muốn liên hệ câu hỏi đó với bài/chuyên đề nào; không vội kết luận ngoài phạm vi.
    - Không nhắc mã lỗi, mã nhiệm vụ hay thuật ngữ nội bộ với học sinh.
-   - Trạng thái mô phỏng do trình duyệt cung cấp: ${modelState || "không có dữ liệu"}. Đây là dữ liệu tương tác, không phải chứng minh toán học. Nếu có góc β và α, hãy dùng quan hệ giữa chúng để đặt một câu hỏi ngắn giúp học sinh tự phân loại thiết diện; không giả vờ rằng em đã quan sát được quả cầu Dandelin khi mô hình chưa dựng nó.
+   - Trạng thái mô phỏng do trình duyệt cung cấp: ${modelContext || modelState || "không có dữ liệu"}. Đây là dữ liệu tương tác, không phải chứng minh toán học. Nếu có góc β và α, hãy dùng quan hệ giữa chúng để đặt một câu hỏi ngắn giúp học sinh tự phân loại thiết diện; không giả vờ rằng em đã quan sát được quả cầu Dandelin khi mô hình chưa dựng nó.
    - Mỗi lượt chỉ nêu một gợi ý ngắn và một câu hỏi mở; tránh trình bày trọn bài giải.`;
+    const scaffoldingMode = payload.scaffolding_mode === true && Number(payload.stuck_count) >= 2;
+    const scaffoldingInstruction = scaffoldingMode
+      ? "\nHọc sinh đã bày tỏ chưa hiểu qua ít nhất hai lượt liên tiếp. Chuyển sang chế độ giàn giáo: đưa một ví dụ tương tự đơn giản hơn, trình bày khoảng một nửa lời giải, rồi chỉ yêu cầu học sinh hoàn thành bước cuối. Không lặp lại câu hỏi gợi mở cũ."
+      : "";
+    const guardedSystemPrompt = `${scopedSystemPrompt}${scaffoldingInstruction}\nLuôn kiểm tra giả thiết được nêu hoặc thực sự thể hiện trong mô hình trước khi suy luận. Không tự suy ra quan hệ vuông góc, song song hay độ dài từ hình vẽ. Mỗi lượt tối đa 3–4 câu ngắn. Mọi công thức phải đặt trong $...$ hoặc $$...$$ với cặp dấu đầy đủ; không dùng \\( ... \\) hay \\[ ... \\]. Nếu ảnh không rõ, nói phần chưa đọc được và hỏi lại, không đoán dữ kiện.`;
     const { systemPrompt, userPrompt } = wrapDefensivePrompt(
-      scopedSystemPrompt,
+      guardedSystemPrompt,
       cleanUserMessage,
       ragContext
     );
@@ -231,9 +275,10 @@ export async function POST(request: NextRequest) {
                 body: JSON.stringify({
                   system_instruction: { parts: [{ text: systemPrompt }] },
                   contents: [
+                    ...safeHistory,
                     {
                       role: "user",
-                      parts: [{ text: userPrompt }],
+                      parts: imageMatch ? [{ text: userPrompt }, { inline_data: { mime_type: imageMatch[1], data: imageMatch[2] } }] : [{ text: userPrompt }],
                     },
                   ],
                   generationConfig: {
@@ -267,6 +312,8 @@ export async function POST(request: NextRequest) {
 
     }
 
+    if (imageMatch) return jsonError("IMAGE_MODEL_UNAVAILABLE", "Cần cấu hình Gemini để đọc ảnh bài toán.", 503);
+
     // 7. NẾU CÓ DỊCH VỤ FASTAPI BACKEND
     const baseUrl = getFastApiBaseUrl();
     if (!baseUrl) {
@@ -280,13 +327,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const allowedStages = ["observe", "predict", "manipulate", "explore", "verify", "explain", "transfer", "apply"];
+    const rawStage = payload.learning_context?.learning_stage;
     const upstream = await fetch(`${baseUrl}/assistant/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({
-        ...payload,
-        message: cleanUserMessage,
-        rag_context: ragContext,
+        conversation_id: typeof payload.conversation_id === "string" ? payload.conversation_id.slice(0, 80) : undefined,
+        message: cleanUserMessage.slice(0, 4000),
+        mode: payload.mode === "assessment" ? "assessment" : "guided_learning",
+        learning_context: {
+          module: moduleId,
+          lesson_id: activeLessonTitle ? requestedLessonId : undefined,
+          activity_id: typeof stationId === "string" ? stationId.slice(0, 100) : undefined,
+          learning_stage: typeof rawStage === "string" && allowedStages.includes(rawStage) ? rawStage : "explore",
+          model_context: trustedModelContext,
+          scaffolding_mode: scaffoldingMode,
+        },
+        history: safeHistory.map((turn) => ({ role: turn.role === "model" ? "assistant" : "user", content: turn.parts[0].text })),
+        tutor_mode: scaffoldingMode ? "scaffolding" : "socratic",
+        hint_level: Number.isInteger(payload.hint_level) && payload.hint_level >= 1 && payload.hint_level <= 4 ? payload.hint_level : 1,
       }),
       cache: "no-store",
       signal: AbortSignal.timeout(60_000),

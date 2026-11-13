@@ -6,6 +6,7 @@ import { Html, Line, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { Check, CircleHelp, LoaderCircle, RotateCcw, Rotate3D, Sparkles, ZoomIn, ZoomOut } from "lucide-react";
 import { MathFormattedText } from "@/app/components/KatexMath";
+import { FirstThreeFrame, ThreeSceneLoadingOverlay } from "@/app/components/ThreeSceneLoading";
 import problemData from "@/app/data/spatial-geometry/exercises.json";
 import { parseSpatialGeometryProblem, type SpatialGeometryProblem } from "@/app/lib/spatialGeometryProblemParser";
 import type { CustomAiConfig } from "@/app/components/AccountSettingsModal";
@@ -457,6 +458,8 @@ export function SpatialGeometryPractice({ initialExerciseId, problemPayload = pr
   const [sliderValue, setSliderValue] = useState(EXERCISES.find((item) => item.interactionType === "parameter_slider")?.slider?.defaultValue ?? 0.5);
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null);
   const [cameraView, setCameraView] = useState<CameraView>("isometric");
+  const [webglReady, setWebglReady] = useState(false);
+  const [frameReady, setFrameReady] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [completed, setCompleted] = useState<string[]>([]);
   const [hintIndex, setHintIndex] = useState(-1);
@@ -623,14 +626,16 @@ export function SpatialGeometryPractice({ initialExerciseId, problemPayload = pr
       </div>
 
       <div className="grid min-h-[650px] grid-cols-1 gap-4 px-3 pb-4 sm:px-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(330px,0.9fr)]">
-        <div className="relative min-h-[420px] overflow-hidden rounded-[1.5rem] bg-[#f8fafc] shadow-inner lg:min-h-[650px]">
-          <Canvas camera={{ position: cameraPosition, fov: 42 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: false }}>
+        <div className="relative min-h-[420px] overflow-hidden rounded-[1.5rem] bg-[#f8fafc] shadow-inner lg:min-h-[650px] max-md:sticky max-md:top-0 max-md:z-20 max-md:h-[45dvh] max-md:min-h-0">
+          <Canvas camera={{ position: cameraPosition, fov: 42 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: false }} onCreated={() => setWebglReady(true)}>
+            <FirstThreeFrame onReady={() => setFrameReady(true)} />
             <color attach="background" args={["#f8fafc"]} />
             <SceneAccessibility title={exercise.title} />
             <PyramidModel solid={solid} section={section} nodes={availableNodes} selectedNodeIds={selectedNodeIds} onSelectNode={handleSelectNode} />
             <SmoothCameraControls {...cameraPose} />
           </Canvas>
-          <div className="absolute left-3 top-3 flex flex-wrap gap-1.5" aria-label="Góc nhìn nhanh">
+          <ThreeSceneLoadingOverlay webglReady={webglReady} frameReady={frameReady} />
+          <div className="absolute right-3 bottom-3 z-20 flex flex-wrap gap-1.5" aria-label="Góc nhìn nhanh">
             {(["isometric", "top", "front", "reset"] as CameraView[]).map((view) => (
               <button key={view} type="button" onClick={() => resetView(view)} className={`rounded-lg px-2.5 py-2 text-[11px] font-bold shadow-sm transition ${cameraView === view ? "bg-slate-900 text-white" : "bg-white/95 text-slate-700 hover:bg-white"}`}>
                 {view === "reset" ? <span className="inline-flex items-center gap-1"><RotateCcw className="h-3 w-3" />Đặt lại</span> : view === "isometric" ? "SGK" : view === "top" ? "Trên" : "Trước"}

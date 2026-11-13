@@ -6,6 +6,9 @@ import KatexMath, { formatVNFloat } from "../KatexMath";
 import { SPECIAL_ANGLES } from "../TrigonometricCircleCanvas";
 import { useDynamicMathStore } from "./useDynamicMathStore";
 import TrigonometryPracticeTools from "./TrigonometryPracticeTools";
+import ModelMiniChallenge from "./ModelMiniChallenge";
+import { formatRadianToPi, snapToMilestone } from "../../lib/mathDisplay";
+import { useMathContext } from "../../lib/mathModelContext";
 
 export default function DynamicTrigonometryLab() {
   const { params, setParamVal } = useDynamicMathStore();
@@ -37,6 +40,10 @@ export default function DynamicTrigonometryLab() {
 
   // Radian conversions
   const thetaRad = (thetaDeg * Math.PI) / 180;
+  React.useEffect(() => {
+    useMathContext.getState().setCurrent({ moduleName: "trigonometry", modelTitle: "Đường tròn lượng giác và đồ thị hàm số", parameters: { theta: thetaDeg, amp, omega, phi: phiDeg, shiftY }, keyProperties: ["M(cos α; sin α)", "tan α chỉ xác định khi cos α khác 0", "cot α chỉ xác định khi sin α khác 0"] });
+  }, [thetaDeg, amp, omega, phiDeg, shiftY]);
+  React.useEffect(() => () => useMathContext.getState().clear("trigonometry"), []);
   const phiRad = (phiDeg * Math.PI) / 180;
 
   // Values on Unit Circle
@@ -85,7 +92,7 @@ export default function DynamicTrigonometryLab() {
     const dy = -(e.clientY - rect.top - cY); // Upwards positive
     let deg = (Math.atan2(dy, dx) * 180) / Math.PI;
     if (deg < 0) deg += 360;
-    setParamVal("theta", Math.round(deg));
+    setParamVal("theta", snapToMilestone(Math.round(deg), [0, 30, 45, 60, 90, 120, 135, 180, 225, 270, 315, 360], 3));
   };
 
   const handleCirclePointerUp = () => setIsDraggingM(false);
@@ -141,7 +148,7 @@ export default function DynamicTrigonometryLab() {
               <span>Đường tròn đơn vị (R = 1)</span>
             </span>
             <span className="font-mono text-xs font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
-              {angleUnit === "degree" ? `\u03B1 = ${Math.round(thetaDeg)}\u00B0` : <KatexMath math={exactAngle?.radLatex ?? `${(thetaRad / Math.PI).toFixed(2)}\\pi`} />}
+              {`${Math.round(thetaDeg)}°`} · <KatexMath math={formatRadianToPi(thetaRad)} />
             </span>
           </div>
 
@@ -175,6 +182,8 @@ export default function DynamicTrigonometryLab() {
               {showTanCot && <g fill="none" stroke="#7c3aed" strokeWidth="1.5" strokeDasharray="5 4"><line x1={cX + cR} y1="25" x2={cX + cR} y2="315"/><line x1="25" y1={cY - cR} x2="315" y2={cY - cR}/></g>}
               {showTanCot && Math.abs(cosVal) > 0.02 && <line x1={cX} y1={cY} x2={cX+cR} y2={cY-cR*tanVal!} stroke="#7c3aed" strokeWidth="2.5"/>}
               {showTanCot && Math.abs(sinVal) > 0.02 && <line x1={cX} y1={cY} x2={cX+cR*cotVal!} y2={cY-cR} stroke="#db2777" strokeWidth="2.5"/>}
+              {showTanCot && tanVal !== null && Math.abs(tanVal) < 1.35 && <><line x1={cX+cR} y1={cY} x2={cX+cR} y2={cY-cR*tanVal} stroke="#7c3aed" strokeWidth="5"/><circle cx={cX+cR} cy={cY-cR*tanVal} r="4" fill="#7c3aed"/><text x={cX+cR+5} y={cY-cR*tanVal-5} fontSize="11" fill="#5b21b6">T</text></>}
+              {showTanCot && cotVal !== null && Math.abs(cotVal) < 1.35 && <><line x1={cX} y1={cY-cR} x2={cX+cR*cotVal} y2={cY-cR} stroke="#db2777" strokeWidth="5"/><circle cx={cX+cR*cotVal} cy={cY-cR} r="4" fill="#db2777"/><text x={cX+cR*cotVal+5} y={cY-cR-5} fontSize="11" fill="#9d174d">C</text></>}
               {showTanCot && <g fill="#5b21b6" fontSize="10" fontWeight="700"><text x={cX+cR+4} y="35">x=1 (tan)</text><text x="22" y={cY-cR-5}>y=1 (cot)</text>{Math.abs(cosVal)<=0.02 && <text x="190" y="42">tan α không xác định</text>}{Math.abs(sinVal)<=0.02 && <text x="30" y="65">cot α không xác định</text>}</g>}
 
               {/* Bán kính qua điểm M */}
@@ -226,14 +235,17 @@ export default function DynamicTrigonometryLab() {
                 className="filter drop-shadow cursor-grab active:cursor-grabbing hover:scale-125 transition-transform"
               />
               <text
-                x={mScreenX + 8}
-                y={mScreenY - 8}
+                x={mScreenX + 14 * cosVal + (cosVal >= 0 ? 5 : -12)}
+                y={mScreenY - 14 * sinVal - 7}
                 fontSize="12"
                 fill="#0f766e"
                 fontWeight="bold"
               >
                 M
               </text>
+              <foreignObject x={Math.max(5, Math.min(280, mScreenX + 20 * cosVal + (cosVal >= 0 ? 7 : -59)))} y={Math.max(8, Math.min(310, mScreenY - 22 * sinVal + (sinVal >= 0 ? -23 : 2)))} width="60" height="22"><div className="rounded bg-white/90 text-center text-[10px] text-teal-800"><KatexMath math={formatRadianToPi(thetaRad)} /></div></foreignObject>
+              <text x={mScreenX} y={cY + (sinVal >= 0 ? 15 : -7)} textAnchor="middle" fontSize="10" fill="#1d4ed8">H</text>
+              <text x={cX + (cosVal >= 0 ? -11 : 8)} y={mScreenY - 4} fontSize="10" fill="#b91c1c">K</text>
             </svg>
           </div>
 
@@ -348,9 +360,8 @@ export default function DynamicTrigonometryLab() {
                 return (
                   <g key={`tick-${tick.label}`}>
                     <line x1={sx} y1={waveOriginY - 4} x2={sx} y2={waveOriginY + 4} stroke="#94a3b8" strokeWidth="1" />
-                    <text x={sx} y={waveOriginY + 16} fontSize="10" fill="#64748b" textAnchor="middle">
-                      {tick.label}
-                    </text>
+                    <foreignObject x={sx - 26} y={waveOriginY + 5} width="52" height="22"><div className="text-center text-[10px] text-slate-600"><KatexMath math={formatRadianToPi(tick.rad)} /></div></foreignObject>
+                    <text x={sx} y={waveOriginY + 29} fontSize="9" fill="#64748b" textAnchor="middle">{Math.round(tick.rad * 180 / Math.PI)}°</text>
                   </g>
                 );
               })}
@@ -426,7 +437,7 @@ export default function DynamicTrigonometryLab() {
                     max={2.5}
                     step={0.1}
                     value={amp}
-                    onChange={(e) => setParamVal("amp", parseFloat(e.target.value))}
+                    onChange={(e) => setParamVal("amp", snapToMilestone(parseFloat(e.target.value), [0.5, 1, 1.5, 2], 0.11))}
                     className="w-full accent-rose-600 cursor-pointer h-1.5 bg-slate-200 rounded"
                   />
                 </div>
@@ -441,7 +452,7 @@ export default function DynamicTrigonometryLab() {
                     max={3.0}
                     step={0.1}
                     value={omega}
-                    onChange={(e) => setParamVal("omega", parseFloat(e.target.value))}
+                    onChange={(e) => setParamVal("omega", snapToMilestone(parseFloat(e.target.value), [0.5, 1, 1.5, 2, 3], 0.11))}
                     className="w-full accent-rose-600 cursor-pointer h-1.5 bg-slate-200 rounded"
                   />
                 </div>
@@ -456,7 +467,7 @@ export default function DynamicTrigonometryLab() {
                     max={180}
                     step={15}
                     value={phiDeg}
-                    onChange={(e) => setParamVal("phi", parseFloat(e.target.value))}
+                    onChange={(e) => setParamVal("phi", snapToMilestone(parseFloat(e.target.value), [-180, -120, -90, -60, -45, -30, 0, 30, 45, 60, 90, 120, 180], 3))}
                     className="w-full accent-teal-600 cursor-pointer h-1.5 bg-slate-200 rounded"
                   />
                 </div>
@@ -471,7 +482,7 @@ export default function DynamicTrigonometryLab() {
                     max={1.5}
                     step={0.1}
                     value={shiftY}
-                    onChange={(e) => setParamVal("shiftY", parseFloat(e.target.value))}
+                    onChange={(e) => setParamVal("shiftY", snapToMilestone(parseFloat(e.target.value), [-1.5, -1, -0.5, 0, 0.5, 1, 1.5], 0.11))}
                     className="w-full accent-teal-600 cursor-pointer h-1.5 bg-slate-200 rounded"
                   />
                 </div>
@@ -480,6 +491,7 @@ export default function DynamicTrigonometryLab() {
           )}
         </div>
       </div>
+      <ModelMiniChallenge title="Đường tròn lượng giác" instruction="Kéo M đến góc 60° trên đường tròn." value={((thetaDeg % 360) + 360) % 360} target={60} epsilon={3} sliderExplanation="60^\\circ=\\frac{\\pi}{3}" question="Khi nào tan α không xác định?" answers={[{ label: "cos α = 0", correct: true }, { label: "sin α = 0", correct: false }, { label: "cos α = 1", correct: false }]} answerExplanation="\\tan\\alpha=\\frac{\\sin\\alpha}{\\cos\\alpha},\\quad\\cos\\alpha\\ne0" onIncorrectAnswer={() => setParamVal("theta", 0)} />
       <TrigonometryPracticeTools />
     </div>
   );

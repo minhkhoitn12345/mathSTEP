@@ -1,5 +1,6 @@
 // Cấu trúc ba chuyên đề cốt lõi của MathSTEP (chuẩn GDPT 2018)
 import { TRIG_LESSONS } from "../data/trigonometryLessons";
+import { ALL_LESSONS as DETAILED_CURRICULUM } from "../data/lessons-registry";
 
 // Module 1: Bất phương trình & Quy hoạch tuyến tính (Toán 10)
 // Module 2: Dựng hình và khảo sát quan hệ Hình học không gian 3D (Toán 11)
@@ -383,3 +384,31 @@ export const CORE_3_MODULES: CoreModuleConfig[] = [
     lessons: TRIG_LESSONS,
   },
 ];
+
+// Use the detailed CD02/CD03 curriculum as the single source for the public
+// lesson lists, generated routes, syllabus counts, and next-lesson navigation.
+const detailedUnits: LessonUnit[] = DETAILED_CURRICULUM.map((lesson) => ({
+  id: lesson.id,
+  moduleId: lesson.moduleId === "CD02" ? "spatial_geometry" : "trigonometry",
+  order: lesson.moduleId === "CD02"
+    ? DETAILED_CURRICULUM.filter((item) => item.moduleId === "CD02").findIndex((item) => item.id === lesson.id) + 1
+    : DETAILED_CURRICULUM.filter((item) => item.moduleId === "CD03").findIndex((item) => item.id === lesson.id) + 1,
+  code: lesson.code,
+  title: lesson.title,
+  subtitle: lesson.shortDesc,
+  description: lesson.shortDesc,
+  grade: 11,
+  difficulty: lesson.level as LessonUnit["difficulty"],
+  errorCodes: [],
+  steps: lesson.steps.map((step) => ({
+    stepNumber: step.stepNumber,
+    title: step.title,
+    instruction: step.instruction,
+    coreConcepts: [step.pedagogicalNote].filter(Boolean),
+    keyFormulas: [step.formula].filter(Boolean),
+    socraticQuestions: [step.hints.level1, step.hints.level2, step.hints.level3].filter(Boolean),
+  })),
+}));
+
+CORE_3_MODULES.find((module) => module.id === "spatial_geometry")!.lessons = detailedUnits.filter((lesson) => lesson.moduleId === "spatial_geometry");
+CORE_3_MODULES.find((module) => module.id === "trigonometry")!.lessons = detailedUnits.filter((lesson) => lesson.moduleId === "trigonometry");

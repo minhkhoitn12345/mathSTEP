@@ -40,12 +40,14 @@ interface PracticeLabProps {
   initialLearningMode?: LearningMode;
   canAccessTeacherDashboard: boolean;
   onBackToHome: () => void;
+  backLabel?: string;
 }
 
 export const PracticeLab: React.FC<PracticeLabProps> = ({
   initialLearningMode = 'guided',
   canAccessTeacherDashboard,
-  onBackToHome
+  onBackToHome,
+  backLabel = 'Trang chủ'
 }) => {
   const [activeTab, setActiveTab] = useState<Module5Tab>(
     initialLearningMode === 'teacher' && canAccessTeacherDashboard ? 'teacher' : 'interactive'
@@ -134,7 +136,7 @@ export const PracticeLab: React.FC<PracticeLabProps> = ({
                 type="button"
                 onClick={onBackToHome}
                 className="p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 transition cursor-pointer shrink-0"
-                title="Quay lại Trang chủ"
+                title={`Quay lại ${backLabel}`}
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>

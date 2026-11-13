@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { CORE_3_MODULES } from "@/app/types/curriculum";
 import { getLessonDetailedContent } from "@/app/data/learningPathData";
-import LessonStudyClientPage from "../LessonStudyClientPage";
 
 interface PageProps {
   params: Promise<{ moduleId: string; lessonId: string }>;
@@ -35,5 +34,5 @@ export default async function GuidedLessonPage({ params }: PageProps) {
 
   if (!content || content.moduleId !== moduleId) notFound();
 
-  return <LessonStudyClientPage moduleId={moduleId} lessonId={lessonId} stage="practice" />;
+  redirect(`/learn/${moduleId}/${lessonId}`);
 }

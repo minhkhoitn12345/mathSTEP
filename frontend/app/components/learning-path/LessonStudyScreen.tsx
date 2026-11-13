@@ -22,7 +22,8 @@ import {
   VolumeX,
 } from "lucide-react";
 import { OptiMascot } from "../optimath/mascot/OptiMascot";
-import { getLessonFlowStage, setLessonFlowStage, type LessonFlowStage } from "../../lib/learningProgressStorage";
+import SocraticChatDrawer, { type ChatMessage } from "../SocraticChatDrawer";
+import type { LessonFlowStage } from "../../lib/learningProgressStorage";
 
 const SOUND_PREFERENCE_KEY = "mathstep_learning_sound_enabled";
 
@@ -59,8 +60,19 @@ interface LessonStudyScreenProps {
   onRewardLesson?: (lessonId: string, scorePercentage: number, xpEarned: number) => void;
   onCompleteAndNext: (lessonId: string, scorePercentage: number, xpEarned: number) => void;
   onOpenSimulation: (moduleId: string, lessonId: string) => void;
+  simulationPanel?: React.ReactNode;
+  onSimulationComplete?: () => void;
+  embeddedInLesson?: boolean;
   isCompleted?: boolean;
   showTheorySections?: boolean;
+  lessonFlowStage?: LessonFlowStage;
+  onLessonFlowStageChange?: (stage: LessonFlowStage) => void;
+  workspaceMessages?: ChatMessage[];
+  workspaceInput?: string;
+  onWorkspaceInputChange?: (value: string) => void;
+  onWorkspaceSend?: (message?: string) => void;
+  workspaceBusy?: boolean;
+  workspaceError?: string;
 }
 
 export function LessonStudyScreen({
@@ -70,8 +82,19 @@ export function LessonStudyScreen({
   onRewardLesson,
   onCompleteAndNext,
   onOpenSimulation,
+  simulationPanel,
+  onSimulationComplete,
+  embeddedInLesson = false,
   isCompleted = false,
   showTheorySections = false,
+  lessonFlowStage: controlledLessonFlowStage,
+  onLessonFlowStageChange,
+  workspaceMessages = [],
+  workspaceInput = "",
+  onWorkspaceInputChange = () => undefined,
+  onWorkspaceSend = () => undefined,
+  workspaceBusy = false,
+  workspaceError = "",
 }: LessonStudyScreenProps) {
   // Checkpoint question state: checkpointId -> selectedOptionId
   const [checkpointAnswers, setCheckpointAnswers] = useState<Record<string, string>>({});
@@ -87,8 +110,10 @@ export function LessonStudyScreen({
   );
   const [passedQuizLevels, setPassedQuizLevels] = useState<Record<string, boolean>>({});
   const [activeWorkedStepIndex, setActiveWorkedStepIndex] = useState(0);
-  const [lessonFlowStage, setLessonFlowStageState] = useState<LessonFlowStage>("simulation");
-  const [simulationOpened, setSimulationOpened] = useState(false);
+  const [localLessonFlowStage, setLocalLessonFlowStage] = useState<LessonFlowStage>("simulation");
+  const lessonFlowStage = controlledLessonFlowStage ?? localLessonFlowStage;
+  const showGuidedWorkspace = embeddedInLesson && (lessonFlowStage === "simulation" || lessonFlowStage === "simulation_opened");
+  const showThreeColumnStage = embeddedInLesson && !showGuidedWorkspace;
   const [workedHintLevel, setWorkedHintLevel] = useState(0);
   const [workedStepChecked, setWorkedStepChecked] = useState(false);
   const [workedStepAttempt, setWorkedStepAttempt] = useState("");
@@ -115,12 +140,6 @@ export function LessonStudyScreen({
       // Keep sound enabled by default if browser storage is unavailable.
     }
   }, []);
-
-  useEffect(() => {
-    const savedStage = getLessonFlowStage(content.lessonId);
-    setLessonFlowStageState(savedStage);
-    setSimulationOpened(savedStage !== "simulation");
-  }, [content.lessonId]);
 
   useEffect(() => {
     // Keep server and initial client markup deterministic, then draw a fresh set after hydration.
@@ -178,12 +197,11 @@ export function LessonStudyScreen({
   };
 
   const advanceLessonStage = (stage: LessonFlowStage) => {
-    setLessonFlowStage(content.lessonId, stage);
-    setLessonFlowStageState(stage);
+    setLocalLessonFlowStage(stage);
+    onLessonFlowStageChange?.(stage);
   };
 
   const handleOpenLessonSimulation = () => {
-    setSimulationOpened(true);
     if (lessonFlowStage === "simulation") advanceLessonStage("simulation_opened");
     onOpenSimulation(content.moduleId, content.lessonId);
   };
@@ -315,9 +333,9 @@ export function LessonStudyScreen({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 pb-20">
+    <div id="lesson-study-stage" className={showGuidedWorkspace || showThreeColumnStage ? "h-full min-h-0 overflow-hidden bg-slate-50 text-slate-800" : "min-h-screen bg-slate-50 text-slate-800 pb-20"}>
       {/* 1. TOP STICKY TOOLBAR */}
-      <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 shadow-xs">
+      {!embeddedInLesson && <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 py-3 shadow-xs">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <button
@@ -381,12 +399,22 @@ export function LessonStudyScreen({
             </button>
           </div>
         </div>
-      </nav>
+      </nav>}
 
       {/* 2. MAIN LESSON STUDY WORKSPACE */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 space-y-8">
+      <main className={showGuidedWorkspace || showThreeColumnStage ? "h-full min-h-0 w-full px-0 pt-0" : embeddedInLesson ? "w-full px-0 pt-0" : "mx-auto max-w-4xl space-y-8 px-4 pt-6 sm:px-6"}>
+        {embeddedInLesson && !showGuidedWorkspace && <div className="mx-auto w-full max-w-[1600px] space-y-2 px-3 pt-3 sm:px-4">
+          <section className="rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm sm:p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2.5"><span className="h-2.5 w-2.5 shrink-0 rounded-full bg-blue-600"/><div className="min-w-0"><h1 className="truncate text-sm font-bold text-slate-900 sm:text-base"><MathFormattedText text={`${content.code}: ${content.title}`}/></h1><p className="text-[10px] text-slate-500">Bước {lessonFlowStage === "questions" ? 2 : 3}/3 · {lessonFlowStage === "questions" ? "Câu hỏi gợi mở" : "Bài kiểm tra"}</p></div></div>
+              <button type="button" onClick={() => { const target = document.getElementById("lesson-study-stage"); if (target?.requestFullscreen) void target.requestFullscreen(); }} aria-label="Toàn màn hình" className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"><span aria-hidden="true">⤢</span></button>
+            </div>
+            <div className="mt-3 flex gap-2 overflow-x-auto">{["Mô phỏng", "Câu hỏi gợi mở", "Bài kiểm tra"].map((label,index)=><span key={label} className={`shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-bold ${index + 1 === (lessonFlowStage === "questions" ? 2 : 3) ? "bg-blue-600 text-white" : index + 1 < (lessonFlowStage === "questions" ? 2 : 3) ? "bg-emerald-50 text-emerald-700" : "bg-slate-50 text-slate-400"}`}>{index + 1}. {label}</span>)}</div>
+          </section>
+          <section className="flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3"><div className="hidden shrink-0 sm:block"><OptiMascot size={38} animate={false}/></div><div className="min-w-0 flex-1"><div className="flex items-center gap-2"><span className="rounded bg-blue-600 px-2 py-0.5 text-[9px] font-extrabold text-white">MATHSTEP</span><b className="text-xs text-slate-800">Bước {lessonFlowStage === "questions" ? 2 : 3}: {lessonFlowStage === "questions" ? "Câu hỏi gợi mở" : "Bài kiểm tra"}</b></div><p className="truncate text-xs text-slate-600">{lessonFlowStage === "questions" ? "Hoàn thành ví dụ và trả lời câu hỏi để kiểm tra cách em vận dụng kiến thức." : "Chọn đáp án phù hợp và kiểm tra lại lập luận của em."}</p>{workedHintLevel > 0 && <p className="mt-1 line-clamp-1 text-[11px] text-blue-800"><MathFormattedText text={content.theory.miniTip}/></p>}</div><button type="button" onClick={() => setWorkedHintLevel((level) => Math.min(3, level + 1))} className="shrink-0 rounded-lg border border-blue-200 bg-white px-2.5 py-2 text-[11px] font-bold text-blue-700">Gợi ý 3 cấp</button><button type="button" onClick={() => setWorkedHintLevel(0)} aria-label="Thu gọn gợi ý" className="px-1 text-lg text-slate-500">×</button></section>
+        </div>}
         {/* Banner tiêu đề bài học */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm relative overflow-hidden">
+        {!embeddedInLesson && <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm relative overflow-hidden">
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-100 text-blue-800 uppercase tracking-wider">
               {content.code} · TOÁN LỚP {content.grade}
@@ -400,6 +428,9 @@ export function LessonStudyScreen({
                 Đã hoàn thành bài này
               </span>
             )}
+            {embeddedInLesson && <button type="button" onClick={handleToggleSound} aria-label={soundEnabled ? "Tắt âm thanh phản hồi" : "Bật âm thanh phản hồi"} aria-pressed={soundEnabled} className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-[10px] font-bold text-slate-600 hover:bg-slate-50">
+              {soundEnabled ? <Volume2 className="h-3 w-3" /> : <VolumeX className="h-3 w-3" />} Âm thanh
+            </button>}
           </div>
 
           <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-2">
@@ -441,10 +472,10 @@ export function LessonStudyScreen({
               <ArrowRight className="w-3 h-3" />
             </button>
           </div>
-          {lessonFlowStage === "simulation_opened" && simulationOpened && (
+          {lessonFlowStage === "simulation_opened" && (
             <div className="mt-3 flex flex-col gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs leading-relaxed text-emerald-900">Sau khi thao tác trên mô phỏng, hãy xác nhận để chuyển sang phần câu hỏi gợi mở.</p>
-              <button type="button" onClick={() => advanceLessonStage("questions")} className="shrink-0 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-extrabold text-white transition hover:bg-emerald-700">
+              <button type="button" onClick={() => { advanceLessonStage("questions"); onSimulationComplete?.(); }} className="shrink-0 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-extrabold text-white transition hover:bg-emerald-700">
                 Đã thực hành mô phỏng · Tiếp tục
               </button>
             </div>
@@ -452,7 +483,14 @@ export function LessonStudyScreen({
           {lessonFlowStage === "questions" && (
             <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800">Đã qua phần mô phỏng. Hoàn thành ví dụ và toàn bộ câu hỏi gợi mở để mở bài kiểm tra.</p>
           )}
-        </div>
+        </div>}
+
+        {simulationPanel && (!embeddedInLesson || lessonFlowStage === "simulation" || lessonFlowStage === "simulation_opened") && (
+          embeddedInLesson ? simulationPanel : <section aria-label={`Mô phỏng ${content.simulationRef.labName}`} className="overflow-hidden rounded-3xl border border-blue-200 bg-white shadow-lg">{simulationPanel}</section>
+        )}
+
+        <div className={showThreeColumnStage ? "mx-auto grid h-[calc(100dvh-190px)] min-h-[460px] w-full max-w-[1600px] grid-cols-1 gap-3 overflow-y-auto px-3 pb-3 lg:grid-cols-12 lg:overflow-hidden sm:px-4" : "contents"}>
+          <div className={showThreeColumnStage ? "min-h-[360px] space-y-4 overflow-y-auto rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm lg:col-span-3 lg:min-h-0 lg:p-4" : "contents"}>
 
         {showTheorySections && <>
         {/* PHẦN 1: MỤC TIÊU BÀI HỌC */}
@@ -960,6 +998,16 @@ export function LessonStudyScreen({
             </button>
           </div>
         </section>}
+          </div>
+        {showThreeColumnStage && <section className="flex min-h-[400px] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm lg:col-span-5 lg:min-h-0">
+          <div className="shrink-0 pb-2"><h2 className="text-sm font-bold text-slate-900">{content.simulationRef.labName}</h2><p className="text-[10px] text-slate-500">Mô hình trực quan gắn với câu hỏi hiện tại</p></div>
+          <div className="relative min-h-[340px] flex-1 overflow-hidden rounded-xl border border-slate-200 bg-slate-50/70 [&>div]:!h-full [&>div]:!min-h-0 [&_canvas]:!h-full">{simulationPanel}<div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-slate-200 bg-white/95 px-3 py-1 text-[10px] text-slate-600 shadow-sm">Quan sát mô hình khi trả lời</div></div>
+        </section>}
+        {showThreeColumnStage && <aside className="flex min-h-[500px] flex-col gap-3 lg:col-span-4 lg:min-h-0">
+          <section className="flex min-h-[300px] flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm"><div className="mb-2 flex items-center justify-center gap-2"><OptiMascot size={42} animate={false}/><div><h2 className="text-sm font-bold text-slate-900">Trợ lý Toán MathSTEP</h2><p className="text-[10px] text-slate-500">Gợi ý theo bài học</p></div></div><div className="mb-2 rounded-xl border border-blue-200 bg-blue-50/40 p-2.5 text-xs text-slate-700"><b className="text-blue-800">Gợi ý sư phạm</b><p className="mt-1"><MathFormattedText text={content.theory.miniTip}/></p></div><div className="min-h-0 flex-1"><SocraticChatDrawer inline isOpen onClose={() => undefined} messages={workspaceMessages} busy={workspaceBusy} error={workspaceError} input={workspaceInput} onInputChange={onWorkspaceInputChange} onSendMessage={(message) => onWorkspaceSend(message)} moduleTitle={`${content.code}: ${content.title}`} quickPrompts={["Gợi ý bước tiếp theo", "Giải thích theo hình", "Cho ví dụ tương tự"]}/></div></section>
+          <section className="shrink-0 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm"><h3 className="text-xs font-bold text-slate-800">Thử sức với ví dụ mẫu</h3><div className="mt-2 grid grid-cols-2 gap-2">{content.workedExample.steps.slice(0,2).map((item,index)=><div key={item.stepNumber} className="rounded-xl border border-slate-200 bg-slate-50 p-2"><span className="block text-[10px] font-bold text-blue-700">Ví dụ {index===0?"A":"B"}</span><span className="mt-1 block text-[10px] text-slate-600"><MathFormattedText text={item.mathExpression ?? item.title}/></span></div>)}</div></section>
+        </aside>}
+        </div>
       </main>
 
       {showCompletionCelebration && (

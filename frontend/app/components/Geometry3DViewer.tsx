@@ -4,6 +4,7 @@ import React, { useRef, useState, useMemo, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
+import { FirstThreeFrame, ThreeSceneLoadingOverlay } from "./ThreeSceneLoading";
 import {
   Grid3X3,
   Layers,
@@ -131,6 +132,14 @@ function CylinderEdge({
     };
   }, [sx, sy, sz, ex, ey, ez, dashed, color]);
 
+  useEffect(() => () => {
+    if (!dashedLine) return;
+    dashedLine.geometry.dispose();
+    const material = dashedLine.material;
+    if (Array.isArray(material)) material.forEach((item) => item.dispose());
+    else material.dispose();
+  }, [dashedLine]);
+
   if (dashed && dashedLine) {
     return <primitive object={dashedLine} />;
   }
@@ -170,6 +179,8 @@ function PolygonFace({
     return geo;
   }, [vertices, indices]);
 
+  useEffect(() => () => geometry.dispose(), [geometry]);
+
   return (
     <mesh geometry={geometry}>
       <meshStandardMaterial
@@ -208,6 +219,13 @@ function RightAngleSymbol({
     return new THREE.Line(geo, mat);
   }, [fx, fy, fz, size]);
 
+  useEffect(() => () => {
+    lineObj.geometry.dispose();
+    const material = lineObj.material;
+    if (Array.isArray(material)) material.forEach((item) => item.dispose());
+    else material.dispose();
+  }, [lineObj]);
+
   return <primitive object={lineObj} />;
 }
 
@@ -225,6 +243,7 @@ const CAMERA_POSITIONS: Record<CameraView, [number, number, number]> = {
 
 function SceneController({ autoRotate, viewRequest, storageKey }: { autoRotate: boolean; viewRequest: { view: CameraView; id: number } | null; storageKey: string }) {
   const controlsRef = useRef<React.ComponentRef<typeof OrbitControls>>(null);
+  const transitionRef = useRef<{ fromPosition: THREE.Vector3; fromTarget: THREE.Vector3; toPosition: THREE.Vector3; toTarget: THREE.Vector3; started: number } | null>(null);
   const { camera, invalidate } = useThree();
 
   useEffect(() => {
@@ -246,14 +265,21 @@ function SceneController({ autoRotate, viewRequest, storageKey }: { autoRotate: 
   useEffect(() => {
     if (!viewRequest || !controlsRef.current) return;
     const position = CAMERA_POSITIONS[viewRequest.view];
-    camera.position.set(...position);
-    controlsRef.current.target.set(...CAMERA_TARGET);
-    controlsRef.current.update();
+    transitionRef.current = { fromPosition: camera.position.clone(), fromTarget: controlsRef.current.target.clone(), toPosition: new THREE.Vector3(...position), toTarget: new THREE.Vector3(...CAMERA_TARGET), started: performance.now() };
     invalidate();
     try { localStorage.setItem(storageKey, JSON.stringify({ position, target: CAMERA_TARGET })); } catch {}
   }, [camera, invalidate, storageKey, viewRequest]);
 
   useFrame(() => {
+    const transition = transitionRef.current;
+    if (transition && controlsRef.current) {
+      const t = Math.min(1, (performance.now() - transition.started) / 500);
+      const eased = t * t * (3 - 2 * t);
+      camera.position.copy(transition.fromPosition).lerp(transition.toPosition, eased);
+      controlsRef.current.target.copy(transition.fromTarget).lerp(transition.toTarget, eased);
+      controlsRef.current.update();
+      if (t < 1) invalidate(); else transitionRef.current = null;
+    }
     if (autoRotate && controlsRef.current) {
       controlsRef.current.autoRotate = true;
       controlsRef.current.autoRotateSpeed = 1.8;
@@ -288,6 +314,8 @@ function SceneController({ autoRotate, viewRequest, storageKey }: { autoRotate: 
 // COMPONENT CHÍNH: Geometry3DViewer
 // -------------------------------------------------------------
 export default function Geometry3DViewer({ scene, onAskTutor, className = "" }: Geometry3DViewerProps) {
+  const [webglReady, setWebglReady] = useState(false);
+  const [frameReady, setFrameReady] = useState(false);
   const [showAxes, setShowAxes] = useState(true);
   const [showFaces, setShowFaces] = useState(true);
   const [showSection, setShowSection] = useState(true);
@@ -325,7 +353,7 @@ export default function Geometry3DViewer({ scene, onAskTutor, className = "" }: 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full min-h-[480px] bg-gradient-to-b from-[#f8fafc] to-[#edf3f2] rounded-2xl overflow-hidden flex flex-col border border-slate-200 shadow-sm ${className}`}
+      className={`relative w-full h-full min-h-[480px] max-md:min-h-0 max-md:h-[45dvh] bg-gradient-to-b from-[#f8fafc] to-[#edf3f2] rounded-2xl overflow-hidden flex flex-col border border-slate-200 shadow-sm ${className}`}
     >
       {/* 1. Header Toolbar trên Canvas */}
       <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
@@ -399,13 +427,15 @@ export default function Geometry3DViewer({ scene, onAskTutor, className = "" }: 
       </div>
 
       {/* 2. WebGL 3D Canvas */}
-      <div className="flex-1 w-full min-h-[320px] sm:min-h-[420px] touch-none">
+      <div className="flex-1 w-full min-h-[320px] max-md:min-h-0 sm:min-h-[420px] touch-none">
         <Canvas
           frameloop={autoRotate ? "always" : "demand"}
           dpr={[1, 1.5]}
           camera={{ position: [5.2, 4.5, 6.2], fov: 45 }}
           gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: "high-performance" }}
+          onCreated={() => setWebglReady(true)}
         >
+          <FirstThreeFrame onReady={() => setFrameReady(true)} />
           <color attach="background" args={["#f8fafc"]} />
           <SceneController autoRotate={autoRotate} viewRequest={viewRequest} storageKey={cameraStorageKey} />
 
@@ -532,17 +562,24 @@ export default function Geometry3DViewer({ scene, onAskTutor, className = "" }: 
             );
           })}
         </Canvas>
+        <ThreeSceneLoadingOverlay webglReady={webglReady} frameReady={frameReady} />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 bg-white px-3 py-2 text-xs" aria-label="Góc nhìn mô hình">
+      <div className="absolute top-[4.5rem] right-3 z-20 flex max-w-[90%] flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white/95 px-3 py-2 text-xs shadow-lg" aria-label="Góc nhìn mô hình">
         <span className="font-semibold text-slate-700">Góc nhìn:</span>
-        {(["default", "top", "front", "side"] as const).map((view) => (
+        {(["default", "top", "front"] as const).map((view) => (
           <button key={view} type="button" onClick={() => chooseView(view)}
+            aria-label={{ default: "Phối cảnh 3D", top: "Mặt phẳng (Oxy)", front: "Nhìn ngang (Oxz)" }[view]}
             className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-200 px-3 font-semibold text-slate-700 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600">
-            {view === "default" && <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />}
-            {{ default: "Đặt lại", top: "Từ trên", front: "Chính diện", side: "Bên cạnh" }[view]}
+            {{ default: "Phối cảnh 3D", top: "Mặt phẳng (Oxy)", front: "Nhìn ngang (Oxz)" }[view]}
           </button>
         ))}
+        <button type="button" onClick={() => chooseView("default")} className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-200 px-3 font-semibold text-slate-700 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600">
+          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />Đặt lại góc nhìn
+        </button>
+      </div>
+      <div className="pointer-events-none absolute bottom-16 left-3 z-10 max-w-[min(90%,360px)] rounded-lg border border-slate-200 bg-white/90 px-2.5 py-1.5 text-[10px] leading-4 text-slate-600 shadow-sm">
+        Kéo chuột trái để xoay · Lăn chuột để thu phóng<br />Chuột phải để di chuyển
       </div>
 
       {/* 3. Footer Thống kê hình học & Gợi ý câu hỏi Socratic */}
